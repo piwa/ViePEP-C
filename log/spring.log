@@ -1,0 +1,1048 @@
+2016-10-18 15:35:06.986  INFO 24555 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 24555 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:35:06.991  INFO 24555 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:35:07.092  INFO 24555 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@12d2ce03: startup date [Tue Oct 18 15:35:07 CEST 2016]; root of context hierarchy
+2016-10-18 15:35:07.646  WARN 24555 --- [main] ationConfigEmbeddedWebApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanDefinitionStoreException: Failed to parse configuration class [at.ac.tuwien.infosys.viepepc.ViePepCApplication]; nested exception is java.io.FileNotFoundException: class path resource [container-config/container.properties] cannot be opened because it does not exist
+2016-10-18 15:35:07.681 ERROR 24555 --- [main] o.s.boot.SpringApplication               : Application startup failed
+
+org.springframework.beans.factory.BeanDefinitionStoreException: Failed to parse configuration class [at.ac.tuwien.infosys.viepepc.ViePepCApplication]; nested exception is java.io.FileNotFoundException: class path resource [container-config/container.properties] cannot be opened because it does not exist
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:187) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.processConfigBeanDefinitions(ConfigurationClassPostProcessor.java:324) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry(ConfigurationClassPostProcessor.java:246) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanDefinitionRegistryPostProcessors(PostProcessorRegistrationDelegate.java:273) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:98) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:681) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:523) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:122) ~[spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:761) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:371) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1186) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1175) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at at.ac.tuwien.infosys.viepepc.ViePepCApplication.main(ViePepCApplication.java:10) [classes/:na]
+Caused by: java.io.FileNotFoundException: class path resource [container-config/container.properties] cannot be opened because it does not exist
+	at org.springframework.core.io.ClassPathResource.getInputStream(ClassPathResource.java:172) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.EncodedResource.getInputStream(EncodedResource.java:153) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.PropertiesLoaderUtils.fillProperties(PropertiesLoaderUtils.java:98) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.PropertiesLoaderUtils.fillProperties(PropertiesLoaderUtils.java:72) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.PropertiesLoaderUtils.loadProperties(PropertiesLoaderUtils.java:58) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.ResourcePropertySource.<init>(ResourcePropertySource.java:65) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.DefaultPropertySourceFactory.createPropertySource(DefaultPropertySourceFactory.java:36) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.processPropertySource(ConfigurationClassParser.java:388) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.doProcessConfigurationClass(ConfigurationClassParser.java:260) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.processConfigurationClass(ConfigurationClassParser.java:237) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:196) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.doProcessConfigurationClass(ConfigurationClassParser.java:279) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.processConfigurationClass(ConfigurationClassParser.java:237) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:204) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:173) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 13 common frames omitted
+
+2016-10-18 15:36:01.256  INFO 24614 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 24614 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:36:01.293  INFO 24614 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:36:01.679  INFO 24614 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@12d2ce03: startup date [Tue Oct 18 15:36:01 CEST 2016]; root of context hierarchy
+2016-10-18 15:36:02.315  WARN 24614 --- [main] ationConfigEmbeddedWebApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanDefinitionStoreException: Failed to parse configuration class [at.ac.tuwien.infosys.viepepc.ViePepCApplication]; nested exception is java.io.FileNotFoundException: class path resource [container-config/container.properties] cannot be opened because it does not exist
+2016-10-18 15:36:02.335 ERROR 24614 --- [main] o.s.boot.SpringApplication               : Application startup failed
+
+org.springframework.beans.factory.BeanDefinitionStoreException: Failed to parse configuration class [at.ac.tuwien.infosys.viepepc.ViePepCApplication]; nested exception is java.io.FileNotFoundException: class path resource [container-config/container.properties] cannot be opened because it does not exist
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:187) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.processConfigBeanDefinitions(ConfigurationClassPostProcessor.java:324) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry(ConfigurationClassPostProcessor.java:246) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanDefinitionRegistryPostProcessors(PostProcessorRegistrationDelegate.java:273) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:98) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:681) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:523) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:122) ~[spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:761) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:371) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1186) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1175) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at at.ac.tuwien.infosys.viepepc.ViePepCApplication.main(ViePepCApplication.java:10) [classes/:na]
+Caused by: java.io.FileNotFoundException: class path resource [container-config/container.properties] cannot be opened because it does not exist
+	at org.springframework.core.io.ClassPathResource.getInputStream(ClassPathResource.java:172) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.EncodedResource.getInputStream(EncodedResource.java:153) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.PropertiesLoaderUtils.fillProperties(PropertiesLoaderUtils.java:98) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.PropertiesLoaderUtils.fillProperties(PropertiesLoaderUtils.java:72) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.PropertiesLoaderUtils.loadProperties(PropertiesLoaderUtils.java:58) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.ResourcePropertySource.<init>(ResourcePropertySource.java:65) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.core.io.support.DefaultPropertySourceFactory.createPropertySource(DefaultPropertySourceFactory.java:36) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.processPropertySource(ConfigurationClassParser.java:388) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.doProcessConfigurationClass(ConfigurationClassParser.java:260) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.processConfigurationClass(ConfigurationClassParser.java:237) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:196) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.doProcessConfigurationClass(ConfigurationClassParser.java:279) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.processConfigurationClass(ConfigurationClassParser.java:237) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:204) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.annotation.ConfigurationClassParser.parse(ConfigurationClassParser.java:173) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 13 common frames omitted
+
+2016-10-18 15:36:39.164  INFO 24650 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 24650 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:36:39.221  INFO 24650 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:36:39.548  INFO 24650 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@12d2ce03: startup date [Tue Oct 18 15:36:39 CEST 2016]; root of context hierarchy
+2016-10-18 15:37:05.005  WARN 24650 --- [main] ationConfigEmbeddedWebApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.cloud.aws.context.support.io.ResourceLoaderBeanPostProcessor#0': Cannot resolve reference to bean 'amazonS3' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+2016-10-18 15:37:05.020 ERROR 24650 --- [main] o.s.boot.SpringApplication               : Application startup failed
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.cloud.aws.context.support.io.ResourceLoaderBeanPostProcessor#0': Cannot resolve reference to bean 'amazonS3' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:359) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:108) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveConstructorArguments(ConstructorResolver.java:634) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:145) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1148) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1051) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:510) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:171) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:681) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:523) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:122) ~[spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:761) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:371) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1186) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1175) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at at.ac.tuwien.infosys.viepepc.ViePepCApplication.main(ViePepCApplication.java:10) [classes/:na]
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1583) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:545) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:197) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:351) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 21 common frames omitted
+Caused by: java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.util.Assert.state(Assert.java:392) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.cloud.aws.core.region.Ec2MetadataRegionProvider.getRegion(Ec2MetadataRegionProvider.java:39) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean.createInstance(AmazonWebserviceClientFactoryBean.java:84) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean.createInstance(AmazonWebserviceClientFactoryBean.java:40) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.beans.factory.config.AbstractFactoryBean.afterPropertiesSet(AbstractFactoryBean.java:134) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1642) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1579) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 28 common frames omitted
+
+2016-10-18 15:37:55.702  INFO 24734 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 24734 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:37:55.728  INFO 24734 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:37:56.107  INFO 24734 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@12d2ce03: startup date [Tue Oct 18 15:37:56 CEST 2016]; root of context hierarchy
+2016-10-18 15:38:27.900  WARN 24734 --- [main] ationConfigEmbeddedWebApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.cloud.aws.context.support.io.ResourceLoaderBeanPostProcessor#0': Cannot resolve reference to bean 'amazonS3' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+2016-10-18 15:38:27.951 ERROR 24734 --- [main] o.s.boot.SpringApplication               : Application startup failed
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.cloud.aws.context.support.io.ResourceLoaderBeanPostProcessor#0': Cannot resolve reference to bean 'amazonS3' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:359) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:108) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveConstructorArguments(ConstructorResolver.java:634) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:145) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1148) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1051) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:510) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:171) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:681) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:523) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:122) ~[spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:761) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:371) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1186) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1175) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at at.ac.tuwien.infosys.viepepc.ViePepCApplication.main(ViePepCApplication.java:10) [classes/:na]
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1583) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:545) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:197) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:351) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 21 common frames omitted
+Caused by: java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.util.Assert.state(Assert.java:392) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.cloud.aws.core.region.Ec2MetadataRegionProvider.getRegion(Ec2MetadataRegionProvider.java:39) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean.createInstance(AmazonWebserviceClientFactoryBean.java:84) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean.createInstance(AmazonWebserviceClientFactoryBean.java:40) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.beans.factory.config.AbstractFactoryBean.afterPropertiesSet(AbstractFactoryBean.java:134) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1642) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1579) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 28 common frames omitted
+
+2016-10-18 15:40:55.836  INFO 24931 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 24931 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:40:55.867  INFO 24931 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:40:56.041  INFO 24931 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@12d2ce03: startup date [Tue Oct 18 15:40:56 CEST 2016]; root of context hierarchy
+2016-10-18 15:41:25.089  WARN 24931 --- [main] ationConfigEmbeddedWebApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.cloud.aws.context.support.io.ResourceLoaderBeanPostProcessor#0': Cannot resolve reference to bean 'amazonS3' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+2016-10-18 15:41:25.107 ERROR 24931 --- [main] o.s.boot.SpringApplication               : Application startup failed
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.cloud.aws.context.support.io.ResourceLoaderBeanPostProcessor#0': Cannot resolve reference to bean 'amazonS3' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:359) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:108) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveConstructorArguments(ConstructorResolver.java:634) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:145) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1148) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1051) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:510) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:171) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:681) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:523) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:122) ~[spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:761) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:371) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1186) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1175) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at at.ac.tuwien.infosys.viepepc.ViePepCApplication.main(ViePepCApplication.java:10) [classes/:na]
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1583) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:545) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:197) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:351) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 21 common frames omitted
+Caused by: java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.util.Assert.state(Assert.java:392) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.cloud.aws.core.region.Ec2MetadataRegionProvider.getRegion(Ec2MetadataRegionProvider.java:39) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean.createInstance(AmazonWebserviceClientFactoryBean.java:84) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean.createInstance(AmazonWebserviceClientFactoryBean.java:40) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.beans.factory.config.AbstractFactoryBean.afterPropertiesSet(AbstractFactoryBean.java:134) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1642) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1579) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 28 common frames omitted
+
+2016-10-18 15:42:32.469  INFO 25030 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 25030 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:42:32.485  INFO 25030 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:42:32.816  INFO 25030 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@12d2ce03: startup date [Tue Oct 18 15:42:32 CEST 2016]; root of context hierarchy
+2016-10-18 15:43:01.962  WARN 25030 --- [main] ationConfigEmbeddedWebApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.cloud.aws.context.support.io.ResourceLoaderBeanPostProcessor#0': Cannot resolve reference to bean 'amazonS3' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+2016-10-18 15:43:01.979 ERROR 25030 --- [main] o.s.boot.SpringApplication               : Application startup failed
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.cloud.aws.context.support.io.ResourceLoaderBeanPostProcessor#0': Cannot resolve reference to bean 'amazonS3' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:359) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:108) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveConstructorArguments(ConstructorResolver.java:634) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:145) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1148) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1051) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:510) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:171) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:681) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:523) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:122) ~[spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:761) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:371) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1186) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1175) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at at.ac.tuwien.infosys.viepepc.ViePepCApplication.main(ViePepCApplication.java:10) [classes/:na]
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'amazonS3': Invocation of init method failed; nested exception is java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1583) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:545) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:197) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:351) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 21 common frames omitted
+Caused by: java.lang.IllegalStateException: There is not EC2 meta data available, because the application is not running in the EC2 environment. Region detection is only possible if the application is running on a EC2 instance
+	at org.springframework.util.Assert.state(Assert.java:392) ~[spring-core-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.cloud.aws.core.region.Ec2MetadataRegionProvider.getRegion(Ec2MetadataRegionProvider.java:39) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean.createInstance(AmazonWebserviceClientFactoryBean.java:84) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean.createInstance(AmazonWebserviceClientFactoryBean.java:40) ~[spring-cloud-aws-core-1.1.3.RELEASE.jar:1.1.3.RELEASE]
+	at org.springframework.beans.factory.config.AbstractFactoryBean.afterPropertiesSet(AbstractFactoryBean.java:134) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1642) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1579) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 28 common frames omitted
+
+2016-10-18 15:43:47.370  INFO 25112 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 25112 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:43:47.378  INFO 25112 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:43:47.749  INFO 25112 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7d322cad: startup date [Tue Oct 18 15:43:47 CEST 2016]; root of context hierarchy
+2016-10-18 15:43:50.677  INFO 25112 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$11696cca] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 15:43:50.753  INFO 25112 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$1ba5d4a5] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 15:43:52.109  INFO 25112 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 15:43:52.145  INFO 25112 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 15:43:52.149  INFO 25112 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 15:43:52.406  INFO 25112 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 15:43:52.409  INFO 25112 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 4665 ms
+2016-10-18 15:43:52.783  INFO 25112 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 15:43:52.792  INFO 25112 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 15:43:53.351  INFO 25112 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:43:53.393  INFO 25112 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 15:43:53.871  INFO 25112 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 15:43:53.876  INFO 25112 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 15:43:53.880  INFO 25112 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 15:43:54.067  INFO 25112 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 15:43:55.695  INFO 25112 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 15:43:56.317  INFO 25112 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 15:43:56.324  INFO 25112 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 15:43:56.401  INFO 25112 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:43:56.635  INFO 25112 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 15:43:56.653  INFO 25112 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 15:43:57.138  INFO 25112 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 15:43:57.141  INFO 25112 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 15:43:57.314  INFO 25112 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7d322cad: startup date [Tue Oct 18 15:43:47 CEST 2016]; root of context hierarchy
+2016-10-18 15:43:59.868  INFO 25112 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 15:43:59.884  INFO 25112 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 15:44:00.008  INFO 25112 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 15:44:00.015  INFO 25112 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 15:44:00.093  INFO 25112 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 14.584 seconds (JVM running for 16.214)
+2016-10-18 15:44:30.128  INFO 25112 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7d322cad: startup date [Tue Oct 18 15:43:47 CEST 2016]; root of context hierarchy
+2016-10-18 15:44:30.135  INFO 25112 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 15:44:30.136  INFO 25112 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 15:44:30.139  INFO 25112 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 15:44:30.141  INFO 25112 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:44:37.883  INFO 25168 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 25168 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:44:37.897  INFO 25168 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:44:38.323  INFO 25168 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 15:44:38 CEST 2016]; root of context hierarchy
+2016-10-18 15:44:42.418  INFO 25168 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$1924eac7] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 15:44:42.498  INFO 25168 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$236152a2] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 15:44:43.596  INFO 25168 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 15:44:43.618  INFO 25168 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 15:44:43.620  INFO 25168 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 15:44:43.778  INFO 25168 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 15:44:43.779  INFO 25168 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 5492 ms
+2016-10-18 15:44:44.101  INFO 25168 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 15:44:44.110  INFO 25168 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 15:44:44.552  INFO 25168 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:44:44.588  INFO 25168 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 15:44:44.764  INFO 25168 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 15:44:44.771  INFO 25168 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 15:44:44.778  INFO 25168 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 15:44:44.997  INFO 25168 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 15:44:46.511  INFO 25168 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 15:44:47.012  INFO 25168 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 15:44:47.014  INFO 25168 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 15:44:47.054  INFO 25168 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:44:47.146  INFO 25168 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 15:44:47.155  INFO 25168 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 15:44:47.515  INFO 25168 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 15:44:47.517  INFO 25168 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 15:44:47.697  INFO 25168 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 15:44:38 CEST 2016]; root of context hierarchy
+2016-10-18 15:44:49.217  INFO 25168 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 15:44:49.232  INFO 25168 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 15:44:49.332  INFO 25168 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 15:44:49.340  INFO 25168 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 15:44:49.404  INFO 25168 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 13.255 seconds (JVM running for 14.896)
+2016-10-18 15:57:08.150  INFO 25168 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 15:44:38 CEST 2016]; root of context hierarchy
+2016-10-18 15:57:08.160  INFO 25168 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 15:57:08.161  INFO 25168 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 15:57:08.163  INFO 25168 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 15:57:08.166  INFO 25168 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:57:14.225  INFO 25975 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 25975 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:57:14.232  INFO 25975 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:57:14.481  INFO 25975 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@36804139: startup date [Tue Oct 18 15:57:14 CEST 2016]; root of context hierarchy
+2016-10-18 15:57:17.773  INFO 25975 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$270419b7] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 15:57:17.849  INFO 25975 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$31408192] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 15:57:18.835  INFO 25975 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 15:57:18.860  INFO 25975 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 15:57:18.863  INFO 25975 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 15:57:19.040  INFO 25975 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 15:57:19.040  INFO 25975 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 4581 ms
+2016-10-18 15:57:19.439  INFO 25975 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 15:57:19.447  INFO 25975 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 15:57:19.963  INFO 25975 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:57:20.000  INFO 25975 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 15:57:20.197  INFO 25975 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 15:57:20.202  INFO 25975 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 15:57:20.205  INFO 25975 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 15:57:20.407  INFO 25975 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 15:57:21.871  INFO 25975 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 15:57:22.350  INFO 25975 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 15:57:22.352  INFO 25975 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 15:57:22.385  INFO 25975 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:57:22.474  INFO 25975 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 15:57:22.498  INFO 25975 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 15:57:22.861  INFO 25975 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 15:57:22.862  INFO 25975 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 15:57:23.037  INFO 25975 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@36804139: startup date [Tue Oct 18 15:57:14 CEST 2016]; root of context hierarchy
+2016-10-18 15:57:24.487  INFO 25975 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 15:57:24.509  INFO 25975 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 15:57:24.600  INFO 25975 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 15:57:24.606  INFO 25975 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 15:57:24.684  INFO 25975 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 11.827 seconds (JVM running for 13.252)
+2016-10-18 15:58:14.623  INFO 25975 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@36804139: startup date [Tue Oct 18 15:57:14 CEST 2016]; root of context hierarchy
+2016-10-18 15:58:14.639  INFO 25975 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 15:58:14.641  INFO 25975 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 15:58:14.645  INFO 25975 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 15:58:14.647  INFO 25975 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:58:35.242  INFO 26056 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 26056 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:58:35.252  INFO 26056 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:58:35.433  INFO 26056 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@36804139: startup date [Tue Oct 18 15:58:35 CEST 2016]; root of context hierarchy
+2016-10-18 15:58:38.466  INFO 26056 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$b9d3eed4] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 15:58:38.534  INFO 26056 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$c41056af] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 15:58:39.607  INFO 26056 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 15:58:39.630  INFO 26056 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 15:58:39.633  INFO 26056 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 15:58:39.847  INFO 26056 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 15:58:39.851  INFO 26056 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 4423 ms
+2016-10-18 15:58:40.246  INFO 26056 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 15:58:40.252  INFO 26056 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 15:58:40.744  INFO 26056 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:58:40.775  INFO 26056 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 15:58:40.919  INFO 26056 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 15:58:40.921  INFO 26056 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 15:58:40.924  INFO 26056 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 15:58:41.147  INFO 26056 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 15:58:42.503  INFO 26056 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 15:58:42.911  INFO 26056 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 15:58:42.913  INFO 26056 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 15:58:42.948  INFO 26056 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:58:43.085  INFO 26056 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 15:58:43.096  INFO 26056 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 15:58:43.507  INFO 26056 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 15:58:43.509  INFO 26056 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 15:58:43.652  INFO 26056 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@36804139: startup date [Tue Oct 18 15:58:35 CEST 2016]; root of context hierarchy
+2016-10-18 15:58:45.071  INFO 26056 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 15:58:45.085  INFO 26056 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 15:58:45.179  INFO 26056 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 15:58:45.196  INFO 26056 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 15:58:45.294  INFO 26056 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 11.602 seconds (JVM running for 13.375)
+2016-10-18 15:59:44.684  INFO 26056 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@36804139: startup date [Tue Oct 18 15:58:35 CEST 2016]; root of context hierarchy
+2016-10-18 15:59:44.686  INFO 26056 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 15:59:44.687  INFO 26056 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 15:59:44.697  INFO 26056 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 15:59:44.700  INFO 26056 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 15:59:54.062  INFO 26140 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 26140 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 15:59:54.074  INFO 26140 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 15:59:54.257  INFO 26140 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 15:59:54 CEST 2016]; root of context hierarchy
+2016-10-18 15:59:57.980  INFO 26140 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$3b3144d] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 15:59:58.111  INFO 26140 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$def7c28] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 15:59:59.450  INFO 26140 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 15:59:59.474  INFO 26140 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 15:59:59.476  INFO 26140 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 15:59:59.630  INFO 26140 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 15:59:59.631  INFO 26140 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 5426 ms
+2016-10-18 15:59:59.997  INFO 26140 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:00:00.015  INFO 26140 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:00:00.530  INFO 26140 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:00:00.588  INFO 26140 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:00:00.931  INFO 26140 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:00:00.946  INFO 26140 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:00:00.952  INFO 26140 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:00:01.117  INFO 26140 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:00:02.668  INFO 26140 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:00:03.208  INFO 26140 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:00:03.210  INFO 26140 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:00:03.259  INFO 26140 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:00:03.358  INFO 26140 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 16:00:03.368  INFO 26140 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 16:00:03.870  INFO 26140 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 16:00:03.872  INFO 26140 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 16:00:04.240  INFO 26140 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 15:59:54 CEST 2016]; root of context hierarchy
+2016-10-18 16:00:06.067  INFO 26140 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 16:00:06.090  INFO 26140 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 16:00:06.230  INFO 26140 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 16:00:06.237  INFO 26140 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 16:00:06.760  INFO 26140 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 15.206 seconds (JVM running for 17.586)
+2016-10-18 16:12:59.751  INFO 26140 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 15:59:54 CEST 2016]; root of context hierarchy
+2016-10-18 16:12:59.760  INFO 26140 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 16:12:59.764  INFO 26140 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 16:12:59.769  INFO 26140 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 16:12:59.771  INFO 26140 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:13:06.575  INFO 27012 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 27012 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:13:06.583  INFO 27012 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:13:06.906  INFO 27012 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7fbdb894: startup date [Tue Oct 18 16:13:06 CEST 2016]; root of context hierarchy
+2016-10-18 16:13:10.094  INFO 27012 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$8b579941] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:13:10.170  INFO 27012 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$9594011c] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:13:11.896  INFO 27012 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:13:11.924  INFO 27012 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:13:11.926  INFO 27012 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:13:12.261  INFO 27012 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:13:12.263  INFO 27012 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 5384 ms
+2016-10-18 16:13:12.855  INFO 27012 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:13:12.875  INFO 27012 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:13:13.432  INFO 27012 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:13:13.478  INFO 27012 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:13:13.644  INFO 27012 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:13:13.652  INFO 27012 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:13:13.662  INFO 27012 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:13:13.887  INFO 27012 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:13:15.421  INFO 27012 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:13:15.938  INFO 27012 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:13:15.941  INFO 27012 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:13:15.986  INFO 27012 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:13:16.123  INFO 27012 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 16:13:16.132  INFO 27012 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 16:13:16.629  INFO 27012 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 16:13:16.630  INFO 27012 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 16:13:16.787  INFO 27012 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7fbdb894: startup date [Tue Oct 18 16:13:06 CEST 2016]; root of context hierarchy
+2016-10-18 16:13:18.772  INFO 27012 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 16:13:18.788  INFO 27012 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 16:13:18.894  INFO 27012 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 16:13:18.901  INFO 27012 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 16:15:12.943  INFO 27012 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 127.678 seconds (JVM running for 129.25)
+2016-10-18 16:15:12.977  INFO 27012 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7fbdb894: startup date [Tue Oct 18 16:13:06 CEST 2016]; root of context hierarchy
+2016-10-18 16:15:12.984  INFO 27012 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 16:15:12.987  INFO 27012 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 16:15:12.990  INFO 27012 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 16:15:12.992  INFO 27012 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:20:26.040  INFO 27453 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 27453 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:20:26.045  INFO 27453 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:20:26.443  INFO 27453 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:20:26 CEST 2016]; root of context hierarchy
+2016-10-18 16:20:30.407  INFO 27453 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$81875d7d] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:20:30.478  INFO 27453 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$8bc3c558] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:20:32.793  INFO 27453 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:20:32.854  INFO 27453 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:20:32.856  INFO 27453 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:20:33.026  INFO 27453 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:20:33.026  INFO 27453 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 6603 ms
+2016-10-18 16:20:33.490  INFO 27453 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:20:33.498  INFO 27453 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:20:34.562  INFO 27453 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:20:34.627  INFO 27453 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:20:35.111  INFO 27453 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:20:35.116  INFO 27453 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:20:35.123  INFO 27453 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:20:35.448  INFO 27453 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:20:37.317  INFO 27453 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:20:37.912  INFO 27453 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:20:37.915  INFO 27453 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:20:37.980  INFO 27453 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:20:38.031  WARN 27453 --- [main] ationConfigEmbeddedWebApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'commandLineListener': Unsatisfied dependency expressed through field 'serviceRegistryReader'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'serviceRegistryReaderImpl' defined in file [/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes/at/ac/tuwien/infosys/viepepc/registry/impl/ServiceRegistryReaderImpl.class]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+2016-10-18 16:20:38.031  INFO 27453 --- [main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:20:38.041  INFO 27453 --- [main] o.apache.catalina.core.StandardService   : Stopping service Tomcat
+2016-10-18 16:20:38.066  INFO 27453 --- [main] utoConfigurationReportLoggingInitializer : 
+
+Error starting ApplicationContext. To display the auto-configuration report re-run your application with 'debug' enabled.
+2016-10-18 16:20:38.077 ERROR 27453 --- [main] o.s.boot.SpringApplication               : Application startup failed
+
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'commandLineListener': Unsatisfied dependency expressed through field 'serviceRegistryReader'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'serviceRegistryReaderImpl' defined in file [/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes/at/ac/tuwien/infosys/viepepc/registry/impl/ServiceRegistryReaderImpl.class]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:569) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:88) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:349) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1219) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:543) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:197) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:751) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:861) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:541) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:122) ~[spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:761) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:371) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1186) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1175) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at at.ac.tuwien.infosys.viepepc.ViePepCApplication.main(ViePepCApplication.java:10) [classes/:na]
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'serviceRegistryReaderImpl' defined in file [/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes/at/ac/tuwien/infosys/viepepc/registry/impl/ServiceRegistryReaderImpl.class]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1110) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1055) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:510) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:207) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1128) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1056) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:566) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 19 common frames omitted
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:154) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:89) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1103) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 30 common frames omitted
+Caused by: java.lang.NullPointerException: null
+	at sun.misc.MetaIndex.mayContain(MetaIndex.java:242) ~[na:1.8.0_45]
+	at sun.misc.URLClassPath$JarLoader.getResource(URLClassPath.java:995) ~[na:1.8.0_45]
+	at sun.misc.URLClassPath.getResource(URLClassPath.java:212) ~[na:1.8.0_45]
+	at sun.misc.URLClassPath.getResource(URLClassPath.java:265) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getBootstrapResource(ClassLoader.java:1261) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getResource(ClassLoader.java:1090) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getResource(ClassLoader.java:1088) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getSystemResource(ClassLoader.java:1223) ~[na:1.8.0_45]
+	at at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl.<init>(ServiceRegistryReaderImpl.java:32) ~[classes/:na]
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) ~[na:1.8.0_45]
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62) ~[na:1.8.0_45]
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) ~[na:1.8.0_45]
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:422) ~[na:1.8.0_45]
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:142) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 32 common frames omitted
+
+2016-10-18 16:21:42.731  INFO 27535 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 27535 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:21:42.736  INFO 27535 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:21:43.149  INFO 27535 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:21:43 CEST 2016]; root of context hierarchy
+2016-10-18 16:21:46.087  INFO 27535 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$55bc2cc7] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:21:46.161  INFO 27535 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$5ff894a2] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:21:47.196  INFO 27535 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:21:47.244  INFO 27535 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:21:47.283  INFO 27535 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:21:47.515  INFO 27535 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:21:47.515  INFO 27535 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 4420 ms
+2016-10-18 16:21:47.913  INFO 27535 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:21:47.927  INFO 27535 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:21:48.445  INFO 27535 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:21:48.479  INFO 27535 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:21:48.707  INFO 27535 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:21:48.717  INFO 27535 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:21:48.726  INFO 27535 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:21:48.943  INFO 27535 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:21:50.980  INFO 27535 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:21:51.440  INFO 27535 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:21:51.442  INFO 27535 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:21:51.477  INFO 27535 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:21:51.520  WARN 27535 --- [main] ationConfigEmbeddedWebApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'commandLineListener': Unsatisfied dependency expressed through field 'serviceRegistryReader'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'serviceRegistryReaderImpl' defined in file [/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes/at/ac/tuwien/infosys/viepepc/registry/impl/ServiceRegistryReaderImpl.class]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+2016-10-18 16:21:51.521  INFO 27535 --- [main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:21:51.531  INFO 27535 --- [main] o.apache.catalina.core.StandardService   : Stopping service Tomcat
+2016-10-18 16:21:51.561  INFO 27535 --- [main] utoConfigurationReportLoggingInitializer : 
+
+Error starting ApplicationContext. To display the auto-configuration report re-run your application with 'debug' enabled.
+2016-10-18 16:21:51.581 ERROR 27535 --- [main] o.s.boot.SpringApplication               : Application startup failed
+
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'commandLineListener': Unsatisfied dependency expressed through field 'serviceRegistryReader'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'serviceRegistryReaderImpl' defined in file [/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes/at/ac/tuwien/infosys/viepepc/registry/impl/ServiceRegistryReaderImpl.class]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:569) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:88) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:349) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1219) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:543) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:197) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:751) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:861) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:541) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:122) ~[spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:761) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:371) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1186) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1175) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at at.ac.tuwien.infosys.viepepc.ViePepCApplication.main(ViePepCApplication.java:10) [classes/:na]
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'serviceRegistryReaderImpl' defined in file [/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes/at/ac/tuwien/infosys/viepepc/registry/impl/ServiceRegistryReaderImpl.class]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1110) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1055) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:510) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:207) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1128) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1056) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:566) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 19 common frames omitted
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:154) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:89) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1103) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 30 common frames omitted
+Caused by: java.lang.NullPointerException: null
+	at sun.misc.MetaIndex.mayContain(MetaIndex.java:242) ~[na:1.8.0_45]
+	at sun.misc.URLClassPath$JarLoader.getResource(URLClassPath.java:995) ~[na:1.8.0_45]
+	at sun.misc.URLClassPath.getResource(URLClassPath.java:212) ~[na:1.8.0_45]
+	at sun.misc.URLClassPath.getResource(URLClassPath.java:265) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getBootstrapResource(ClassLoader.java:1261) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getResource(ClassLoader.java:1090) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getResource(ClassLoader.java:1088) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getSystemResource(ClassLoader.java:1223) ~[na:1.8.0_45]
+	at at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl.<init>(ServiceRegistryReaderImpl.java:32) ~[classes/:na]
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) ~[na:1.8.0_45]
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62) ~[na:1.8.0_45]
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) ~[na:1.8.0_45]
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:422) ~[na:1.8.0_45]
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:142) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 32 common frames omitted
+
+2016-10-18 16:22:12.223  INFO 27567 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 27567 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:22:12.233  INFO 27567 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:22:12.618  INFO 27567 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@448c8166: startup date [Tue Oct 18 16:22:12 CEST 2016]; root of context hierarchy
+2016-10-18 16:22:17.404  INFO 27567 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$ae65ae12] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:22:17.473  INFO 27567 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$b8a215ed] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:22:19.107  INFO 27567 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:22:19.131  INFO 27567 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:22:19.132  INFO 27567 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:22:19.356  INFO 27567 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:22:19.356  INFO 27567 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 6745 ms
+2016-10-18 16:22:19.751  INFO 27567 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:22:19.766  INFO 27567 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:22:20.750  INFO 27567 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:22:20.784  INFO 27567 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:22:21.051  INFO 27567 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:22:21.059  INFO 27567 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:22:21.068  INFO 27567 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:22:21.269  INFO 27567 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:22:23.435  INFO 27567 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:22:24.199  INFO 27567 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:22:24.205  INFO 27567 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:22:24.417  INFO 27567 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:22:57.191  WARN 27567 --- [main] ationConfigEmbeddedWebApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'commandLineListener': Unsatisfied dependency expressed through field 'serviceRegistryReader'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'serviceRegistryReaderImpl' defined in file [/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes/at/ac/tuwien/infosys/viepepc/registry/impl/ServiceRegistryReaderImpl.class]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+2016-10-18 16:22:57.192  INFO 27567 --- [main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:22:57.211  INFO 27567 --- [main] o.apache.catalina.core.StandardService   : Stopping service Tomcat
+2016-10-18 16:22:57.236  INFO 27567 --- [main] utoConfigurationReportLoggingInitializer : 
+
+Error starting ApplicationContext. To display the auto-configuration report re-run your application with 'debug' enabled.
+2016-10-18 16:22:57.254 ERROR 27567 --- [main] o.s.boot.SpringApplication               : Application startup failed
+
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'commandLineListener': Unsatisfied dependency expressed through field 'serviceRegistryReader'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'serviceRegistryReaderImpl' defined in file [/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes/at/ac/tuwien/infosys/viepepc/registry/impl/ServiceRegistryReaderImpl.class]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:569) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:88) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessPropertyValues(AutowiredAnnotationBeanPostProcessor.java:349) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1219) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:543) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:197) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:751) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:861) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:541) ~[spring-context-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:122) ~[spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:761) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:371) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:315) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1186) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1175) [spring-boot-1.4.1.RELEASE.jar:1.4.1.RELEASE]
+	at at.ac.tuwien.infosys.viepepc.ViePepCApplication.main(ViePepCApplication.java:10) [classes/:na]
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'serviceRegistryReaderImpl' defined in file [/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes/at/ac/tuwien/infosys/viepepc/registry/impl/ServiceRegistryReaderImpl.class]: Instantiation of bean failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1110) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1055) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:510) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:482) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:306) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:302) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:207) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1128) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1056) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:566) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 19 common frames omitted
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl]: Constructor threw exception; nested exception is java.lang.NullPointerException
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:154) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:89) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1103) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 30 common frames omitted
+Caused by: java.lang.NullPointerException: null
+	at sun.misc.MetaIndex.mayContain(MetaIndex.java:242) ~[na:1.8.0_45]
+	at sun.misc.URLClassPath$JarLoader.getResource(URLClassPath.java:995) ~[na:1.8.0_45]
+	at sun.misc.URLClassPath.getResource(URLClassPath.java:212) ~[na:1.8.0_45]
+	at sun.misc.URLClassPath.getResource(URLClassPath.java:265) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getBootstrapResource(ClassLoader.java:1261) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getResource(ClassLoader.java:1090) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getResource(ClassLoader.java:1088) ~[na:1.8.0_45]
+	at java.lang.ClassLoader.getSystemResource(ClassLoader.java:1223) ~[na:1.8.0_45]
+	at at.ac.tuwien.infosys.viepepc.registry.impl.ServiceRegistryReaderImpl.<init>(ServiceRegistryReaderImpl.java:32) ~[classes/:na]
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) ~[na:1.8.0_45]
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62) ~[na:1.8.0_45]
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) ~[na:1.8.0_45]
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:422) ~[na:1.8.0_45]
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:142) ~[spring-beans-4.3.3.RELEASE.jar:4.3.3.RELEASE]
+	... 32 common frames omitted
+
+2016-10-18 16:23:09.861  INFO 27627 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 27627 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:23:09.867  INFO 27627 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:23:10.037  INFO 27627 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7d322cad: startup date [Tue Oct 18 16:23:10 CEST 2016]; root of context hierarchy
+2016-10-18 16:23:13.663  INFO 27627 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$11696cca] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:23:13.754  INFO 27627 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$1ba5d4a5] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:23:14.811  INFO 27627 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:23:14.839  INFO 27627 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:23:14.841  INFO 27627 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:23:15.024  INFO 27627 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:23:15.025  INFO 27627 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 5023 ms
+2016-10-18 16:23:15.471  INFO 27627 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:23:15.480  INFO 27627 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:23:16.037  INFO 27627 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:23:16.070  INFO 27627 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:23:16.318  INFO 27627 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:23:16.330  INFO 27627 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:23:16.335  INFO 27627 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:23:16.517  INFO 27627 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:23:18.717  INFO 27627 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:23:19.192  INFO 27627 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:23:19.196  INFO 27627 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:23:19.256  INFO 27627 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:23:19.354  INFO 27627 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 16:23:19.365  INFO 27627 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 16:23:19.789  INFO 27627 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 16:23:19.791  INFO 27627 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 16:23:19.972  INFO 27627 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7d322cad: startup date [Tue Oct 18 16:23:10 CEST 2016]; root of context hierarchy
+2016-10-18 16:23:21.475  INFO 27627 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 16:23:21.491  INFO 27627 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 16:23:21.612  INFO 27627 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 16:23:21.628  INFO 27627 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 16:23:21.841  INFO 27627 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 13.444 seconds (JVM running for 14.981)
+2016-10-18 16:23:26.042  INFO 27627 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7d322cad: startup date [Tue Oct 18 16:23:10 CEST 2016]; root of context hierarchy
+2016-10-18 16:23:26.048  INFO 27627 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 16:23:26.050  INFO 27627 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 16:23:26.054  INFO 27627 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 16:23:26.056  INFO 27627 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:28:38.562  INFO 27980 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 27980 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:28:38.569  INFO 27980 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:28:38.794  INFO 27980 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:28:38 CEST 2016]; root of context hierarchy
+2016-10-18 16:28:42.680  INFO 27980 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$6fb4e85a] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:28:42.771  INFO 27980 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$79f15035] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:28:43.820  INFO 27980 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:28:43.848  INFO 27980 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:28:43.850  INFO 27980 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:28:44.089  INFO 27980 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:28:44.094  INFO 27980 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 5322 ms
+2016-10-18 16:28:44.736  INFO 27980 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:28:44.764  INFO 27980 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:28:45.396  INFO 27980 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:28:45.469  INFO 27980 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:28:45.869  INFO 27980 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:28:45.875  INFO 27980 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:28:45.883  INFO 27980 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:28:46.103  INFO 27980 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:28:47.578  INFO 27980 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:28:48.053  INFO 27980 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:28:48.057  INFO 27980 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:28:48.113  INFO 27980 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:28:48.489  INFO 27980 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 16:28:48.510  INFO 27980 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 16:28:49.029  INFO 27980 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 16:28:49.031  INFO 27980 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 16:28:49.459  INFO 27980 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:28:38 CEST 2016]; root of context hierarchy
+2016-10-18 16:28:51.522  INFO 27980 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 16:28:51.542  INFO 27980 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 16:28:51.664  INFO 27980 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 16:28:51.672  INFO 27980 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 16:28:51.675  INFO 27980 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 14.602 seconds (JVM running for 16.246)
+2016-10-18 16:28:57.669  INFO 27980 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:28:38 CEST 2016]; root of context hierarchy
+2016-10-18 16:28:57.672  INFO 27980 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 16:28:57.673  INFO 27980 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 16:28:57.674  INFO 27980 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 16:28:57.676  INFO 27980 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:29:51.545  INFO 28057 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 28057 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:29:51.552  INFO 28057 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:29:51.750  INFO 28057 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:29:51 CEST 2016]; root of context hierarchy
+2016-10-18 16:29:54.963  INFO 28057 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$81875d7d] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:29:55.029  INFO 28057 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$8bc3c558] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:29:56.087  INFO 28057 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:29:56.110  INFO 28057 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:29:56.112  INFO 28057 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:29:56.269  INFO 28057 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:29:56.269  INFO 28057 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 4564 ms
+2016-10-18 16:29:56.614  INFO 28057 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:29:56.621  INFO 28057 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:29:57.096  INFO 28057 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:29:57.121  INFO 28057 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:29:57.273  INFO 28057 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:29:57.276  INFO 28057 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:29:57.279  INFO 28057 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:29:57.454  INFO 28057 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:29:58.819  INFO 28057 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:29:59.284  INFO 28057 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:29:59.287  INFO 28057 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:29:59.374  INFO 28057 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:29:59.612  INFO 28057 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 16:29:59.625  INFO 28057 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 16:30:00.053  INFO 28057 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 16:30:00.055  INFO 28057 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 16:30:00.208  INFO 28057 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:29:51 CEST 2016]; root of context hierarchy
+2016-10-18 16:30:01.712  INFO 28057 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 16:30:01.731  INFO 28057 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 16:30:01.845  INFO 28057 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 16:30:01.850  INFO 28057 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 16:30:44.756  INFO 28057 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 54.805 seconds (JVM running for 56.497)
+2016-10-18 16:30:44.810  INFO 28057 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:29:51 CEST 2016]; root of context hierarchy
+2016-10-18 16:30:44.816  INFO 28057 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 16:30:44.818  INFO 28057 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 16:30:44.821  INFO 28057 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 16:30:44.823  INFO 28057 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:30:51.772  INFO 28117 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 28117 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:30:51.778  INFO 28117 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:30:52.081  INFO 28117 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@36804139: startup date [Tue Oct 18 16:30:52 CEST 2016]; root of context hierarchy
+2016-10-18 16:30:55.237  INFO 28117 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$8f06792b] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:30:55.431  INFO 28117 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$9942e106] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:30:56.463  INFO 28117 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:30:56.486  INFO 28117 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:30:56.488  INFO 28117 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:30:56.650  INFO 28117 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:30:56.650  INFO 28117 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 4582 ms
+2016-10-18 16:30:56.963  INFO 28117 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:30:56.971  INFO 28117 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:30:57.463  INFO 28117 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:30:57.492  INFO 28117 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:30:57.671  INFO 28117 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:30:57.688  INFO 28117 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:30:57.691  INFO 28117 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:30:57.946  INFO 28117 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:30:59.387  INFO 28117 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:30:59.825  INFO 28117 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:30:59.828  INFO 28117 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:30:59.879  INFO 28117 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:31:00.264  INFO 28117 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 16:31:00.292  INFO 28117 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 16:31:00.664  INFO 28117 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 16:31:00.665  INFO 28117 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 16:31:00.857  INFO 28117 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@36804139: startup date [Tue Oct 18 16:30:52 CEST 2016]; root of context hierarchy
+2016-10-18 16:31:02.404  INFO 28117 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 16:31:02.417  INFO 28117 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 16:31:02.515  INFO 28117 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 16:31:02.521  INFO 28117 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 16:31:10.701  INFO 28117 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 20.437 seconds (JVM running for 22.031)
+2016-10-18 16:31:10.742  INFO 28117 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@36804139: startup date [Tue Oct 18 16:30:52 CEST 2016]; root of context hierarchy
+2016-10-18 16:31:10.750  INFO 28117 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 16:31:10.753  INFO 28117 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 16:31:10.758  INFO 28117 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 16:31:10.759  INFO 28117 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:31:16.581  INFO 28140 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 28140 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:31:16.601  INFO 28140 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:31:17.032  INFO 28140 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7d322cad: startup date [Tue Oct 18 16:31:17 CEST 2016]; root of context hierarchy
+2016-10-18 16:31:22.016  INFO 28140 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$59fe5ffe] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:31:22.096  INFO 28140 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$643ac7d9] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:31:23.119  INFO 28140 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:31:23.154  INFO 28140 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:31:23.157  INFO 28140 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:31:23.338  INFO 28140 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:31:23.339  INFO 28140 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 6317 ms
+2016-10-18 16:31:23.714  INFO 28140 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:31:23.723  INFO 28140 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:31:24.295  INFO 28140 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:31:24.324  INFO 28140 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:31:24.538  INFO 28140 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:31:24.544  INFO 28140 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:31:24.551  INFO 28140 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:31:24.783  INFO 28140 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:31:26.253  INFO 28140 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:31:26.718  INFO 28140 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:31:26.721  INFO 28140 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:31:26.757  INFO 28140 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:31:27.100  INFO 28140 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 16:31:27.134  INFO 28140 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 16:31:27.479  INFO 28140 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 16:31:27.484  INFO 28140 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 16:31:27.622  INFO 28140 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7d322cad: startup date [Tue Oct 18 16:31:17 CEST 2016]; root of context hierarchy
+2016-10-18 16:31:29.155  INFO 28140 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 16:31:29.172  INFO 28140 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 16:31:29.263  INFO 28140 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 16:31:29.270  INFO 28140 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 16:31:54.350  INFO 28140 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 40.951 seconds (JVM running for 42.757)
+2016-10-18 16:31:54.387  INFO 28140 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7d322cad: startup date [Tue Oct 18 16:31:17 CEST 2016]; root of context hierarchy
+2016-10-18 16:31:54.395  INFO 28140 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 16:31:54.398  INFO 28140 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 16:31:54.401  INFO 28140 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 16:31:54.402  INFO 28140 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:31:58.654  INFO 28186 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 28186 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:31:58.665  INFO 28186 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:31:58.947  INFO 28186 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@78452606: startup date [Tue Oct 18 16:31:58 CEST 2016]; root of context hierarchy
+2016-10-18 16:32:02.100  INFO 28186 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$3194e2d] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:32:02.216  INFO 28186 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$d55b608] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:32:03.811  INFO 28186 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:32:03.834  INFO 28186 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:32:03.837  INFO 28186 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:32:04.036  INFO 28186 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:32:04.037  INFO 28186 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 5106 ms
+2016-10-18 16:32:04.407  INFO 28186 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:32:04.415  INFO 28186 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:32:04.920  INFO 28186 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:32:04.946  INFO 28186 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:32:05.095  INFO 28186 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:32:05.098  INFO 28186 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:32:05.101  INFO 28186 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:32:05.295  INFO 28186 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:32:06.628  INFO 28186 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:32:07.027  INFO 28186 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:32:07.029  INFO 28186 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:32:07.063  INFO 28186 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:32:43.393  INFO 28186 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 16:32:43.427  INFO 28186 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 16:32:43.904  INFO 28186 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 16:32:43.906  INFO 28186 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 16:32:44.094  INFO 28186 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@78452606: startup date [Tue Oct 18 16:31:58 CEST 2016]; root of context hierarchy
+2016-10-18 16:32:45.490  INFO 28186 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 16:32:45.503  INFO 28186 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 16:32:45.632  INFO 28186 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 16:32:45.637  INFO 28186 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 16:33:09.909  INFO 28186 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 72.756 seconds (JVM running for 74.498)
+2016-10-18 16:33:09.962  INFO 28186 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@78452606: startup date [Tue Oct 18 16:31:58 CEST 2016]; root of context hierarchy
+2016-10-18 16:33:09.967  INFO 28186 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 16:33:09.973  INFO 28186 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 16:33:09.976  INFO 28186 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 16:33:09.978  INFO 28186 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:33:21.181  INFO 28280 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Starting ViePepCApplication on e247-194.eduroam.tuwien.ac.at with PID 28280 (/Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C/target/classes started by philippwaibel in /Users/philippwaibel/Documents/work/research/Elastic_Processing/code/ViePEP_C)
+2016-10-18 16:33:21.188  INFO 28280 --- [main] a.a.t.i.viepepc.ViePepCApplication       : The following profiles are active: OneVMPerTask-docker
+2016-10-18 16:33:21.458  INFO 28280 --- [main] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:33:21 CEST 2016]; root of context hierarchy
+2016-10-18 16:33:24.585  INFO 28280 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.retry.annotation.RetryConfiguration' of type [class org.springframework.retry.annotation.RetryConfiguration$$EnhancerBySpringCGLIB$$1924eac7] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:33:24.660  INFO 28280 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [class org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$236152a2] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2016-10-18 16:33:25.664  INFO 28280 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 8088 (http)
+2016-10-18 16:33:25.693  INFO 28280 --- [main] o.apache.catalina.core.StandardService   : Starting service Tomcat
+2016-10-18 16:33:25.696  INFO 28280 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.5
+2016-10-18 16:33:25.997  INFO 28280 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2016-10-18 16:33:25.999  INFO 28280 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 4557 ms
+2016-10-18 16:33:26.232  INFO 28280 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2016-10-18 16:33:26.241  INFO 28280 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2016-10-18 16:33:26.805  INFO 28280 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:33:26.841  INFO 28280 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2016-10-18 16:33:26.993  INFO 28280 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.0.11.Final}
+2016-10-18 16:33:26.995  INFO 28280 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2016-10-18 16:33:26.997  INFO 28280 --- [main] org.hibernate.cfg.Environment            : HHH000021: Bytecode provider name : javassist
+2016-10-18 16:33:27.155  INFO 28280 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2016-10-18 16:33:28.495  INFO 28280 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQLDialect
+2016-10-18 16:33:28.986  INFO 28280 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000227: Running hbm2ddl schema export
+2016-10-18 16:33:28.989  INFO 28280 --- [main] org.hibernate.tool.hbm2ddl.SchemaExport  : HHH000230: Schema export complete
+2016-10-18 16:33:29.041  INFO 28280 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2016-10-18 16:33:29.334  INFO 28280 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 
+2016-10-18 16:33:29.365  INFO 28280 --- [main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService  'serviceProcessExecuter'
+2016-10-18 16:33:29.761  INFO 28280 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2016-10-18 16:33:29.763  INFO 28280 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2016-10-18 16:33:29.948  INFO 28280 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:33:21 CEST 2016]; root of context hierarchy
+2016-10-18 16:33:31.420  INFO 28280 --- [main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2016-10-18 16:33:31.434  INFO 28280 --- [main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
+2016-10-18 16:33:31.529  INFO 28280 --- [main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8088 (http)
+2016-10-18 16:33:31.536  INFO 28280 --- [main] a.a.t.i.viepepc.CommandLineListener      : Starting ViePEP 4.0...
+2016-10-18 16:33:42.806  INFO 28280 --- [main] a.a.t.i.viepepc.ViePepCApplication       : Started ViePepCApplication in 23.062 seconds (JVM running for 24.621)
+2016-10-18 16:33:42.864  INFO 28280 --- [Thread-3] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@147e2ae7: startup date [Tue Oct 18 16:33:21 CEST 2016]; root of context hierarchy
+2016-10-18 16:33:42.870  INFO 28280 --- [Thread-3] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647
+2016-10-18 16:33:42.873  INFO 28280 --- [Thread-3] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2016-10-18 16:33:42.877  INFO 28280 --- [Thread-3] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'serviceProcessExecuter'
+2016-10-18 16:33:42.880  INFO 28280 --- [Thread-3] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'

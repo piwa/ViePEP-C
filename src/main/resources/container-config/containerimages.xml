@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContainerImages>
+    <ContainerImage>
+        <imageName>image_name_1</imageName>
+        <repoName>repo_name</repoName>
+        <serviceType>
+            <name>service1</name>
+            <cpuLoad>45</cpuLoad>
+            <memory>450</memory>
+            <makeSpan>40000</makeSpan>
+            <dataToTransfer>2</dataToTransfer>
+            <onlyInternal>false</onlyInternal>
+            <internPort>8080</internPort>
+        </serviceType>
+    </ContainerImage>
+    <ContainerImage>
+        <imageName>image_name_2</imageName>
+        <repoName>repo_name</repoName>
+        <serviceType>
+            <name>service2</name>
+            <cpuLoad>75</cpuLoad>
+            <memory>720</memory>
+            <makeSpan>80000</makeSpan>
+            <dataToTransfer>4</dataToTransfer>
+            <onlyInternal>false</onlyInternal>
+            <internPort>8080</internPort>
+        </serviceType>
+    </ContainerImage>
+    <ContainerImage>
+        <imageName>image_name</imageName>
+        <repoName>repo_name</repoName>
+        <serviceType>
+            <name>service3</name>
+            <cpuLoad>75</cpuLoad>
+            <memory>720</memory>
+            <makeSpan>120000</makeSpan>
+            <dataToTransfer>6</dataToTransfer>
+            <onlyInternal>true</onlyInternal>
+            <internPort>8080</internPort>
+        </serviceType>
+    </ContainerImage>
+</ContainerImages>
+

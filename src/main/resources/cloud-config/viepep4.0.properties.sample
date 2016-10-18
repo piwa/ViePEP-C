@@ -1,0 +1,33 @@
+#these are just example values, create a copy of these and rename the file to viepep2.0.properties or change the
+#environment variable in viepep2.0.env
+#openstack authentication url
+openstack_auth_url=http://example-uri.com
+
+#openstack authentication user name
+openstack_username=username
+
+#openstack authentication password
+openstack_password=password
+
+#local server IP
+server_ip=localhost
+
+#openstack tenant name
+OS_TENANT_NAME=ViePEP
+
+#openstack tenant id
+OS_TENANT_ID=123xxxxxx
+
+#default image id
+IMAGE_ID=123-abc-xxxxxx
+
+#default flavor type
+FLAVOR=flavor
+
+#AWS credentials
+AWS_ACCESS_KEY_ID=accesskeyid
+AWS_ACCESS_KEY=accesssecret
+AWS_DEFAULT_IMAGE=123-abc-xxxxxx
+AWS_DEFAULT_FLAVOR=t1.micro
+AWS_DEFAULT_REGION=us-west-2
+WAS_DEFAULT_SECURITYGROUP=viepep

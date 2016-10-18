@@ -1,0 +1,8 @@
+spring.datasource.url=localhost
+spring.datasource.username=USER_NAME
+spring.datasource.password=USER_PASSWORD
+spring.datasource.name=DATABASE_NAME
+
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+spring.jpa.hibernate.ddl-auto=create
