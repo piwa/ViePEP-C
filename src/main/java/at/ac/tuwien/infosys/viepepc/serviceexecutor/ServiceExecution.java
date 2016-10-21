@@ -1,13 +1,14 @@
 package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 
-import at.ac.tuwien.infosys.viepep.database.entities.ProcessStep;
-import at.ac.tuwien.infosys.viepep.database.entities.VirtualMachine;
-import at.ac.tuwien.infosys.viepep.database.entities.WorkflowElement;
-import at.ac.tuwien.infosys.viepep.database.entities.docker.DockerContainer;
-import at.ac.tuwien.infosys.viepep.database.inmemory.services.CacheWorkflowService;
-import at.ac.tuwien.infosys.viepep.reasoning.impl.ReasoningImpl;
-import at.ac.tuwien.infosys.viepep.reasoning.optimisation.PlacementHelper;
-import at.ac.tuwien.infosys.viepep.reasoning.service.dto.InvocationResultDTO;
+
+import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
+import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
+import at.ac.tuwien.infosys.viepepc.reasoner.Reasoning;
+import at.ac.tuwien.infosys.viepepc.serviceexecutor.dto.InvocationResultDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +36,7 @@ public class ServiceExecution{
     private CacheWorkflowService cacheWorkflowService;
     @Autowired
     @Lazy
-    private ReasoningImpl reasoning;
+    private Reasoning reasoning;
 
     @Value("${simulate}")
     private boolean simulate;
@@ -57,7 +58,7 @@ public class ServiceExecution{
     }
 
     @Async
-	public void startExecution(ProcessStep processStep, DockerContainer container) {
+	public void startExecution(ProcessStep processStep, Container container) {
 		log.info("Task-Start: " + processStep);
 
         if (simulate) {
@@ -80,7 +81,7 @@ public class ServiceExecution{
 		log.info("Task-Done: " + processStep);
 
         if(processStep.getScheduledAtContainer() != null) {
-            placementHelper.stopDockerContainer(processStep.getScheduledAtContainer());
+            placementHelper.stopContainer(processStep.getScheduledAtContainer());
         }
 
         if (processStep.isLastElement()) {

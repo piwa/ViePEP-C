@@ -40,8 +40,14 @@ public class InMemoryCacheImpl {
         containerConfigurations.add(containerConfiguration);
     }
 
-    private void addVMType(VMType vmType) {
+    public void addVMType(VMType vmType) {
         vmTypeVmMap.put(vmType, new ArrayList<VirtualMachine>());
+    }
+
+    public void addAllVMType(List<VMType> vmTypes) {
+        for(VMType vmType : vmTypes) {
+            addVMType(vmType);
+        }
     }
 
     public void addVirtualMachine(VirtualMachine vm) {

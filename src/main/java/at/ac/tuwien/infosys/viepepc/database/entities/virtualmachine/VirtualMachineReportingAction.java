@@ -16,6 +16,7 @@ import java.util.Date;
  * To change this template use File | Settings | File Templates.
  */
 @Entity
+@Table(name = "VirtualMachineReportingAction")
 @Getter
 @Setter
 public class VirtualMachineReportingAction implements Serializable {

@@ -16,6 +16,7 @@ import java.util.Date;
  * To change this template use File | Settings | File Templates.
  */
 @Entity
+@Table(name = "ContainerReportingAction")
 @Getter
 @Setter
 public class ContainerReportingAction implements Serializable {
@@ -28,7 +29,7 @@ public class ContainerReportingAction implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String dockerContainerID;
+    private String containerID;
     private String virtualMachineID;
 
     @Enumerated(EnumType.STRING)
@@ -39,9 +40,9 @@ public class ContainerReportingAction implements Serializable {
     public ContainerReportingAction() {
     }
 
-    public ContainerReportingAction(Date date, String dockerContainerID, String vmID, Action action) {
+    public ContainerReportingAction(Date date, String containerID, String vmID, Action action) {
         this.timestamp = date;
-        this.dockerContainerID = dockerContainerID;
+        this.containerID = containerID;
         this.virtualMachineID = vmID;
         this.dockerAction = action;
     }

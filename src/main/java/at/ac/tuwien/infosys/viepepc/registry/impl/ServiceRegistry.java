@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.registry.impl;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.ServiceType;
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

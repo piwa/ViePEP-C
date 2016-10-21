@@ -1,9 +1,11 @@
 package at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.ServiceType;
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -20,44 +22,28 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 @Entity
+@Table(name = "VirtualMachine")
 @Getter
 @Setter
 public class VirtualMachine implements Serializable {
 
-    /**
-     * database id
-     * important: this id is used to identify a vm in the program
-     */
+    @Autowired
+    @Transient
+    private CacheVirtualMachineService cacheVirtualMachineService;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * name of this vm
-     */
-    private String name;
-
-    /**
-     * location of the vm: currently [internal|aws]
-     */
-    private String location;
-
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
     private ServiceType serviceType;
-    
-    @Enumerated(EnumType.STRING)
+
+    private String name;
+    private String location;
     private VMType vmType;
-
-    /**
-     * indicates if this vm is currently leased
-     */
     private boolean leased = false;
-
     private String ipAddress;
-    
-    private long startupTime = 60000L;
-    private final long deployTime = 30000L;
-
+    private long startupTime;
     private Date startedAt;
     private boolean started;
     private Date toBeTerminatedAt;
@@ -70,7 +56,7 @@ public class VirtualMachine implements Serializable {
         this.serviceType = serviceType;
         this.location = location;
         try {
-            this.vmType = VMType.fromCore(numberCores, location);
+            this.vmType = cacheVirtualMachineService.vmTypeFromCore(numberCores, location);
         } catch (Exception e) {
         }
     }

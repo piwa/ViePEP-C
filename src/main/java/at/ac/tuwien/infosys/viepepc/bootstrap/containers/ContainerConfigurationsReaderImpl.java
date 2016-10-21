@@ -21,7 +21,10 @@ public class ContainerConfigurationsReaderImpl {
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
 
-    public ContainerConfigurationsReaderImpl(@Value("${container.configuration.path}") String containerConfigurationPath) {
+    @Value("${container.configuration.path}")
+    private String containerConfigurationPath;
+
+    public void readContainerConfigurations() {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( ContainerConfigurations.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();

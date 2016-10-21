@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database.inmemory.services;
 
 import at.ac.tuwien.infosys.viepepc.bootstrap.containers.ContainerConfigurationsReaderImpl;
-import at.ac.tuwien.infosys.viepepc.database.entities.ServiceType;
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
@@ -43,7 +43,7 @@ public class CacheContainerService {
         List<ContainerConfiguration> returnList = new ArrayList<>();
 
         for(ContainerConfiguration containerConfiguration : inMemoryCache.getContainerConfigurations()) {
-            if (serviceType.getCpuLoad() <= containerConfiguration.getCPUPoints() && serviceType.getMemory() <= containerConfiguration.getRam()) {
+            if (serviceType.getServiceTypeResources().getCpuLoad() <= containerConfiguration.getCPUPoints() && serviceType.getServiceTypeResources().getMemory() <= containerConfiguration.getRam()) {
                 returnList.add(containerConfiguration);
             }
         }

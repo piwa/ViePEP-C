@@ -6,7 +6,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReporti
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachineReportingAction;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
-import at.ac.tuwien.infosys.viepepc.database.services.ReportDaoService;
+import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,25 +30,25 @@ public class LeaseVMAndStartExecution {
 
     @Autowired
     private ReportDaoService reportDaoService;
-    @Autowired
-    private ViePEPClientService viePEPClientService;
+//    @Autowired
+//    private ViePEPClientService viePEPClientService;
     @Autowired
     private ServiceExecution serviceExecution;
     @Autowired
     private PlacementHelper placementHelper;
-    @Autowired
-    private ViePEPDockerControllerService dockerControllerService;
+//    @Autowired
+//    private ViePEPDockerControllerService dockerControllerService;
 
     @Value("${simulate}")
     private boolean simulate;
-    @Value("${use.docker}")
+    @Value("${use.container}")
     private boolean useDocker;
     @Value("${virtualmachine.startup.time}")
     private long startupTime;
     
 
     @Async
-    public void leaseVMAndStartExecution(VirtualMachine virtualMachine, List<ProcessStep> processSteps) {
+    public void leaseVMAndStartExecutionOnVirtualMachine(VirtualMachine virtualMachine, List<ProcessStep> processSteps) {
 
         final StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -72,12 +72,12 @@ public class LeaseVMAndStartExecution {
             virtualMachine.setStarted(true);
             virtualMachine.setIpAddress(address);
 
-            startExecutions(processSteps, virtualMachine);
+            startExecutionsOnVirtualMachine(processSteps, virtualMachine);
         }
     }
 
     @Async
-    public void leaseVMAndStartExecution(VirtualMachine virtualMachine, Map<Container, List<ProcessStep>> containerProcessSteps) {
+    public void leaseVMAndStartExecutionOnContainer(VirtualMachine virtualMachine, Map<Container, List<ProcessStep>> containerProcessSteps) {
     	final StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String address = startVM(virtualMachine);
@@ -103,12 +103,12 @@ public class LeaseVMAndStartExecution {
             virtualMachine.setStarted(true);
             virtualMachine.setIpAddress(address);
 
-            startExecutions(containerProcessSteps, virtualMachine);
+            startExecutionsOnContainer(containerProcessSteps, virtualMachine);
 
         }
 	}
 
-    public void startExecutions(final List<ProcessStep> processSteps, final VirtualMachine virtualMachine) {
+    public void startExecutionsOnVirtualMachine(final List<ProcessStep> processSteps, final VirtualMachine virtualMachine) {
         for (final ProcessStep processStep : processSteps) {
             processStep.setStartDate(new Date());
         	serviceExecution.startExecution(processStep, virtualMachine);
@@ -116,9 +116,9 @@ public class LeaseVMAndStartExecution {
         }
     }
 
-	public void startExecutions(Map<Container, List<ProcessStep>> containerProcessSteps, VirtualMachine virtualMachine) {
+	public void startExecutionsOnContainer(Map<Container, List<ProcessStep>> containerProcessSteps, VirtualMachine virtualMachine) {
 		for (final Container container : containerProcessSteps.keySet()) {
-			startContainer(virtualMachine, container);
+			deployContainer(virtualMachine, container);
 			for (final ProcessStep processStep : containerProcessSteps.get(container)) {
 	            processStep.setStartDate(new Date());
 				serviceExecution.startExecution(processStep, container);
@@ -134,13 +134,13 @@ public class LeaseVMAndStartExecution {
                 Thread.sleep(virtualMachine.getStartupTime());
                 /* if we are not in Docker mode, additionally sleep some time for deployment of the service */
                 if (!useDocker) {
-                    Thread.sleep(virtualMachine.getDeployTime());
+                    Thread.sleep(virtualMachine.getVmType().getDeployTime());
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         } else {
-            address = viePEPClientService.startNewVM(virtualMachine.getName(), virtualMachine.getVmType().flavor(), virtualMachine.getServiceType().name(), virtualMachine.getVmType().getLocation());
+//            address = viePEPClientService.startNewVM(virtualMachine.getName(), virtualMachine.getVmType().flavor(), virtualMachine.getServiceType().name(), virtualMachine.getVmType().getLocation());
             log.info("VM up and running with ip: " + address + " vm: " + virtualMachine);
             try {
                 Thread.sleep(startupTime); //sleep 15 seconds, since as soon as it is up, it still has to deploy the services
@@ -151,7 +151,7 @@ public class LeaseVMAndStartExecution {
     	return address;
     }
     
-    private void startContainer(VirtualMachine vm, Container container) {
+    private void deployContainer(VirtualMachine vm, Container container) {
     	if(container.isRunning()){
     		log.info("Container "+ container + " already running on vm "+ container.getVirtualMachine());
     		return;
@@ -162,19 +162,19 @@ public class LeaseVMAndStartExecution {
     			if(placementHelper.imageForContainerEverDeployedOnVM(container, vm) == 0){
                     Thread.sleep(container.getDeployTime());
     			}
-                Thread.sleep(container.getStartupTime()); 
+                Thread.sleep(container.getDeployTime());
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 
             }
     	} else {
     		log.info("Start Container: " + container + " on VM: " + vm);
-			try {
+/*			try {
 				dockerControllerService.startDocker(vm, container);
-			} catch (CouldNotStartDockerException e) {
+			} catch (CouldNotStartContainerException e) {
 				e.printStackTrace();
 			}
-    	}
+*/    	}
     	container.setRunning(true);
     	container.setStartedAt(new Date());
 		vm.addContainer(container);

@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database.entities.workflow;
 
 
-import at.ac.tuwien.infosys.viepepc.database.entities.ServiceType;
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import lombok.Getter;
@@ -33,7 +33,7 @@ import java.util.List;
 public class ProcessStep extends Element {
 
     @XmlElement(name = "serviceType")
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
     private ServiceType serviceType;
 
     private Date startDate;
@@ -60,17 +60,7 @@ public class ProcessStep extends Element {
      */
     private boolean hasToBeExecuted = true;
 
-    /**
-     * Constructor for the process. Contains:
-     * <p/>
-     * - name of the process step n - service list in process step n - list of
-     * all ppu services (xVarList) - list of all flatrate services (yVarList) -
-     * list of all hybrid services (zVarList)
-     *  @param name     stepID
-     * @param executed was already executed
-     * @param serviceType
-     * @param workflowName
-     */
+
     public ProcessStep(String name, boolean executed, ServiceType serviceType, String workflowName) {
         this.name = name;
         if (executed) {
@@ -81,16 +71,6 @@ public class ProcessStep extends Element {
         restrictedVMs = new ArrayList<>();
     }
 
-    /**
-     * Constructor for the process. Contains:
-     * <p/>
-     * - name of the process step n - service list in process step n - list of
-     * all ppu services (xVarList) - list of all flatrate services (yVarList) -
-     * list of all hybrid services (zVarList)
-     *  @param name stepID
-     * @param serviceType
-     * @param workflowName
-     */
     public ProcessStep(String name, ServiceType serviceType, String workflowName) {
         this.name = name;
         this.serviceType = serviceType;
@@ -117,23 +97,18 @@ public class ProcessStep extends Element {
     }
 
     public long getExecutionTime() {
-        return serviceType.getMakeSpan();
+        return serviceType.getServiceTypeResources().getMakeSpan();
     }
 
-    /**
-     * calculated the remaining execution time
-     *
-     * @param date
-     * @return
-     */
+
     public long getRemainingExecutionTime(Date date) {
         long time = date.getTime();
         if (startDate != null) {
             time = startDate.getTime();
         }
         long difference = date.getTime() - time;
-        long remaining = serviceType.getMakeSpan() - difference;
-        return remaining > 0 ? remaining : serviceType.getMakeSpan() ;
+        long remaining = serviceType.getServiceTypeResources().getMakeSpan() - difference;
+        return remaining > 0 ? remaining : serviceType.getServiceTypeResources().getMakeSpan() ;
     }
 
     public void setScheduledForExecution(boolean isScheduled, Date tau_t, VirtualMachine vm) {
@@ -189,5 +164,15 @@ public class ProcessStep extends Element {
         List<Integer> objects = new ArrayList<>();
         objects.addAll(restrictedVMs);
         return objects;
+    }
+
+    public void reset() {
+        this.setFinishedAt(null);
+        this.setStartDate(null);
+        this.setScheduledAtVM(null);
+        this.setScheduledAtContainer(null);
+        this.setHasBeenExecuted(false);
+        this.setScheduled(false);
+        this.setScheduledStartedAt(null);
     }
 }

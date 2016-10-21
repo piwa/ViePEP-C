@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VirtualMachineTypes>
+   <VMType>
+      <name>SINGLE_CORE</name>
+      <cores>1</cores>
+      <ram>960</ram>
+      <costs>10</costs>
+      <flavor>"m1.small"</flavor>
+      <location>"internal"</location>
+      <leasingDuration>300000</leasingDuration>
+      <deployTime>30000L</deployTime>
+   </VMType>
+   <VMType>
+      <name>DUAL_CORE</name>
+      <cores>2</cores>
+      <ram>3750</ram>
+      <costs>18</costs>
+      <flavor>"m1.medium"</flavor>
+      <location>"internal"</location>
+      <leasingDuration>300000</leasingDuration>
+      <deployTime>30000L</deployTime>
+   </VMType>
+   <VMType>
+      <name>QUAD_CORE</name>
+      <cores>4</cores>
+      <ram>7680</ram>
+      <costs>35</costs>
+      <flavor>"m1.large"</flavor>
+      <location>"internal"</location>
+      <leasingDuration>300000</leasingDuration>
+      <deployTime>30000L</deployTime>
+   </VMType>
+   <VMType>
+      <name>AWS_SINGLE_CORE</name>
+      <cores>1</cores>
+      <ram>1024</ram>
+      <costs>9</costs>
+      <flavor>"t2.small"</flavor>
+      <location>"aws"</location>
+      <leasingDuration>300000</leasingDuration>
+      <deployTime>30000L</deployTime>
+   </VMType>
+   <VMType>
+      <name>AWS_DUAL_CORE</name>
+      <cores>2</cores>
+      <ram>2048</ram>
+      <costs>15</costs>
+      <flavor>"t2.large"</flavor>
+      <location>"aws"</location>
+      <leasingDuration>300000</leasingDuration>
+      <deployTime>30000L</deployTime>
+   </VMType>
+   <VMType>
+      <name>AWS_QUAD_CORE</name>
+      <cores>4</cores>
+      <ram>4096</ram>
+      <costs>25</costs>
+      <flavor>"m3.large"</flavor>
+      <location>"aws"</location>
+      <leasingDuration>300000</leasingDuration>
+      <deployTime>30000L</deployTime>
+   </VMType>
+   <VMType>
+      <name>AWS_OCTA_CORE</name>
+      <cores>8</cores>
+      <ram>8192</ram>
+      <costs>40</costs>
+      <flavor>"m3.xlarge"</flavor>
+      <location>"aws"</location>
+      <leasingDuration>300000</leasingDuration>
+      <deployTime>30000L</deployTime>
+   </VMType>
+</VirtualMachineTypes>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

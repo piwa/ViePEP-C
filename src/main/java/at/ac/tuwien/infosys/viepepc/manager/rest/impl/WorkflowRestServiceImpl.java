@@ -3,8 +3,8 @@ package at.ac.tuwien.infosys.viepepc.manager.rest.impl;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.manager.rest.WorkflowRestService;
+import at.ac.tuwien.infosys.viepepc.reasoner.Reasoning;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +26,7 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
     @Autowired
-    private ReasoningImpl reasoning;
+    private Reasoning reasoning;
 
     private static Object SYNC_OBJECT = new Object();
 

@@ -88,7 +88,7 @@ public interface PlacementHelper {
 
 	int imageForStepEverDeployedOnVM(ProcessStep step, VirtualMachine vm);
 
-	void stopDockerContainer(Container container);
+	void stopContainer(Container container);
 
 	int imageForContainerEverDeployedOnVM(Container container, VirtualMachine vm);
 

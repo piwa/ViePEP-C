@@ -19,13 +19,12 @@ public class CacheVirtualMachineService {
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
 
-    private int V = 3; //Available types of VM's
-    private int K = 3;
-
     public void initializeVMs() {
+        int V = getVMTypes().size();
+        int K = getVMTypes().size();
         try {
             for (int v = 1; v <= V; v++) {
-                VMType vmType = VMType.fromIdentifier(v);
+                VMType vmType = vmTypeFromIdentifier(v);
 
                 for (int k = 1; k <= K; k++) {
                     inMemoryCache.addVirtualMachine(new VirtualMachine(v + "_" + k, vmType));
@@ -90,6 +89,24 @@ public class CacheVirtualMachineService {
         result.addAll(getStartedVMs());
         result.addAll(getScheduledForStartVMs());
         return result;
+    }
+
+    public VMType vmTypeFromIdentifier(int identifier) throws Exception {
+        for(VMType vmType : getVMTypes()) {
+            if(vmType.getId() == identifier) {
+                return vmType;
+            }
+        }
+        throw new Exception("TYPE not found");
+    }
+
+    public VMType vmTypeFromCore(int cores, String location) throws Exception {
+        for(VMType vmType : getVMTypes()) {
+            if(vmType.getCores() == cores && vmType.getLocation().equals(location)) {
+                return vmType;
+            }
+        }
+        throw new Exception("TYPE not found");
     }
 
 }

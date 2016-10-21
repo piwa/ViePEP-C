@@ -2,90 +2,110 @@
 <ServiceRegistry>
    <serviceType>
       <name>service1</name>
-      <cpuLoad>45</cpuLoad>
-      <memory>450</memory>
-      <makeSpan>40000</makeSpan>
+      <ServiceTypeResources>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
+         <makeSpan>40000</makeSpan>
+      </ServiceTypeResources>
       <dataToTransfer>2</dataToTransfer>
       <onlyInternal>false</onlyInternal>
       <internPort>8080</internPort>
    </serviceType>
    <serviceType>
       <name>service2</name>
-      <cpuLoad>75</cpuLoad>
-      <memory>720</memory>
-      <makeSpan>80000</makeSpan>
+      <ServiceTypeResources>
+         <cpuLoad>75</cpuLoad>
+         <memory>720</memory>
+         <makeSpan>80000</makeSpan>
+      </ServiceTypeResources>
       <dataToTransfer>4</dataToTransfer>
       <onlyInternal>false</onlyInternal>
       <internPort>8080</internPort>
    </serviceType>      
    <serviceType>
       <name>service3</name>
-      <cpuLoad>75</cpuLoad>
-      <memory>720</memory>
-      <makeSpan>120000</makeSpan>
+      <ServiceTypeResources>
+         <cpuLoad>75</cpuLoad>
+         <memory>720</memory>
+         <makeSpan>120000</makeSpan>
+      </ServiceTypeResources>
       <dataToTransfer>6</dataToTransfer>
       <onlyInternal>true</onlyInternal>
       <internPort>8080</internPort>
    </serviceType>      
    <serviceType>
       <name>service4</name>
-      <cpuLoad>100</cpuLoad>
-      <memory>960</memory>
-      <makeSpan>40000</makeSpan>
+      <ServiceTypeResources>
+         <cpuLoad>100</cpuLoad>
+         <memory>960</memory>
+         <makeSpan>40000</makeSpan>
+      </ServiceTypeResources>
       <dataToTransfer>2</dataToTransfer>
       <onlyInternal>false</onlyInternal>
       <internPort>8080</internPort>
    </serviceType>      
    <serviceType>
       <name>service5</name>
-      <cpuLoad>120</cpuLoad>
-      <memory>1150</memory>
-      <makeSpan>100000</makeSpan>
+      <ServiceTypeResources>
+         <cpuLoad>120</cpuLoad>
+         <memory>1150</memory>
+         <makeSpan>100000</makeSpan>
+      </ServiceTypeResources>
       <dataToTransfer>4</dataToTransfer>
       <onlyInternal>false</onlyInternal>
       <internPort>8080</internPort>
    </serviceType>   
    <serviceType>
       <name>service6</name>
-      <cpuLoad>125</cpuLoad>
-      <memory>1150</memory>
-      <makeSpan>20000</makeSpan>
+      <ServiceTypeResources>
+         <cpuLoad>125</cpuLoad>
+         <memory>1150</memory>
+         <makeSpan>20000</makeSpan>
+      </ServiceTypeResources>
       <dataToTransfer>6</dataToTransfer>
       <onlyInternal>true</onlyInternal>
       <internPort>8080</internPort>
    </serviceType>  
    <serviceType>
       <name>service7</name>
-      <cpuLoad>150</cpuLoad>
-      <memory>1440</memory>
-      <makeSpan>40000</makeSpan>
+      <ServiceTypeResources>
+         <cpuLoad>150</cpuLoad>
+         <memory>1440</memory>
+         <makeSpan>40000</makeSpan>
+      </ServiceTypeResources>
       <dataToTransfer>2</dataToTransfer>
       <onlyInternal>false</onlyInternal>
       <internPort>8080</internPort>
    </serviceType>  
    <serviceType>
       <name>service8</name>
-      <cpuLoad>175</cpuLoad>
-      <memory>1680</memory>
-      <makeSpan>20000</makeSpan>
+      <ServiceTypeResources>
+         <cpuLoad>175</cpuLoad>
+         <memory>1680</memory>
+         <makeSpan>20000</makeSpan>
+      </ServiceTypeResources>
       <dataToTransfer>4</dataToTransfer>
       <onlyInternal>false</onlyInternal>
       <internPort>8080</internPort>
    </serviceType> 
    <serviceType>
       <name>service9</name>
-      <cpuLoad>250</cpuLoad>
-      <memory>2400</memory>
-      <makeSpan>60000</makeSpan>
+      <ServiceTypeResources>
+         <cpuLoad>250</cpuLoad>
+         <memory>2400</memory>
+         <makeSpan>60000</makeSpan>
+      </ServiceTypeResources>
       <dataToTransfer>6</dataToTransfer>
       <onlyInternal>true</onlyInternal>
       <internPort>8080</internPort>
    </serviceType> 
    <serviceType>
       <name>service10</name>
-      <cpuLoad>333</cpuLoad>
-      <memory>3200</memory>
-      <makeSpan>30000</makeSpan>
+      <ServiceTypeResources>
+         <cpuLoad>333</cpuLoad>
+         <memory>3200</memory>
+         <makeSpan>30000</makeSpan>
+      </ServiceTypeResources>
       <dataToTransfer>2</dataToTransfer>
       <onlyInternal>false</onlyInternal>
       <internPort>8080</internPort>

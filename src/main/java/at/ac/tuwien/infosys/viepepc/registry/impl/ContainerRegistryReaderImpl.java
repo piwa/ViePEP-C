@@ -22,7 +22,7 @@ public class ContainerRegistryReaderImpl implements ContainerRegistryReader {
 
     public ContainerRegistryReaderImpl(@Value("${container.images.path}") String containerImageRegistryPath) {
         try {
-            JAXBContext jaxbContext = JAXBContext.newInstance( ServiceRegistry.class );
+            JAXBContext jaxbContext = JAXBContext.newInstance( ContainerImageRegistry.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
             File file = Paths.get(ClassLoader.getSystemResource(containerImageRegistryPath).toURI()).toFile();
             this.containerImageRegistry = (ContainerImageRegistry) jaxbUnmarshaller.unmarshal(file);

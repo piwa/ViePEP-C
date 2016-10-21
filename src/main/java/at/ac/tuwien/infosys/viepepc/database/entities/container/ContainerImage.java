@@ -1,29 +1,35 @@
 package at.ac.tuwien.infosys.viepepc.database.entities.container;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.ServiceType;
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 
 /**
  * @author Gerta Sheganaku
  */
 @XmlRootElement(name = "ContainerImage")
+@XmlAccessorType(XmlAccessType.FIELD)
 @Entity
-@Table(name = "ContainerImage")
+@Table(name = "containerImage")
 @Getter
 @Setter
 public class ContainerImage {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@XmlTransient
 	private Long id;
 
+	@XmlElement
+	private String imageName;
+	@XmlElement
+	private String repoName;
+	@ManyToOne
+	@XmlElement
     private ServiceType serviceType;
-    private String imageName;
-    private String repoName;
 
 
 	public ContainerImage() {

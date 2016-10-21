@@ -1,9 +1,9 @@
 package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 
-import at.ac.tuwien.infosys.viepep.database.entities.ProcessStep;
-import at.ac.tuwien.infosys.viepep.database.entities.VirtualMachine;
-import at.ac.tuwien.infosys.viepep.database.entities.docker.DockerContainer;
-import at.ac.tuwien.infosys.viepep.reasoning.service.dto.InvocationResultDTO;
+import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.serviceexecutor.dto.InvocationResultDTO;
 import com.google.common.base.Stopwatch;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
@@ -77,9 +77,9 @@ public class ServiceInvoker {
         }
     }
 
-	public InvocationResultDTO invoke(DockerContainer container, ProcessStep processStep) {
+	public InvocationResultDTO invoke(Container container, ProcessStep processStep) {
 		VirtualMachine vm = container.getVirtualMachine();
-		int port = container.getDockerImage().getExternPort();
+		int port = container.getExternPort();
 				
 		String task = processStep.getServiceType().getName().replace("service", "");
         String uri = vm.getURI().concat(":"+port).concat("/service/").concat(task).concat("/normal").concat("/nodata");

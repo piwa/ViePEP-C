@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +20,8 @@ import java.util.List;
 @XmlRootElement(name="ContainerImages")
 public class ContainerImageRegistry {
 
-    @XmlElement(name = "")
+//    @XmlElement(name = "containerImage")
+//    @XmlElementWrapper(name = "containerImages")
     private List<ContainerImage> containerImage = new ArrayList<>();
 
 }

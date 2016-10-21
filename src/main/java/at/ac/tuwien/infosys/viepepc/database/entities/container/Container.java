@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database.entities.container;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,13 +17,14 @@ import java.util.Date;
 @Table(name = "Container")
 @Getter
 @Setter
+@AllArgsConstructor
 public class Container {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
     private ContainerConfiguration containerConfiguration;
 
     @ManyToOne
