@@ -19,8 +19,9 @@ public class VMType implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    protected Long id;
+    protected Long tableId;
 
+    private Long identifier;
     private String name;
     private double costs;
     private int cores;

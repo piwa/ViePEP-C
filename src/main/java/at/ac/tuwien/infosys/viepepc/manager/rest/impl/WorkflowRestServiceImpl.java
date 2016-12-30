@@ -4,6 +4,8 @@ import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.manager.rest.WorkflowRestService;
 import at.ac.tuwien.infosys.viepepc.reasoner.Reasoning;
+import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
+import at.ac.tuwien.infosys.viepepc.registry.impl.ServiceTypeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -27,6 +29,8 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
     private CacheWorkflowService cacheWorkflowService;
     @Autowired
     private Reasoning reasoning;
+    @Autowired
+    private ServiceRegistryReader serviceRegistryReader;
 
     private static Object SYNC_OBJECT = new Object();
 
@@ -37,11 +41,11 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
 
     @Override
     @RequestMapping(value = "/addWorkflowRequest", method = RequestMethod.POST, consumes = MediaType.APPLICATION_XML_VALUE)
-    public void addWorkflow(@RequestBody WorkflowElement workflowElement) {
+    public void addWorkflow(@RequestBody WorkflowElement workflowElement) throws ServiceTypeNotFoundException {
         Date date = new Date();
         log.info("Recieved 1 new WorkflowElement");
         workflowElement.setArrivedAt(date);
-        update(workflowElement);
+        preProcess(workflowElement);
         log.info("add new WorkflowElement: " + workflowElement.toString());
         cacheWorkflowService.addWorkflowInstance(workflowElement);
         log.info("Done: Add new WorkflowElement: " + workflowElement.toString());
@@ -50,7 +54,7 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
 
     @Override
     @RequestMapping(value = "/addWorkflowRequests", method = RequestMethod.POST, consumes = MediaType.APPLICATION_XML_VALUE)
-    public void addWorkflow(@RequestBody WorkflowElements workflowElement) {
+    public void addWorkflow(@RequestBody WorkflowElements workflowElement) throws ServiceTypeNotFoundException {
 
         synchronized (SYNC_OBJECT) {
 
@@ -59,7 +63,7 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
                 log.info("Recieved new WorkflowElements: " + workflowElement.getWorkflowElements().size());
                 for (WorkflowElement element : workflowElement.getWorkflowElements()) {
                     element.setArrivedAt(date);
-                    update(element);
+                    preProcess(element);
                     log.info("add new WorkflowElement: " + element.toString());
                     cacheWorkflowService.addWorkflowInstance(element);
                     log.info("Done: Add new WorkflowElement: " + element.toString());
@@ -71,7 +75,7 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
         }
     }
 
-    private void update(Element parent) {
+    private void preProcess(Element parent) throws ServiceTypeNotFoundException {
         if (parent == null) {
             return;
         }
@@ -96,8 +100,14 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
                 int i = random.nextInt(((LoopConstruct) element).getNumberOfIterationsInWorstCase()) + 1;
                 ((LoopConstruct) element).setNumberOfIterationsToBeExecuted(i);
                 // ((LoopConstruct) element).setIterations(1);
-            }  //TODO: CHECK just ignore loops? 
-            update(element);
+            }  //TODO: CHECK just ignore loops?
+            else if (element instanceof ProcessStep) {
+                ProcessStep processStep = (ProcessStep) element;
+                if(processStep.getServiceType().getServiceTypeResources() == null) {
+                    processStep.setServiceType(serviceRegistryReader.findServiceType(processStep.getServiceType().getName()));
+                }
+            }
+            preProcess(element);
         }
     }
 

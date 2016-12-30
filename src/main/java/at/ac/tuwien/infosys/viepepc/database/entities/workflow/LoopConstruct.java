@@ -20,7 +20,7 @@ import java.util.List;
  */
 @XmlRootElement(name = "LoopConstruct")
 @Entity(name = "LoopConstruct")
-@PrimaryKeyJoinColumn(name="id")
+@PrimaryKeyJoinColumn(name="identifier")
 @Table(name="LoopConstructElement")
 @DiscriminatorValue(value = "loop")
 @Getter
@@ -85,7 +85,7 @@ public class LoopConstruct extends Element {
     @Override
     public String toString() {
         return "Loop{" +
-                "id='" + id + '\'' +
+                "identifier='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", elements=" + elements +
                 ", deadline=" + deadline +

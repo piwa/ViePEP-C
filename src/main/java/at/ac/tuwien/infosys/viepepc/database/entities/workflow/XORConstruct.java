@@ -13,7 +13,7 @@ import java.util.Random;
  */
 @XmlRootElement(name = "XORConstruct")
 @Entity(name = "XORConstruct")
-@PrimaryKeyJoinColumn(name="id")
+@PrimaryKeyJoinColumn(name="identifier")
 @Table(name="XORConstructElement")
 public class XORConstruct extends Element {
 
@@ -67,7 +67,7 @@ public class XORConstruct extends Element {
     @Override
     public String toString() {
         return "XOR{" +
-                "id='" + id + '\'' +
+                "identifier='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", elements=" + elements +
                 ", deadline=" + deadline +

@@ -62,4 +62,10 @@ public class InMemoryCacheImpl {
     		addVirtualMachine(vm);
     	}
     }
+
+    public void addAllContainerConfiguration(List<ContainerConfiguration> configurations) {
+        for(ContainerConfiguration configuration : configurations) {
+            addContainerConfiguration(configuration);
+        }
+    }
 }

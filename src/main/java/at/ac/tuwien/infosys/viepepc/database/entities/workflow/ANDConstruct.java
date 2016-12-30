@@ -17,7 +17,7 @@ import java.util.List;
  */
 @XmlRootElement(name = "ANDConstruct")
 @Entity(name = "ANDConstruct")
-@PrimaryKeyJoinColumn(name="id")
+@PrimaryKeyJoinColumn(name="identifier")
 @Table(name="ANDConstructElement")
 @DiscriminatorValue(value = "and")
 public class ANDConstruct extends Element {
@@ -86,7 +86,7 @@ public class ANDConstruct extends Element {
     @Override
     public String toString() {
         return "AND{" +
-                "id='" + id + '\'' +
+                "identifier='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", elements=" + elements +
                 ", deadline=" + deadline +

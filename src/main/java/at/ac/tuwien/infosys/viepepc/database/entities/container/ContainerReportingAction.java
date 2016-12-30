@@ -22,8 +22,8 @@ import java.util.Date;
 public class ContainerReportingAction implements Serializable {
 
     /**
-     * database id
-     * important: this id is used to identify a vm in the program
+     * database identifier
+     * important: this identifier is used to identify a vm in the program
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

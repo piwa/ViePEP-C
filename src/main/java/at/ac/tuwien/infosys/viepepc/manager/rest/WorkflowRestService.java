@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.manager.rest;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElements;
+import at.ac.tuwien.infosys.viepepc.registry.impl.ServiceTypeNotFoundException;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -24,8 +25,8 @@ public interface WorkflowRestService {
      *
      * @param workflowJaxB the workflow to add
      */
-    void addWorkflow(@RequestBody WorkflowElement workflowJaxB);
+    void addWorkflow(@RequestBody WorkflowElement workflowJaxB) throws ServiceTypeNotFoundException;
 
-    void addWorkflow(@RequestBody WorkflowElements workflowElement);
+    void addWorkflow(@RequestBody WorkflowElements workflowElement) throws ServiceTypeNotFoundException;
 
 }

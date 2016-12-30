@@ -20,6 +20,6 @@ import java.util.List;
 @XmlRootElement(name="ServiceRegistry")
 public class ServiceRegistry {
 
-    private List<ServiceType> ServiceType = new ArrayList<>();
+    private List<ServiceType> serviceType = new ArrayList<>();
 
 }

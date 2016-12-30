@@ -36,6 +36,7 @@ public class VirtualMachine implements Serializable {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name="serviceTypeId")
     private ServiceType serviceType;
 
     private String name;
@@ -56,7 +57,7 @@ public class VirtualMachine implements Serializable {
         this.serviceType = serviceType;
         this.location = location;
         try {
-            this.vmType = cacheVirtualMachineService.vmTypeFromCore(numberCores, location);
+            this.vmType = cacheVirtualMachineService.getVmTypeFromCore(numberCores, location);
         } catch (Exception e) {
         }
     }
@@ -117,7 +118,7 @@ public class VirtualMachine implements Serializable {
         String startString = startedAt == null ? "NOT_YET" : simpleDateFormat.format(startedAt);
         String toBeTerminatedAtString = toBeTerminatedAt == null ? "NOT_YET" : simpleDateFormat.format(toBeTerminatedAt);
         return "VirtualMachine{" +
-                "id=" + id +
+                "identifier=" + id +
                 ", name='" + name + '\'' +
                 ", serviceType=" + serviceType +
                 ", leased=" + leased +
@@ -138,5 +139,9 @@ public class VirtualMachine implements Serializable {
         this.setStartedAt(null);
         this.setToBeTerminatedAt(null);
         this.serviceType = null;
+    }
+
+    public void undeployContainer(Container container) {
+        this.deployedContainers.remove(container);
     }
 }

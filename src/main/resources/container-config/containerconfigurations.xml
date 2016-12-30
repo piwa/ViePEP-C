@@ -24,6 +24,12 @@
       <ram>4096</ram>
       <disc>30</disc>
    </Configuration>
+   <Configuration>
+      <name>HEXA_CORE</name>
+      <cores>8</cores>
+      <ram>8192</ram>
+      <disc>30</disc>
+   </Configuration>
 </ContainerConfigurations>
 
 

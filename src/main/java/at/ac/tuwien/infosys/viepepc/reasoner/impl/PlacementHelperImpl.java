@@ -491,7 +491,7 @@ public class PlacementHelperImpl implements PlacementHelper {
      * @return gamma variable for a particular VM Type
      */
     public String getGammaVariable(VMType vmType) {
-        return "gamma_" + vmType.getId();
+        return "gamma_" + vmType.getIdentifier();
     }
 	public String getFValueCVariable(VirtualMachine vm) {
 		return "f_" + vm.getName() + "^C";

@@ -1,7 +1,5 @@
 package at.ac.tuwien.infosys.viepepc.database.entities.workflow;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +14,7 @@ import java.util.List;
 
 @XmlRootElement(name = "WorkflowElement")
 @Entity(name = "WorkflowElement")
-@PrimaryKeyJoinColumn(name="id")
+@PrimaryKeyJoinColumn(name="identifier")
 @Table(name="WorkflowElement")
 @DiscriminatorValue(value = "workflow")
 @Getter
@@ -37,16 +35,13 @@ public class WorkflowElement extends Element {
         elements = new ArrayList<>();
     }
 
-//    public long calculateQoS() {
-//        return elements.get(0).calculateQoS();
-//    }
     
     @Override
     public int getNumberOfExecutions() {
     	return elements.get(elements.size()-1).getNumberOfExecutions();
     }
     
-    public long calculateQoS() { //calculateQoS() {
+    public long calculateQoS() {
         long executionTime = 0;
         for (Element element : elements) {
         	if(element.getFinishedAt() == null){
@@ -81,7 +76,7 @@ public class WorkflowElement extends Element {
     @Override
     public String toString() {
         return "Workflow{" +
-                "id='" + id + '\'' +
+                "identifier='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", arrivedAt='" + arrivedAt + '\'' +
                 ", elements=" + elements +

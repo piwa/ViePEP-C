@@ -35,15 +35,14 @@ public class ServiceRegistryReaderImpl implements ServiceRegistryReader {
     }
 
     @Override
-    public ServiceType findServiceType(String serviceTypeName) {
+    public ServiceType findServiceType(String serviceTypeName) throws ServiceTypeNotFoundException {
 
         for(ServiceType serviceType : serviceRegistry.getServiceType()) {
             if(serviceTypeName.equals(serviceType.getName())) {
                 return serviceType;
             }
         }
-
-        return null;
+        throw new ServiceTypeNotFoundException();
     }
 
     @Override

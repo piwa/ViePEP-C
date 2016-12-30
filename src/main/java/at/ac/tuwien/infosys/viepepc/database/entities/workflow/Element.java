@@ -31,7 +31,7 @@ import java.util.List;
 public abstract class Element implements Serializable {
 
     /**
-     * primary id in db
+     * primary identifier in db
      */
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
@@ -88,7 +88,7 @@ public abstract class Element implements Serializable {
     @Override
     public String toString() {
         return "Element{" +
-                "id='" + id + '\'' +
+                "identifier='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", elements=" + elements +
                 ", deadline=" + deadline +

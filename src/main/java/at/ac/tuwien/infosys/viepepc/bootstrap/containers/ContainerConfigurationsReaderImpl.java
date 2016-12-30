@@ -30,7 +30,7 @@ public class ContainerConfigurationsReaderImpl {
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
             File file = Paths.get(ClassLoader.getSystemResource(containerConfigurationPath).toURI()).toFile();
             ContainerConfigurations containerConfigurations = (ContainerConfigurations) jaxbUnmarshaller.unmarshal(file);
-            inMemoryCache.getContainerConfigurations().addAll(containerConfigurations.getConfiguration());
+            inMemoryCache.addAllContainerConfiguration(containerConfigurations.getConfiguration());
         } catch (JAXBException e) {
             e.printStackTrace();
         } catch (URISyntaxException e) {

@@ -1,8 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database.inmemory.services;
 
-import at.ac.tuwien.infosys.viepepc.bootstrap.containers.ContainerConfigurationsReaderImpl;
-import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,6 @@ public class CacheContainerService {
     private InMemoryCacheImpl inMemoryCache;
     @Autowired
     private ServiceRegistryReader serviceRegistryReader;
-    @Autowired
-    private ContainerConfigurationsReaderImpl containerConfigurationsReader;
 
     @Value("${docker.repo.name}")
     private String repoName;

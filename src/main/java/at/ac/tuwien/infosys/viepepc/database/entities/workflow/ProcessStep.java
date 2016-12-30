@@ -1,10 +1,12 @@
 package at.ac.tuwien.infosys.viepepc.database.entities.workflow;
 
 
-import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.entities.services.adapter.ServiceTypeAdapter;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -12,6 +14,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,62 +28,38 @@ import java.util.List;
  */
 @XmlRootElement(name = "ProcessStep")
 @Entity(name = "ProcessStep")
-@PrimaryKeyJoinColumn(name="id")
+@PrimaryKeyJoinColumn(name="identifier")
 @Table(name="ProcessStepElement")
 @DiscriminatorValue(value = "process_step")
 @Getter
 @Setter
+@NoArgsConstructor
 public class ProcessStep extends Element {
 
-    @XmlElement(name = "serviceType")
-    @ManyToOne
-    private ServiceType serviceType;
-
     private Date startDate;
-
+    private String workflowName;
     private boolean isScheduled;
     private Date scheduledStartedAt;
     private int numberOfExecutions;
+    private boolean hasToBeExecuted = true;
 
     @ManyToOne
+    @JoinColumn(name="serviceTypeId")
+    @XmlJavaTypeAdapter(ServiceTypeAdapter.class)
+    private ServiceType serviceType;
+
+    @ManyToOne
+    @JoinColumn(name="scheduleAtVmId")
     private VirtualMachine scheduledAtVM;
     
     @ManyToOne
+    @JoinColumn(name="scheduleAtContainerId")
     private Container scheduledAtContainer;
-
-    private String workflowName;
 
     @XmlElementWrapper(name="restrictedVMs")
     @XmlElement(name="restricted" )
     @ElementCollection(fetch=FetchType.EAGER)
-    private List<Integer> restrictedVMs;
-
-    /**
-     * this flag is used to determine weather a step has to be executed or not, i.g. in an xor only one path has to be executed, every other not
-     */
-    private boolean hasToBeExecuted = true;
-
-
-    public ProcessStep(String name, boolean executed, ServiceType serviceType, String workflowName) {
-        this.name = name;
-        if (executed) {
-            finishedAt = new Date();
-        }
-        this.serviceType = serviceType;
-        this.workflowName = workflowName;
-        restrictedVMs = new ArrayList<>();
-    }
-
-    public ProcessStep(String name, ServiceType serviceType, String workflowName) {
-        this.name = name;
-        this.serviceType = serviceType;
-        this.workflowName = workflowName;
-        restrictedVMs = new ArrayList<>();
-    }
-
-    public ProcessStep() {
-        restrictedVMs = new ArrayList<>();
-    }
+    private List<Integer> restrictedVMs = new ArrayList<>();
 
     @XmlTransient
     @Override
@@ -122,6 +101,7 @@ public class ProcessStep extends Element {
         this.scheduledStartedAt = tau_t;
         this.scheduledAtContainer = container;
     }
+
     @Override
     public ProcessStep getLastExecutedElement() {
         return this;
@@ -143,7 +123,7 @@ public class ProcessStep extends Element {
         String vmName = scheduledAtVM != null ? scheduledAtVM.getName() : null;
         String dockerName = scheduledAtContainer != null ? scheduledAtContainer.getName() : null;
         return "ProcessStep{" +
-                "id='" + id + '\'' +
+                "identifier='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", serviceType=" + serviceType +
                 ", startDate=" + startDateformat +

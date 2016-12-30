@@ -3,9 +3,13 @@ package at.ac.tuwien.infosys.viepepc.database.entities.services;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +18,7 @@ import java.util.Map;
  * Created by philippwaibel on 18/10/2016.
  */
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -34,8 +39,9 @@ public class ServiceType {
     private boolean onlyInternal;
     @XmlElement
     private Integer internPort;
-    @XmlElement
-    @OneToOne
+    @XmlElement(name = "serviceTypeResources")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="serviceTypeResourcesId")
     private ServiceTypeResources serviceTypeResources;
 
     @ElementCollection
@@ -48,5 +54,9 @@ public class ServiceType {
         monitoredServiceTypeResources.put(new Date(), serviceTypeResources);
     }
 
-
+    public static ServiceType fromValue(String serviceType) {
+        ServiceType serviceType1 = new ServiceType();
+        serviceType1.name = serviceType;
+        return serviceType1;
+    }
 }

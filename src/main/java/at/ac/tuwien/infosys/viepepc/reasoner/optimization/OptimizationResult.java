@@ -11,4 +11,10 @@ public interface OptimizationResult {
     long getTauT1();
 
     List<ProcessStep> getProcessSteps();
+
+    void setTauT1(long tauT1);
+
+    void setProcessSteps(List<ProcessStep> processSteps);
+
+    void addProcessStep(ProcessStep processStep);
 }

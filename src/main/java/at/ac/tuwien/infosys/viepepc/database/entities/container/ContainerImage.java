@@ -27,7 +27,8 @@ public class ContainerImage {
 	private String imageName;
 	@XmlElement
 	private String repoName;
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name="serviceTypeId")
 	@XmlElement
     private ServiceType serviceType;
 

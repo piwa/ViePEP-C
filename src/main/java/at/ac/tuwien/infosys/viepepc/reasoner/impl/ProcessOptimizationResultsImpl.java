@@ -13,16 +13,19 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.ServiceExecutionController;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
  * Created by philippwaibel on 19/10/2016.
  */
-@Component
+@Scope("prototype")
 @Slf4j
 public class ProcessOptimizationResultsImpl implements ProcessOptimizationResults {
 
@@ -50,6 +53,15 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
             }
         }
 
+        stringBuilder.append("------------------------- Containers running ----------------------------\n");
+        for(VirtualMachine vm : vMs) {
+            for(Container container : vm.getDeployedContainers()) {
+                if(container.isRunning()) {
+                    stringBuilder.append(container.toString()).append("\n");
+                }
+            }
+        }
+
         stringBuilder.append("------------------------ Tasks running ---------------------------\n");
         getRunningTasks(stringBuilder);
 
@@ -71,6 +83,8 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
             stringBuilder.append(processStep).append("\n");
         }
 
+        log.info(stringBuilder.toString());
+
         serviceExecutionController.startInvocationViaContainers(optimize.getProcessSteps());
 
         cleanupVMs(tau_t);
@@ -80,8 +94,12 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
     private void processProcessSteps(OptimizationResult optimize, Set<VirtualMachine> vmsToStart, Set<Container> containersToDeploy, Date tau_t) {
         for(ProcessStep processStep : optimize.getProcessSteps()) {
-            vmsToStart.add(processStep.getScheduledAtVM());
-            vmsToStart.add(processStep.getScheduledAtContainer().getVirtualMachine());
+            if(processStep.getScheduledAtVM() != null) {
+                vmsToStart.add(processStep.getScheduledAtVM());
+            }
+            if(processStep.getScheduledAtContainer().getVirtualMachine() != null) {
+                vmsToStart.add(processStep.getScheduledAtContainer().getVirtualMachine());
+            }
             containersToDeploy.add(processStep.getScheduledAtContainer());
             if(processStep.getScheduledAtContainer() != null) {
                 processStep.setScheduledForExecution(true, tau_t, processStep.getScheduledAtContainer());
@@ -102,7 +120,8 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
         for (Element workflow : allWorkflowInstances) {
             List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(workflow.getName());
             for (ProcessStep runningStep : runningSteps) {
-                if(runningStep.getScheduledAtVM().isStarted()) {
+                if(runningStep.getScheduledAtVM() != null && runningStep.getScheduledAtVM().isStarted() ||
+                   runningStep.getScheduledAtContainer() != null && runningStep.getScheduledAtContainer().isRunning()) {
                     stringBuilder.append("Task-Running: ").append(runningStep).append("\n");
                 }
             }

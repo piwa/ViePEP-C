@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.database.externdb.services;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
@@ -12,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,11 +35,13 @@ public class WorkflowDaoService {
 	private ContainerDaoService containerDaoService;
 	@Autowired
 	private ContainerImageDaoService containerImageDaoService;
+	@Autowired
+	private ServiceTypeDaoService serviceTypeDaoService;
 
 	@Value("${use.container}")
 	private boolean useContainer;
 
-    @Transactional(propagation= Propagation.REQUIRES_NEW)
+//    @Transactional(propagation= Propagation.REQUIRES_NEW)
 	public WorkflowElement finishWorkflow(WorkflowElement workflow) {
 		log.info("-- Update workflowElement: " + workflow.toString());
 
@@ -53,6 +54,7 @@ public class WorkflowDaoService {
 				element.setFinishedAt(workflow.getFinishedAt()); // TODO can be deleted?
 			}
 			if (element instanceof ProcessStep) {
+				ServiceType serviceType = null;
 				VirtualMachine vm = ((ProcessStep) element).getScheduledAtVM();
 				if (vm != null) { // if the process step is after an XOR the process steps on one side of the XOR are not executed
 					if (vm.getId() != null) {
@@ -63,6 +65,7 @@ public class WorkflowDaoService {
 						vm = virtualMachineDaoService.update(vm);
 						((ProcessStep) element).setScheduledAtVM(vm);
 					}
+					serviceType = vm.getServiceType();
 				}
 				
 				if (useContainer) {
@@ -88,7 +91,11 @@ public class WorkflowDaoService {
 							((ProcessStep) element).setScheduledAtContainer(container);
 						}
 					}
+					serviceType = container.getContainerImage().getServiceType();
 				}
+
+				((ProcessStep) element).setServiceType(serviceType);
+
 			}
 		}
 		return workflowElementRepository.save(workflow);

@@ -15,10 +15,10 @@ server_ip=localhost
 #openstack tenant name
 OS_TENANT_NAME=ViePEP
 
-#openstack tenant id
+#openstack tenant identifier
 OS_TENANT_ID=123xxxxxx
 
-#default image id
+#default image identifier
 IMAGE_ID=123-abc-xxxxxx
 
 #default flavor type

@@ -24,7 +24,7 @@ public class CacheVirtualMachineService {
         int K = getVMTypes().size();
         try {
             for (int v = 1; v <= V; v++) {
-                VMType vmType = vmTypeFromIdentifier(v);
+                VMType vmType = getVmTypeFromIdentifier(v);
 
                 for (int k = 1; k <= K; k++) {
                     inMemoryCache.addVirtualMachine(new VirtualMachine(v + "_" + k, vmType));
@@ -91,22 +91,31 @@ public class CacheVirtualMachineService {
         return result;
     }
 
-    public VMType vmTypeFromIdentifier(int identifier) throws Exception {
+    public VMType getVmTypeFromIdentifier(int identifier) throws Exception {
         for(VMType vmType : getVMTypes()) {
-            if(vmType.getId() == identifier) {
+            if(vmType.getIdentifier() == identifier) {
                 return vmType;
             }
         }
         throw new Exception("TYPE not found");
     }
 
-    public VMType vmTypeFromCore(int cores, String location) throws Exception {
+    public VMType getVmTypeFromCore(int cores, String location) throws Exception {
         for(VMType vmType : getVMTypes()) {
             if(vmType.getCores() == cores && vmType.getLocation().equals(location)) {
                 return vmType;
             }
         }
         throw new Exception("TYPE not found");
+    }
+
+    public VMType getDefaultVmType() {
+        try {
+            return getVmTypeFromCore(4, "aws");
+        } catch (Exception e) {
+            log.error("EXCEPTION", e);
+        }
+        return null;
     }
 
 }

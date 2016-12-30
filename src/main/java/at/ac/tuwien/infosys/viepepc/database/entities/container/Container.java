@@ -23,25 +23,23 @@ public class Container {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="containerConfigurationId")
     private ContainerConfiguration containerConfiguration;
-
     @ManyToOne
+    @JoinColumn(name="containerImageId")
     private ContainerImage containerImage;
-
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private VirtualMachine virtualMachine;
-
+    private long deployCost = 3;
+    private String containerID;
+    private String serviceName;
+    private Integer externPort;
     private Date startedAt;
     private boolean running = false;
 
     @Value("${simulation.container.deploy.time}")
     private long deployTime;
-    private long deployCost = 3;
-    private String containerID;
-    private String serviceName;
-    private Integer externPort;
 
     public Container() {
     }
@@ -51,6 +49,7 @@ public class Container {
     }
 
     public void shutdownContainer() {
+        virtualMachine.undeployContainer(this);
         virtualMachine = null;
         running = false;
         startedAt = null;
@@ -63,7 +62,7 @@ public class Container {
         String startString = startedAt == null ? "NULL" : simpleDateFormat.format(startedAt);
         String vmString = virtualMachine == null ? "NULL" : virtualMachine.getName();
         return "Container{" +
-                "id=" + id +
+                "identifier=" + id +
                 ", name='" + getName() + '\'' +
                 ", running=" + running +
                 ", startedAt=" + startString +

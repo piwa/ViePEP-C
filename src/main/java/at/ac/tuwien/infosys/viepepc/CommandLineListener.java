@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
+import at.ac.tuwien.infosys.viepepc.reasoner.ReasoningActivator;
 import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+
+import java.util.Scanner;
+import java.util.concurrent.Future;
 
 /**
  * Created by philippwaibel on 20/06/16. edited by gerta sheganaku
@@ -18,6 +21,8 @@ import org.springframework.stereotype.Component;
 public class CommandLineListener implements CommandLineRunner {
     @Autowired
     private ServiceRegistryReader serviceRegistryReader;
+    @Autowired
+    private ReasoningActivator reasoningActivator;
 
     @Value("${simulate}")
     private boolean simulate;
@@ -26,10 +31,6 @@ public class CommandLineListener implements CommandLineRunner {
 
     public void run(String... args) {
         log.info("Starting ViePEP 4.0...");
-
-        ServiceType serviceType = serviceRegistryReader.findServiceType("service1");
-
-        /*
 
         try {
             Scanner scanner = new Scanner(System.in);
@@ -41,11 +42,11 @@ public class CommandLineListener implements CommandLineRunner {
             started = true;
 
             if(!simulate) {
-                viePEPOpenstackClientService.initialize();
-                viePEPAwsClientService.initialize();
+//                viePEPOpenstackClientService.initialize();
+//                viePEPAwsClientService.initialize();
             }
 
-            reasoningActivatorImpl.initialize();
+            reasoningActivator.initialize();
 
             if(autostart) {
                 startReasoning();
@@ -66,7 +67,7 @@ public class CommandLineListener implements CommandLineRunner {
                             break;
                         case "stop":
                             running = false;
-                            reasoningActivatorImpl.stop();
+                            reasoningActivator.stop();
                             break;
                     }
                 }
@@ -79,23 +80,21 @@ public class CommandLineListener implements CommandLineRunner {
             System.exit(1);
         }
 
-        */
     }
 
 
-/*
     private void startReasoning() {
         try {
 
             if(autostart) {
-                Future<Boolean> reasoningDone = reasoningActivatorImpl.start();
+                Future<Boolean> reasoningDone = reasoningActivator.start();
                 reasoningDone.get();                 // waits for result
 //                while(!reasoningDone.isDone()) {
 //                    Thread.sleep(10000);
 //                }
             }
             else {
-                reasoningActivatorImpl.start();
+                reasoningActivator.start();
             }
 
         } catch (Exception e) {
@@ -105,6 +104,6 @@ public class CommandLineListener implements CommandLineRunner {
 
         }
     }
-    */
+
 }
 
