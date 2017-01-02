@@ -49,7 +49,7 @@ public class VirtualMachine implements Serializable {
     private boolean started;
     private Date toBeTerminatedAt;
 
-    @OneToMany(mappedBy="virtualMachine")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy="virtualMachine")
     private List<Container> deployedContainers = new ArrayList<>();
 
     public VirtualMachine(String name, Integer numberCores, ServiceType serviceType, String location) {

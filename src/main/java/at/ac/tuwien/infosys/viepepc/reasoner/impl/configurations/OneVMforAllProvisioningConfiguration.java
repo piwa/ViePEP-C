@@ -1,7 +1,5 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl.configurations;
 
-import at.ac.tuwien.infosys.viepepc.reasoner.ProcessOptimizationResults;
-import at.ac.tuwien.infosys.viepepc.reasoner.impl.ProcessOptimizationResultsImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OneVMforAllImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +17,11 @@ public class OneVMforAllProvisioningConfiguration {
 		log.info("Profile OneVMforAll");
 		return new OneVMforAllImpl();
 	}
-	
+/*
 	@Bean
 	public ProcessOptimizationResults processResults() {
 		log.info("Profile OneVMforAll");
 		return new ProcessOptimizationResultsImpl();
 	}
-
+*/
 }

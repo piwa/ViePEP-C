@@ -440,12 +440,7 @@ public class PlacementHelperImpl implements PlacementHelper {
         return 0;
     }
     
-    /**
-     * @return the general leasing duration for a particular vm (v,k) vm
-     */
-    public long getLeasingDuration(VirtualMachine vm) {
-    	return vm.getVmType().getLeasingDuration();
-    }
+
     
     /**
      * @return the remaining leasing duration for a particular vm (v,k) starting from tau_t
@@ -466,12 +461,7 @@ public class PlacementHelperImpl implements PlacementHelper {
         return remainingLeasingDuration;
         
     }
-    
-    @Override
-    public long getBTU(VirtualMachine vm) {
-    	return vm.getVmType().getLeasingDuration();
-    }
-    
+
     public double getSuppliedCPUPoints(VirtualMachine vm) {
     	return vm.getVmType().getCpuPoints();
     }

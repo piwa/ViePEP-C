@@ -17,7 +17,7 @@ import java.util.List;
 @Setter
 public class OptimizationResultImpl implements OptimizationResult {
 
-    private long tauT1;
+    private long tauT1 = -1;
     private List<ProcessStep> processSteps = new ArrayList<>();
 
 

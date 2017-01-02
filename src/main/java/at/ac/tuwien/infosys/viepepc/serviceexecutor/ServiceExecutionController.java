@@ -83,6 +83,7 @@ public class ServiceExecutionController{
                 if (!virtualMachine.isLeased()) {
                     virtualMachine.setLeased(true);
                     virtualMachine.setStartedAt(new Date());
+                    virtualMachine.setToBeTerminatedAt(new Date(virtualMachine.getStartedAt().getTime() + virtualMachine.getVmType().getLeasingDuration()));
                     leaseVMAndStartExecution.leaseVMAndStartExecutionOnContainer(virtualMachine, containerProcessSteps);
 
                 } else {

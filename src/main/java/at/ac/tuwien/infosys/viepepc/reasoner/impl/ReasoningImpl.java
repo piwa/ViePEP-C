@@ -1,7 +1,9 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.WorkflowDaoService;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
@@ -39,6 +41,8 @@ public class ReasoningImpl implements Reasoning {
     private PlacementHelper placementHelper;
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
+    @Autowired
+    private CacheVirtualMachineService cacheVirtualMachineService;
     @Autowired
     private WorkflowDaoService workflowDaoService;
 
@@ -162,9 +166,14 @@ public class ReasoningImpl implements Reasoning {
 
     public long performOptimisation() throws Exception {
 
+        placementHelper.setFinishedWorkflows();
+
         Date tau_t_0 = new Date();
-        log.info("---------tau_t_0 : " + tau_t_0 + " ------------------------");
-        log.info("---------tau_t_0.time : " + tau_t_0.getTime() + " ------------------------");
+
+        terminateVms(tau_t_0);
+
+        log.info("--------- tau_t_0 : " + tau_t_0 + " ------------------------");
+        log.info("--------- tau_t_0.time : " + tau_t_0.getTime() + " ------------------------");
         OptimizationResult optimize = resourcePredictionService.optimize(tau_t_0);
 
         if (optimize == null) {
@@ -183,11 +192,25 @@ public class ReasoningImpl implements Reasoning {
         if (difference < 0 || difference > 60*60*1000) {
             difference = MIN_TAU_T_DIFFERENCE_MS;
         }
-        log.info("---------sleep for: " + difference / 1000 + " seconds-----------");
-        log.info("---------next iteration: " + new Date(tau_t_1) + " -----------");
+        log.info("--------- sleep for: " + difference / 1000 + " seconds -----------");
+        log.info("--------- next iteration: " + new Date(tau_t_1) + " -----------");
         
         
         return difference;
+    }
+
+    private void terminateVms(Date tau_t_0) {
+        for(VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
+            long timeUntilTermination = placementHelper.getRemainingLeasingDuration(tau_t_0, vm);
+            if(timeUntilTermination < MIN_TAU_T_DIFFERENCE_MS) {
+                if(vm.getDeployedContainers().size() > 0) {
+                    vm.setToBeTerminatedAt(new Date(vm.getToBeTerminatedAt().getTime() + vm.getVmType().getLeasingDuration()));
+                }
+                else {
+                    placementHelper.terminateVM(vm);
+                }
+            }
+        }
     }
 
     public void stop() {

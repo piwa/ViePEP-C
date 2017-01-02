@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.services;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
@@ -35,6 +36,8 @@ public class WorkflowDaoService {
 	private ContainerDaoService containerDaoService;
 	@Autowired
 	private ContainerImageDaoService containerImageDaoService;
+    @Autowired
+    private ContainerConfigurationDaoService containerConfigurationDaoService;
 	@Autowired
 	private ServiceTypeDaoService serviceTypeDaoService;
 
@@ -82,6 +85,18 @@ public class WorkflowDaoService {
 								container.setContainerImage(dockerImgInDB);
 							}
 						}
+
+                        ContainerConfiguration config = container.getContainerConfiguration();
+                        if(config != null) {
+                            ContainerConfiguration dockerConfigInDB = containerConfigurationDaoService.getContainerConfiguration(config);
+                            if(dockerConfigInDB == null) {
+                                config = containerConfigurationDaoService.save(config);
+                                container.setContainerConfiguration(config);
+                            } else {
+                                container.setContainerConfiguration(dockerConfigInDB);
+                            }
+                        }
+
 						if (container.getId() != null) {
 							container = containerDaoService.getContainer(container);
 							((ProcessStep) element).setScheduledAtContainer(container);

@@ -43,8 +43,6 @@ public class LeaseVMAndStartExecution {
     private boolean simulate;
     @Value("${use.container}")
     private boolean useDocker;
-    @Value("${virtualmachine.startup.time}")
-    private long startupTime;
     
 
     @Async
@@ -143,7 +141,7 @@ public class LeaseVMAndStartExecution {
 //            address = viePEPClientService.startNewVM(virtualMachine.getName(), virtualMachine.getVmType().flavor(), virtualMachine.getServiceType().name(), virtualMachine.getVmType().getLocation());
             log.info("VM up and running with ip: " + address + " vm: " + virtualMachine);
             try {
-                Thread.sleep(startupTime); //sleep 15 seconds, since as soon as it is up, it still has to deploy the services
+                Thread.sleep(virtualMachine.getVmType().getDeployTime());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

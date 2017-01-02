@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import javax.persistence.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  */
@@ -23,7 +24,7 @@ public class Container {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne//(cascade = CascadeType.ALL)
     @JoinColumn(name="containerConfigurationId")
     private ContainerConfiguration containerConfiguration;
     @ManyToOne
@@ -42,10 +43,11 @@ public class Container {
     private long deployTime;
 
     public Container() {
+        containerID = UUID.randomUUID().toString().substring(0, 8);
     }
 
     public String getName() {
-        return containerConfiguration.getName() + "_" + this.containerImage.getServiceType().getName();
+        return containerConfiguration.getName() + "_" + this.containerImage.getServiceType().getName() + "_" + containerID;
     }
 
     public void shutdownContainer() {

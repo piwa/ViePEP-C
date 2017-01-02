@@ -58,8 +58,6 @@ public interface PlacementHelper {
 
 	int getZ(String type, VirtualMachine vm);
 
-	long getLeasingDuration(VirtualMachine vm);
-
 	long getRemainingLeasingDuration(Date tau_t, VirtualMachine vm);
 
 	String getGVariable(VirtualMachine vm);
@@ -83,8 +81,6 @@ public interface PlacementHelper {
 	double getSuppliedRAMPoints(Container container);
 
 	String getGYVariable(VirtualMachine vm);
-
-	long getBTU(VirtualMachine vm);
 
 	int imageForStepEverDeployedOnVM(ProcessStep step, VirtualMachine vm);
 

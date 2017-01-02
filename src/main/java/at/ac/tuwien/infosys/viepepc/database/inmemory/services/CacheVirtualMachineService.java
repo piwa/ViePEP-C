@@ -5,6 +5,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -19,9 +20,18 @@ public class CacheVirtualMachineService {
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
 
+    @Value("${optimization.values.k}")
+    private int kConfig = -1;
+
     public void initializeVMs() {
         int V = getVMTypes().size();
-        int K = getVMTypes().size();
+        int K = 0;
+        if(kConfig == -1) {
+            K = getVMTypes().size();
+        }
+        else {
+            K = kConfig;
+        }
         try {
             for (int v = 1; v <= V; v++) {
                 VMType vmType = getVmTypeFromIdentifier(v);

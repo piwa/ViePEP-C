@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import java.util.concurrent.Future;
  * Created by philippwaibel on 19/10/2016.
  */
 @Scope("prototype")
+@Component
 @Slf4j
 public class ProcessOptimizationResultsImpl implements ProcessOptimizationResults {
 

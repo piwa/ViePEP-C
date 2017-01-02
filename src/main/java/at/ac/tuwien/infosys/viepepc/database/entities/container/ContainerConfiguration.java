@@ -35,11 +35,12 @@ public class ContainerConfiguration {
     private double ram; //amount of needed memory in mb
     @XmlElement
     private double disc; //amount of needed disc space in mb
-
+/*
     public String getId() {
         return "c" + String.valueOf(cores);
     }
     
+  */
     public double getCPUPoints(){
     	return (cores*100)*0.9;
     }
