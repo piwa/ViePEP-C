@@ -35,7 +35,7 @@ public class VirtualMachine implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name="serviceTypeId")
     private ServiceType serviceType;
 

@@ -100,28 +100,6 @@ public class StartParNotExceedImpl extends AbstractProvisioningImpl implements P
     }
 
 
-    public long getRemainingLeasingDuration(Date tau_t, VirtualMachine vm, OptimizationResult optimizationResult) {
-        Date startedAt = vm.getStartedAt();
-        if (startedAt == null) {
-            startedAt = tau_t;
-        }
-        Date toBeTerminatedAt = vm.getToBeTerminatedAt();
-        if (toBeTerminatedAt == null) {
-            toBeTerminatedAt = new Date(startedAt.getTime() + vm.getVmType().getLeasingDuration());
-        }
-        long remainingLeasingDuration = toBeTerminatedAt.getTime() - tau_t.getTime();
 
-        for(ProcessStep processStep : optimizationResult.getProcessSteps()) {
-            if(processStep.getScheduledAtVM() == vm || processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
-                remainingLeasingDuration = remainingLeasingDuration - processStep.getExecutionTime();
-            }
-        }
-
-        if (remainingLeasingDuration < 0) {
-            remainingLeasingDuration = 0;
-        }
-        return remainingLeasingDuration;
-
-    }
 
 }

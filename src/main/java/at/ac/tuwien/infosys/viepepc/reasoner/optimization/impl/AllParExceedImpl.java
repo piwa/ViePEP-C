@@ -10,13 +10,16 @@ import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerConfigurationNotFound
 import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerImageNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class StartParExceedImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class AllParExceedImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
 
     private Map<WorkflowElement, VirtualMachine> vmStartedBecauseOfWorkflow = new HashMap<>();
 
@@ -35,36 +38,35 @@ public class StartParExceedImpl extends AbstractProvisioningImpl implements Proc
 
             List<WorkflowElement> runningWorkflowInstances = getRunningWorkflowInstancesSorted();
             List<VirtualMachine> availableVms = getRunningVms();
-            List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(runningWorkflowInstances);
 
-            if (nextProcessSteps == null) {
+            if (runningWorkflowInstances == null) {
                 return optimizationResult;
-            }
-
-            if(availableVms.size() < runningWorkflowInstances.size()) {
-                for(int i = 0; i < runningWorkflowInstances.size() - availableVms.size(); i++) {
-                    availableVms.add(startNewVm(optimizationResult));
-                }
             }
 
             removeAllBusyVms(availableVms);
 
-            if (availableVms.size() == 0) {
-                return optimizationResult;
-            }
+            for(WorkflowElement workflowElement : runningWorkflowInstances) {
 
-            availableVms.sort(Comparator.comparing(vm -> new Long(vm.getStartupTime())));
+                List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
+                for(ProcessStep processStep : nextProcessSteps) {
 
-            int usedVmCounter = 0;
-            for(ProcessStep processStep : nextProcessSteps) {
+                    boolean deployed = false;
+                    for(VirtualMachine vm : availableVms) {
+                        long remainingBTU = getRemainingLeasingDuration(new Date(), vm, optimizationResult);
+                        if(remainingBTU > processStep.getExecutionTime()) {
+                            deployContainerAssignProcessStep(processStep, vm, optimizationResult);
+                            deployed = true;
+                            break;
+                        }
+                    }
 
-                deployContainerAssignProcessStep(processStep, availableVms.get(usedVmCounter), optimizationResult);
-                usedVmCounter = usedVmCounter + 1;
-                if(usedVmCounter >= availableVms.size()) {
-                    break;
+                    if(!deployed) {
+                        VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+                    }
                 }
-
             }
+
+
         } catch(ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {
             log.error("Container image or configuration not found", ex);
             throw new ProblemNotSolvedException();
