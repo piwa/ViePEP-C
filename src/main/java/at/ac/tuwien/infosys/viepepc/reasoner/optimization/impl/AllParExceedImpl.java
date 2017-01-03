@@ -10,10 +10,8 @@ import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerConfigurationNotFound
 import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerImageNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by philippwaibel on 30/09/2016.
@@ -48,14 +46,15 @@ public class AllParExceedImpl extends AbstractProvisioningImpl implements Proces
             for(WorkflowElement workflowElement : runningWorkflowInstances) {
 
                 List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
+                List<VirtualMachine> alreadyUsedVms = new ArrayList<>();
                 for(ProcessStep processStep : nextProcessSteps) {
 
                     boolean deployed = false;
                     for(VirtualMachine vm : availableVms) {
-                        long remainingBTU = getRemainingLeasingDuration(new Date(), vm, optimizationResult);
-                        if(remainingBTU > processStep.getExecutionTime()) {
+                        if(!alreadyUsedVms.contains(vm)) {
                             deployContainerAssignProcessStep(processStep, vm, optimizationResult);
                             deployed = true;
+                            alreadyUsedVms.add(vm);
                             break;
                         }
                     }

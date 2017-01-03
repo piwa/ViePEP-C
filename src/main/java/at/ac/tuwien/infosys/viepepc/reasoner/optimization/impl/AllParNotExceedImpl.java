@@ -45,14 +45,16 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
             for(WorkflowElement workflowElement : runningWorkflowInstances) {
 
                 List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
+                List<VirtualMachine> alreadyUsedVms = new ArrayList<>();
                 for(ProcessStep processStep : nextProcessSteps) {
 
                     boolean deployed = false;
                     for(VirtualMachine vm : availableVms) {
                         long remainingBTU = getRemainingLeasingDuration(new Date(), vm, optimizationResult);
-                        if(remainingBTU > processStep.getExecutionTime()) {
+                        if(remainingBTU > processStep.getExecutionTime() && !alreadyUsedVms.contains(vm)) {
                             deployContainerAssignProcessStep(processStep, vm, optimizationResult);
                             deployed = true;
+                            alreadyUsedVms.add(vm);
                             break;
                         }
                     }
