@@ -67,7 +67,7 @@ public class XORConstruct extends Element {
     @Override
     public String toString() {
         return "XOR{" +
-                "identifier='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", elements=" + elements +
                 ", deadline=" + deadline +

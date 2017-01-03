@@ -118,7 +118,7 @@ public class VirtualMachine implements Serializable {
         String startString = startedAt == null ? "NOT_YET" : simpleDateFormat.format(startedAt);
         String toBeTerminatedAtString = toBeTerminatedAt == null ? "NOT_YET" : simpleDateFormat.format(toBeTerminatedAt);
         return "VirtualMachine{" +
-                "identifier=" + id +
+                "id=" + id +
                 ", name='" + name + '\'' +
                 ", serviceType=" + serviceType +
                 ", leased=" + leased +

@@ -64,7 +64,7 @@ public class Container {
         String startString = startedAt == null ? "NULL" : simpleDateFormat.format(startedAt);
         String vmString = virtualMachine == null ? "NULL" : virtualMachine.getName();
         return "Container{" +
-                "identifier=" + id +
+                "id=" + id +
                 ", name='" + getName() + '\'' +
                 ", running=" + running +
                 ", startedAt=" + startString +

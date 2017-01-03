@@ -42,9 +42,10 @@ public abstract class AbstractProvisioningImpl {
         optimizationResult.addProcessStep(nextProcessStep);
     }
 
-    protected void startNewVMDeployContainerAssignProcessStep(ProcessStep processStep, OptimizationResult optimizationResult) throws ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
+    protected VirtualMachine startNewVMDeployContainerAssignProcessStep(ProcessStep processStep, OptimizationResult optimizationResult) throws ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
         VirtualMachine newVM = startNewVm(optimizationResult);
         deployContainerAssignProcessStep(processStep, newVM, optimizationResult);
+        return newVM;
     }
 
     protected ProcessStep getMostUrgentProcessStep(List<WorkflowElement> nextWorkflowInstances) {
@@ -68,7 +69,7 @@ public abstract class AbstractProvisioningImpl {
 
     protected List<ProcessStep> getNextProcessStepsSorted(WorkflowElement workflow) {
         List<ProcessStep> list = Collections.synchronizedList(placementHelper.getNextSteps(workflow.getName()));
-        list.sort((ps1, ps2) -> new Long(ps1.getDeadline()).compareTo(new Long(ps2.getDeadline())));
+        list.sort(Comparator.comparing(ps -> new Long(ps.getDeadline())));
         return list;
     }
 
@@ -124,9 +125,9 @@ public abstract class AbstractProvisioningImpl {
         return Collections.synchronizedList(new ArrayList<>(runningProcesses));
     }
 
-    protected List<WorkflowElement> getNextWorkflowInstancesSorted() {
+    protected List<WorkflowElement> getRunningWorkflowInstancesSorted() {
         List<WorkflowElement> list = Collections.synchronizedList(cacheWorkflowService.getRunningWorkflowInstances());
-        list.sort((w1, w2) -> new Long(w1.getDeadline()).compareTo(new Long(w2.getDeadline())));
+        list.sort(Comparator.comparing(w -> new Long(w.getDeadline())));
         return list;
     }
 

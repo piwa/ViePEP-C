@@ -46,7 +46,7 @@ public class OneVMPerTaskImpl extends AbstractProvisioningImpl implements Proces
         OptimizationResult optimizationResult = new OptimizationResultImpl();
 
         try {
-            List<WorkflowElement> nextWorkflowInstances = getNextWorkflowInstancesSorted();
+            List<WorkflowElement> nextWorkflowInstances = getRunningWorkflowInstancesSorted();
             List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(nextWorkflowInstances);
 
             if (nextProcessSteps == null) {

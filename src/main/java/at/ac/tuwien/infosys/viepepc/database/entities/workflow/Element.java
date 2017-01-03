@@ -88,7 +88,7 @@ public abstract class Element implements Serializable {
     @Override
     public String toString() {
         return "Element{" +
-                "identifier='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", elements=" + elements +
                 ", deadline=" + deadline +

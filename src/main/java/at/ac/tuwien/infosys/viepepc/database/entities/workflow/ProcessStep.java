@@ -123,7 +123,7 @@ public class ProcessStep extends Element {
         String vmName = scheduledAtVM != null ? scheduledAtVM.getName() : null;
         String dockerName = scheduledAtContainer != null ? scheduledAtContainer.getName() : null;
         return "ProcessStep{" +
-                "identifier='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", serviceType=" + serviceType +
                 ", startDate=" + startDateformat +

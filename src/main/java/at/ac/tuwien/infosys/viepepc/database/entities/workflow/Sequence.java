@@ -77,7 +77,7 @@ public class Sequence extends Element {
     @Override
     public String toString() {
         return "Sequence{" +
-                "identifier='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", elements=" + elements +
                 ", deadline=" + deadline +

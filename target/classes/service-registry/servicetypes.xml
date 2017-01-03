@@ -5,7 +5,7 @@
       <serviceTypeResources>
          <cpuLoad>45</cpuLoad>
          <memory>450</memory>
-         <makeSpan>40000</makeSpan>
+         <makeSpan>90000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>2</dataToTransfer>
       <onlyInternal>false</onlyInternal>
@@ -16,7 +16,7 @@
       <serviceTypeResources>
          <cpuLoad>75</cpuLoad>
          <memory>720</memory>
-         <makeSpan>80000</makeSpan>
+         <makeSpan>60000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>4</dataToTransfer>
       <onlyInternal>false</onlyInternal>
@@ -27,7 +27,7 @@
       <serviceTypeResources>
          <cpuLoad>75</cpuLoad>
          <memory>720</memory>
-         <makeSpan>120000</makeSpan>
+         <makeSpan>70000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>6</dataToTransfer>
       <onlyInternal>true</onlyInternal>
@@ -38,7 +38,7 @@
       <serviceTypeResources>
          <cpuLoad>100</cpuLoad>
          <memory>960</memory>
-         <makeSpan>40000</makeSpan>
+         <makeSpan>170000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>2</dataToTransfer>
       <onlyInternal>false</onlyInternal>
@@ -49,7 +49,7 @@
       <serviceTypeResources>
          <cpuLoad>120</cpuLoad>
          <memory>1150</memory>
-         <makeSpan>100000</makeSpan>
+         <makeSpan>60000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>4</dataToTransfer>
       <onlyInternal>false</onlyInternal>
@@ -60,7 +60,7 @@
       <serviceTypeResources>
          <cpuLoad>125</cpuLoad>
          <memory>1150</memory>
-         <makeSpan>20000</makeSpan>
+         <makeSpan>40000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>6</dataToTransfer>
       <onlyInternal>true</onlyInternal>
@@ -71,7 +71,7 @@
       <serviceTypeResources>
          <cpuLoad>150</cpuLoad>
          <memory>1440</memory>
-         <makeSpan>40000</makeSpan>
+         <makeSpan>60000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>2</dataToTransfer>
       <onlyInternal>false</onlyInternal>

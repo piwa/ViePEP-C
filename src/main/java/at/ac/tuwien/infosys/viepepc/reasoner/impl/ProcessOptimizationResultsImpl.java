@@ -47,7 +47,7 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("------------------------- VMs running ----------------------------\n");
+        stringBuilder.append("\n------------------------- VMs running ----------------------------\n");
         List<VirtualMachine> vMs = cacheVirtualMachineService.getAllVMs();
         for(VirtualMachine vm : vMs) {
             if(vm.isLeased() && vm.isStarted()) {

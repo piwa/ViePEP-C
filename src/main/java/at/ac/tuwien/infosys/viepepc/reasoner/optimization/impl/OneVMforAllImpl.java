@@ -33,7 +33,7 @@ public class OneVMforAllImpl extends AbstractProvisioningImpl implements Process
         try {
             placementHelper.setFinishedWorkflows();
 
-            List<WorkflowElement> nextWorkflowInstances = getNextWorkflowInstancesSorted();
+            List<WorkflowElement> nextWorkflowInstances = getRunningWorkflowInstancesSorted();
             List<VirtualMachine> runningVMs = getRunningVms();
             List<ProcessStep> runningProcessSteps = getAllRunningSteps(nextWorkflowInstances);
             ProcessStep nextProcessStep = getMostUrgentProcessStep(nextWorkflowInstances);

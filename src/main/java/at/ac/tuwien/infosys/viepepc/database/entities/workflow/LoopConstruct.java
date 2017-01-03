@@ -85,7 +85,7 @@ public class LoopConstruct extends Element {
     @Override
     public String toString() {
         return "Loop{" +
-                "identifier='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", elements=" + elements +
                 ", deadline=" + deadline +

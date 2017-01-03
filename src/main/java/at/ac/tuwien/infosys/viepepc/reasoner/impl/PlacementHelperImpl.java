@@ -243,8 +243,8 @@ public class PlacementHelperImpl implements PlacementHelper {
 
     @Override
     public void terminateVM(VirtualMachine virtualMachine) {
+        log.info("Terminate: " + virtualMachine);
         if (!simulate) {
-            log.info("Terminate: " + virtualMachine);
 //            viePEPClientService.terminateInstanceByIP(virtualMachine.getIpAddress());
         }
         virtualMachine.terminate();
@@ -254,8 +254,8 @@ public class PlacementHelperImpl implements PlacementHelper {
     }
     
     public void terminateVM(VirtualMachine virtualMachine, Date date) {
+        log.info("Terminate: " + virtualMachine);
         if (!simulate) {
-            log.info("Terminate: " + virtualMachine);
 //            viePEPClientService.terminateInstanceByIP(virtualMachine.getIpAddress());
         }
         virtualMachine.terminate();
@@ -266,8 +266,8 @@ public class PlacementHelperImpl implements PlacementHelper {
     
     public void stopContainer(Container container) {
     	VirtualMachine vm = container.getVirtualMachine();
+        log.info("Stop Container: " + container + " on VM: " + vm);
     	if(!simulate) {
-    		log.info("Stop Container: " + container + " on VM: " + vm);
 /*			try {
 				containerControllerService.stopContainer(vm, container);
 			} catch (CouldNotStopContainerException e) {

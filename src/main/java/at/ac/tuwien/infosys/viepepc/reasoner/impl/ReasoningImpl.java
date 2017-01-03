@@ -204,6 +204,7 @@ public class ReasoningImpl implements Reasoning {
             long timeUntilTermination = placementHelper.getRemainingLeasingDuration(tau_t_0, vm);
             if(timeUntilTermination < MIN_TAU_T_DIFFERENCE_MS) {
                 if(vm.getDeployedContainers().size() > 0) {
+                    log.info("Extend leasing of VM: " + vm.toString());
                     vm.setToBeTerminatedAt(new Date(vm.getToBeTerminatedAt().getTime() + vm.getVmType().getLeasingDuration()));
                 }
                 else {

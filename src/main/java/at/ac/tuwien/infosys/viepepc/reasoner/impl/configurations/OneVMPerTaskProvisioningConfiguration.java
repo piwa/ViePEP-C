@@ -17,11 +17,5 @@ public class OneVMPerTaskProvisioningConfiguration {
 		log.info("Profile OneVMPerTask");
 		return new OneVMPerTaskImpl();
 	}
-/*
-	@Bean
-	public ProcessOptimizationResults processResults() {
-		log.info("Profile OneVMPerTask");
-		return new ProcessOptimizationResultsImpl();
-	}
-*/
+
 }

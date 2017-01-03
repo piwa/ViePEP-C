@@ -76,7 +76,7 @@ public class WorkflowElement extends Element {
     @Override
     public String toString() {
         return "Workflow{" +
-                "identifier='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", arrivedAt='" + arrivedAt + '\'' +
                 ", elements=" + elements +

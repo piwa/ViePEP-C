@@ -86,7 +86,7 @@ public class ANDConstruct extends Element {
     @Override
     public String toString() {
         return "AND{" +
-                "identifier='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", elements=" + elements +
                 ", deadline=" + deadline +
