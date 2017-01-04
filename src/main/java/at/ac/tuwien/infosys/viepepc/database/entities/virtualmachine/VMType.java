@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import java.io.Serializable;
 
 
@@ -15,33 +18,35 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@XmlAccessorType(XmlAccessType.FIELD)
 public class VMType implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     protected Long tableId;
 
+    @XmlElement
     private Long identifier;
+    @XmlElement
     private String name;
+    @XmlElement
     private double costs;
+    @XmlElement
     private int cores;
-    private Integer memorySize;
+    @XmlElement
     private String flavor;
+    @XmlElement(name = "ram")
     private double ramPoints;
+    @XmlElement
     private String location;
+    @XmlElement
     private long leasingDuration;
+    @XmlElement
     private long deployTime;
-
 
 
     public double getCpuPoints() {
         int i = cores * 100;
-        return i - (i/10);       //10% are used for the OS
+        return i - (i / 10);       //10% are used for the OS
     }
-
-    public double getRamPoints() {
-        return memorySize;
-    }
-
-
 }

@@ -35,11 +35,30 @@ public abstract class AbstractProvisioningImpl {
     @Autowired
     protected CacheVirtualMachineService cacheVirtualMachineService;
 
-    protected void deployContainerAssignProcessStep(ProcessStep nextProcessStep, VirtualMachine vm, OptimizationResult optimizationResult) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
-        Container container = getContainer(nextProcessStep);
+    protected boolean checkIfEnoughResourcesLeftOnVM(VirtualMachine vm, Container container, OptimizationResult optimizationResult) {
+        double scheduledCPUUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getServiceType().getServiceTypeResources().getCpuLoad()).sum();
+        double scheduledRAMUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getServiceType().getServiceTypeResources().getMemory()).sum();
+        double alreadyUsedCPU = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
+        double alreadyUsedRAM = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
+        double remainingCPUOnVm = vm.getVmType().getCpuPoints() - alreadyUsedCPU - scheduledCPUUsage;
+        double remainingRAMOnVm = vm.getVmType().getRamPoints() - alreadyUsedRAM - scheduledRAMUsage;
+
+        if(container.getContainerConfiguration().getCPUPoints() < remainingCPUOnVm && container.getContainerConfiguration().getRam() < remainingRAMOnVm) {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected void deployContainerAssignProcessStep(ProcessStep nextProcessStep, Container container, VirtualMachine vm, OptimizationResult optimizationResult) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
         container.setVirtualMachine(vm);
         nextProcessStep.setScheduledAtContainer(container);
         optimizationResult.addProcessStep(nextProcessStep);
+    }
+
+    protected void deployContainerAssignProcessStep(ProcessStep nextProcessStep, VirtualMachine vm, OptimizationResult optimizationResult) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
+        Container container = getContainer(nextProcessStep);
+        deployContainerAssignProcessStep(nextProcessStep, container, vm, optimizationResult);
     }
 
     protected VirtualMachine startNewVMDeployContainerAssignProcessStep(ProcessStep processStep, OptimizationResult optimizationResult) throws ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
@@ -141,7 +160,7 @@ public abstract class AbstractProvisioningImpl {
         }
     }
 
-    protected long getRemainingLeasingDuration(Date tau_t, VirtualMachine vm, OptimizationResult optimizationResult) {
+    protected long getRemainingLeasingDurationIncludingScheduled(Date tau_t, VirtualMachine vm, OptimizationResult optimizationResult) {
         Date startedAt = vm.getStartedAt();
         if (startedAt == null) {
             startedAt = tau_t;
@@ -164,5 +183,28 @@ public abstract class AbstractProvisioningImpl {
         return remainingLeasingDuration;
 
     }
+
+    protected long getRemainingLeasingDuration(Date tau_t, VirtualMachine vm) {
+        Date startedAt = vm.getStartedAt();
+        if (startedAt == null) {
+            startedAt = tau_t;
+        }
+        Date toBeTerminatedAt = vm.getToBeTerminatedAt();
+        if (toBeTerminatedAt == null) {
+            toBeTerminatedAt = new Date(startedAt.getTime() + vm.getVmType().getLeasingDuration());
+        }
+        long remainingLeasingDuration = toBeTerminatedAt.getTime() - tau_t.getTime();
+
+        if (remainingLeasingDuration < 0) {
+            remainingLeasingDuration = 0;
+        }
+        return remainingLeasingDuration;
+
+    }
+
+    protected boolean vmAlreadyUsedInResult(VirtualMachine vm, OptimizationResult optimizationResult) {
+        return optimizationResult.getProcessSteps().stream().anyMatch(ps -> (ps.getScheduledAtContainer() != null && ps.getScheduledAtContainer().getVirtualMachine() == vm) || ps.getScheduledAtVM() == vm);
+    }
+
 
 }
