@@ -43,8 +43,7 @@ public class AllParExceedContainerImpl extends AbstractProvisioningImpl implemen
 
             removeAllBusyVms(availableVms);
 
-            Date now = new Date();
-            availableVms.sort(Comparator.comparing(vm -> new Long(getRemainingLeasingDurationIncludingScheduled(now, vm, optimizationResult))));
+            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult))).reversed());
 
             for(WorkflowElement workflowElement : runningWorkflowInstances) {
 

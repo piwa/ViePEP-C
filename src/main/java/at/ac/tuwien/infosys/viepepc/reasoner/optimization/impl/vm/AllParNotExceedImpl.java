@@ -3,6 +3,8 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.vm;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.reasoner.Reasoning;
+import at.ac.tuwien.infosys.viepepc.reasoner.impl.ReasoningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
@@ -44,33 +46,54 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
 
             removeAllBusyVms(availableVms);
 
-            Date now = new Date();
-            availableVms.sort(Comparator.comparing(vm -> new Long(getRemainingLeasingDurationIncludingScheduled(now, vm, optimizationResult))));
+            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult))).reversed());
 
-            for(WorkflowElement workflowElement : runningWorkflowInstances) {
+            for (WorkflowElement workflowElement : runningWorkflowInstances) {
 
                 List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
-                for(ProcessStep processStep : nextProcessSteps) {
+                List<ProcessStep> runningProcessSteps = getRunningSteps(workflowElement);
 
-                    boolean deployed = false;
-                    for(VirtualMachine vm : availableVms) {
-                        long remainingBTU = getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult);
-                        if(remainingBTU > processStep.getExecutionTime() && !vmAlreadyUsedInResult(vm, optimizationResult)) {
-                            deployContainerAssignProcessStep(processStep, vm, optimizationResult);
-                            deployed = true;
-                            break;
-                        }
+                long remainingRunningProcessStepExecution = -1;
+                Date now = new Date();
+                for(ProcessStep processStep : runningProcessSteps) {
+                    if(remainingRunningProcessStepExecution == -1 && remainingRunningProcessStepExecution < processStep.getRemainingExecutionTime(now)) {
+                        remainingRunningProcessStepExecution = processStep.getRemainingExecutionTime(now);
+                    }
+                }
+
+                long executionDurationFirstProcessStep = -1;
+                for (ProcessStep processStep : nextProcessSteps) {
+
+                    if (executionDurationFirstProcessStep == -1) {
+                        executionDurationFirstProcessStep = processStep.getExecutionTime();
                     }
 
-                    if(!deployed) {
-                        VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-                        availableVms.add(vm);
+                    if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) {
+                        long tau_t_1 = executionDurationFirstProcessStep - processStep.getExecutionTime();
+                        if(optimizationResult.getTauT1() == -1 || optimizationResult.getTauT1() > tau_t_1) {
+                            optimizationResult.setTauT1(tau_t_1);
+                        }
+                    }
+                    else {
+                        boolean deployed = false;
+                        for (VirtualMachine vm : availableVms) {
+                            long remainingBTU = getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult);
+                            if (remainingBTU > processStep.getExecutionTime() && !vmAlreadyUsedInResult(vm, optimizationResult)) {
+                                deployContainerAssignProcessStep(processStep, vm, optimizationResult);
+                                deployed = true;
+                                break;
+                            }
+                        }
+
+                        if (!deployed) {
+                            VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+                            availableVms.add(vm);
+                        }
                     }
                 }
             }
 
-
-        } catch(ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {
+        } catch (ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {
             log.error("Container image or configuration not found", ex);
             throw new ProblemNotSolvedException();
         } catch (Exception ex) {

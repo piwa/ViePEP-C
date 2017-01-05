@@ -1,5 +1,6 @@
-package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.vm;
+package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.container;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
@@ -12,13 +13,15 @@ import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerConfigurationNotFound
 import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerImageNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class AllParExceedImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class OneVMforAllContainerImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+
 
     @Override
     public void initializeParameters() {
@@ -34,46 +37,38 @@ public class AllParExceedImpl extends AbstractProvisioningImpl implements Proces
             placementHelper.setFinishedWorkflows();
 
             List<WorkflowElement> runningWorkflowInstances = getRunningWorkflowInstancesSorted();
-            List<VirtualMachine> availableVms = getRunningVms();
+            List<VirtualMachine> runningVMs = getRunningVms();
+            List<ProcessStep> runningProcessSteps = getAllRunningSteps(runningWorkflowInstances);
+            List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(runningWorkflowInstances);
 
-            if (runningWorkflowInstances == null) {
+            if (runningProcessSteps.size() > 0 || nextProcessSteps == null) {
                 return optimizationResult;
             }
 
-            removeAllBusyVms(availableVms);
+            VirtualMachine vm = null;
+            if (runningVMs != null && runningVMs.size() > 0) {
+                vm = runningVMs.get(0);
+            }
+            else {
+                vm = startNewVm(optimizationResult);
+            }
 
-            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult))).reversed());
-
-            for(WorkflowElement workflowElement : runningWorkflowInstances) {
-
-                List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
-                for(ProcessStep processStep : nextProcessSteps) {
-
-                    boolean deployed = false;
-                    for(VirtualMachine vm : availableVms) {
-                        if(!vmAlreadyUsedInResult(vm, optimizationResult)) {
-                            deployContainerAssignProcessStep(processStep, vm, optimizationResult);
-                            deployed = true;
-                            break;
-                        }
-                    }
-
-                    if(!deployed) {
-                        VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-                        availableVms.add(vm);
-                    }
+            for (ProcessStep processStep : nextProcessSteps) {
+                Container container = getContainer(processStep);
+                if (checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
+                    deployContainerAssignProcessStep(processStep, vm, optimizationResult);
                 }
             }
 
-        } catch(ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {
-            log.error("Container image or configuration not found", ex);
+        } catch (ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {
+            log.error("Container image or configuration not found");
             throw new ProblemNotSolvedException();
         } catch (Exception ex) {
-            log.error("EXCEPTION", ex);
             throw new ProblemNotSolvedException();
         }
 
         return optimizationResult;
     }
+
 
 }

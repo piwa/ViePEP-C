@@ -88,7 +88,7 @@ public abstract class AbstractProvisioningImpl {
 
     protected List<ProcessStep> getNextProcessStepsSorted(WorkflowElement workflow) {
         List<ProcessStep> list = Collections.synchronizedList(placementHelper.getNextSteps(workflow.getName()));
-        list.sort(Comparator.comparing(ps -> new Long(ps.getDeadline())));
+        list.sort(Comparator.comparingLong(ProcessStep::getExecutionTime).reversed());
         return list;
     }
 

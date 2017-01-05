@@ -90,7 +90,11 @@ public class ServiceExecution{
             List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
             if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
                 WorkflowElement workflowById = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
-                workflowById.setFinishedAt(finishedAt);
+                try {
+                    workflowById.setFinishedAt(finishedAt);
+                } catch (Exception e) {
+                }
+
                 cacheWorkflowService.deleteRunningWorkflowInstance(workflowById);
                 log.info("Workflow done. Workflow: " + workflowById);
             }
