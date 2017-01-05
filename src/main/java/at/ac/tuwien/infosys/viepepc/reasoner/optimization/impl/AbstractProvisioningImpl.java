@@ -206,5 +206,22 @@ public abstract class AbstractProvisioningImpl {
         return optimizationResult.getProcessSteps().stream().anyMatch(ps -> (ps.getScheduledAtContainer() != null && ps.getScheduledAtContainer().getVirtualMachine() == vm) || ps.getScheduledAtVM() == vm);
     }
 
+    protected long calcRemainingRunningProcessStepExecution(List<ProcessStep> runningProcessSteps) {
+        long remainingRunningProcessStepExecution = -1;
+        Date now = new Date();
+        for (ProcessStep processStep : runningProcessSteps) {
+            if (remainingRunningProcessStepExecution == -1 && remainingRunningProcessStepExecution < processStep.getRemainingExecutionTime(now)) {
+                remainingRunningProcessStepExecution = processStep.getRemainingExecutionTime(now);
+            }
+        }
+        return remainingRunningProcessStepExecution;
+    }
+
+    protected void calcTauT1(OptimizationResult optimizationResult, long executionDurationFirstProcessStep, ProcessStep processStep) {
+        long difference = executionDurationFirstProcessStep - processStep.getExecutionTime();
+        if (optimizationResult.getTauT1() == -1 || optimizationResult.getTauT1() > difference) {
+            optimizationResult.setTauT1((new Date()).getTime() + difference);
+        }
+    }
 
 }

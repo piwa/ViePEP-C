@@ -12,6 +12,9 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResul
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerImageNotFoundException;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import jersey.repackaged.com.google.common.collect.ListMultimap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -22,7 +25,11 @@ import java.util.*;
 @Slf4j
 public class AllParNotExceedImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
 
-    private Map<WorkflowElement, VirtualMachine> vmStartedBecauseOfWorkflow = new HashMap<>();
+    private Multimap<WorkflowElement, ProcessStep> waitingProcessSteps;
+
+    public AllParNotExceedImpl() {
+        waitingProcessSteps =  ArrayListMultimap.create();
+    }
 
     @Override
     public void initializeParameters() {
@@ -45,34 +52,26 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
             }
 
             removeAllBusyVms(availableVms);
-
             availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult))).reversed());
 
             for (WorkflowElement workflowElement : runningWorkflowInstances) {
 
-                List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
                 List<ProcessStep> runningProcessSteps = getRunningSteps(workflowElement);
-
-                long remainingRunningProcessStepExecution = -1;
-                Date now = new Date();
-                for(ProcessStep processStep : runningProcessSteps) {
-                    if(remainingRunningProcessStepExecution == -1 && remainingRunningProcessStepExecution < processStep.getRemainingExecutionTime(now)) {
-                        remainingRunningProcessStepExecution = processStep.getRemainingExecutionTime(now);
-                    }
+                List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
+                if(waitingProcessSteps.containsKey(workflowElement)) {
+                    nextProcessSteps.addAll(waitingProcessSteps.get(workflowElement));
                 }
 
-                long executionDurationFirstProcessStep = -1;
-                for (ProcessStep processStep : nextProcessSteps) {
-
-                    if (executionDurationFirstProcessStep == -1) {
-                        executionDurationFirstProcessStep = processStep.getExecutionTime();
-                    }
+                long remainingRunningProcessStepExecution = calcRemainingRunningProcessStepExecution(runningProcessSteps);
+                long executionDurationFirstProcessStep = 0;
+                if(nextProcessSteps.size() > 0) {
+                    executionDurationFirstProcessStep = nextProcessSteps.get(0).getExecutionTime();
+                }
+                for(ProcessStep processStep : nextProcessSteps) {
 
                     if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) {
-                        long tau_t_1 = executionDurationFirstProcessStep - processStep.getExecutionTime();
-                        if(optimizationResult.getTauT1() == -1 || optimizationResult.getTauT1() > tau_t_1) {
-                            optimizationResult.setTauT1(tau_t_1);
-                        }
+                        calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
+                        waitingProcessSteps.put(workflowElement, processStep);
                     }
                     else {
                         boolean deployed = false;
@@ -88,6 +87,10 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
                         if (!deployed) {
                             VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
                             availableVms.add(vm);
+                        }
+
+                        if(waitingProcessSteps.containsEntry(workflowElement, processStep)) {
+                            waitingProcessSteps.remove(workflowElement, processStep);
                         }
                     }
                 }

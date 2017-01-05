@@ -4,6 +4,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.reasoner.impl.ReasoningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
@@ -11,6 +12,8 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResul
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerImageNotFoundException;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -21,7 +24,11 @@ import java.util.*;
 @Slf4j
 public class AllParNotExceedContainerImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
 
-    private Map<WorkflowElement, VirtualMachine> vmStartedBecauseOfWorkflow = new HashMap<>();
+    private Multimap<WorkflowElement, ProcessStep> waitingProcessSteps;
+
+    public AllParNotExceedContainerImpl() {
+        waitingProcessSteps =  ArrayListMultimap.create();
+    }
 
     @Override
     public void initializeParameters() {
@@ -44,30 +51,49 @@ public class AllParNotExceedContainerImpl extends AbstractProvisioningImpl imple
             }
 
             removeAllBusyVms(availableVms);
-
             availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult))).reversed());
 
             for(WorkflowElement workflowElement : runningWorkflowInstances) {
 
+                List<ProcessStep> runningProcessSteps = getRunningSteps(workflowElement);
                 List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
+                if(waitingProcessSteps.containsKey(workflowElement)) {
+                    nextProcessSteps.addAll(waitingProcessSteps.get(workflowElement));
+                }
+
+                long remainingRunningProcessStepExecution = calcRemainingRunningProcessStepExecution(runningProcessSteps);
+                long executionDurationFirstProcessStep = 0;
+                if(nextProcessSteps.size() > 0) {
+                    executionDurationFirstProcessStep = nextProcessSteps.get(0).getExecutionTime();
+                }
                 for(ProcessStep processStep : nextProcessSteps) {
 
-                    boolean deployed = false;
-                    Container container = getContainer(processStep);
-                    for(VirtualMachine vm : availableVms) {
-                        long remainingBTU = getRemainingLeasingDuration(new Date(), vm);
-                        if(remainingBTU > processStep.getExecutionTime()) {
-                            if (checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
-                                deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
-                                deployed = true;
-                                break;
+                    if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) {
+                        calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
+                        waitingProcessSteps.put(workflowElement, processStep);
+                    }
+                    else {
+                        boolean deployed = false;
+                        Container container = getContainer(processStep);
+                        for (VirtualMachine vm : availableVms) {
+                            long remainingBTU = getRemainingLeasingDuration(new Date(), vm);
+                            if (remainingBTU > processStep.getExecutionTime()) {
+                                if (checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
+                                    deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
+                                    deployed = true;
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    if(!deployed) {
-                        VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-                        availableVms.add(vm);
+                        if (!deployed) {
+                            VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+                            availableVms.add(vm);
+                        }
+
+                        if(waitingProcessSteps.containsEntry(workflowElement, processStep)) {
+                            waitingProcessSteps.remove(workflowElement, processStep);
+                        }
                     }
                 }
             }
