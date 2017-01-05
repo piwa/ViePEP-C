@@ -21858,3 +21858,113 @@ Task-Running: ProcessStep{id='0', name='788233c8pr_toit_1.1', serviceType=at.ac.
 
 2017-01-05 16:16:24.988  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- sleep for: 10 seconds -----------
 2017-01-05 16:16:24.989  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- next iteration: Thu Jan 01 00:59:59 CET 1970 -----------
+2017-01-05 16:16:25.993  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : Running workflow instances (1 running)
+2017-01-05 16:16:35.027  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0 : Thu Jan 05 16:16:35 CET 2017 ------------------------
+2017-01-05 16:16:35.027  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0.time : 1483629395026 ------------------------
+2017-01-05 16:16:35.033  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : tau_t_1 was calculted as: Thu Jan 01 00:59:59 CET 1970
+2017-01-05 16:16:35.033  INFO 18942 --- [SimpleAsyncTaskExecutor-1] t.i.v.r.i.ProcessOptimizationResultsImpl : 
+------------------------- VMs running ----------------------------
+VirtualMachine{id=null, name='6_1', serviceType=null, leased=true, startedAt=2017-01-05 16:15:44, terminateAt=2017-01-05 16:18:44, location=aws, ip adress=128.130.172.211}
+------------------------- Containers running ----------------------------
+Container{id=null, name='MICRO_CORE_Service1_0002ae65', running=true, startedAt=2017-01-05 16:15:45, runningOnVM=6_1}
+------------------------ Tasks running ---------------------------
+Task-Running: ProcessStep{id='0', name='788233c8pr_toit_1.1', serviceType=at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType@7ca45bfd, startDate=2017-01-05 16:15:45, finishedAt=null, scheduledAtVM=null, scheduledAtContainer=MICRO_CORE_Service1_0002ae65, lastElement=false}
+----------- VM should be used (running or has to be started): ----
+----------- Container should be used (running or has to be started): ----
+----------------------- Tasks to be started ----------------------
+
+2017-01-05 16:16:35.034  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- sleep for: 10 seconds -----------
+2017-01-05 16:16:35.034  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- next iteration: Thu Jan 01 00:59:59 CET 1970 -----------
+2017-01-05 16:16:36.036  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : Running workflow instances (1 running)
+2017-01-05 16:16:45.071  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0 : Thu Jan 05 16:16:45 CET 2017 ------------------------
+2017-01-05 16:16:45.071  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0.time : 1483629405070 ------------------------
+2017-01-05 16:16:45.077  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : tau_t_1 was calculted as: Thu Jan 01 00:59:59 CET 1970
+2017-01-05 16:16:45.078  INFO 18942 --- [SimpleAsyncTaskExecutor-1] t.i.v.r.i.ProcessOptimizationResultsImpl : 
+------------------------- VMs running ----------------------------
+VirtualMachine{id=null, name='6_1', serviceType=null, leased=true, startedAt=2017-01-05 16:15:44, terminateAt=2017-01-05 16:18:44, location=aws, ip adress=128.130.172.211}
+------------------------- Containers running ----------------------------
+Container{id=null, name='MICRO_CORE_Service1_0002ae65', running=true, startedAt=2017-01-05 16:15:45, runningOnVM=6_1}
+------------------------ Tasks running ---------------------------
+Task-Running: ProcessStep{id='0', name='788233c8pr_toit_1.1', serviceType=at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType@7ca45bfd, startDate=2017-01-05 16:15:45, finishedAt=null, scheduledAtVM=null, scheduledAtContainer=MICRO_CORE_Service1_0002ae65, lastElement=false}
+----------- VM should be used (running or has to be started): ----
+----------- Container should be used (running or has to be started): ----
+----------------------- Tasks to be started ----------------------
+
+2017-01-05 16:16:45.079  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- sleep for: 10 seconds -----------
+2017-01-05 16:16:45.079  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- next iteration: Thu Jan 01 00:59:59 CET 1970 -----------
+2017-01-05 16:16:46.084  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : Running workflow instances (1 running)
+2017-01-05 16:16:55.119  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0 : Thu Jan 05 16:16:55 CET 2017 ------------------------
+2017-01-05 16:16:55.120  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0.time : 1483629415119 ------------------------
+2017-01-05 16:16:55.125  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : tau_t_1 was calculted as: Thu Jan 01 00:59:59 CET 1970
+2017-01-05 16:16:55.126  INFO 18942 --- [SimpleAsyncTaskExecutor-1] t.i.v.r.i.ProcessOptimizationResultsImpl : 
+------------------------- VMs running ----------------------------
+VirtualMachine{id=null, name='6_1', serviceType=null, leased=true, startedAt=2017-01-05 16:15:44, terminateAt=2017-01-05 16:18:44, location=aws, ip adress=128.130.172.211}
+------------------------- Containers running ----------------------------
+Container{id=null, name='MICRO_CORE_Service1_0002ae65', running=true, startedAt=2017-01-05 16:15:45, runningOnVM=6_1}
+------------------------ Tasks running ---------------------------
+Task-Running: ProcessStep{id='0', name='788233c8pr_toit_1.1', serviceType=at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType@7ca45bfd, startDate=2017-01-05 16:15:45, finishedAt=null, scheduledAtVM=null, scheduledAtContainer=MICRO_CORE_Service1_0002ae65, lastElement=false}
+----------- VM should be used (running or has to be started): ----
+----------- Container should be used (running or has to be started): ----
+----------------------- Tasks to be started ----------------------
+
+2017-01-05 16:16:55.126  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- sleep for: 10 seconds -----------
+2017-01-05 16:16:55.127  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- next iteration: Thu Jan 01 00:59:59 CET 1970 -----------
+2017-01-05 16:16:56.131  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : Running workflow instances (1 running)
+2017-01-05 16:17:05.159  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0 : Thu Jan 05 16:17:05 CET 2017 ------------------------
+2017-01-05 16:17:05.160  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0.time : 1483629425159 ------------------------
+2017-01-05 16:17:05.167  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : tau_t_1 was calculted as: Thu Jan 01 00:59:59 CET 1970
+2017-01-05 16:17:05.168  INFO 18942 --- [SimpleAsyncTaskExecutor-1] t.i.v.r.i.ProcessOptimizationResultsImpl : 
+------------------------- VMs running ----------------------------
+VirtualMachine{id=null, name='6_1', serviceType=null, leased=true, startedAt=2017-01-05 16:15:44, terminateAt=2017-01-05 16:18:44, location=aws, ip adress=128.130.172.211}
+------------------------- Containers running ----------------------------
+Container{id=null, name='MICRO_CORE_Service1_0002ae65', running=true, startedAt=2017-01-05 16:15:45, runningOnVM=6_1}
+------------------------ Tasks running ---------------------------
+Task-Running: ProcessStep{id='0', name='788233c8pr_toit_1.1', serviceType=at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType@7ca45bfd, startDate=2017-01-05 16:15:45, finishedAt=null, scheduledAtVM=null, scheduledAtContainer=MICRO_CORE_Service1_0002ae65, lastElement=false}
+----------- VM should be used (running or has to be started): ----
+----------- Container should be used (running or has to be started): ----
+----------------------- Tasks to be started ----------------------
+
+2017-01-05 16:17:05.169  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- sleep for: 10 seconds -----------
+2017-01-05 16:17:05.169  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- next iteration: Thu Jan 01 00:59:59 CET 1970 -----------
+2017-01-05 16:17:06.172  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : Running workflow instances (1 running)
+2017-01-05 16:17:15.211  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0 : Thu Jan 05 16:17:15 CET 2017 ------------------------
+2017-01-05 16:17:15.211  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0.time : 1483629435211 ------------------------
+2017-01-05 16:17:15.216  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : tau_t_1 was calculted as: Thu Jan 01 00:59:59 CET 1970
+2017-01-05 16:17:15.217  INFO 18942 --- [SimpleAsyncTaskExecutor-1] t.i.v.r.i.ProcessOptimizationResultsImpl : 
+------------------------- VMs running ----------------------------
+VirtualMachine{id=null, name='6_1', serviceType=null, leased=true, startedAt=2017-01-05 16:15:44, terminateAt=2017-01-05 16:18:44, location=aws, ip adress=128.130.172.211}
+------------------------- Containers running ----------------------------
+Container{id=null, name='MICRO_CORE_Service1_0002ae65', running=true, startedAt=2017-01-05 16:15:45, runningOnVM=6_1}
+------------------------ Tasks running ---------------------------
+Task-Running: ProcessStep{id='0', name='788233c8pr_toit_1.1', serviceType=at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType@7ca45bfd, startDate=2017-01-05 16:15:45, finishedAt=null, scheduledAtVM=null, scheduledAtContainer=MICRO_CORE_Service1_0002ae65, lastElement=false}
+----------- VM should be used (running or has to be started): ----
+----------- Container should be used (running or has to be started): ----
+----------------------- Tasks to be started ----------------------
+
+2017-01-05 16:17:15.217  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- sleep for: 10 seconds -----------
+2017-01-05 16:17:15.218  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- next iteration: Thu Jan 01 00:59:59 CET 1970 -----------
+2017-01-05 16:17:15.234  INFO 18942 --- [SimpleAsyncTaskExecutor-3] a.a.t.i.v.s.ServiceExecution             : Task-Done: ProcessStep{id='0', name='788233c8pr_toit_1.1', serviceType=at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType@7ca45bfd, startDate=2017-01-05 16:15:45, finishedAt=2017-01-05 16:17:15, scheduledAtVM=null, scheduledAtContainer=MICRO_CORE_Service1_0002ae65, lastElement=false}
+2017-01-05 16:17:15.234  INFO 18942 --- [SimpleAsyncTaskExecutor-3] a.a.t.i.v.r.impl.PlacementHelperImpl     : Stop Container: Container{id=null, name='MICRO_CORE_Service1_0002ae65', running=true, startedAt=2017-01-05 16:15:45, runningOnVM=6_1} on VM: VirtualMachine{id=null, name='6_1', serviceType=null, leased=true, startedAt=2017-01-05 16:15:44, terminateAt=2017-01-05 16:18:44, location=aws, ip adress=128.130.172.211}
+2017-01-05 16:17:16.222  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : Running workflow instances (1 running)
+2017-01-05 16:17:16.223  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0 : Thu Jan 05 16:17:16 CET 2017 ------------------------
+2017-01-05 16:17:16.223  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- tau_t_0.time : 1483629436223 ------------------------
+2017-01-05 16:17:16.232  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : tau_t_1 was calculted as: Thu Jan 01 00:59:59 CET 1970
+2017-01-05 16:17:16.233  INFO 18942 --- [SimpleAsyncTaskExecutor-1] t.i.v.r.i.ProcessOptimizationResultsImpl : 
+------------------------- VMs running ----------------------------
+VirtualMachine{id=null, name='6_1', serviceType=null, leased=true, startedAt=2017-01-05 16:15:44, terminateAt=2017-01-05 16:18:44, location=aws, ip adress=128.130.172.211}
+------------------------- Containers running ----------------------------
+------------------------ Tasks running ---------------------------
+----------- VM should be used (running or has to be started): ----
+VirtualMachine{id=null, name='6_1', serviceType=null, leased=true, startedAt=2017-01-05 16:15:44, terminateAt=2017-01-05 16:18:44, location=aws, ip adress=128.130.172.211}
+VirtualMachine{id=null, name='6_2', serviceType=null, leased=false, startedAt=NOT_YET, terminateAt=NOT_YET, location=aws, ip adress=null}
+----------- Container should be used (running or has to be started): ----
+Container{id=null, name='SINGLE_CORE_Service3_6ca62c43', running=false, startedAt=NULL, runningOnVM=6_1}
+Container{id=null, name='SINGLE_CORE_Service2_358b5b4a', running=false, startedAt=NULL, runningOnVM=6_2}
+----------------------- Tasks to be started ----------------------
+ProcessStep{id='0', name='788233c8pr_toit_1.3', serviceType=at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType@63bccb0, startDate=null, finishedAt=null, scheduledAtVM=null, scheduledAtContainer=SINGLE_CORE_Service3_6ca62c43, lastElement=false}
+ProcessStep{id='0', name='788233c8pr_toit_1.2', serviceType=at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType@75004c5e, startDate=null, finishedAt=null, scheduledAtVM=null, scheduledAtContainer=SINGLE_CORE_Service2_358b5b4a, lastElement=false}
+
+2017-01-05 16:17:16.233  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- sleep for: 10 seconds -----------
+2017-01-05 16:17:16.233  INFO 18942 --- [SimpleAsyncTaskExecutor-1] a.a.t.i.v.reasoner.impl.ReasoningImpl    : --------- next iteration: Thu Jan 01 00:59:59 CET 1970 -----------
+2017-01-05 16:17:16.247  INFO 18942 --- [SimpleAsyncTaskExecutor-4] a.a.t.i.v.s.ServiceExecution             : Task-Start: ProcessStep{id='0', name='788233c8pr_toit_1.3', serviceType=at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType@63bccb0, startDate=2017-01-05 16:17:16, finishedAt=null, scheduledAtVM=null, scheduledAtContainer=SINGLE_CORE_Service3_6ca62c43, lastElement=false}
+2017-01-05 16:17:16.298  INFO 18942 --- [SimpleAsyncTaskExecutor-6] a.a.t.i.v.s.ServiceExecution             : Task-Start: ProcessStep{id='0', name='788233c8pr_toit_1.2', serviceType=at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType@75004c5e, startDate=2017-01-05 16:17:16, finishedAt=null, scheduledAtVM=null, scheduledAtContainer=SINGLE_CORE_Service2_358b5b4a, lastElement=false}
