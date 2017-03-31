@@ -53,7 +53,7 @@ public class OneVMPerTaskContainerImpl extends AbstractProvisioningImpl implemen
         try {
             List<WorkflowElement> nextWorkflowInstances = getRunningWorkflowInstancesSorted();
             List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(nextWorkflowInstances);
-            List<VirtualMachine> runningVMs = new ArrayList<>();//getRunningVms();
+            List<VirtualMachine> runningVMs = getRunningVms();
 
             if (nextProcessSteps == null) {
                 return optimizationResult;
@@ -61,15 +61,16 @@ public class OneVMPerTaskContainerImpl extends AbstractProvisioningImpl implemen
 
             for(ProcessStep processStep : nextProcessSteps) {
                 boolean deployed = false;
+                Container container = getContainer(processStep);
                 for(VirtualMachine vm : runningVMs) {
-                    Container container = getContainer(processStep);
                     if (checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
-                        deployContainerAssignProcessStep(processStep, vm, optimizationResult);
+                        deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
                         deployed = true;
+                        break;
                     }
                 }
                 if(!deployed) {
-                    runningVMs.add(startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult));
+                    runningVMs.add(startNewVMDeployContainerAssignProcessStep(processStep, container, optimizationResult));
                 }
             }
         } catch(ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {

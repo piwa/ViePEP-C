@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @AllArgsConstructor
 @Entity
 @Table(name = "ContainerConfiguration")
-@XmlRootElement(name="ContainerConfiguration")
+@XmlRootElement(name = "ContainerConfiguration")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ContainerConfiguration {
 
@@ -35,14 +35,15 @@ public class ContainerConfiguration {
     private double ram; //amount of needed memory in mb
     @XmlElement
     private double disc; //amount of needed disc space in mb
-/*
-    public String getId() {
-        return "c" + String.valueOf(cores);
-    }
-    
-  */
-    public double getCPUPoints(){
-    	return (cores*100)*0.9;
+
+    /*
+        public String getId() {
+            return "c" + String.valueOf(cores);
+        }
+
+      */
+    public double getCPUPoints() {
+        return cores * 100;
     }
 
 }

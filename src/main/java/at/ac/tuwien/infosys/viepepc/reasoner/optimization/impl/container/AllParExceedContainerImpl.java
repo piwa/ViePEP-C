@@ -50,8 +50,8 @@ public class AllParExceedContainerImpl extends AbstractProvisioningImpl implemen
                 return optimizationResult;
             }
 
-            removeAllBusyVms(availableVms);
-            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult))).reversed());
+//            removeAllBusyVms(availableVms);
+            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult)).reversed());
 
             for (WorkflowElement workflowElement : runningWorkflowInstances) {
                 List<ProcessStep> runningProcessSteps = getRunningSteps(workflowElement);
@@ -75,13 +75,14 @@ public class AllParExceedContainerImpl extends AbstractProvisioningImpl implemen
                         Container container = getContainer(processStep);
                         for (VirtualMachine vm : availableVms) {
                             if (checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
-                                deployContainerAssignProcessStep(processStep, vm, optimizationResult);
+                                deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
                                 deployed = true;
+                                break;
                             }
                         }
 
                         if (!deployed) {
-                            VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+                            VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, container, optimizationResult);
                             availableVms.add(vm);
                         }
 

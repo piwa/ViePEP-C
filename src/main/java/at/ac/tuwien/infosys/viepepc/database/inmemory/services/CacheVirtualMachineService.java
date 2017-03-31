@@ -23,6 +23,10 @@ public class CacheVirtualMachineService {
     @Value("${optimization.values.k}")
     private int kConfig = -1;
 
+
+    @Value("${default.vm.cores}")
+    private int defaultVMCores;
+
     public void initializeVMs() {
         int V = getVMTypes().size();
         int K = 0;
@@ -121,7 +125,7 @@ public class CacheVirtualMachineService {
 
     public VMType getDefaultVmType() {
         try {
-            return getVmTypeFromCore(4, "aws");
+            return getVmTypeFromCore(defaultVMCores, "aws");
         } catch (Exception e) {
             log.error("EXCEPTION", e);
         }

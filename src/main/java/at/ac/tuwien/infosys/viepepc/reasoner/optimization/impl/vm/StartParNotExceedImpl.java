@@ -45,29 +45,23 @@ public class StartParNotExceedImpl extends AbstractProvisioningImpl implements P
 
             for(WorkflowElement workflowElement : runningWorkflowInstances) {
                 if (!vmStartedBecauseOfWorkflow.containsKey(workflowElement)) {
-                    VirtualMachine vm = startNewVm(optimizationResult);
+                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
                     availableVms.add(vm);
                     vmStartedBecauseOfWorkflow.put(workflowElement, vm);
                 }
             }
 
-            if (availableVms.size() == 0) {
-                availableVms.add(startNewVm(optimizationResult));
+            while(availableVms.size() < runningWorkflowInstances.size()) {
+                availableVms.add(startNewDefaultVm(optimizationResult));
             }
 
-            Iterator<VirtualMachine> iteratorAvailableVms = availableVms.iterator();
-            while(iteratorAvailableVms.hasNext()) {
-                VirtualMachine vm = iteratorAvailableVms.next();
-                if (vm.getDeployedContainers().size() > 0) {
-                    iteratorAvailableVms.remove();
-                }
-            }
+            availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
 
             if (availableVms.size() == 0) {
                 return optimizationResult;
             }
 
-            availableVms.sort(Comparator.comparing(vm -> new Long(vm.getStartupTime())));
+            availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));
 
             for(ProcessStep processStep : nextProcessSteps) {
                 boolean foundVmWithEnoughRemainingBTU = false;

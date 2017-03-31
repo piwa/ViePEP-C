@@ -38,10 +38,10 @@ public class OneVMforAllContainerImpl extends AbstractProvisioningImpl implement
 
             List<WorkflowElement> runningWorkflowInstances = getRunningWorkflowInstancesSorted();
             List<VirtualMachine> runningVMs = getRunningVms();
-            List<ProcessStep> runningProcessSteps = getAllRunningSteps(runningWorkflowInstances);
+//            List<ProcessStep> runningProcessSteps = getAllRunningSteps(runningWorkflowInstances);
             List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(runningWorkflowInstances);
 
-            if (runningProcessSteps.size() > 0 || nextProcessSteps == null) {
+            if (nextProcessSteps == null) {
                 return optimizationResult;
             }
 
@@ -50,13 +50,13 @@ public class OneVMforAllContainerImpl extends AbstractProvisioningImpl implement
                 vm = runningVMs.get(0);
             }
             else {
-                vm = startNewVm(optimizationResult);
+                vm = startNewDefaultVm(optimizationResult);
             }
 
             for (ProcessStep processStep : nextProcessSteps) {
                 Container container = getContainer(processStep);
                 if (checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
-                    deployContainerAssignProcessStep(processStep, vm, optimizationResult);
+                    deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
                 }
             }
 

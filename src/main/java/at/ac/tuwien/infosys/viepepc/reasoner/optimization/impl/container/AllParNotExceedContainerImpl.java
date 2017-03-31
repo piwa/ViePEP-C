@@ -50,8 +50,8 @@ public class AllParNotExceedContainerImpl extends AbstractProvisioningImpl imple
                 return optimizationResult;
             }
 
-            removeAllBusyVms(availableVms);
-            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult))).reversed());
+//            removeAllBusyVms(availableVms);
+            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult)).reversed());
 
             for(WorkflowElement workflowElement : runningWorkflowInstances) {
 

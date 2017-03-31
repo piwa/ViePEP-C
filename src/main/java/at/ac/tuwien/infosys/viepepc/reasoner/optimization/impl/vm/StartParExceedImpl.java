@@ -45,7 +45,7 @@ public class StartParExceedImpl extends AbstractProvisioningImpl implements Proc
 
             if(availableVms.size() < runningWorkflowInstances.size()) {
                 for(int i = 0; i < runningWorkflowInstances.size() - availableVms.size(); i++) {
-                    availableVms.add(startNewVm(optimizationResult));
+                    availableVms.add(startNewDefaultVm(optimizationResult));
                 }
             }
 

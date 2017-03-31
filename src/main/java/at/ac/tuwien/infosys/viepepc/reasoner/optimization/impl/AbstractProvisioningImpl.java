@@ -3,7 +3,9 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
+import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
@@ -36,18 +38,17 @@ public abstract class AbstractProvisioningImpl {
     protected CacheVirtualMachineService cacheVirtualMachineService;
 
     protected boolean checkIfEnoughResourcesLeftOnVM(VirtualMachine vm, Container container, OptimizationResult optimizationResult) {
-        double scheduledCPUUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getServiceType().getServiceTypeResources().getCpuLoad()).sum();
-        double scheduledRAMUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getServiceType().getServiceTypeResources().getMemory()).sum();
+//        double scheduledCPUUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getServiceType().getServiceTypeResources().getCpuLoad()).sum();
+//        double scheduledRAMUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getServiceType().getServiceTypeResources().getMemory()).sum();
+        double scheduledCPUUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getScheduledAtContainer().getContainerConfiguration().getCPUPoints()).sum();
+        double scheduledRAMUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getScheduledAtContainer().getContainerConfiguration().getRam()).sum();
         double alreadyUsedCPU = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
-        double alreadyUsedRAM = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
+        double alreadyUsedRAM = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getRam()).sum();
         double remainingCPUOnVm = vm.getVmType().getCpuPoints() - alreadyUsedCPU - scheduledCPUUsage;
         double remainingRAMOnVm = vm.getVmType().getRamPoints() - alreadyUsedRAM - scheduledRAMUsage;
 
-        if(container.getContainerConfiguration().getCPUPoints() < remainingCPUOnVm && container.getContainerConfiguration().getRam() < remainingRAMOnVm) {
-            return true;
-        }
+        return container.getContainerConfiguration().getCPUPoints() <= remainingCPUOnVm && container.getContainerConfiguration().getRam() <= remainingRAMOnVm;
 
-        return false;
     }
 
     protected void deployContainerAssignProcessStep(ProcessStep nextProcessStep, Container container, VirtualMachine vm, OptimizationResult optimizationResult) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
@@ -62,8 +63,15 @@ public abstract class AbstractProvisioningImpl {
     }
 
     protected VirtualMachine startNewVMDeployContainerAssignProcessStep(ProcessStep processStep, OptimizationResult optimizationResult) throws ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
-        VirtualMachine newVM = startNewVm(optimizationResult);
-        deployContainerAssignProcessStep(processStep, newVM, optimizationResult);
+        Container container = getContainer(processStep);
+        VirtualMachine newVM = startNewVmDefaultOrForContainer(optimizationResult, container.getContainerConfiguration());
+        deployContainerAssignProcessStep(processStep, container, newVM, optimizationResult);
+        return newVM;
+    }
+
+    protected VirtualMachine startNewVMDeployContainerAssignProcessStep(ProcessStep processStep, Container container, OptimizationResult optimizationResult) throws ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
+        VirtualMachine newVM = startNewVmDefaultOrForContainer(optimizationResult, container.getContainerConfiguration());
+        deployContainerAssignProcessStep(processStep, container, newVM, optimizationResult);
         return newVM;
     }
 
@@ -96,8 +104,12 @@ public abstract class AbstractProvisioningImpl {
         return new ArrayList<>(cacheVirtualMachineService.getStartedAndScheduledForStartVMs());
     }
 
-    protected VirtualMachine startNewVm(OptimizationResult result) {
-        List<VirtualMachine> virtualMachineList = cacheVirtualMachineService.getVMs(cacheVirtualMachineService.getDefaultVmType());
+    protected VirtualMachine startNewDefaultVm(OptimizationResult result) {
+        return startNewVm(result, cacheVirtualMachineService.getDefaultVmType());
+    }
+
+    protected VirtualMachine startNewVm(OptimizationResult result, VMType vmType) {
+        List<VirtualMachine> virtualMachineList = cacheVirtualMachineService.getVMs(vmType);
         List<VirtualMachine> vmsShouldBeStarted = result.getProcessSteps().stream().map(ProcessStep::getScheduledAtVM).collect(Collectors.toList());
         vmsShouldBeStarted.addAll(result.getProcessSteps().stream().map(processStep -> processStep.getScheduledAtContainer().getVirtualMachine()).collect(Collectors.toList()));
 
@@ -106,6 +118,24 @@ public abstract class AbstractProvisioningImpl {
                 return currentVM;
             }
         }
+        return null;
+    }
+
+    protected VirtualMachine startNewVmDefaultOrForContainer(OptimizationResult result, ContainerConfiguration containerConfiguration) {
+
+        VMType defaultVMType = cacheVirtualMachineService.getDefaultVmType();
+
+        if(containerConfiguration.getCPUPoints() <= defaultVMType.getCpuPoints() && containerConfiguration.getRam() <= defaultVMType.getRamPoints()) {
+            return startNewVm(result, defaultVMType);
+        }
+
+        Set<VMType> vmTypes = cacheVirtualMachineService.getVMTypes();
+        for(VMType vmType : vmTypes) {
+            if(containerConfiguration.getCPUPoints() <= vmType.getCpuPoints() && containerConfiguration.getRam() <= vmType.getRamPoints()) {
+                return startNewVm(result, vmType);
+            }
+        }
+
         return null;
     }
 
@@ -146,18 +176,12 @@ public abstract class AbstractProvisioningImpl {
 
     protected List<WorkflowElement> getRunningWorkflowInstancesSorted() {
         List<WorkflowElement> list = Collections.synchronizedList(cacheWorkflowService.getRunningWorkflowInstances());
-        list.sort(Comparator.comparing(w -> new Long(w.getDeadline())));
+        list.sort(Comparator.comparing(Element::getDeadline));
         return list;
     }
 
     protected void removeAllBusyVms(List<VirtualMachine> availableVms) {
-        Iterator<VirtualMachine> iteratorAvailableVms = availableVms.iterator();
-        while(iteratorAvailableVms.hasNext()) {
-            VirtualMachine vm = iteratorAvailableVms.next();
-            if (vm.getDeployedContainers().size() > 0) {
-                iteratorAvailableVms.remove();
-            }
-        }
+        availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
     }
 
     protected long getRemainingLeasingDurationIncludingScheduled(Date tau_t, VirtualMachine vm, OptimizationResult optimizationResult) {

@@ -15,3 +15,6 @@ viepep4.0.properties
 container.properties
 mysql.properties
 .idea
+*.iml
+*.log
+log

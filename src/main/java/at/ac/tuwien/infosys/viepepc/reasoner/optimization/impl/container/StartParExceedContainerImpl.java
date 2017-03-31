@@ -46,7 +46,7 @@ public class StartParExceedContainerImpl extends AbstractProvisioningImpl implem
 
             if(availableVms.size() < runningWorkflowInstances.size()) {
                 for(int i = 0; i < runningWorkflowInstances.size() - availableVms.size(); i++) {
-                    availableVms.add(startNewVm(optimizationResult));
+                    availableVms.add(startNewDefaultVm(optimizationResult));
                 }
             }
 
@@ -54,15 +54,14 @@ public class StartParExceedContainerImpl extends AbstractProvisioningImpl implem
                 return optimizationResult;
             }
 
-            availableVms.sort(Comparator.comparing(vm -> new Long(vm.getStartupTime())));
+            availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));
 
             for(ProcessStep processStep : nextProcessSteps) {
-
                 Container container = getContainer(processStep);
                 for(VirtualMachine vm : availableVms) {
-
                     if(checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
                         deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
+                        break;
                     }
                 }
             }
