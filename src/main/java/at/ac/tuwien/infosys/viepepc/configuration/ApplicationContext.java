@@ -20,6 +20,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @PropertySources({
         @PropertySource("classpath:container-config/container.properties"),
         @PropertySource("classpath:database-config/mysql.properties"),
+        @PropertySource("classpath:cloud-config/viepep4.0.properties"),
         @PropertySource("classpath:application.properties"),
         @PropertySource("classpath:application-container.properties")
 })

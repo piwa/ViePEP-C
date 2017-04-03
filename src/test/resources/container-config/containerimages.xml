@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContainerImages>
+    <containerImage>
+        <imageName>hello-world-app</imageName>
+        <repoName>carinamarina</repoName>
+        <serviceType>
+            <name>HelloWorldService</name>
+            <serviceTypeResources>
+                <cpuLoad>45</cpuLoad>
+                <memory>450</memory>
+                <makeSpan>90000</makeSpan>
+            </serviceTypeResources>
+            <dataToTransfer>2</dataToTransfer>
+            <onlyInternal>false</onlyInternal>
+            <internPort>5000</internPort>
+        </serviceType>
+    </containerImage>
+</ContainerImages>
+

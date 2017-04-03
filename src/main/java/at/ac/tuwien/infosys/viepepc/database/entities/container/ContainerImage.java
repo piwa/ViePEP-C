@@ -32,7 +32,6 @@ public class ContainerImage {
 	@XmlElement
     private ServiceType serviceType;
 
-
 	public ContainerImage() {
 	}
 

@@ -1,4 +1,4 @@
-package at.ac.tuwien.infosys.viepepc.registry.impl;
+package at.ac.tuwien.infosys.viepepc.registry.impl.container;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
 import lombok.AllArgsConstructor;

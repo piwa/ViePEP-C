@@ -1,4 +1,4 @@
-package at.ac.tuwien.infosys.viepepc.registry.impl;
+package at.ac.tuwien.infosys.viepepc.registry.impl.container;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

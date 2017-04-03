@@ -9,8 +9,8 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlaceme
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
-import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerConfigurationNotFoundException;
-import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerImageNotFoundException;
+import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
+import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;

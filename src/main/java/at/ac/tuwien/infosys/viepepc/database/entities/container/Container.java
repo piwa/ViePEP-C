@@ -35,7 +35,7 @@ public class Container {
     private long deployCost = 3;
     private String containerID;
     private String serviceName;
-    private Integer externPort;
+    private String externPort;
     private Date startedAt;
     private boolean running = false;
 

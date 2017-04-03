@@ -1,4 +1,4 @@
-package at.ac.tuwien.infosys.viepepc.registry.impl;
+package at.ac.tuwien.infosys.viepepc.registry.impl.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;

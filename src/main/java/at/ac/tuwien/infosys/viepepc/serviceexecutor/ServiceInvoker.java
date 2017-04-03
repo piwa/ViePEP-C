@@ -79,7 +79,7 @@ public class ServiceInvoker {
 
 	public InvocationResultDTO invoke(Container container, ProcessStep processStep) {
 		VirtualMachine vm = container.getVirtualMachine();
-		int port = container.getExternPort();
+		String port = container.getExternPort();
 				
 		String task = processStep.getServiceType().getName().replace("service", "");
         String uri = vm.getURI().concat(":"+port).concat("/service/").concat(task).concat("/normal").concat("/nodata");

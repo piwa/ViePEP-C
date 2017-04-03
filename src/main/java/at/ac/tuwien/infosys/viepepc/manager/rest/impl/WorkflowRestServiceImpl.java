@@ -5,7 +5,7 @@ import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowServ
 import at.ac.tuwien.infosys.viepepc.manager.rest.WorkflowRestService;
 import at.ac.tuwien.infosys.viepepc.reasoner.Reasoning;
 import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
-import at.ac.tuwien.infosys.viepepc.registry.impl.ServiceTypeNotFoundException;
+import at.ac.tuwien.infosys.viepepc.registry.impl.service.ServiceTypeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

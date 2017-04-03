@@ -41,16 +41,24 @@ public class VirtualMachine implements Serializable {
 
     private String name;
     private String location;
-    private VMType vmType;
     private boolean leased = false;
     private String ipAddress;
     private long startupTime;
     private Date startedAt;
     private boolean started;
     private Date toBeTerminatedAt;
+    private String resourcepool;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private VMType vmType;
+
+    @ElementCollection
+    private List<String> usedPorts = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="virtualMachine")
     private List<Container> deployedContainers = new ArrayList<>();
+
+
 
     public VirtualMachine(String name, Integer numberCores, ServiceType serviceType, String location) {
         this.name = name;
@@ -144,4 +152,5 @@ public class VirtualMachine implements Serializable {
     public void undeployContainer(Container container) {
         this.deployedContainers.remove(container);
     }
+
 }

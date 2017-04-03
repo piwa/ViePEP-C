@@ -14,8 +14,8 @@ import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowServ
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
-import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerConfigurationNotFoundException;
-import at.ac.tuwien.infosys.viepepc.registry.impl.ContainerImageNotFoundException;
+import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
+import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;

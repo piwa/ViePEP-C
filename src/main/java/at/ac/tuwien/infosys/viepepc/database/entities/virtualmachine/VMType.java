@@ -44,9 +44,11 @@ public class VMType implements Serializable {
     @XmlElement
     private long deployTime;
 
+    private double storage;
 
     public double getCpuPoints() {
         int i = cores * 100;
         return i - (i / 10);       //10% are used for the OS
     }
+
 }
