@@ -1,5 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database.entities.workflow;
 
+import org.joda.time.DateTime;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
@@ -71,10 +73,9 @@ public class ANDConstruct extends Element {
                     lastExecutedMaxElement = current;
                 }
             } else {
-                Date currentElementFinishedAt = current.getFinishedAt();
-                Date lastExecutedMaxElementFinished = lastExecutedMaxElement.getFinishedAt();
-                if (currentElementFinishedAt != null && lastExecutedMaxElementFinished != null
-                        && currentElementFinishedAt.after(lastExecutedMaxElementFinished)) {
+                DateTime currentElementFinishedAt = current.getFinishedAt();
+                DateTime lastExecutedMaxElementFinished = lastExecutedMaxElement.getFinishedAt();
+                if (currentElementFinishedAt != null && lastExecutedMaxElementFinished != null && currentElementFinishedAt.isAfter(lastExecutedMaxElementFinished)) {
                     lastExecutedMaxElement = current;
                 }
             }

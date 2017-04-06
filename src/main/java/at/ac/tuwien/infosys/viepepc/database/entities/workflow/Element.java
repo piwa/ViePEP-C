@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.database.entities.workflow;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.joda.time.DateTime;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -63,7 +64,7 @@ public abstract class Element implements Serializable {
     @ManyToOne
     private Element nextXOR;
 
-    protected Date finishedAt;
+    protected DateTime finishedAt;
 
     @XmlElement(name = "lastElement")
     private boolean lastElement;

@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.bootstrap;
 
-import at.ac.tuwien.infosys.viepepc.bootstrap.containers.ContainerConfigurationsReaderImpl;
+import at.ac.tuwien.infosys.viepepc.bootstrap.containers.ContainerConfigurationsReader;
 import at.ac.tuwien.infosys.viepepc.bootstrap.vmTypes.VmTypesReaderImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class Bootstrap implements ApplicationListener<ContextRefreshedEvent> {
 
     @Autowired
-    private ContainerConfigurationsReaderImpl containerConfigurationsReader;
+    private ContainerConfigurationsReader containerConfigurationsReader;
     @Autowired
     private VmTypesReaderImpl vmTypesReader;
 

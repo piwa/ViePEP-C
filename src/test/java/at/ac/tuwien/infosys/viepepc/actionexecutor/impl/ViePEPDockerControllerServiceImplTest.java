@@ -1,7 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPOpenStackClientService;
-import at.ac.tuwien.infosys.viepepc.bootstrap.containers.ContainerConfigurationsReaderImpl;
+import at.ac.tuwien.infosys.viepepc.bootstrap.containers.ContainerConfigurationsReader;
 import at.ac.tuwien.infosys.viepepc.bootstrap.vmTypes.VmTypesReaderImpl;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
@@ -9,21 +10,18 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
-import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -57,11 +55,11 @@ public class ViePEPDockerControllerServiceImplTest {
     @Autowired
     private VmTypesReaderImpl vmTypesReader;
     @Autowired
-    private ContainerConfigurationsReaderImpl containerConfigurationsReader;
+    private ContainerConfigurationsReader containerConfigurationsReader;
     @Autowired
     private ContainerImageRegistryReader containerImageRegistryReader;
     @Autowired
-    private ViePEPDockerControllerServiceImpl viePEPDockerControllerServiceImpl;
+    private ViePEPDockerControllerService viePEPDockerControllerService;
     @Autowired
     private CacheContainerService cacheContainerService;
     @Autowired
@@ -92,14 +90,12 @@ public class ViePEPDockerControllerServiceImplTest {
     }
 
     @Test
-    public void startContainer() throws Exception {
+    public void startAndStopAContainer_success() throws Exception {
 
         ServiceType serviceType = serviceRegistryReader.findServiceType("HelloWorldService");
         Container container = getContainer(serviceType);
 
-        container = viePEPDockerControllerServiceImpl.startContainer(vm, container);
-
-        System.out.println(container.getExternPort());
+        container = viePEPDockerControllerService.startContainer(vm, container);
 
         assertThat(Integer.valueOf(container.getExternPort())).isBetween(20000, 20300);
 
@@ -108,7 +104,7 @@ public class ViePEPDockerControllerServiceImplTest {
         String response = restTemplate.getForObject("http://" + vm.getIpAddress() + ":" + container.getExternPort(), String.class);
         assertThat(response).isEqualTo("Hello World!");
 
-        viePEPDockerControllerServiceImpl.removeContainer(container);
+        viePEPDockerControllerService.removeContainer(container);
 
         Container finalContainer = container;
         assertThatThrownBy(() -> restTemplate.getForObject("http://" + vm.getIpAddress() + ":" + finalContainer.getExternPort(), String.class)).isInstanceOf(ResourceAccessException.class);

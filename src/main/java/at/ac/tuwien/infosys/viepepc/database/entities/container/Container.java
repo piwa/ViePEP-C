@@ -4,11 +4,11 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import javax.persistence.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -36,11 +36,8 @@ public class Container {
     private String containerID;
     private String serviceName;
     private String externPort;
-    private Date startedAt;
+    private DateTime startedAt;
     private boolean running = false;
-
-    @Value("${simulation.container.deploy.time}")
-    private long deployTime;
 
     public Container() {
         containerID = UUID.randomUUID().toString().substring(0, 8);
@@ -59,9 +56,9 @@ public class Container {
 
     @Override
     public String toString() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-        String startString = startedAt == null ? "NULL" : simpleDateFormat.format(startedAt);
+        String startString = startedAt == null ? "NULL" : dtfOut.print(startedAt);
         String vmString = virtualMachine == null ? "NULL" : virtualMachine.getName();
         return "Container{" +
                 "id=" + id +

@@ -14,8 +14,8 @@
    <serviceType>
       <name>Service2</name>
       <serviceTypeResources>
-         <cpuLoad>75</cpuLoad>
-         <memory>720</memory>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
          <makeSpan>60000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>4</dataToTransfer>
@@ -25,8 +25,8 @@
    <serviceType>
       <name>Service3</name>
       <serviceTypeResources>
-         <cpuLoad>75</cpuLoad>
-         <memory>720</memory>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
          <makeSpan>70000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>6</dataToTransfer>
@@ -36,8 +36,8 @@
    <serviceType>
       <name>Service4</name>
       <serviceTypeResources>
-         <cpuLoad>100</cpuLoad>
-         <memory>960</memory>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
          <makeSpan>170000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>2</dataToTransfer>
@@ -47,8 +47,8 @@
    <serviceType>
       <name>Service5</name>
       <serviceTypeResources>
-         <cpuLoad>120</cpuLoad>
-         <memory>1150</memory>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
          <makeSpan>60000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>4</dataToTransfer>
@@ -58,8 +58,8 @@
    <serviceType>
       <name>Service6</name>
       <serviceTypeResources>
-         <cpuLoad>125</cpuLoad>
-         <memory>1150</memory>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
          <makeSpan>40000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>6</dataToTransfer>
@@ -69,8 +69,8 @@
    <serviceType>
       <name>Service7</name>
       <serviceTypeResources>
-         <cpuLoad>150</cpuLoad>
-         <memory>1440</memory>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
          <makeSpan>60000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>2</dataToTransfer>
@@ -80,8 +80,8 @@
    <serviceType>
       <name>Service8</name>
       <serviceTypeResources>
-         <cpuLoad>175</cpuLoad>
-         <memory>1680</memory>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
          <makeSpan>20000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>4</dataToTransfer>
@@ -91,8 +91,8 @@
    <serviceType>
       <name>Service9</name>
       <serviceTypeResources>
-         <cpuLoad>250</cpuLoad>
-         <memory>2400</memory>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
          <makeSpan>60000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>6</dataToTransfer>
@@ -102,8 +102,8 @@
    <serviceType>
       <name>Service10</name>
       <serviceTypeResources>
-         <cpuLoad>333</cpuLoad>
-         <memory>3200</memory>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
          <makeSpan>30000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>2</dataToTransfer>
@@ -113,8 +113,8 @@
    <serviceType>
       <name>Service11</name>
       <serviceTypeResources>
-         <cpuLoad>333</cpuLoad>
-         <memory>3200</memory>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
          <makeSpan>30000</makeSpan>
       </serviceTypeResources>
       <dataToTransfer>2</dataToTransfer>

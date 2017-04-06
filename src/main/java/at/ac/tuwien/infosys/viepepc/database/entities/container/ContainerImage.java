@@ -1,11 +1,15 @@
 package at.ac.tuwien.infosys.viepepc.database.entities.container;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
+import at.ac.tuwien.infosys.viepepc.registry.impl.container.ServiceTypeJaxbAdapter;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * @author Gerta Sheganaku
@@ -30,7 +34,10 @@ public class ContainerImage {
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name="serviceTypeId")
 	@XmlElement
+    @XmlJavaTypeAdapter(ServiceTypeJaxbAdapter.class)
     private ServiceType serviceType;
+	@XmlElement
+	private long deployTime;
 
 	public ContainerImage() {
 	}

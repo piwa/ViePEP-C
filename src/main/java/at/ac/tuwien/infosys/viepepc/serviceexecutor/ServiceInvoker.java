@@ -82,6 +82,7 @@ public class ServiceInvoker {
 		String port = container.getExternPort();
 				
 		String task = processStep.getServiceType().getName().replace("service", "");
+        task = task.replace("Service", "");
         String uri = vm.getURI().concat(":"+port).concat("/service/").concat(task).concat("/normal").concat("/nodata");
         try {
             return invoke(uri);

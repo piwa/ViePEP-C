@@ -1,31 +1,32 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
-import com.spotify.docker.client.messages.HostConfig;
-import com.spotify.docker.client.messages.PortBinding;
+import com.spotify.docker.client.messages.*;
 import jersey.repackaged.com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by philippwaibel on 03/04/2017.
  */
 @Component
 @Slf4j
-public class ViePEPDockerControllerServiceImpl {
+public class ViePEPDockerControllerServiceImpl implements ViePEPDockerControllerService {
 
     @Value("${viepep.node.port.available}")
     private String encodedHostNodeAvailablePorts;
 
+    @Override
     public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
         /* Connect to docker server of the host */
         final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).build();
@@ -77,8 +78,9 @@ public class ViePEPDockerControllerServiceImpl {
         container.setContainerID(id);
         container.setVirtualMachine(virtualMachine);
         container.setRunning(true);
-        container.setStartedAt(new Date());
+        container.setStartedAt(new DateTime());
         container.setExternPort(hostPort);
+        virtualMachine.getDeployedContainers().add(container);
 
 
         /* Update the set of used port on docker host */
@@ -86,12 +88,31 @@ public class ViePEPDockerControllerServiceImpl {
         usedPorts.add(hostPort);
         virtualMachine.setUsedPorts(usedPorts);
 
+/*
+        for(int i = 0; i < 10; i++) {
+            ContainerInfo info = docker.inspectContainer(id);
+
+            try {
+                TopResults topResults = docker.topContainer(id, "ps_args");
+                for(String str : topResults.titles()) {
+                    System.out.println(str);
+                }
+
+            } catch (Exception ex ) {
+                log.error("Exception", ex);
+            }
+
+            TimeUnit.SECONDS.sleep(3);
+        }
+*/
+
         log.info("A new container with the ID: " + id + " on the host: " + virtualMachine.getName() + " has been started.");
 
         return container;
     }
 
 
+    @Override
     public void removeContainer(Container container) {
         VirtualMachine virtualMachine = container.getVirtualMachine();
         final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).build();
@@ -134,6 +155,7 @@ public class ViePEPDockerControllerServiceImpl {
         virtualMachine.setUsedPorts(usedPorts);
 
         container.setRunning(false);
+        virtualMachine.getDeployedContainers().remove(container);
 
         log.info("The container: " + container.getContainerID() + " on the host: " + container.getVirtualMachine() + " was removed.");
 

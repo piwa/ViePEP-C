@@ -14,6 +14,7 @@ import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFou
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 
 import java.util.*;
 
@@ -35,7 +36,7 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
     }
 
     @Override
-    public OptimizationResult optimize(Date tau_t) throws ProblemNotSolvedException {
+    public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
 
         OptimizationResult optimizationResult = new OptimizationResultImpl();
 
@@ -50,7 +51,7 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
             }
 
             removeAllBusyVms(availableVms);
-            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult))).reversed());
+            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult))).reversed());
 
             for (WorkflowElement workflowElement : runningWorkflowInstances) {
 
@@ -74,7 +75,7 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
                     else {
                         boolean deployed = false;
                         for (VirtualMachine vm : availableVms) {
-                            long remainingBTU = getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult);
+                            long remainingBTU = getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult);
                             if (remainingBTU > processStep.getExecutionTime() && !vmAlreadyUsedInResult(vm, optimizationResult)) {
                                 deployContainerAssignProcessStep(processStep, vm, optimizationResult);
                                 deployed = true;

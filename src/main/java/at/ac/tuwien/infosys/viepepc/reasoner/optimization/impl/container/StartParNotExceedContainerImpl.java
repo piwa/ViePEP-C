@@ -12,6 +12,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.Proble
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 
 import java.util.*;
 
@@ -29,7 +30,7 @@ public class StartParNotExceedContainerImpl extends AbstractProvisioningImpl imp
     }
 
     @Override
-    public OptimizationResult optimize(Date tau_t) throws ProblemNotSolvedException {
+    public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
 
         OptimizationResult optimizationResult = new OptimizationResultImpl();
 
@@ -69,7 +70,7 @@ public class StartParNotExceedContainerImpl extends AbstractProvisioningImpl imp
                 boolean foundVmWithEnoughRemainingBTU = false;
                 Container container = getContainer(processStep);
                 for (VirtualMachine vm : availableVms) {
-                    long remainingBTU = getRemainingLeasingDuration(new Date(), vm);
+                    long remainingBTU = getRemainingLeasingDuration(new DateTime(), vm);
                     if (remainingBTU > processStep.getExecutionTime()) {
                         foundVmWithEnoughRemainingBTU = true;
                         if (checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {

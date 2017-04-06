@@ -13,13 +13,15 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -46,7 +48,7 @@ public class ReasoningImpl implements Reasoning {
     @Autowired
     private WorkflowDaoService workflowDaoService;
 
-    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
     private boolean run = true;
 
@@ -126,15 +128,15 @@ public class ReasoningImpl implements Reasoning {
         List<WorkflowElement> workflows = cacheWorkflowService.getAllWorkflowElements();
         int delayed = 0;
         for (WorkflowElement workflow : workflows) {
-            log.info("workflow: " + workflow.getName() + " Deadline: " + formatter.format(new Date(workflow.getDeadline())));
+            log.info("workflow: " + workflow.getName() + " Deadline: " + dtfOut.print(new DateTime(workflow.getDeadline())));
 
             ProcessStep lastExecutedElement = workflow.getLastExecutedElement();
             if (lastExecutedElement != null) {
-                Date finishedAt = lastExecutedElement.getFinishedAt();
+                DateTime finishedAt = lastExecutedElement.getFinishedAt();
                 workflow.setFinishedAt(finishedAt);
-                boolean ok = workflow.getDeadline() >= finishedAt.getTime();
-                long delay = finishedAt.getTime() - workflow.getDeadline();
-                String message = " LastDone: " + formatter.format(finishedAt);
+                boolean ok = workflow.getDeadline() >= finishedAt.getMillis();
+                long delay = finishedAt.getMillis() - workflow.getDeadline();
+                String message = " LastDone: " + dtfOut.print(finishedAt);
                 if (ok) {
                     log.info(message + " : was ok");
                 } else {
@@ -168,12 +170,12 @@ public class ReasoningImpl implements Reasoning {
 
         placementHelper.setFinishedWorkflows();
 
-        Date tau_t_0 = new Date();
+        DateTime tau_t_0 = new DateTime();
 
         terminateVms(tau_t_0);
 
-        log.info("--------- tau_t_0 : " + tau_t_0 + " ------------------------");
-        log.info("--------- tau_t_0.time : " + tau_t_0.getTime() + " ------------------------");
+        log.info("---------------- tau_t_0 : " + tau_t_0 + " -----------------");
+        log.info("-------------- tau_t_0.time : " + tau_t_0.toString() + " --------------");
         OptimizationResult optimize = resourcePredictionService.optimize(tau_t_0);
 
         if (optimize == null) {
@@ -183,29 +185,29 @@ public class ReasoningImpl implements Reasoning {
 //        log.info("Objective: " + optimize.getObjective());
         long tau_t_1 = optimize.getTauT1();
 //        long tau_t_1 = optimize.get("tau_t_1").longValue() * 1000;//VERY IMPORTANT,
-        log.info("tau_t_1 was calculted as: "+ new Date(tau_t_1) );
+        log.info("tau_t_1 was calculted as: "+ new DateTime(tau_t_1) );
         
         Future<Boolean> processed = processOptimizationResults.processResults(optimize, tau_t_0);
         processed.get();
         
-        long difference = tau_t_1 - new Date().getTime();
+        long difference = tau_t_1 - new DateTime().getMillis();
         if (difference < 0 || difference > 60*60*1000) {
             difference = MIN_TAU_T_DIFFERENCE_MS;
         }
-        log.info("--------- sleep for: " + difference / 1000 + " seconds -----------");
-        log.info("--------- next iteration: " + new Date(tau_t_1) + " -----------");
+        log.info("------------------------- sleep for: " + difference / 1000 + " seconds --------------------------");
+        log.info("------------- next iteration: " + DateTime.now().plus(tau_t_1) + " --------------");
         
         
         return difference;
     }
 
-    private void terminateVms(Date tau_t_0) {
+    private void terminateVms(DateTime tau_t_0) {
         for(VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
             long timeUntilTermination = placementHelper.getRemainingLeasingDuration(tau_t_0, vm);
             if(timeUntilTermination < MIN_TAU_T_DIFFERENCE_MS) {
                 if(vm.getDeployedContainers().size() > 0) {
                     log.info("Extend leasing of VM: " + vm.toString());
-                    vm.setToBeTerminatedAt(new Date(vm.getToBeTerminatedAt().getTime() + vm.getVmType().getLeasingDuration()));
+                    vm.setToBeTerminatedAt(new DateTime(vm.getToBeTerminatedAt().getMillis() + vm.getVmType().getLeasingDuration()));
                 }
                 else {
                     placementHelper.terminateVM(vm);

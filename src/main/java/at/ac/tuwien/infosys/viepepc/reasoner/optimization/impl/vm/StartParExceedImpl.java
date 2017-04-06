@@ -11,6 +11,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.Proble
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 
 import java.util.*;
 
@@ -28,7 +29,7 @@ public class StartParExceedImpl extends AbstractProvisioningImpl implements Proc
     }
 
     @Override
-    public OptimizationResult optimize(Date tau_t) throws ProblemNotSolvedException {
+    public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
 
         OptimizationResult optimizationResult = new OptimizationResultImpl();
 

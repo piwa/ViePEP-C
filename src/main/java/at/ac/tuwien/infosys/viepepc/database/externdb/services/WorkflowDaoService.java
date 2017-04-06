@@ -11,6 +11,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.WorkflowElementRepository;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -49,7 +50,7 @@ public class WorkflowDaoService {
 		log.info("-- Update workflowElement: " + workflow.toString());
 
 		List<Element> flattedWorkflow = placementHelperImpl.getFlattenWorkflow(new ArrayList<>(), workflow);
-		Date finishedDate = getFinishedDate(flattedWorkflow);
+		DateTime finishedDate = getFinishedDate(flattedWorkflow);
 
 		workflow.setFinishedAt(finishedDate);
 		for (Element element : flattedWorkflow) {
@@ -116,14 +117,14 @@ public class WorkflowDaoService {
 		return workflowElementRepository.save(workflow);
 	}
 
-	private Date getFinishedDate(List<Element> flattedWorkflow) {
-		Date finishedDate = null;
+	private DateTime getFinishedDate(List<Element> flattedWorkflow) {
+		DateTime finishedDate = null;
 		for (Element element : flattedWorkflow) {
 			if (element instanceof ProcessStep && element.isLastElement()) {
 				if (element.getFinishedAt() != null) {
 					if (finishedDate == null) {
 						finishedDate = element.getFinishedAt();
-					} else if (element.getFinishedAt().after(finishedDate)) {
+					} else if (element.getFinishedAt().isAfter(finishedDate)) {
 						finishedDate = element.getFinishedAt();
 					}
 				}

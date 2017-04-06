@@ -15,6 +15,7 @@ import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFou
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 
 import java.util.*;
 
@@ -36,7 +37,7 @@ public class AllParNotExceedContainerImpl extends AbstractProvisioningImpl imple
     }
 
     @Override
-    public OptimizationResult optimize(Date tau_t) throws ProblemNotSolvedException {
+    public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
 
         OptimizationResult optimizationResult = new OptimizationResultImpl();
 
@@ -51,7 +52,7 @@ public class AllParNotExceedContainerImpl extends AbstractProvisioningImpl imple
             }
 
 //            removeAllBusyVms(availableVms);
-            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> getRemainingLeasingDurationIncludingScheduled(new Date(), vm, optimizationResult)).reversed());
+            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult)).reversed());
 
             for(WorkflowElement workflowElement : runningWorkflowInstances) {
 
@@ -76,7 +77,7 @@ public class AllParNotExceedContainerImpl extends AbstractProvisioningImpl imple
                         boolean deployed = false;
                         Container container = getContainer(processStep);
                         for (VirtualMachine vm : availableVms) {
-                            long remainingBTU = getRemainingLeasingDuration(new Date(), vm);
+                            long remainingBTU = getRemainingLeasingDuration(new DateTime(), vm);
                             if (remainingBTU > processStep.getExecutionTime()) {
                                 if (checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
                                     deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);

@@ -74,7 +74,7 @@ public class LoopConstruct extends Element {
                     lastExecutedMaxElement = current;
                 }
             } else if (current != null) {
-                if (current.getFinishedAt().after(lastExecutedMaxElement.getFinishedAt())) {
+                if (current.getFinishedAt().isAfter(lastExecutedMaxElement.getFinishedAt())) {
                     lastExecutedMaxElement = current;
                 }
             }

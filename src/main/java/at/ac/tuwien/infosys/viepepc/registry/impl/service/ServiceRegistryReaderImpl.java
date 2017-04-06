@@ -2,9 +2,11 @@ package at.ac.tuwien.infosys.viepepc.registry.impl.service;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -18,7 +20,10 @@ import java.nio.file.Paths;
 @Component
 public class ServiceRegistryReaderImpl implements ServiceRegistryReader {
 
-    private ServiceRegistry serviceRegistry;
+    private static ServiceRegistry serviceRegistry;
+
+    @Getter
+    private static ServiceRegistryReaderImpl instance;
 
     public ServiceRegistryReaderImpl(@Value("${service.registry.path}") String serviceRegistryPath) {
         try {
@@ -31,7 +36,11 @@ public class ServiceRegistryReaderImpl implements ServiceRegistryReader {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+    }
 
+    @PostConstruct
+    public void setInstance() {
+        instance = this;
     }
 
     @Override
@@ -44,6 +53,7 @@ public class ServiceRegistryReaderImpl implements ServiceRegistryReader {
         }
         throw new ServiceTypeNotFoundException();
     }
+
 
     @Override
     public int getServiceTypeAmount() {

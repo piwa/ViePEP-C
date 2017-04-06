@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization;
 
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
+import org.joda.time.DateTime;
 
 import java.util.Date;
 
@@ -13,7 +14,7 @@ public interface ProcessInstancePlacementProblem {
      * optimizes the process instance placement problem
      * @return the result
      */
-    OptimizationResult optimize(Date tau_t) throws ProblemNotSolvedException;
+    OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException;
 
     void initializeParameters();
 

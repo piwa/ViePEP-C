@@ -8,6 +8,9 @@ import at.ac.tuwien.infosys.viepepc.database.entities.services.adapter.ServiceTy
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlElement;
@@ -15,7 +18,6 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,10 +38,10 @@ import java.util.List;
 @NoArgsConstructor
 public class ProcessStep extends Element {
 
-    private Date startDate;
+    private DateTime startDate;
     private String workflowName;
     private boolean isScheduled;
-    private Date scheduledStartedAt;
+    private DateTime scheduledStartedAt;
     private int numberOfExecutions;
     private boolean hasToBeExecuted = true;
 
@@ -83,20 +85,20 @@ public class ProcessStep extends Element {
     public long getRemainingExecutionTime(Date date) {
         long time = date.getTime();
         if (startDate != null) {
-            time = startDate.getTime();
+            time = startDate.getMillis();
         }
         long difference = date.getTime() - time;
         long remaining = serviceType.getServiceTypeResources().getMakeSpan() - difference;
         return remaining > 0 ? remaining : serviceType.getServiceTypeResources().getMakeSpan() ;
     }
 
-    public void setScheduledForExecution(boolean isScheduled, Date tau_t, VirtualMachine vm) {
+    public void setScheduledForExecution(boolean isScheduled, DateTime tau_t, VirtualMachine vm) {
         this.isScheduled = isScheduled;
         this.scheduledStartedAt = tau_t;
         this.scheduledAtVM = vm;
     }
 
-    public void setScheduledForExecution(boolean isScheduled, Date tau_t, Container container) {
+    public void setScheduledForExecution(boolean isScheduled, DateTime tau_t, Container container) {
         this.isScheduled = isScheduled;
         this.scheduledStartedAt = tau_t;
         this.scheduledAtContainer = container;
@@ -107,7 +109,7 @@ public class ProcessStep extends Element {
         return this;
     }
     
-    public void setStartDate(Date date){
+    public void setStartDate(DateTime date){
     	this.startDate = date;
     	if(date != null) {
     		numberOfExecutions++;
@@ -116,10 +118,10 @@ public class ProcessStep extends Element {
 
     @Override
     public String toString() {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-        String startDateformat = startDate != null ? formatter.format(startDate) : null;
-        String finishedAtformat = finishedAt != null ? formatter.format(finishedAt) : null;
+        String startDateformat = startDate != null ? dtfOut.print(startDate) : null;
+        String finishedAtformat = finishedAt != null ? dtfOut.print(finishedAt) : null;
         String vmName = scheduledAtVM != null ? scheduledAtVM.getName() : null;
         String dockerName = scheduledAtContainer != null ? scheduledAtContainer.getName() : null;
         return "ProcessStep{" +
@@ -136,7 +138,7 @@ public class ProcessStep extends Element {
 
     public void setHasBeenExecuted(boolean hasBeenExecuted) {
         if (hasBeenExecuted) {
-            finishedAt = new Date();
+            finishedAt = new DateTime();
         } else finishedAt = null;
     }
 

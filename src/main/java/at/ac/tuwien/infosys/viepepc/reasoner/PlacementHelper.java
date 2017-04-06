@@ -6,6 +6,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import org.joda.time.DateTime;
 
 import java.util.Date;
 import java.util.List;
@@ -58,7 +59,7 @@ public interface PlacementHelper {
 
 	int getZ(String type, VirtualMachine vm);
 
-	long getRemainingLeasingDuration(Date tau_t, VirtualMachine vm);
+	long getRemainingLeasingDuration(DateTime tau_t, VirtualMachine vm);
 
 	String getGVariable(VirtualMachine vm);
 

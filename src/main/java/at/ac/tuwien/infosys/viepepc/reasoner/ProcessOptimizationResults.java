@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.reasoner;
 
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
+import org.joda.time.DateTime;
 
 import java.util.Date;
 import java.util.concurrent.Future;
@@ -10,5 +11,5 @@ import java.util.concurrent.Future;
  */
 public interface ProcessOptimizationResults {
 
-    Future<Boolean> processResults(OptimizationResult optimize, Date tau_t);
+    Future<Boolean> processResults(OptimizationResult optimize, DateTime tau_t);
 }

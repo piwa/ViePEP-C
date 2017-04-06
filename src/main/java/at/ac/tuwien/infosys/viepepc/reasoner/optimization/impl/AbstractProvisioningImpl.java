@@ -16,6 +16,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
@@ -184,16 +185,16 @@ public abstract class AbstractProvisioningImpl {
         availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
     }
 
-    protected long getRemainingLeasingDurationIncludingScheduled(Date tau_t, VirtualMachine vm, OptimizationResult optimizationResult) {
-        Date startedAt = vm.getStartedAt();
+    protected long getRemainingLeasingDurationIncludingScheduled(DateTime tau_t, VirtualMachine vm, OptimizationResult optimizationResult) {
+        DateTime startedAt = vm.getStartedAt();
         if (startedAt == null) {
             startedAt = tau_t;
         }
-        Date toBeTerminatedAt = vm.getToBeTerminatedAt();
+        DateTime toBeTerminatedAt = vm.getToBeTerminatedAt();
         if (toBeTerminatedAt == null) {
-            toBeTerminatedAt = new Date(startedAt.getTime() + vm.getVmType().getLeasingDuration());
+            toBeTerminatedAt = new DateTime(startedAt.getMillis() + vm.getVmType().getLeasingDuration());
         }
-        long remainingLeasingDuration = toBeTerminatedAt.getTime() - tau_t.getTime();
+        long remainingLeasingDuration = toBeTerminatedAt.getMillis() - tau_t.getMillis();
 
         for(ProcessStep processStep : optimizationResult.getProcessSteps()) {
             if(processStep.getScheduledAtVM() == vm || processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
@@ -208,16 +209,16 @@ public abstract class AbstractProvisioningImpl {
 
     }
 
-    protected long getRemainingLeasingDuration(Date tau_t, VirtualMachine vm) {
-        Date startedAt = vm.getStartedAt();
+    protected long getRemainingLeasingDuration(DateTime tau_t, VirtualMachine vm) {
+        DateTime startedAt = vm.getStartedAt();
         if (startedAt == null) {
             startedAt = tau_t;
         }
-        Date toBeTerminatedAt = vm.getToBeTerminatedAt();
+        DateTime toBeTerminatedAt = vm.getToBeTerminatedAt();
         if (toBeTerminatedAt == null) {
-            toBeTerminatedAt = new Date(startedAt.getTime() + vm.getVmType().getLeasingDuration());
+            toBeTerminatedAt = new DateTime(startedAt.getMillis() + vm.getVmType().getLeasingDuration());
         }
-        long remainingLeasingDuration = toBeTerminatedAt.getTime() - tau_t.getTime();
+        long remainingLeasingDuration = toBeTerminatedAt.getMillis() - tau_t.getMillis();
 
         if (remainingLeasingDuration < 0) {
             remainingLeasingDuration = 0;

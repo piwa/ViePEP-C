@@ -1,6 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl;
 
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPOpenStackClientService;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
@@ -14,6 +16,7 @@ import at.ac.tuwien.infosys.viepepc.database.externdb.services.ElementDaoService
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,16 +32,18 @@ public class PlacementHelperImpl implements PlacementHelper {
 
     @Autowired
     private ElementDaoService elementDaoService;
-//    @Autowired
-//    private ViePEPClientService viePEPClientService;
+    @Autowired
+    private ViePEPOpenStackClientService viePEPClientService;
     @Autowired
     private ReportDaoService reportDaoService;
-//    @Autowired
-//    private ViePEPContainerControllerServiceImpl containerControllerService;
+    @Autowired
+    private ViePEPDockerControllerService containerControllerService;
     @Autowired
     private CacheVirtualMachineService cacheVirtualMachineService;
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
+
+    private Map<Element, Boolean> andParentHasRunningChild = new HashMap<>();
 
     @Value("${simulate}")
     private boolean simulate;
@@ -52,7 +57,7 @@ public class PlacementHelperImpl implements PlacementHelper {
             List<Element> flattenWorkflowList = getFlattenWorkflow(new ArrayList<>(), workflow);
 
             boolean workflowDone = true;
-            Date finishedDate = new Date(0);
+            DateTime finishedDate = new DateTime(0);
             for (Element element : flattenWorkflowList) {
 
                 if (element instanceof ProcessStep && element.isLastElement()) {
@@ -62,7 +67,7 @@ public class PlacementHelperImpl implements PlacementHelper {
                             break;
                         }
                         else {
-                            if (element.getFinishedAt().after(finishedDate)) {
+                            if (element.getFinishedAt().isAfter(finishedDate)) {
                                 finishedDate = element.getFinishedAt();
                             }
                         }
@@ -143,12 +148,12 @@ public class PlacementHelperImpl implements PlacementHelper {
 
 	@Override
 	public long getRemainingSetupTime(VirtualMachine vm, Date now) {
-		Date startedAt = vm.getStartedAt();
+        DateTime startedAt = vm.getStartedAt();
 		if (vm.isLeased() && startedAt != null && !vm.isStarted()) {
 			long startupTime = vm.getStartupTime();
 			long serviceDeployTime = vm.getVmType().getDeployTime();
 			long nowTime = now.getTime();
-			long startedAtTime = startedAt.getTime();
+			long startedAtTime = startedAt.getMillis();
 			long remaining = (startedAtTime + startupTime + serviceDeployTime) - nowTime;
 
 			if (remaining > 0) { // should never be < 0
@@ -174,13 +179,13 @@ public class PlacementHelperImpl implements PlacementHelper {
 			log.error("VM " + vm + " not leased for scheduled service on container: " + container);
 			return 0;
 		}
-		
-		Date vmStartedAt = vm.getStartedAt();
+
+        DateTime vmStartedAt = vm.getStartedAt();
 		if (vm.isLeased() && vmStartedAt != null && !vm.isStarted()) {
 			long vmStartupTime = vm.getStartupTime();
-			long containerDeployTime = container.getDeployTime();
+			long containerDeployTime = container.getContainerImage().getDeployTime();
 			long nowTime = now.getTime();
-			long startedAtTime = vmStartedAt.getTime();
+			long startedAtTime = vmStartedAt.getMillis();
 			
 			long remaining = (startedAtTime + vmStartupTime + containerDeployTime) - nowTime;
 
@@ -191,11 +196,11 @@ public class PlacementHelperImpl implements PlacementHelper {
 			}
 		}
 		if (vm.isStarted()) {
-			Date containerStartedAt = container.getStartedAt();
+            DateTime containerStartedAt = container.getStartedAt();
 			if (containerStartedAt != null && !container.isRunning()) {
-				long containerDeployTime = container.getDeployTime();
+				long containerDeployTime = container.getContainerImage().getDeployTime();
 				long nowTime = now.getTime();
-				long startedAtTime = containerStartedAt.getTime();
+				long startedAtTime = containerStartedAt.getMillis();
 				long remaining = (startedAtTime + containerDeployTime) - nowTime;
 
 				if (remaining > 0) { // should never be < 0
@@ -243,20 +248,13 @@ public class PlacementHelperImpl implements PlacementHelper {
 
     @Override
     public void terminateVM(VirtualMachine virtualMachine) {
-        log.info("Terminate: " + virtualMachine);
-        if (!simulate) {
-//            viePEPClientService.terminateInstanceByIP(virtualMachine.getIpAddress());
-        }
-        virtualMachine.terminate();
-
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(new Date(), virtualMachine.getName(), Action.STOPPED);
-        reportDaoService.save(report);
+        terminateVM(virtualMachine, new Date());
     }
     
     public void terminateVM(VirtualMachine virtualMachine, Date date) {
         log.info("Terminate: " + virtualMachine);
         if (!simulate) {
-//            viePEPClientService.terminateInstanceByIP(virtualMachine.getIpAddress());
+            viePEPClientService.stopVirtualMachine(virtualMachine);
         }
         virtualMachine.terminate();
 
@@ -268,12 +266,8 @@ public class PlacementHelperImpl implements PlacementHelper {
     	VirtualMachine vm = container.getVirtualMachine();
         log.info("Stop Container: " + container + " on VM: " + vm);
     	if(!simulate) {
-/*			try {
-				containerControllerService.stopContainer(vm, container);
-			} catch (CouldNotStopContainerException e) {
-				e.printStackTrace();
-			}
-*/    	}
+            containerControllerService.removeContainer(container);
+    	}
 
         ContainerReportingAction report = new ContainerReportingAction(new Date(), container.getName(), vm.getName(), Action.STOPPED);
         reportDaoService.save(report);
@@ -281,8 +275,6 @@ public class PlacementHelperImpl implements PlacementHelper {
     	container.shutdownContainer();
 
     }
-
-    Map<Element, Boolean> andParentHasRunningChild = new HashMap<>();
 
     @Override
     public List<ProcessStep> getNextSteps(Element workflow, Element andParent) {
@@ -445,16 +437,16 @@ public class PlacementHelperImpl implements PlacementHelper {
     /**
      * @return the remaining leasing duration for a particular vm (v,k) starting from tau_t
      */
-    public long getRemainingLeasingDuration(Date tau_t, VirtualMachine vm) {
-        Date startedAt = vm.getStartedAt();
+    public long getRemainingLeasingDuration(DateTime tau_t, VirtualMachine vm) {
+        DateTime startedAt = vm.getStartedAt();
         if (startedAt == null) {
             return 0;
         }
-        Date toBeTerminatedAt = vm.getToBeTerminatedAt();
+        DateTime toBeTerminatedAt = vm.getToBeTerminatedAt();
         if (toBeTerminatedAt == null) {
-            toBeTerminatedAt = new Date(startedAt.getTime() + vm.getVmType().getLeasingDuration());
+            toBeTerminatedAt = startedAt.plus(vm.getVmType().getLeasingDuration());
         }
-        long remainingLeasingDuration = toBeTerminatedAt.getTime() - tau_t.getTime();
+        long remainingLeasingDuration = toBeTerminatedAt.getMillis() - tau_t.getMillis();
         if (remainingLeasingDuration < 0) {
             remainingLeasingDuration = 0;
         }

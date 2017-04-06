@@ -5,14 +5,14 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import lombok.Getter;
 import lombok.Setter;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -44,9 +44,9 @@ public class VirtualMachine implements Serializable {
     private boolean leased = false;
     private String ipAddress;
     private long startupTime;
-    private Date startedAt;
+    private DateTime startedAt;
     private boolean started;
-    private Date toBeTerminatedAt;
+    private DateTime toBeTerminatedAt;
     private String resourcepool;
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -56,7 +56,7 @@ public class VirtualMachine implements Serializable {
     private List<String> usedPorts = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="virtualMachine")
-    private List<Container> deployedContainers = new ArrayList<>();
+    private Set<Container> deployedContainers = new HashSet<>();
 
 
 
@@ -89,12 +89,6 @@ public class VirtualMachine implements Serializable {
         return deployedContainers.contains(container);
     }
 
-    public void addContainer(Container container) {
-        if (!deployedContainers.contains(container)) {
-            deployedContainers.add(container);
-        }
-    }
-
     @Override
     public int hashCode() {
     	if(id == null){
@@ -121,10 +115,10 @@ public class VirtualMachine implements Serializable {
 
     @Override
     public String toString() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-        String startString = startedAt == null ? "NOT_YET" : simpleDateFormat.format(startedAt);
-        String toBeTerminatedAtString = toBeTerminatedAt == null ? "NOT_YET" : simpleDateFormat.format(toBeTerminatedAt);
+        String startString = startedAt == null ? "NOT_YET" : dtfOut.print(startedAt);
+        String toBeTerminatedAtString = toBeTerminatedAt == null ? "NOT_YET" : dtfOut.print(toBeTerminatedAt);
         return "VirtualMachine{" +
                 "id=" + id +
                 ", name='" + name + '\'' +

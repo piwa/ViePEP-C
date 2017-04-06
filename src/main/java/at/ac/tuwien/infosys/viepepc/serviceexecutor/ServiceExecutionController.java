@@ -4,6 +4,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ public class ServiceExecutionController{
             final List<ProcessStep> processStepsOnVm = vmProcessStepsMap.get(virtualMachine);
             if (!virtualMachine.isLeased()) {
                 virtualMachine.setLeased(true);
-                virtualMachine.setStartedAt(new Date());
+                virtualMachine.setStartedAt(new DateTime());
 
                 leaseVMAndStartExecution.leaseVMAndStartExecutionOnVirtualMachine(virtualMachine, processStepsOnVm);
 
@@ -57,7 +58,7 @@ public class ServiceExecutionController{
     	final Map<Container, List<ProcessStep>> containerProcessStepsMap = new HashMap<>();
 
         for (final ProcessStep processStep : processSteps) {
-            processStep.setStartDate(new Date());
+            processStep.setStartDate(DateTime.now());
             Container scheduledAt = processStep.getScheduledAtContainer();
             if (!containerProcessStepsMap.containsKey(scheduledAt)) {
             	containerProcessStepsMap.put(scheduledAt, new ArrayList<>());
@@ -82,8 +83,8 @@ public class ServiceExecutionController{
             try {
                 if (!virtualMachine.isLeased()) {
                     virtualMachine.setLeased(true);
-                    virtualMachine.setStartedAt(new Date());
-                    virtualMachine.setToBeTerminatedAt(new Date(virtualMachine.getStartedAt().getTime() + virtualMachine.getVmType().getLeasingDuration()));
+                    virtualMachine.setStartedAt(new DateTime());
+                    virtualMachine.setToBeTerminatedAt(new DateTime(virtualMachine.getStartedAt().getMillis() + virtualMachine.getVmType().getLeasingDuration()));
                     leaseVMAndStartExecution.leaseVMAndStartExecutionOnContainer(virtualMachine, containerProcessSteps);
 
                 } else {

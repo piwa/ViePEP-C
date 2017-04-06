@@ -16,7 +16,7 @@ import java.nio.file.Paths;
  * Created by philippwaibel on 18/10/2016.
  */
 @Component
-public class ContainerConfigurationsReaderImpl {
+public class ContainerConfigurationsReader {
 
     @Autowired
     private InMemoryCacheImpl inMemoryCache;

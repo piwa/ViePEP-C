@@ -4,8 +4,10 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -17,11 +19,16 @@ import java.nio.file.Paths;
  * Created by philippwaibel on 18/10/2016.
  */
 @Component
+@DependsOn("serviceRegistryReaderImpl")
 public class ContainerImageRegistryReaderImpl implements ContainerImageRegistryReader {
 
     private ContainerImageRegistry containerImageRegistry;
 
-    public ContainerImageRegistryReaderImpl(@Value("${container.images.path}") String containerImageRegistryPath) {
+    @Value("${container.images.path}")
+    private String containerImageRegistryPath;
+
+    @PostConstruct
+    public void setContainerImageRegistry() {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( ContainerImageRegistry.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();

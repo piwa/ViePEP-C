@@ -65,7 +65,7 @@ public class Sequence extends Element {
                 }
             } else if (current != null) {
             	if(current.getFinishedAt() != null) {
-            		if (current.getFinishedAt().after(lastExecutedMaxElement.getFinishedAt())) {
+            		if (current.getFinishedAt().isAfter(lastExecutedMaxElement.getFinishedAt())) {
             			lastExecutedMaxElement = current;
             		}
             	}

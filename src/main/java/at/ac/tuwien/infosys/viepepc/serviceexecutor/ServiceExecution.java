@@ -10,6 +10,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import at.ac.tuwien.infosys.viepepc.reasoner.Reasoning;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.dto.InvocationResultDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -75,7 +76,7 @@ public class ServiceExecution{
 	}
 	
 	private void finaliseExecution(ProcessStep processStep) {
-		Date finishedAt = new Date();
+        DateTime finishedAt = new DateTime();
         processStep.setFinishedAt(finishedAt);
 
 		log.info("Task-Done: " + processStep);

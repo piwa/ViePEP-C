@@ -125,7 +125,7 @@ public class CacheVirtualMachineService {
 
     public VMType getDefaultVmType() {
         try {
-            return getVmTypeFromCore(defaultVMCores, "aws");
+            return getVmTypeFromCore(defaultVMCores, "internal");
         } catch (Exception e) {
             log.error("EXCEPTION", e);
         }
