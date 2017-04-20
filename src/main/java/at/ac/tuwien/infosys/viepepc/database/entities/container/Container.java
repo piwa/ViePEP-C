@@ -4,6 +4,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -36,6 +37,7 @@ public class Container {
     private String containerID;
     private String serviceName;
     private String externPort;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startedAt;
     private boolean running = false;
 
@@ -59,13 +61,15 @@ public class Container {
         DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
         String startString = startedAt == null ? "NULL" : dtfOut.print(startedAt);
-        String vmString = virtualMachine == null ? "NULL" : virtualMachine.getName();
+        String vmString = virtualMachine == null ? "NULL" : virtualMachine.getInstanceId();
         return "Container{" +
                 "id=" + id +
                 ", name='" + getName() + '\'' +
                 ", running=" + running +
                 ", startedAt=" + startString +
                 ", runningOnVM=" + vmString +
+                ", externalPort=" + externPort +
+                ", serviceType=" + containerImage.getServiceType().getName() +
                 '}';
     }
 

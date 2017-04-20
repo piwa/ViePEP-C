@@ -7,6 +7,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.Reasoning;
 import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.impl.service.ServiceTypeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,7 +43,7 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
     @Override
     @RequestMapping(value = "/addWorkflowRequest", method = RequestMethod.POST, consumes = MediaType.APPLICATION_XML_VALUE)
     public void addWorkflow(@RequestBody WorkflowElement workflowElement) throws ServiceTypeNotFoundException {
-        Date date = new Date();
+        DateTime date = DateTime.now();
         log.info("Recieved 1 new WorkflowElement");
         workflowElement.setArrivedAt(date);
         preProcess(workflowElement);
@@ -59,7 +60,7 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
         synchronized (SYNC_OBJECT) {
 
             try {
-                Date date = new Date();
+                DateTime date = DateTime.now();
                 log.info("Recieved new WorkflowElements: " + workflowElement.getWorkflowElements().size());
                 for (WorkflowElement element : workflowElement.getWorkflowElements()) {
                     element.setArrivedAt(date);

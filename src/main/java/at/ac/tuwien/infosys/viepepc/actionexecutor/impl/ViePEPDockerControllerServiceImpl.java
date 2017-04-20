@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPOpenStackClientService;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import com.spotify.docker.client.DefaultDockerClient;
@@ -10,6 +11,7 @@ import com.spotify.docker.client.messages.*;
 import jersey.repackaged.com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,12 +28,21 @@ public class ViePEPDockerControllerServiceImpl implements ViePEPDockerController
     @Value("${viepep.node.port.available}")
     private String encodedHostNodeAvailablePorts;
 
+    @Autowired
+    private ViePEPOpenStackClientService viePEPOpenStackClientService;
+
     @Override
     public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
         /* Connect to docker server of the host */
         final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).build();
 
         String containerImage = container.getContainerImage().getRepoName() + "/" + container.getContainerImage().getImageName();
+
+        boolean result = checkDockerHostAvailability(virtualMachine);
+
+        if(result == false) {
+            return null;
+        }
 
         docker.pull(containerImage);
 
@@ -47,7 +58,7 @@ public class ViePEPDockerControllerServiceImpl implements ViePEPDockerController
         /* Bind container port (processingNodeServerPort) to an available host port */
         String hostPort = getAvailablePortOnHost(virtualMachine);
         if (hostPort == null) {
-            throw new DockerException("Not available port on host " + virtualMachine.getName() + " to bind a new container");
+            throw new DockerException("Not available port on host " + virtualMachine.getInstanceId() + " to bind a new container");
         }
 
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
@@ -106,9 +117,25 @@ public class ViePEPDockerControllerServiceImpl implements ViePEPDockerController
         }
 */
 
-        log.info("A new container with the ID: " + id + " on the host: " + virtualMachine.getName() + " has been started.");
+        log.info("A new container with the ID: " + id + " on the host: " + virtualMachine.getInstanceId() + " has been started.");
 
         return container;
+    }
+
+    private boolean checkDockerHostAvailability(VirtualMachine virtualMachine) {
+
+        for(int i = 0; i < 50; i++) {
+            if(viePEPOpenStackClientService.checkAvailabilityofDockerhost(virtualMachine.getIpAddress())) {
+                return true;
+            }
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                log.error("Exception", e);
+            }
+        }
+
+        return false;
     }
 
 

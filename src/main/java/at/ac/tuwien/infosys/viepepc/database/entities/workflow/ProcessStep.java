@@ -8,6 +8,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.services.adapter.ServiceTy
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -38,9 +39,11 @@ import java.util.List;
 @NoArgsConstructor
 public class ProcessStep extends Element {
 
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startDate;
     private String workflowName;
     private boolean isScheduled;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime scheduledStartedAt;
     private int numberOfExecutions;
     private boolean hasToBeExecuted = true;
@@ -122,7 +125,7 @@ public class ProcessStep extends Element {
 
         String startDateformat = startDate != null ? dtfOut.print(startDate) : null;
         String finishedAtformat = finishedAt != null ? dtfOut.print(finishedAt) : null;
-        String vmName = scheduledAtVM != null ? scheduledAtVM.getName() : null;
+        String vmName = scheduledAtVM != null ? scheduledAtVM.getInstanceId() : null;
         String dockerName = scheduledAtContainer != null ? scheduledAtContainer.getName() : null;
         return "ProcessStep{" +
                 "id='" + id + '\'' +

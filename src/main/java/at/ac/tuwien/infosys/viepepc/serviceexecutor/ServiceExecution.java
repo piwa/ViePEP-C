@@ -44,6 +44,7 @@ public class ServiceExecution{
 
     @Async
     public void startExecution(ProcessStep processStep, VirtualMachine virtualMachine) {
+        processStep.setStartDate(DateTime.now());
         log.info("Task-Start: " + processStep);
 
         if (simulate) {
@@ -60,6 +61,7 @@ public class ServiceExecution{
 
     @Async
 	public void startExecution(ProcessStep processStep, Container container) {
+        processStep.setStartDate(DateTime.now());
 		log.info("Task-Start: " + processStep);
 
         if (simulate) {

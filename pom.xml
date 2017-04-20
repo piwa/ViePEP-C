@@ -66,6 +66,11 @@
 			<artifactId>joda-time</artifactId>
 			<version>${joda.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jadira.usertype</groupId>
+			<artifactId>usertype.core</artifactId>
+			<version>5.0.0.GA</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.pacesys</groupId>

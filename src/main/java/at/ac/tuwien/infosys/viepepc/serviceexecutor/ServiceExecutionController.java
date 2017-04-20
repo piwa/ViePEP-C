@@ -40,9 +40,6 @@ public class ServiceExecutionController{
 
             final List<ProcessStep> processStepsOnVm = vmProcessStepsMap.get(virtualMachine);
             if (!virtualMachine.isLeased()) {
-                virtualMachine.setLeased(true);
-                virtualMachine.setStartedAt(new DateTime());
-
                 leaseVMAndStartExecution.leaseVMAndStartExecutionOnVirtualMachine(virtualMachine, processStepsOnVm);
 
             } else {
@@ -58,7 +55,7 @@ public class ServiceExecutionController{
     	final Map<Container, List<ProcessStep>> containerProcessStepsMap = new HashMap<>();
 
         for (final ProcessStep processStep : processSteps) {
-            processStep.setStartDate(DateTime.now());
+//            processStep.setStartDate(DateTime.now());
             Container scheduledAt = processStep.getScheduledAtContainer();
             if (!containerProcessStepsMap.containsKey(scheduledAt)) {
             	containerProcessStepsMap.put(scheduledAt, new ArrayList<>());
@@ -82,9 +79,6 @@ public class ServiceExecutionController{
             final Map<Container, List<ProcessStep>> containerProcessSteps = vmContainerProcessStepMap.get(virtualMachine);
             try {
                 if (!virtualMachine.isLeased()) {
-                    virtualMachine.setLeased(true);
-                    virtualMachine.setStartedAt(new DateTime());
-                    virtualMachine.setToBeTerminatedAt(new DateTime(virtualMachine.getStartedAt().getMillis() + virtualMachine.getVmType().getLeasingDuration()));
                     leaseVMAndStartExecution.leaseVMAndStartExecutionOnContainer(virtualMachine, containerProcessSteps);
 
                 } else {

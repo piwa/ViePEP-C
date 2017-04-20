@@ -5,15 +5,21 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.dto.InvocationResultDTO;
 import com.google.common.base.Stopwatch;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,17 +28,12 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 @Scope("prototype")
+@Slf4j
 public class ServiceInvoker {
-    private CloseableHttpClient httpclient = null;
 
-    public ServiceInvoker() {
-        int timeout = 180;
-        RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(timeout * 1000)
-                .setConnectionRequestTimeout(timeout * 1000)
-                .setSocketTimeout(timeout * 1000).build();
-        httpclient = HttpClientBuilder.create().setDefaultRequestConfig(config).disableAutomaticRetries().build();
-    }
+    @Autowired
+    private ServiceInvokerHttpClient serviceInvokerHttpClient;
+
 
     /**
      * @param url to be invoked
@@ -44,37 +45,27 @@ public class ServiceInvoker {
         HttpGet httpGet = new HttpGet(url);
         Stopwatch stopWatch = Stopwatch.createUnstarted();
 
-        HttpResponse response = null;
+        HttpResponse response;
         try {
-            stopWatch.start();
-
-            response = httpclient.execute(httpGet);
-
+            response = serviceInvokerHttpClient.retryHttpGet(httpGet, stopWatch);
             String result = EntityUtils.toString(response.getEntity());
             long elapsed = stopWatch.elapsed(TimeUnit.MILLISECONDS);
-            stopWatch.stop();
             invocationResult.setResult(result);
             invocationResult.setExecutionTime(elapsed);
             invocationResult.setStatus(response.getStatusLine().getStatusCode());
         } catch (Exception e) {
+            log.error("Exception", e);
             invocationResult.setStatus(404);
             invocationResult.setResult(e.getMessage());
         }
         return invocationResult;
-
     }
+
 
     public InvocationResultDTO invoke(VirtualMachine virtualMachine, ProcessStep processSteps) {
         String task = processSteps.getServiceType().getName().replace("service", "");
         String uri = virtualMachine.getURI().concat(":8080").concat("/service/").concat(task).concat("/normal").concat("/nodata");
-        try {
-            return invoke(uri);
-        } catch (Exception ex) {
-            InvocationResultDTO invocationResult = new InvocationResultDTO();
-            invocationResult.setStatus(404);
-            invocationResult.setResult(ex.getMessage());
-            return invocationResult;
-        }
+        return invoke(uri);
     }
 
 	public InvocationResultDTO invoke(Container container, ProcessStep processStep) {
@@ -84,13 +75,9 @@ public class ServiceInvoker {
 		String task = processStep.getServiceType().getName().replace("service", "");
         task = task.replace("Service", "");
         String uri = vm.getURI().concat(":"+port).concat("/service/").concat(task).concat("/normal").concat("/nodata");
-        try {
-            return invoke(uri);
-        } catch (Exception ex) {
-            InvocationResultDTO invocationResult = new InvocationResultDTO();
-            invocationResult.setStatus(404);
-            invocationResult.setResult(ex.getMessage());
-            return invocationResult;
-        }
+
+        return invoke(uri);
 	}
+
+
 }

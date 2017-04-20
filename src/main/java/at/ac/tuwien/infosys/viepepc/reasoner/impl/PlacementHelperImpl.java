@@ -258,7 +258,7 @@ public class PlacementHelperImpl implements PlacementHelper {
         }
         virtualMachine.terminate();
 
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(date, virtualMachine.getName(), Action.STOPPED);
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(date, virtualMachine.getInstanceId(), Action.STOPPED);
         reportDaoService.save(report);
     }
     
@@ -269,7 +269,7 @@ public class PlacementHelperImpl implements PlacementHelper {
             containerControllerService.removeContainer(container);
     	}
 
-        ContainerReportingAction report = new ContainerReportingAction(new Date(), container.getName(), vm.getName(), Action.STOPPED);
+        ContainerReportingAction report = new ContainerReportingAction(new Date(), container.getName(), vm.getInstanceId(), Action.STOPPED);
         reportDaoService.save(report);
 
     	container.shutdownContainer();

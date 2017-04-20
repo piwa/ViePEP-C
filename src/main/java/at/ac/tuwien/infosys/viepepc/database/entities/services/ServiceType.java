@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -48,10 +50,11 @@ public class ServiceType {
     @MapKeyColumn(name="time")
     @Column(name="value")
     @CollectionTable(name="monitored_resource_usages", joinColumns=@JoinColumn(name="monitored_resource_usage"))
-    private Map<Date, ServiceTypeResources> monitoredServiceTypeResources = new HashMap<>();
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    private Map<DateTime, ServiceTypeResources> monitoredServiceTypeResources = new HashMap<>();
 
     public void addMonitoredServiceTypeResourceInformation(ServiceTypeResources serviceTypeResources) {
-        monitoredServiceTypeResources.put(new Date(), serviceTypeResources);
+        monitoredServiceTypeResources.put(new DateTime(), serviceTypeResources);
     }
 
     public static ServiceType fromValue(String serviceType) {

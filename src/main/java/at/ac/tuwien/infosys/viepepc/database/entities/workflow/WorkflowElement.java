@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.database.entities.workflow;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.joda.time.DateTime;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -21,7 +22,7 @@ import java.util.List;
 @Setter
 public class WorkflowElement extends Element {
 	
-    private Date arrivedAt;
+    private DateTime arrivedAt;
     private double penalty = 200;
 
     public WorkflowElement(String name, long date, double penalty) {

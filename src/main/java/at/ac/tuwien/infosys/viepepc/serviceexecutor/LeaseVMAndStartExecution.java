@@ -1,9 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPClientService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPOpenStackClientService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.CouldNotStartContainerException;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
@@ -59,11 +57,11 @@ public class LeaseVMAndStartExecution {
         stopWatch.start();
         String address = startVM(virtualMachine);
 
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(new Date(), virtualMachine.getName(), Action.START);
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(new Date(), virtualMachine.getInstanceId(), Action.START);
         reportDaoService.save(report);
 
         if (address == null) {
-            log.error("VM " + virtualMachine.getName() + " was not started, reset task");
+            log.error("VM " + virtualMachine.getInstanceId() + " was not started, reset task");
             for (ProcessStep processStep : processSteps) {
                 processStep.setStartDate(null);
                 processStep.setScheduled(false);
@@ -74,8 +72,7 @@ public class LeaseVMAndStartExecution {
             long time = stopWatch.getTotalTimeMillis();
             stopWatch.stop();
             virtualMachine.setStartupTime(time);
-            virtualMachine.setStarted(true);
-            virtualMachine.setIpAddress(address);
+            virtualMachine.setToBeTerminatedAt(new DateTime(virtualMachine.getStartedAt().getMillis() + virtualMachine.getVmType().getLeasingDuration()));
 
             startExecutionsOnVirtualMachine(processSteps, virtualMachine);
         }
@@ -87,11 +84,11 @@ public class LeaseVMAndStartExecution {
         stopWatch.start();
         String address = startVM(virtualMachine);
 
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(new Date(), virtualMachine.getName(), Action.START);
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(new Date(), virtualMachine.getInstanceId(), Action.START);
         reportDaoService.save(report);
 
         if (address == null) {
-            log.error("VM " + virtualMachine.getName() + " was not started, reset task");
+            log.error("VM " + virtualMachine.getInstanceId() + " was not started, reset task");
             for (Container container : containerProcessSteps.keySet()) {
                 for (ProcessStep processStep : containerProcessSteps.get(container)) {
                     processStep.setStartDate(null);
@@ -105,9 +102,7 @@ public class LeaseVMAndStartExecution {
             long time = stopWatch.getTotalTimeMillis();
             stopWatch.stop();
             virtualMachine.setStartupTime(time);
-            virtualMachine.setStarted(true);
-            virtualMachine.setIpAddress(address);
-
+            virtualMachine.setToBeTerminatedAt(new DateTime(virtualMachine.getStartedAt().getMillis() + virtualMachine.getVmType().getLeasingDuration()));
             startExecutionsOnContainer(containerProcessSteps, virtualMachine);
 
         }
@@ -115,7 +110,6 @@ public class LeaseVMAndStartExecution {
 
     public void startExecutionsOnVirtualMachine(final List<ProcessStep> processSteps, final VirtualMachine virtualMachine) {
         for (final ProcessStep processStep : processSteps) {
-            processStep.setStartDate(DateTime.now());
             serviceExecution.startExecution(processStep, virtualMachine);
 
         }
@@ -125,7 +119,6 @@ public class LeaseVMAndStartExecution {
         for (Map.Entry<Container, List<ProcessStep>> entry : containerProcessSteps.entrySet()) {
             deployContainer(virtualMachine, entry.getKey());
             for (final ProcessStep processStep : entry.getValue()) {
-                processStep.setStartDate(DateTime.now());
                 serviceExecution.startExecution(processStep, entry.getKey());
             }
         }
@@ -177,7 +170,7 @@ public class LeaseVMAndStartExecution {
 
         }
 
-        ContainerReportingAction report = new ContainerReportingAction(new Date(), container.getName(), vm.getName(), Action.START);
+        ContainerReportingAction report = new ContainerReportingAction(new Date(), container.getName(), vm.getInstanceId(), Action.START);
         reportDaoService.save(report);
 
     }

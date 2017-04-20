@@ -5,6 +5,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -40,12 +41,15 @@ public class VirtualMachine implements Serializable {
     private ServiceType serviceType;
 
     private String name;
+    private String instanceId;
     private String location;
     private boolean leased = false;
     private String ipAddress;
     private long startupTime;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startedAt;
     private boolean started;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime toBeTerminatedAt;
     private String resourcepool;
 
@@ -122,6 +126,7 @@ public class VirtualMachine implements Serializable {
         return "VirtualMachine{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", instanceId='" + instanceId + '\'' +
                 ", serviceType=" + serviceType +
                 ", leased=" + leased +
                 ", startedAt=" + startString +

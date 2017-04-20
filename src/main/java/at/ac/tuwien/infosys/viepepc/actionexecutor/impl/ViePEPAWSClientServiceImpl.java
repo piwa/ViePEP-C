@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Component
-public class ViePEPOpenStackClientServiceImpl implements ViePEPOpenStackClientService {
+public class ViePEPAwsClientServiceImpl implements ViePEPOpenStackClientService {
 
 
     @Value("${openstack.default.image.id}")
