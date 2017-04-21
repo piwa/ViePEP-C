@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPOpenStackClientService;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import com.spotify.docker.client.DefaultDockerClient;
@@ -29,7 +29,7 @@ public class ViePEPDockerControllerServiceImpl implements ViePEPDockerController
     private String encodedHostNodeAvailablePorts;
 
     @Autowired
-    private ViePEPOpenStackClientService viePEPOpenStackClientService;
+    private ViePEPCloudService viePEPCloudService;
 
     @Override
     public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
@@ -125,7 +125,7 @@ public class ViePEPDockerControllerServiceImpl implements ViePEPDockerController
     private boolean checkDockerHostAvailability(VirtualMachine virtualMachine) {
 
         for(int i = 0; i < 50; i++) {
-            if(viePEPOpenStackClientService.checkAvailabilityofDockerhost(virtualMachine.getIpAddress())) {
+            if(viePEPCloudService.checkAvailabilityOfDockerhost(virtualMachine)) {
                 return true;
             }
             try {

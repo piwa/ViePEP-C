@@ -1,6 +1,5 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPOpenStackClientService;
 import at.ac.tuwien.infosys.viepepc.bootstrap.vmTypes.VmTypesReaderImpl;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
@@ -10,10 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -32,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "classpath:application.properties",
         "classpath:application-container.properties"})
 @ActiveProfiles("test")
-public class ViePEPOpenStackClientServiceImplTest {
+public class ViePEPOpenStackClientServiceTest {
 
 
     @Autowired
@@ -59,7 +55,7 @@ public class ViePEPOpenStackClientServiceImplTest {
         vm = viePEPOpenStackClientService.startVM(vm);
 
         assertThat(vm.getIpAddress()).isNotNull().isNotEmpty();
-        assertThat(viePEPOpenStackClientService.checkAvailabilityofDockerhost(vm.getIpAddress())).isTrue();
+        assertThat(viePEPOpenStackClientService.checkAvailabilityOfDockerhost(vm)).isTrue();
 
         boolean success = viePEPOpenStackClientService.stopVirtualMachine(vm);
 

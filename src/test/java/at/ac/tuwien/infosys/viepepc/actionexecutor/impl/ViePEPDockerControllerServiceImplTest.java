@@ -1,7 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPOpenStackClientService;
 import at.ac.tuwien.infosys.viepepc.bootstrap.containers.ContainerConfigurationsReader;
 import at.ac.tuwien.infosys.viepepc.bootstrap.vmTypes.VmTypesReaderImpl;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
@@ -16,6 +15,8 @@ import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
+import at.ac.tuwien.infosys.viepepc.registry.impl.service.ServiceTypeNotFoundException;
+import com.spotify.docker.client.exceptions.DockerException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +50,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class ViePEPDockerControllerServiceImplTest {
 
     @Autowired
+    private ViePEPAwsClientService viePEPAwsClientService;
+    @Autowired
     private ViePEPOpenStackClientService viePEPOpenStackClientService;
     @Autowired
     private CacheVirtualMachineService virtualMachineService;
@@ -70,6 +73,26 @@ public class ViePEPDockerControllerServiceImplTest {
 
     @Before
     public void setUp() throws Exception {
+
+    }
+
+    @After
+    public void tearDown() throws Exception {
+
+        if(vm != null) {
+            if(vm.getResourcepool().equals("aws")) {
+                viePEPAwsClientService.stopVirtualMachine(vm);
+            }
+            else {
+                viePEPOpenStackClientService.stopVirtualMachine(vm);
+            }
+        }
+
+    }
+
+    @Test
+    public void startAndStopAContainerOnOpenStack_success() throws Exception {
+
         vmTypesReader.readVMTypes();
         containerConfigurationsReader.readContainerConfigurations();
         serviceRegistryReader.getServiceTypeAmount();
@@ -78,20 +101,25 @@ public class ViePEPDockerControllerServiceImplTest {
         VMType vmType = virtualMachineService.getVmTypeFromIdentifier(3);
         vm = new VirtualMachine("test", vmType);
         vm = viePEPOpenStackClientService.startVM(vm);
-    }
 
-    @After
-    public void tearDown() throws Exception {
-
-        if(vm != null) {
-            viePEPOpenStackClientService.stopVirtualMachine(vm);
-        }
-
+        startAndStopContainer();
     }
 
     @Test
-    public void startAndStopAContainer_success() throws Exception {
+    public void startAndStopAContainerOnAWS_success() throws Exception {
 
+        vmTypesReader.readVMTypes();
+        containerConfigurationsReader.readContainerConfigurations();
+        serviceRegistryReader.getServiceTypeAmount();
+
+        VMType vmType = virtualMachineService.getVmTypeFromIdentifier(4);
+        vm = new VirtualMachine("test", vmType);
+        vm = viePEPAwsClientService.startVM(vm);
+
+        startAndStopContainer();
+    }
+
+    private void startAndStopContainer() throws ServiceTypeNotFoundException, ContainerImageNotFoundException, ContainerConfigurationNotFoundException, DockerException, InterruptedException {
         ServiceType serviceType = serviceRegistryReader.findServiceType("HelloWorldService");
         Container container = getContainer(serviceType);
 
@@ -108,7 +136,6 @@ public class ViePEPDockerControllerServiceImplTest {
 
         Container finalContainer = container;
         assertThatThrownBy(() -> restTemplate.getForObject("http://" + vm.getIpAddress() + ":" + finalContainer.getExternPort(), String.class)).isInstanceOf(ResourceAccessException.class);
-
     }
 
 

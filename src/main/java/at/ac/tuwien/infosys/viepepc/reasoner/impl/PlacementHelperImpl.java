@@ -1,8 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl;
 
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPOpenStackClientService;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
@@ -33,7 +33,7 @@ public class PlacementHelperImpl implements PlacementHelper {
     @Autowired
     private ElementDaoService elementDaoService;
     @Autowired
-    private ViePEPOpenStackClientService viePEPClientService;
+    private ViePEPCloudService viePEPCloudService;
     @Autowired
     private ReportDaoService reportDaoService;
     @Autowired
@@ -254,7 +254,7 @@ public class PlacementHelperImpl implements PlacementHelper {
     public void terminateVM(VirtualMachine virtualMachine, Date date) {
         log.info("Terminate: " + virtualMachine);
         if (!simulate) {
-            viePEPClientService.stopVirtualMachine(virtualMachine);
+            viePEPCloudService.stopVirtualMachine(virtualMachine);
         }
         virtualMachine.terminate();
 

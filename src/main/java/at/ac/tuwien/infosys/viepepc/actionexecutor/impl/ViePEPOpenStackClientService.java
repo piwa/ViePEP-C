@@ -1,10 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPOpenStackClientService;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.AbstractViePEPCloudService;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.internal.util.Base64;
@@ -22,45 +20,42 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by philippwaibel on 31/03/2017.
  */
 @Slf4j
 @Component
-public class ViePEPAwsClientServiceImpl implements ViePEPOpenStackClientService {
+public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
 
 
     @Value("${openstack.default.image.id}")
     private String openStackDefaultImageId;
     @Value("${openstack.use.public.ip}")
-    private Boolean PUBLICIPUSAGE;
+    private Boolean publicUsage;
     @Value("${openstack.auth.url}")
-    private String OPENSTACK_AUTH_URL;
+    private String openstackAuthUrl;
     @Value("${openstack.username}")
-    private String OPENSTACK_USERNAME;
+    private String openstackUsername;
     @Value("${openstack.password}")
-    private String OPENSTACK_PASSWORD;
+    private String openstackPassword;
     @Value("${openstack.tenant.name}")
-    private String OPENSTACK_TENANT_NAME;
+    private String openstackTenantName;
     @Value("${openstack.keypair.name}")
-    private String OPENSTACK_KEYPAIR_NAME;
+    private String openstackKeypairName;
 
     private OSClient.OSClientV2 os;
 
     private void setup() {
         os = OSFactory.builderV2()
-                .endpoint(OPENSTACK_AUTH_URL)
-                .credentials(OPENSTACK_USERNAME, OPENSTACK_PASSWORD)
-                .tenantName(OPENSTACK_TENANT_NAME)
+                .endpoint(openstackAuthUrl)
+                .credentials(openstackUsername, openstackPassword)
+                .tenantName(openstackTenantName)
                 .authenticate();
 
-        log.debug("Successfully connected to " + OPENSTACK_AUTH_URL + " on tenant " + OPENSTACK_TENANT_NAME + " with user " + OPENSTACK_USERNAME);
+        log.debug("Successfully connected to " + openstackAuthUrl + " on tenant " + openstackTenantName + " with user " + openstackUsername);
     }
 
-    @Override
     public VirtualMachine startVM(VirtualMachine virtualMachine) {
         setup();
 
@@ -90,7 +85,7 @@ public class ViePEPAwsClientServiceImpl implements ViePEPOpenStackClientService 
                 .flavor(flavor)
                 .image(openStackDefaultImageId)
                 .userData(Base64.encodeAsString(cloudInit))
-                .keypairName(OPENSTACK_KEYPAIR_NAME)
+                .keypairName(openstackKeypairName)
                 .addSecurityGroup("default")
                 .build();
 
@@ -98,7 +93,7 @@ public class ViePEPAwsClientServiceImpl implements ViePEPOpenStackClientService 
 
         String uri = server.getAccessIPv4();
 
-        if (PUBLICIPUSAGE) {
+        if (publicUsage) {
             FloatingIP freeIP = null;
 
             for (FloatingIP ip : os.compute().floatingIps().list()) {
@@ -143,37 +138,20 @@ public class ViePEPAwsClientServiceImpl implements ViePEPOpenStackClientService 
 
         log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
 
-        //wait until the dockerhost is available
-        Boolean connection = false;
-        while (!connection) {
-            try {
-                TimeUnit.SECONDS.sleep(1);
-                final DockerClient docker = DefaultDockerClient.builder().
-                        uri(URI.create("http://" + virtualMachine.getIpAddress() + ":2375")).
-                        connectTimeoutMillis(100000).build();
-                docker.ping();
-                connection = true;
-            } catch (InterruptedException | DockerException e) {
-                log.debug("VM is not available yet.", e);
-            }
-        }
+        waitUntilVmIsBooted(virtualMachine);
 
         log.debug("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " established.");
 
-//        dhr.save(dh);
-//        sar.save(new ScalingActivity("host", new DateTime(DateTimeZone.UTC), "", "startVM", dh.getInstanceId()));
 
         return virtualMachine;
     }
 
-    @Override
+
     public final boolean stopVirtualMachine(VirtualMachine virtualMachine) {
         boolean success = stopVirtualMachine(virtualMachine.getInstanceId());
         if(success) {
             virtualMachine.setIpAddress(null);
         }
-//        dhr.delete(dh);
-//        sar.save(new ScalingActivity("host", new DateTime(DateTimeZone.UTC), "", "stopWM", dh.getInstanceId()));
 
         return success;
 
@@ -192,15 +170,7 @@ public class ViePEPAwsClientServiceImpl implements ViePEPOpenStackClientService 
         return r.isSuccess();
     }
 
-    @Override
-    public boolean checkAvailabilityofDockerhost(String url) {
-        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + url + ":2375").connectTimeoutMillis(5000).build();
-        try {
-            return docker.ping().equals("OK");
-        } catch (DockerException | InterruptedException e) {
-            return false;
-        }
-    }
+
 
 
 

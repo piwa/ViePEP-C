@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPOpenStackClientService;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
@@ -36,7 +36,7 @@ public class LeaseVMAndStartExecution {
     @Autowired
     private ReportDaoService reportDaoService;
     @Autowired
-    private ViePEPOpenStackClientService viePEPClientService;
+    private ViePEPCloudService viePEPCloudService;
     @Autowired
     private ServiceExecution serviceExecution;
     @Autowired
@@ -136,7 +136,7 @@ public class LeaseVMAndStartExecution {
                 }
 
             } else {
-                virtualMachine = viePEPClientService.startVM(virtualMachine);
+                virtualMachine = viePEPCloudService.startVM(virtualMachine);
                 log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
 
                 TimeUnit.MILLISECONDS.sleep(virtualMachine.getVmType().getDeployTime());
