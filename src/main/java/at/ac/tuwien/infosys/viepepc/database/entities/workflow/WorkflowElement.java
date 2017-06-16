@@ -15,7 +15,7 @@ import java.util.List;
 
 @XmlRootElement(name = "WorkflowElement")
 @Entity(name = "WorkflowElement")
-@PrimaryKeyJoinColumn(name="identifier")
+//@PrimaryKeyJoinColumn(name="identifier")
 @Table(name="WorkflowElement")
 @DiscriminatorValue(value = "workflow")
 @Getter

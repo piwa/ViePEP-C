@@ -23,7 +23,7 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 @Entity
-@Table(name = "VirtualMachine")
+@Table(name = "virtual_machine")
 @Getter
 @Setter
 public class VirtualMachine implements Serializable {

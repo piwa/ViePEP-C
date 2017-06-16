@@ -70,8 +70,10 @@ public class AllParNotExceedContainerImpl extends AbstractProvisioningImpl imple
                 for(ProcessStep processStep : nextProcessSteps) {
 
                     if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) {
-                        calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
-                        waitingProcessSteps.put(workflowElement, processStep);
+                        if(!waitingProcessSteps.containsEntry(workflowElement, processStep)) {
+                            calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
+                            waitingProcessSteps.put(workflowElement, processStep);
+                        }
                     }
                     else {
                         boolean deployed = false;

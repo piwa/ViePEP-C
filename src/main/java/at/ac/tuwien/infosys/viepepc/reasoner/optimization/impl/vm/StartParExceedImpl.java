@@ -50,7 +50,7 @@ public class StartParExceedImpl extends AbstractProvisioningImpl implements Proc
                 }
             }
 
-            removeAllBusyVms(availableVms);
+            removeAllBusyVms(availableVms, runningWorkflowInstances);
 
             if (availableVms.size() == 0) {
                 return optimizationResult;

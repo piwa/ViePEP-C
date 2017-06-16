@@ -23,7 +23,7 @@ import java.util.List;
 @XmlSeeAlso({WorkflowElement.class, XORConstruct.class, ANDConstruct.class, LoopConstruct.class, ProcessStep.class,
         Sequence.class})
 @Entity
-@Table(name = "Element")
+@Table(name = "element")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "TYPE")
 @XmlAccessorType(XmlAccessType.FIELD)

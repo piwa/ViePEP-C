@@ -4,7 +4,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
+4
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 
 @Entity
-@Table(name = "Container")
+@Table(name = "container")
 @Getter
 @Setter
 @AllArgsConstructor

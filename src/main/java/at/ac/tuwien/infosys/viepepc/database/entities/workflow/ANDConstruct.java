@@ -18,9 +18,9 @@ import java.util.List;
  * @author Waldemar Ankudin modified by Turgay Sahin, Mathieu Muench
  */
 @XmlRootElement(name = "ANDConstruct")
-@Entity(name = "ANDConstruct")
-@PrimaryKeyJoinColumn(name="identifier")
-@Table(name="ANDConstructElement")
+@Entity(name = "and_construct")
+//@PrimaryKeyJoinColumn(name="identifier")
+@Table(name="and_construct_element")
 @DiscriminatorValue(value = "and")
 public class ANDConstruct extends Element {
 

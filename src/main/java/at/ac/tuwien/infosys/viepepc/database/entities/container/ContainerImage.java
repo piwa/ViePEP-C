@@ -17,7 +17,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "ContainerImage")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
-@Table(name = "containerImage")
+@Table(name = "container_image")
 @Getter
 @Setter
 public class ContainerImage {

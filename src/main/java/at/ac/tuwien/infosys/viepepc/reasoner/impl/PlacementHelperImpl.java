@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.reasoner.impl;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.ViePEPCloudServiceImpl;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
@@ -125,6 +126,7 @@ public class PlacementHelperImpl implements PlacementHelper {
 
         for (Element workflow : nextWorkflows) {
             if (workflow.getName().equals(workflowInstanceId)) {
+//                andParentHasRunningChild = new HashMap<>();
                 List<ProcessStep> nextStepElements = new ArrayList<>();
                 nextStepElements.addAll(getNextSteps(workflow, null));
                 return nextStepElements;
@@ -248,10 +250,10 @@ public class PlacementHelperImpl implements PlacementHelper {
 
     @Override
     public void terminateVM(VirtualMachine virtualMachine) {
-        terminateVM(virtualMachine, new Date());
+        terminateVM(virtualMachine, DateTime.now());
     }
     
-    public void terminateVM(VirtualMachine virtualMachine, Date date) {
+    public void terminateVM(VirtualMachine virtualMachine, DateTime date) {
         log.info("Terminate: " + virtualMachine);
         if (!simulate) {
             viePEPCloudService.stopVirtualMachine(virtualMachine);
@@ -265,14 +267,12 @@ public class PlacementHelperImpl implements PlacementHelper {
     public void stopContainer(Container container) {
     	VirtualMachine vm = container.getVirtualMachine();
         log.info("Stop Container: " + container + " on VM: " + vm);
-    	if(!simulate) {
-            containerControllerService.removeContainer(container);
-    	}
 
-        ContainerReportingAction report = new ContainerReportingAction(new Date(), container.getName(), vm.getInstanceId(), Action.STOPPED);
+        ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.STOPPED);
         reportDaoService.save(report);
 
-    	container.shutdownContainer();
+        containerControllerService.removeContainer(container);
+    	//container.shutdownContainer();
 
     }
 
@@ -340,7 +340,7 @@ public class PlacementHelperImpl implements PlacementHelper {
 //                    }
                 }
                 else if (element instanceof LoopConstruct) {
-                	System.out.println("*********** ***** number of Executions: " + element.getNumberOfExecutions() + " Number of Iterations: "+ ((LoopConstruct) element).getNumberOfIterationsToBeExecuted());
+//                	System.out.println("*********** ***** number of Executions: " + element.getNumberOfExecutions() + " Number of Iterations: "+ ((LoopConstruct) element).getNumberOfIterationsToBeExecuted());
                 	if((element.getNumberOfExecutions() < ((LoopConstruct) element).getNumberOfIterationsToBeExecuted())) {
                 		for(Element subElement : subElementList) {
                 			nextSteps.addAll(getNextSteps(subElement, andParent));

@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "ContainerConfiguration")
+@Table(name = "container_configuration")
 @XmlRootElement(name = "ContainerConfiguration")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ContainerConfiguration {

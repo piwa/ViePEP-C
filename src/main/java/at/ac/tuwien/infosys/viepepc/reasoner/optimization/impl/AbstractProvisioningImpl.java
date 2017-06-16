@@ -89,9 +89,7 @@ public abstract class AbstractProvisioningImpl {
 
     protected List<ProcessStep> getNextProcessStepsSorted(List<WorkflowElement> nextWorkflowInstances) {
         List<ProcessStep> returnList = new ArrayList<>();
-        for (WorkflowElement workflowElement : nextWorkflowInstances) {
-            returnList.addAll(getNextProcessStepsSorted(workflowElement));
-        }
+        nextWorkflowInstances.forEach(workflowElement -> returnList.addAll(getNextProcessStepsSorted(workflowElement)));
         return returnList;
     }
 
@@ -114,12 +112,15 @@ public abstract class AbstractProvisioningImpl {
         List<VirtualMachine> vmsShouldBeStarted = result.getProcessSteps().stream().map(ProcessStep::getScheduledAtVM).collect(Collectors.toList());
         vmsShouldBeStarted.addAll(result.getProcessSteps().stream().map(processStep -> processStep.getScheduledAtContainer().getVirtualMachine()).collect(Collectors.toList()));
 
-        for (VirtualMachine currentVM : virtualMachineList) {
-            if (!vmsShouldBeStarted.contains(currentVM) && !currentVM.isLeased() && !currentVM.isStarted()) {
-                return currentVM;
-            }
-        }
-        return null;
+//        for (VirtualMachine currentVM : virtualMachineList) {
+//            if (!vmsShouldBeStarted.contains(currentVM) && !currentVM.isLeased() && !currentVM.isStarted()) {
+//                return currentVM;
+//            }
+//        }
+
+       return virtualMachineList.stream().filter(currentVM -> !vmsShouldBeStarted.contains(currentVM) && !currentVM.isLeased() && !currentVM.isStarted())
+               .findFirst().orElse(null);
+//        return null;
     }
 
     protected VirtualMachine startNewVmDefaultOrForContainer(OptimizationResult result, ContainerConfiguration containerConfiguration) {
@@ -169,9 +170,8 @@ public abstract class AbstractProvisioningImpl {
 
     protected List<ProcessStep> getAllRunningSteps(List<WorkflowElement> workflows) {
         Set<ProcessStep> runningProcesses = new HashSet<>();
-        for (WorkflowElement workflowElement : workflows) {
-            runningProcesses.addAll(placementHelper.getRunningProcessSteps(workflowElement.getName()));
-        }
+
+        workflows.forEach(workflowElement -> runningProcesses.addAll(placementHelper.getRunningProcessSteps(workflowElement.getName())));
         return Collections.synchronizedList(new ArrayList<>(runningProcesses));
     }
 
@@ -181,7 +181,10 @@ public abstract class AbstractProvisioningImpl {
         return list;
     }
 
-    protected void removeAllBusyVms(List<VirtualMachine> availableVms) {
+    protected void removeAllBusyVms(List<VirtualMachine> availableVms, List<WorkflowElement> runningWorkflowInstances) {
+        List<VirtualMachine> alreadyUsedVMs = new ArrayList<>();
+        runningWorkflowInstances.forEach(workflow -> getRunningSteps(workflow).forEach(ps -> alreadyUsedVMs.add(ps.getScheduledAtContainer().getVirtualMachine())));
+        availableVms.removeIf(vm -> alreadyUsedVMs.contains(vm));
         availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
     }
 

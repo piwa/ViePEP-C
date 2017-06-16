@@ -106,8 +106,9 @@ public class WorkflowDaoService {
 							container = containerDaoService.update(container);
 							((ProcessStep) element).setScheduledAtContainer(container);
 						}
+                        serviceType = container.getContainerImage().getServiceType();
 					}
-					serviceType = container.getContainerImage().getServiceType();
+
 				}
 
 				((ProcessStep) element).setServiceType(serviceType);

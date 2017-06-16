@@ -24,7 +24,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "ServiceType")
+@Table(name = "service_type")
 @XmlRootElement(name="ServiceType")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ServiceType {

@@ -57,7 +57,7 @@ public class LeaseVMAndStartExecution {
         stopWatch.start();
         String address = startVM(virtualMachine);
 
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(new Date(), virtualMachine.getInstanceId(), Action.START);
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), Action.START);
         reportDaoService.save(report);
 
         if (address == null) {
@@ -84,7 +84,7 @@ public class LeaseVMAndStartExecution {
         stopWatch.start();
         String address = startVM(virtualMachine);
 
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(new Date(), virtualMachine.getInstanceId(), Action.START);
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), Action.START);
         reportDaoService.save(report);
 
         if (address == null) {
@@ -126,21 +126,12 @@ public class LeaseVMAndStartExecution {
 
     private String startVM(VirtualMachine virtualMachine) {
         try {
-            if (simulate) {
-                virtualMachine.setIpAddress("128.130.172.211");
 
-                TimeUnit.MILLISECONDS.sleep(virtualMachine.getStartupTime());
-                /* if we are not in Docker mode, additionally sleep some time for deployment of the service */
-                if (!useDocker) {
-                    TimeUnit.MILLISECONDS.sleep(virtualMachine.getVmType().getDeployTime());
-                }
+            virtualMachine = viePEPCloudService.startVM(virtualMachine);
+            log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
 
-            } else {
-                virtualMachine = viePEPCloudService.startVM(virtualMachine);
-                log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
+            TimeUnit.MILLISECONDS.sleep(virtualMachine.getVmType().getDeployTime());
 
-                TimeUnit.MILLISECONDS.sleep(virtualMachine.getVmType().getDeployTime());
-            }
         } catch (InterruptedException e) {
             log.error("EXCEPTION while starting VM", e);
         }
@@ -154,23 +145,17 @@ public class LeaseVMAndStartExecution {
         }
 
         try {
-            if (simulate) {
-                if (placementHelper.imageForContainerEverDeployedOnVM(container, vm) == 0) {
-                    TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
-                }
-                TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
-            } else {
-                log.info("Start Container: " + container + " on VM: " + vm);
 
-                dockerControllerService.startContainer(vm, container);
-                TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
-            }
+            log.info("Start Container: " + container + " on VM: " + vm);
+            dockerControllerService.startContainer(vm, container);
+            TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
+
         } catch (InterruptedException | DockerException e) {
             log.error("EXCEPTION while deploying Container", e);
 
         }
 
-        ContainerReportingAction report = new ContainerReportingAction(new Date(), container.getName(), vm.getInstanceId(), Action.START);
+        ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.START);
         reportDaoService.save(report);
 
     }

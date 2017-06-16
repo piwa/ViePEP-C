@@ -12,9 +12,9 @@ import java.util.Random;
  * @author Waldemar Ankudin modified by Turgay Sahin, Mathieu Muench
  */
 @XmlRootElement(name = "XORConstruct")
-@Entity(name = "XORConstruct")
-@PrimaryKeyJoinColumn(name="identifier")
-@Table(name="XORConstructElement")
+@Entity(name = "xor_construct")
+//@PrimaryKeyJoinColumn(name="identifier")
+@Table(name="xor_construct_element")
 public class XORConstruct extends Element {
 
     /**

@@ -56,7 +56,8 @@ public class StartParNotExceedImpl extends AbstractProvisioningImpl implements P
                 availableVms.add(startNewDefaultVm(optimizationResult));
             }
 
-            availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
+//            availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
+            removeAllBusyVms(availableVms, runningWorkflowInstances);
 
             if (availableVms.size() == 0) {
                 return optimizationResult;
@@ -79,7 +80,7 @@ public class StartParNotExceedImpl extends AbstractProvisioningImpl implements P
 
                 if(!foundVmWithEnoughRemainingBTU) {
                     VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-                    availableVms.add(vm);
+//                    availableVms.add(vm);
                 }
             }
         } catch(ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {

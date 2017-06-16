@@ -3,6 +3,8 @@ package at.ac.tuwien.infosys.viepepc.database.entities.container;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,7 +18,7 @@ import java.util.Date;
  * To change this template use File | Settings | File Templates.
  */
 @Entity
-@Table(name = "ContainerReportingAction")
+@Table(name = "container_reporting_action")
 @Getter
 @Setter
 public class ContainerReportingAction implements Serializable {
@@ -35,12 +37,13 @@ public class ContainerReportingAction implements Serializable {
     @Enumerated(EnumType.STRING)
     private Action dockerAction;
 
-    private Date timestamp;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    private DateTime timestamp;
 
     public ContainerReportingAction() {
     }
 
-    public ContainerReportingAction(Date date, String containerID, String vmID, Action action) {
+    public ContainerReportingAction(DateTime date, String containerID, String vmID, Action action) {
         this.timestamp = date;
         this.containerID = containerID;
         this.virtualMachineID = vmID;

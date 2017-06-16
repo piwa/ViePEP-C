@@ -27,6 +27,7 @@
 		<spotify.docker.version>8.1.2</spotify.docker.version>
 		<openstack.version>3.0.3</openstack.version>
         <joda.version>2.9.9</joda.version>
+		<joda.time.persist.version>5.0.0.GA</joda.time.persist.version>
 	</properties>
 
 	<dependencies>
@@ -63,7 +64,7 @@
 		<dependency>
 			<groupId>org.jadira.usertype</groupId>
 			<artifactId>usertype.core</artifactId>
-			<version>5.0.0.GA</version>
+			<version>${joda.time.persist.version}</version>
 		</dependency>
 
 		<dependency>

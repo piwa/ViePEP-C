@@ -3,6 +3,8 @@ package at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,7 +18,7 @@ import java.util.Date;
  * To change this template use File | Settings | File Templates.
  */
 @Entity
-@Table(name = "VirtualMachineReportingAction")
+@Table(name = "virtual_machine_reporting_action")
 @Getter
 @Setter
 public class VirtualMachineReportingAction implements Serializable {
@@ -27,19 +29,20 @@ public class VirtualMachineReportingAction implements Serializable {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     private String virtualMachineID;
 
     @Enumerated(EnumType.STRING)
     private Action vmAction;
 
-    private Date timestamp;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    private DateTime timestamp;
 
     public VirtualMachineReportingAction() {
     }
 
-    public VirtualMachineReportingAction(Date date, String vmID, Action action) {
+    public VirtualMachineReportingAction(DateTime date, String vmID, Action action) {
         this.timestamp = date;
         this.virtualMachineID = vmID;
         this.vmAction = action;

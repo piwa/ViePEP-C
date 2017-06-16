@@ -13,7 +13,7 @@ import java.util.List;
  */
 
 @XmlRootElement(name = "Sequence")
-@Entity(name = "Sequence")
+@Entity(name = "sequence")
 @DiscriminatorValue(value = "sequence")
 public class Sequence extends Element {
 

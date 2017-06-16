@@ -50,7 +50,7 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
                 return optimizationResult;
             }
 
-            removeAllBusyVms(availableVms);
+            removeAllBusyVms(availableVms, runningWorkflowInstances);
             availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult))).reversed());
 
             for (WorkflowElement workflowElement : runningWorkflowInstances) {
@@ -69,8 +69,10 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
                 for(ProcessStep processStep : nextProcessSteps) {
 
                     if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) {
-                        calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
-                        waitingProcessSteps.put(workflowElement, processStep);
+                        if(!waitingProcessSteps.containsEntry(workflowElement, processStep)) {
+                            calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
+                            waitingProcessSteps.put(workflowElement, processStep);
+                        }
                     }
                     else {
                         boolean deployed = false;
@@ -84,8 +86,8 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
                         }
 
                         if (!deployed) {
-                            VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-                            availableVms.add(vm);
+                            startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+//                            availableVms.add(vm);
                         }
 
                         if(waitingProcessSteps.containsEntry(workflowElement, processStep)) {

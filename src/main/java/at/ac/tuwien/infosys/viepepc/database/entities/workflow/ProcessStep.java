@@ -30,9 +30,9 @@ import java.util.List;
  * @author Waldemar Ankudin modified by Turgay Sahin and Mathieu Muench, Gerta Sheganaku
  */
 @XmlRootElement(name = "ProcessStep")
-@Entity(name = "ProcessStep")
-@PrimaryKeyJoinColumn(name="identifier")
-@Table(name="ProcessStepElement")
+@Entity(name = "process_step")
+//@PrimaryKeyJoinColumn(name="identifier")
+@Table(name="process_step_element")
 @DiscriminatorValue(value = "process_step")
 @Getter
 @Setter

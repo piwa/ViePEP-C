@@ -13,7 +13,7 @@ import java.io.Serializable;
 
 
 @Entity
-@Table(name = "VMType")
+@Table(name = "vm_type")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "ServiceTypeResources")
+@Table(name = "service_type_resources")
 @XmlRootElement(name="ServiceTypeResources")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ServiceTypeResources {

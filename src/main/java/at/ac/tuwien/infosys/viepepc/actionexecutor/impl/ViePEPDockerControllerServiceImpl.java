@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 @Slf4j
-public class ViePEPDockerControllerServiceImpl implements ViePEPDockerControllerService {
+public class ViePEPDockerControllerServiceImpl {
 
     @Value("${viepep.node.port.available}")
     private String encodedHostNodeAvailablePorts;
@@ -31,7 +31,6 @@ public class ViePEPDockerControllerServiceImpl implements ViePEPDockerController
     @Autowired
     private ViePEPCloudService viePEPCloudService;
 
-    @Override
     public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
         /* Connect to docker server of the host */
         final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).build();
@@ -139,7 +138,6 @@ public class ViePEPDockerControllerServiceImpl implements ViePEPDockerController
     }
 
 
-    @Override
     public void removeContainer(Container container) {
         VirtualMachine virtualMachine = container.getVirtualMachine();
         final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).build();
@@ -181,10 +179,9 @@ public class ViePEPDockerControllerServiceImpl implements ViePEPDockerController
         usedPorts.remove(container.getExternPort());
         virtualMachine.setUsedPorts(usedPorts);
 
-        container.setRunning(false);
-        virtualMachine.getDeployedContainers().remove(container);
+        container.shutdownContainer();
 
-        log.info("The container: " + container.getContainerID() + " on the host: " + container.getVirtualMachine() + " was removed.");
+        log.info("The container: " + container.getContainerID() + " on the host: " + virtualMachine + " was removed.");
 
     }
 

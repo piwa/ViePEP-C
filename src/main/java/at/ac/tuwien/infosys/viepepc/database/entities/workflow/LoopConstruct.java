@@ -19,9 +19,9 @@ import java.util.List;
  * @author Waldemar Ankudin modified by Turgay Sahin, Gerta Sheganaku
  */
 @XmlRootElement(name = "LoopConstruct")
-@Entity(name = "LoopConstruct")
-@PrimaryKeyJoinColumn(name="identifier")
-@Table(name="LoopConstructElement")
+@Entity(name = "loop_construct")
+//@PrimaryKeyJoinColumn(name="identifier")
+@Table(name="loop_construct_element")
 @DiscriminatorValue(value = "loop")
 @Getter
 @Setter
