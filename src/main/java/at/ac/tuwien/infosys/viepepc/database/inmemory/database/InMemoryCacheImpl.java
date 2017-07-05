@@ -3,14 +3,12 @@ package at.ac.tuwien.infosys.viepepc.database.inmemory.database;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Component
@@ -20,6 +18,7 @@ public class InMemoryCacheImpl {
     private List<WorkflowElement> allWorkflowInstances = new ArrayList<>();
     private Map<VMType, List<VirtualMachine>> vmTypeVmMap = new HashMap<>();
     private List<ContainerConfiguration> containerConfigurations = new ArrayList<>();
+    private Set<ProcessStep> waitingForExecutingProcessSteps = new HashSet<>();
 
     public void clear() {
         runningWorkflows = new ArrayList<>();

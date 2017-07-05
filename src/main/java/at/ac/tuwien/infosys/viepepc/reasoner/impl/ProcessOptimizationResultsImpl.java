@@ -5,6 +5,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
@@ -39,10 +40,12 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
     private CacheVirtualMachineService cacheVirtualMachineService;
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
+    @Autowired
+    private InMemoryCacheImpl inMemoryCache;
 
     private Set<Container> waitingForExecutingContainers = new HashSet<>();
     private Set<VirtualMachine> waitingForExecutingVirtualMachines = new HashSet<>();
-    private Set<ProcessStep> waitingForExecutingProcessSteps = new HashSet<>();
+
 
 
     @Override
@@ -62,7 +65,7 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
         serviceExecutionController.startInvocationViaContainers(optimize.getProcessSteps());
 
-        waitingForExecutingProcessSteps.addAll(optimize.getProcessSteps());
+        inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
 
         optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
         optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtContainer().getVirtualMachine()));
@@ -105,14 +108,14 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
             stringBuilder.append(vm.toString()).append("\n");
         }
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
-        Set<Container> containers = waitingForExecutingProcessSteps.stream().map(ProcessStep::getScheduledAtContainer).collect(Collectors.toSet());
+        Set<Container> containers = inMemoryCache.getWaitingForExecutingProcessSteps().stream().map(ProcessStep::getScheduledAtContainer).collect(Collectors.toSet());
         for (Container container : containers) {
             if (!container.isRunning()) {
                 stringBuilder.append(container.toString()).append("\n");
             }
         }
         stringBuilder.append("----------------------- Tasks waiting for starting -----------------------\n");
-        for (ProcessStep processStep : waitingForExecutingProcessSteps) {
+        for (ProcessStep processStep : inMemoryCache.getWaitingForExecutingProcessSteps()) {
             stringBuilder.append(processStep.toString()).append("\n");
         }
     }
@@ -169,7 +172,7 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
                         runningStep.getScheduledAtContainer() != null && runningStep.getScheduledAtContainer().isRunning()) &&
                         runningStep.getStartDate() != null) {
                     stringBuilder.append(runningStep).append("\n");
-                    waitingForExecutingProcessSteps.remove(runningStep);
+                    inMemoryCache.getWaitingForExecutingProcessSteps().remove(runningStep);
                 }
             }
 

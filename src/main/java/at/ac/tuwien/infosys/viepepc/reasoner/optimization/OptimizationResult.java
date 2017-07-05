@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 
 import java.util.List;
@@ -17,4 +18,8 @@ public interface OptimizationResult {
     void setProcessSteps(List<ProcessStep> processSteps);
 
     void addProcessStep(ProcessStep processStep);
+
+    void addVirtualMachine(VirtualMachine virtualMachine);
+
+    List<VirtualMachine> getVms();
 }

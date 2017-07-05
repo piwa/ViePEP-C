@@ -8,6 +8,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
@@ -37,16 +38,20 @@ public abstract class AbstractProvisioningImpl {
     protected PlacementHelper placementHelper;
     @Autowired
     protected CacheVirtualMachineService cacheVirtualMachineService;
+    @Autowired
+    protected InMemoryCacheImpl inMemoryCache;
 
     protected boolean checkIfEnoughResourcesLeftOnVM(VirtualMachine vm, Container container, OptimizationResult optimizationResult) {
-//        double scheduledCPUUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getServiceType().getServiceTypeResources().getCpuLoad()).sum();
-//        double scheduledRAMUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getServiceType().getServiceTypeResources().getMemory()).sum();
-        double scheduledCPUUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getScheduledAtContainer().getContainerConfiguration().getCPUPoints()).sum();
-        double scheduledRAMUsage = optimizationResult.getProcessSteps().stream().mapToDouble(ps -> ps.getScheduledAtContainer().getContainerConfiguration().getRam()).sum();
-        double alreadyUsedCPU = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
-        double alreadyUsedRAM = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getRam()).sum();
-        double remainingCPUOnVm = vm.getVmType().getCpuPoints() - alreadyUsedCPU - scheduledCPUUsage;
-        double remainingRAMOnVm = vm.getVmType().getRamPoints() - alreadyUsedRAM - scheduledRAMUsage;
+
+        Set<ProcessStep> scheduledProcessSteps = new HashSet(optimizationResult.getProcessSteps());
+        scheduledProcessSteps.addAll(inMemoryCache.getWaitingForExecutingProcessSteps());
+
+        double scheduledCPUUsage    = scheduledProcessSteps.stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine().equals(vm)).mapToDouble(ps -> ps.getScheduledAtContainer().getContainerConfiguration().getCPUPoints()).sum();
+        double scheduledRAMUsage    = scheduledProcessSteps.stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine().equals(vm)).mapToDouble(ps -> ps.getScheduledAtContainer().getContainerConfiguration().getRam()).sum();
+        double alreadyUsedCPU       = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
+        double alreadyUsedRAM       = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getRam()).sum();
+        double remainingCPUOnVm     = vm.getVmType().getCpuPoints() - alreadyUsedCPU - scheduledCPUUsage;
+        double remainingRAMOnVm     = vm.getVmType().getRamPoints() - alreadyUsedRAM - scheduledRAMUsage;
 
         return container.getContainerConfiguration().getCPUPoints() <= remainingCPUOnVm && container.getContainerConfiguration().getRam() <= remainingRAMOnVm;
 
@@ -111,15 +116,16 @@ public abstract class AbstractProvisioningImpl {
         List<VirtualMachine> virtualMachineList = cacheVirtualMachineService.getVMs(vmType);
         List<VirtualMachine> vmsShouldBeStarted = result.getProcessSteps().stream().map(ProcessStep::getScheduledAtVM).collect(Collectors.toList());
         vmsShouldBeStarted.addAll(result.getProcessSteps().stream().map(processStep -> processStep.getScheduledAtContainer().getVirtualMachine()).collect(Collectors.toList()));
-
+        vmsShouldBeStarted.addAll(result.getVms());
 //        for (VirtualMachine currentVM : virtualMachineList) {
 //            if (!vmsShouldBeStarted.contains(currentVM) && !currentVM.isLeased() && !currentVM.isStarted()) {
 //                return currentVM;
 //            }
 //        }
 
-       return virtualMachineList.stream().filter(currentVM -> !vmsShouldBeStarted.contains(currentVM) && !currentVM.isLeased() && !currentVM.isStarted())
-               .findFirst().orElse(null);
+        VirtualMachine virtualMachine = virtualMachineList.stream().filter(currentVM -> !vmsShouldBeStarted.contains(currentVM) && !currentVM.isLeased() && !currentVM.isStarted()).findFirst().orElse(null);
+
+       return virtualMachine;
 //        return null;
     }
 

@@ -37,14 +37,15 @@ public class ViePEPCloudSimulatorClientService extends AbstractViePEPCloudServic
 
     public VirtualMachine startVM(VirtualMachine virtualMachine) {
 
+
         try {
-            TimeUnit.MILLISECONDS.sleep(virtualMachine.getStartupTime());
-            if (!useDocker) {
-                TimeUnit.MILLISECONDS.sleep(virtualMachine.getVmType().getDeployTime());
-            }
+
+            TimeUnit.MILLISECONDS.sleep(virtualMachine.getVmType().getDeployTime());
+
         } catch (InterruptedException e) {
             log.error("EXCEPTION", e);
         }
+
 
         String uri = "128.130.172.211";
 
@@ -57,7 +58,7 @@ public class ViePEPCloudSimulatorClientService extends AbstractViePEPCloudServic
 
         log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
 
-        waitUntilVmIsBooted(virtualMachine);
+
 
         log.debug("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " established.");
 

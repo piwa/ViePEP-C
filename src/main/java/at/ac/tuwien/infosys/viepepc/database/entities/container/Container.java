@@ -4,7 +4,8 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-4
+
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;

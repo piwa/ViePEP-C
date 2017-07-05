@@ -40,13 +40,16 @@ public class StartParExceedImpl extends AbstractProvisioningImpl implements Proc
             List<VirtualMachine> availableVms = getRunningVms();
             List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(runningWorkflowInstances);
 
-            if (nextProcessSteps == null) {
+            if (nextProcessSteps == null || nextProcessSteps.size() == 0) {
                 return optimizationResult;
             }
 
             if(availableVms.size() < runningWorkflowInstances.size()) {
-                for(int i = 0; i < runningWorkflowInstances.size() - availableVms.size(); i++) {
-                    availableVms.add(startNewDefaultVm(optimizationResult));
+                int newVMs = runningWorkflowInstances.size() - availableVms.size();
+                for(int i = 0; i < newVMs; i++) {
+                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
+                    availableVms.add(vm);
+                    optimizationResult.addVirtualMachine(vm);
                 }
             }
 

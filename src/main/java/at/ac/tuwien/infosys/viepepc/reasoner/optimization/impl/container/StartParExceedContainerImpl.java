@@ -41,29 +41,43 @@ public class StartParExceedContainerImpl extends AbstractProvisioningImpl implem
             List<VirtualMachine> availableVms = getRunningVms();
             List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(runningWorkflowInstances);
 
-            if (nextProcessSteps == null) {
+            if (nextProcessSteps == null || nextProcessSteps.size() == 0) {
                 return optimizationResult;
             }
 
+/*
             if(availableVms.size() < runningWorkflowInstances.size()) {
-                for(int i = 0; i < runningWorkflowInstances.size() - availableVms.size(); i++) {
-                    availableVms.add(startNewDefaultVm(optimizationResult));
+                int newVMs = runningWorkflowInstances.size() - availableVms.size();
+                for(int i = 0; i < newVMs; i++) {
+                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
+                    availableVms.add(vm);
+                    optimizationResult.addVirtualMachine(vm);
                 }
             }
 
             if (availableVms.size() == 0) {
                 return optimizationResult;
             }
-
+*/
             availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));
 
             for(ProcessStep processStep : nextProcessSteps) {
                 Container container = getContainer(processStep);
+
+                boolean deployed = false;
+
                 for(VirtualMachine vm : availableVms) {
                     if(checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
                         deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
+                        deployed = true;
                         break;
                     }
+                }
+                if(!deployed && availableVms.size() < runningWorkflowInstances.size()) {
+                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
+                    availableVms.add(vm);
+                    deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
+                    availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));
                 }
             }
         } catch(ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {

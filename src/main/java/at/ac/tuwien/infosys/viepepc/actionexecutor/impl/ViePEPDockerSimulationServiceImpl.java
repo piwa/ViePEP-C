@@ -41,9 +41,9 @@ public class ViePEPDockerSimulationServiceImpl {
 
     public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
 
-        if (placementHelper.imageForContainerEverDeployedOnVM(container, virtualMachine) == 0) {
-            TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
-        }
+
+        TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
+
 
         String id = UUID.randomUUID().toString();
         String hostPort = "2000";
