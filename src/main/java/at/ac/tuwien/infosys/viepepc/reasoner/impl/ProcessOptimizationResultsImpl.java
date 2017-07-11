@@ -51,6 +51,13 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
     @Override
     public Future<Boolean> processResults(OptimizationResult optimize, DateTime tau_t) {
 
+        inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
+        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
+        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtContainer().getVirtualMachine()));
+
+        serviceExecutionController.startInvocationViaContainers(optimize.getProcessSteps());
+
+
         StringBuilder stringBuilder = new StringBuilder();
 
         printRunningInformation(stringBuilder);
@@ -63,12 +70,7 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
         log.info(stringBuilder.toString());
 
-        serviceExecutionController.startInvocationViaContainers(optimize.getProcessSteps());
 
-        inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
-
-        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
-        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtContainer().getVirtualMachine()));
 //        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).forEach(ps -> waitingForExecutingContainers.add(ps.getScheduledAtContainer()));
 
 

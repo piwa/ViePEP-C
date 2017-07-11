@@ -41,15 +41,17 @@ public class StartParNotExceedContainerImpl extends AbstractProvisioningImpl imp
             List<VirtualMachine> availableVms = getRunningVms();
             List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(runningWorkflowInstances);
 
-            if (nextProcessSteps == null) {
+            if (nextProcessSteps == null || nextProcessSteps.size() == 0) {
                 return optimizationResult;
             }
 
-            for (WorkflowElement workflowElement : runningWorkflowInstances) {
-                if (!vmStartedBecauseOfWorkflow.containsKey(workflowElement)) {
+
+            if(availableVms.size() < runningWorkflowInstances.size()) {
+                int newVMs = runningWorkflowInstances.size() - availableVms.size();
+                for(int i = 0; i < newVMs; i++) {
                     VirtualMachine vm = startNewDefaultVm(optimizationResult);
                     availableVms.add(vm);
-                    vmStartedBecauseOfWorkflow.put(workflowElement, vm);
+                    optimizationResult.addVirtualMachine(vm);
                 }
             }
 
@@ -57,11 +59,6 @@ public class StartParNotExceedContainerImpl extends AbstractProvisioningImpl imp
                 availableVms.add(startNewDefaultVm(optimizationResult));
             }
 
-//            availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
-
-//            if (availableVms.size() == 0) {
-//                return optimizationResult;
-//            }
 
             availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));
 
@@ -80,7 +77,7 @@ public class StartParNotExceedContainerImpl extends AbstractProvisioningImpl imp
                     }
                 }
 
-                if (!foundVmWithEnoughRemainingBTU) {
+                if (!foundVmWithEnoughRemainingBTU && availableVms.size() < runningWorkflowInstances.size()) {
                     VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
                     availableVms.add(vm);
                 }

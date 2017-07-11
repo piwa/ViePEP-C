@@ -51,7 +51,7 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
             }
 
             removeAllBusyVms(availableVms, runningWorkflowInstances);
-            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult))).reversed());
+            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult)).reversed());
 
             for (WorkflowElement workflowElement : runningWorkflowInstances) {
 
@@ -68,26 +68,30 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
                 }
                 for(ProcessStep processStep : nextProcessSteps) {
 
-                    if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) {
+                    if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS && availableVms.size() == 0) {
                         if(!waitingProcessSteps.containsEntry(workflowElement, processStep)) {
                             calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
                             waitingProcessSteps.put(workflowElement, processStep);
                         }
                     }
                     else {
+                        VirtualMachine deployedVM = null;
                         boolean deployed = false;
                         for (VirtualMachine vm : availableVms) {
                             long remainingBTU = getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult);
-                            if (remainingBTU > processStep.getExecutionTime() && !vmAlreadyUsedInResult(vm, optimizationResult)) {
+                            if (remainingBTU > processStep.getExecutionTime()) {
                                 deployContainerAssignProcessStep(processStep, vm, optimizationResult);
                                 deployed = true;
+                                deployedVM = vm;
                                 break;
                             }
                         }
 
                         if (!deployed) {
                             startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-//                            availableVms.add(vm);
+                        }
+                        else if(deployed && deployedVM != null) {
+                            availableVms.remove(deployedVM);
                         }
 
                         if(waitingProcessSteps.containsEntry(workflowElement, processStep)) {

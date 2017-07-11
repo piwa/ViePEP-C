@@ -47,7 +47,7 @@ public class AllParNotExceedContainerImpl extends AbstractProvisioningImpl imple
             List<WorkflowElement> runningWorkflowInstances = getRunningWorkflowInstancesSorted();
             List<VirtualMachine> availableVms = getRunningVms();
 
-            if (runningWorkflowInstances == null) {
+            if (runningWorkflowInstances == null || runningWorkflowInstances.size() == 0) {
                 return optimizationResult;
             }
 
@@ -69,7 +69,7 @@ public class AllParNotExceedContainerImpl extends AbstractProvisioningImpl imple
                 }
                 for(ProcessStep processStep : nextProcessSteps) {
 
-                    if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) {
+                    if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS && availableVms.size() == 0) {
                         if(!waitingProcessSteps.containsEntry(workflowElement, processStep)) {
                             calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
                             waitingProcessSteps.put(workflowElement, processStep);

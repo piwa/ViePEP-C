@@ -32,6 +32,7 @@ public class VirtualMachineReportingAction implements Serializable {
     private Long id;
 
     private String virtualMachineID;
+    private String virtualMachineTypeID;
 
     @Enumerated(EnumType.STRING)
     private Action vmAction;
@@ -42,10 +43,11 @@ public class VirtualMachineReportingAction implements Serializable {
     public VirtualMachineReportingAction() {
     }
 
-    public VirtualMachineReportingAction(DateTime date, String vmID, Action action) {
+    public VirtualMachineReportingAction(DateTime date, String vmID, String virtualMachineTypeID, Action action) {
         this.timestamp = date;
         this.virtualMachineID = vmID;
         this.vmAction = action;
+        this.virtualMachineTypeID = virtualMachineTypeID;
     }
 
 

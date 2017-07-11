@@ -260,7 +260,7 @@ public class PlacementHelperImpl implements PlacementHelper {
         }
         virtualMachine.terminate();
 
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(date, virtualMachine.getInstanceId(), Action.STOPPED);
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(date, virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.STOPPED);
         reportDaoService.save(report);
     }
     

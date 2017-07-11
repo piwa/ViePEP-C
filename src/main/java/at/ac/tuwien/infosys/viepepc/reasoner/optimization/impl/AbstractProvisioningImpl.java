@@ -17,6 +17,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Created by philippwaibel on 02/01/2017.
  */
+@Slf4j
 public abstract class AbstractProvisioningImpl {
 
     @Autowired
@@ -188,8 +190,9 @@ public abstract class AbstractProvisioningImpl {
     }
 
     protected void removeAllBusyVms(List<VirtualMachine> availableVms, List<WorkflowElement> runningWorkflowInstances) {
-        List<VirtualMachine> alreadyUsedVMs = new ArrayList<>();
+        Set<VirtualMachine> alreadyUsedVMs = new HashSet<>();
         runningWorkflowInstances.forEach(workflow -> getRunningSteps(workflow).forEach(ps -> alreadyUsedVMs.add(ps.getScheduledAtContainer().getVirtualMachine())));
+        inMemoryCache.getWaitingForExecutingProcessSteps().forEach(ps -> alreadyUsedVMs.add(ps.getScheduledAtContainer().getVirtualMachine()));
         availableVms.removeIf(vm -> alreadyUsedVMs.contains(vm));
         availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
     }
@@ -205,7 +208,9 @@ public abstract class AbstractProvisioningImpl {
         }
         long remainingLeasingDuration = toBeTerminatedAt.getMillis() - tau_t.getMillis();
 
-        for(ProcessStep processStep : optimizationResult.getProcessSteps()) {
+        List<ProcessStep> processSteps = new ArrayList<>(optimizationResult.getProcessSteps());
+        processSteps.addAll(inMemoryCache.getWaitingForExecutingProcessSteps());
+        for(ProcessStep processStep : processSteps) {
             if(processStep.getScheduledAtVM() == vm || processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
                 remainingLeasingDuration = remainingLeasingDuration - processStep.getExecutionTime();
             }

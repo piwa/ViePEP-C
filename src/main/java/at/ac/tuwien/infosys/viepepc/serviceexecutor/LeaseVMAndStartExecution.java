@@ -57,7 +57,7 @@ public class LeaseVMAndStartExecution {
         stopWatch.start();
         String address = startVM(virtualMachine);
 
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), Action.START);
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);
         reportDaoService.save(report);
 
         if (address == null) {
@@ -84,7 +84,7 @@ public class LeaseVMAndStartExecution {
         stopWatch.start();
         String address = startVM(virtualMachine);
 
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), Action.START);
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);
         reportDaoService.save(report);
 
         if (address == null) {
@@ -125,16 +125,16 @@ public class LeaseVMAndStartExecution {
     }
 
     private String startVM(VirtualMachine virtualMachine) {
-        try {
+//        try {
 
             virtualMachine = viePEPCloudService.startVM(virtualMachine);
             log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
 
-            TimeUnit.MILLISECONDS.sleep(virtualMachine.getVmType().getDeployTime());
+//            TimeUnit.MILLISECONDS.sleep(virtualMachine.getVmType().getDeployTime());
 
-        } catch (InterruptedException e) {
-            log.error("EXCEPTION while starting VM", e);
-        }
+//        } catch (InterruptedException e) {
+//            log.error("EXCEPTION while starting VM", e);
+//        }
         return virtualMachine.getIpAddress();
     }
 
@@ -148,7 +148,7 @@ public class LeaseVMAndStartExecution {
 
             log.info("Start Container: " + container + " on VM: " + vm);
             dockerControllerService.startContainer(vm, container);
-            TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
+//            TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
 
         } catch (InterruptedException | DockerException e) {
             log.error("EXCEPTION while deploying Container", e);

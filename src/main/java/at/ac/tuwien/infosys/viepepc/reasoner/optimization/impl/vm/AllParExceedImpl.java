@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by philippwaibel on 30/09/2016.
@@ -46,12 +47,12 @@ public class AllParExceedImpl extends AbstractProvisioningImpl implements Proces
             List<WorkflowElement> runningWorkflowInstances = getRunningWorkflowInstancesSorted();
             List<VirtualMachine> availableVms = getRunningVms();
 
-            if (runningWorkflowInstances == null) {
+            if (runningWorkflowInstances == null || runningWorkflowInstances.size() == 0) {
                 return optimizationResult;
             }
 
             removeAllBusyVms(availableVms, runningWorkflowInstances);
-            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> new Long(getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult))).reversed());
+            availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult)).reversed());
 
             for (WorkflowElement workflowElement : runningWorkflowInstances) {
 
@@ -59,6 +60,7 @@ public class AllParExceedImpl extends AbstractProvisioningImpl implements Proces
                 List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
                 if (waitingProcessSteps.containsKey(workflowElement)) {
                     nextProcessSteps.addAll(waitingProcessSteps.get(workflowElement));
+                    nextProcessSteps.sort(Comparator.comparingLong(ProcessStep::getExecutionTime).reversed());
                 }
 
                 long remainingRunningProcessStepExecution = calcRemainingRunningProcessStepExecution(runningProcessSteps);
@@ -66,28 +68,24 @@ public class AllParExceedImpl extends AbstractProvisioningImpl implements Proces
                 if(nextProcessSteps.size() > 0) {
                     executionDurationFirstProcessStep = nextProcessSteps.get(0).getExecutionTime();
                 }
+
                 for(ProcessStep processStep : nextProcessSteps) {
 
-                    if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) {
+                    if ((processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) && availableVms.size() == 0) {
                         if(!waitingProcessSteps.containsEntry(workflowElement, processStep)) {
                             calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
                             waitingProcessSteps.put(workflowElement, processStep);
                         }
                     } else {
-
-                        boolean deployed = false;
-                        for (VirtualMachine vm : availableVms) {
-                            if (!vmAlreadyUsedInResult(vm, optimizationResult)) {
-                                deployContainerAssignProcessStep(processStep, vm, optimizationResult);
-                                deployed = true;
-                                break;
-                            }
+                        if(availableVms.size() > 0) {
+                            VirtualMachine  deployedVm = availableVms.get(0);
+                            deployContainerAssignProcessStep(processStep, deployedVm, optimizationResult);
+                            availableVms.remove(deployedVm);
+                        }
+                        else {
+                            startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
                         }
 
-                        if (!deployed) {
-                            VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-//                            availableVms.add(vm);
-                        }
                         if (waitingProcessSteps.containsEntry(workflowElement, processStep)) {
                             waitingProcessSteps.remove(workflowElement, processStep);
                         }
