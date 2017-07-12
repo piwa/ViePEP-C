@@ -17,6 +17,7 @@ import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurati
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.service.ServiceTypeNotFoundException;
 import com.spotify.docker.client.exceptions.DockerException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.StopWatch;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -47,6 +49,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
         "classpath:application.properties",
         "classpath:application-container.properties"})
 @ActiveProfiles("test")
+@Slf4j
 public class ViePEPDockerControllerServiceImplTest {
 
     @Autowired
@@ -112,9 +115,14 @@ public class ViePEPDockerControllerServiceImplTest {
         containerConfigurationsReader.readContainerConfigurations();
         serviceRegistryReader.getServiceTypeAmount();
 
-        VMType vmType = virtualMachineService.getVmTypeFromIdentifier(4);
+        VMType vmType = virtualMachineService.getVmTypeFromIdentifier(6);
         vm = new VirtualMachine("test", vmType);
+
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         vm = viePEPAwsClientService.startVM(vm);
+        stopWatch.stop();
+        log.info("VM bootup time: " + stopWatch.getTotalTimeMillis());
 
         startAndStopContainer();
     }
@@ -123,9 +131,13 @@ public class ViePEPDockerControllerServiceImplTest {
         ServiceType serviceType = serviceRegistryReader.findServiceType("HelloWorldService");
         Container container = getContainer(serviceType);
 
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         container = viePEPDockerControllerService.startContainer(vm, container);
+        stopWatch.stop();
+        log.info("Docker start time: " + stopWatch.getTotalTimeMillis());
 
-        assertThat(Integer.valueOf(container.getExternPort())).isBetween(20000, 20300);
+        assertThat(Integer.valueOf(container.getExternPort())).isBetween(2000, 2030);
 
         TimeUnit.SECONDS.sleep(10);
         RestTemplate restTemplate = new RestTemplate();

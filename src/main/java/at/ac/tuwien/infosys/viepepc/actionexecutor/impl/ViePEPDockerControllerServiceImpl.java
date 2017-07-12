@@ -45,7 +45,7 @@ public class ViePEPDockerControllerServiceImpl {
 
         docker.pull(containerImage);
 
-        String internalPort = String.valueOf(container.getContainerImage().getServiceType().getInternPort());
+        String internalPort = String.valueOf(container.getContainerImage().getServiceType().getServiceTypeResources().getInternPort());
 
         /* Configure docker container */
         Double vmCores = (double)virtualMachine.getVmType().getCores();

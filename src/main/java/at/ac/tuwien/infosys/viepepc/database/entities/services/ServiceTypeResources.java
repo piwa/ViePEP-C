@@ -34,5 +34,11 @@ public class ServiceTypeResources {
     private double memory;
     @XmlElement
     private long makeSpan;
+    @XmlElement
+    private double dataToTransfer;
+    @XmlElement
+    private long bootTime;
+    @XmlElement
+    private Integer internPort;
 
 }

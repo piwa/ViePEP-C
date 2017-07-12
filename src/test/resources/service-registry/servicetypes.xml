@@ -6,9 +6,24 @@
          <cpuLoad>45</cpuLoad>
          <memory>450</memory>
          <makeSpan>90000</makeSpan>
+         <bootTime>3000</bootTime>
+         <dataToTransfer>2</dataToTransfer>
+         <internPort>5000</internPort>
       </serviceTypeResources>
-      <dataToTransfer>2</dataToTransfer>
       <onlyInternal>false</onlyInternal>
-      <internPort>5000</internPort>
    </serviceType>
+   <serviceType>
+      <name>Service1</name>
+      <serviceTypeResources>
+         <cpuLoad>45</cpuLoad>
+         <memory>450</memory>
+         <makeSpan>90000</makeSpan>
+         <bootTime>3000</bootTime>
+         <dataToTransfer>2</dataToTransfer>
+         <internPort>5000</internPort>
+      </serviceTypeResources>
+      <onlyInternal>false</onlyInternal>
+   </serviceType>
+
+
 </ServiceRegistry>

@@ -40,7 +40,7 @@ public class ServiceInvokerHttpClient {
         httpclient = HttpClientBuilder.create().setDefaultRequestConfig(config).disableAutomaticRetries().build();
     }
 
-    @Retryable(value = Exception.class, maxAttempts = 10, backoff=@Backoff(delay=1000, maxDelay=3000))
+    @Retryable(value = Exception.class, maxAttempts = 20, backoff=@Backoff(delay=1000, maxDelay=3000))
     public HttpResponse retryHttpGet(HttpGet httpGet, Stopwatch stopWatch) throws Exception {
         if(stopWatch.isRunning()) {
             stopWatch.reset();

@@ -6,5 +6,11 @@
         <deployTime>10000</deployTime>
         <serviceType>HelloWorldService</serviceType>
     </containerImage>
+    <containerImage>
+        <imageName>viepep.backend.services</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>1000</deployTime>
+        <serviceType>Service1</serviceType>
+    </containerImage>
 </ContainerImages>
 

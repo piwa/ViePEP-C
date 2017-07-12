@@ -36,11 +36,7 @@ public class ServiceType {
     @XmlElement
     private String name;
     @XmlElement
-    private double dataToTransfer;
-    @XmlElement
     private boolean onlyInternal;
-    @XmlElement
-    private Integer internPort;
     @XmlElement(name = "serviceTypeResources")
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="serviceTypeResourcesId")

@@ -4,6 +4,7 @@ import at.ac.tuwien.infosys.viepepc.bootstrap.vmTypes.VmTypesReaderImpl;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.StopWatch;
 
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "classpath:application.properties",
         "classpath:application-container.properties"})
 @ActiveProfiles("test")
+@Slf4j
 public class ViePEPAwsClientServiceImplTest {
 
 
@@ -52,9 +55,15 @@ public class ViePEPAwsClientServiceImplTest {
     @Test
     public void startVMAndStopAgain_Success() throws Exception {
 
-        VMType vmType = virtualMachineService.getVmTypeFromIdentifier(4);
+        VMType vmType = virtualMachineService.getVmTypeFromIdentifier(6);
         VirtualMachine vm = new VirtualMachine("test", vmType);
+
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
         vm = viePEPAwsClientService.startVM(vm);
+        stopWatch.stop();
+        log.info("VM bootup time: " + stopWatch.getTotalTimeMillis());
 
         TimeUnit.SECONDS.sleep(10);
 
@@ -62,7 +71,6 @@ public class ViePEPAwsClientServiceImplTest {
         assertThat(viePEPAwsClientService.checkAvailabilityOfDockerhost(vm)).isTrue();
 
         boolean success = viePEPAwsClientService.stopVirtualMachine(vm);
-
         assertThat(success).isTrue();
 
     }

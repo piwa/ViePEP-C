@@ -160,7 +160,7 @@ public class ViePEPAwsClientService extends AbstractViePEPCloudService {
 
             int counter = 0;
 
-            while(!terminated && counter <= 10) {
+            while(!terminated && counter <= 20) {
                 TimeUnit.SECONDS.sleep(5);
                 DescribeInstancesRequest request = new DescribeInstancesRequest();
                 DescribeInstancesResult response = amazonEC2Client.describeInstances(request);
