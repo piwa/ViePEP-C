@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.vm;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
@@ -7,6 +8,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.impl.ReasoningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractVMProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
@@ -17,12 +19,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class AllParNotExceedImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class AllParNotExceedImpl extends AbstractVMProvisioningImpl implements ProcessInstancePlacementProblem {
 
     private Multimap<WorkflowElement, ProcessStep> waitingProcessSteps;
 
@@ -46,7 +49,7 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
             List<WorkflowElement> runningWorkflowInstances = getRunningWorkflowInstancesSorted();
             List<VirtualMachine> availableVms = getRunningVms();
 
-            if (runningWorkflowInstances == null) {
+            if (runningWorkflowInstances == null || runningWorkflowInstances.size() == 0) {
                 return optimizationResult;
             }
 
@@ -57,8 +60,9 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
 
                 List<ProcessStep> runningProcessSteps = getRunningSteps(workflowElement);
                 List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
-                if(waitingProcessSteps.containsKey(workflowElement)) {
+                if (waitingProcessSteps.containsKey(workflowElement)) {
                     nextProcessSteps.addAll(waitingProcessSteps.get(workflowElement));
+                    nextProcessSteps.sort(Comparator.comparingLong(ProcessStep::getExecutionTime).reversed());
                 }
 
                 long remainingRunningProcessStepExecution = calcRemainingRunningProcessStepExecution(runningProcessSteps);
@@ -68,7 +72,7 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
                 }
                 for(ProcessStep processStep : nextProcessSteps) {
 
-                    if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS && availableVms.size() == 0) {
+                    if ((processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) && availableVms.size() == 0) {
                         if(!waitingProcessSteps.containsEntry(workflowElement, processStep)) {
                             calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
                             waitingProcessSteps.put(workflowElement, processStep);
@@ -109,7 +113,10 @@ public class AllParNotExceedImpl extends AbstractProvisioningImpl implements Pro
             throw new ProblemNotSolvedException();
         }
 
+//        inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimizationResult.getProcessSteps());
+
         return optimizationResult;
     }
+
 
 }

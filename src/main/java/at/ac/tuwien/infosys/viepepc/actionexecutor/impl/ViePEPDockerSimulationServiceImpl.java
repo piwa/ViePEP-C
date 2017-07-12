@@ -48,12 +48,13 @@ public class ViePEPDockerSimulationServiceImpl {
         String id = UUID.randomUUID().toString();
         String hostPort = "2000";
 
+        virtualMachine.getDeployedContainers().add(container);
         container.setContainerID(id);
         container.setVirtualMachine(virtualMachine);
         container.setRunning(true);
         container.setStartedAt(new DateTime());
         container.setExternPort(hostPort);
-        virtualMachine.getDeployedContainers().add(container);
+
 
 
         /* Update the set of used port on docker host */

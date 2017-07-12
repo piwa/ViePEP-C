@@ -10,6 +10,7 @@ import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowServ
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractContainerProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
@@ -27,7 +28,7 @@ import java.util.List;
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class OneVMPerTaskContainerImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class OneVMPerTaskContainerImpl extends AbstractContainerProvisioningImpl implements ProcessInstancePlacementProblem {
 
     @Autowired
     protected PlacementHelper placementHelper;
@@ -55,7 +56,7 @@ public class OneVMPerTaskContainerImpl extends AbstractProvisioningImpl implemen
             List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(nextWorkflowInstances);
             List<VirtualMachine> runningVMs = getRunningVms();
 
-            if (nextProcessSteps == null) {
+            if (nextProcessSteps == null || nextProcessSteps.size() == 0) {
                 return optimizationResult;
             }
 

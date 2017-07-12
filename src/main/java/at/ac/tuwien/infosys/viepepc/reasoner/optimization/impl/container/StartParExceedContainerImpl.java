@@ -6,6 +6,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractContainerProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
@@ -20,7 +21,7 @@ import java.util.*;
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class StartParExceedContainerImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class StartParExceedContainerImpl extends AbstractContainerProvisioningImpl implements ProcessInstancePlacementProblem {
 
     private Map<WorkflowElement, VirtualMachine> vmStartedBecauseOfWorkflow = new HashMap<>();
 
@@ -74,7 +75,7 @@ public class StartParExceedContainerImpl extends AbstractProvisioningImpl implem
                     }
                 }
                 if(!deployed && availableVms.size() < runningWorkflowInstances.size()) {
-                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
+                    VirtualMachine vm = startNewVmDefaultOrForContainer(optimizationResult, container.getContainerConfiguration());
                     availableVms.add(vm);
                     deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
                     availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));

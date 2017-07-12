@@ -72,34 +72,38 @@ public class VirtualMachine implements Serializable {
             this.vmType = cacheVirtualMachineService.getVmTypeFromCore(numberCores, location);
         } catch (Exception e) {
         }
+        this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
     }
 
     public VirtualMachine(String name, VMType vmType, ServiceType serviceType) {
         this.name = name;
         this.location = vmType.getLocation();
         this.serviceType = serviceType;
+        this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
     }
 
     public VirtualMachine(String name, VMType vmType) {
         this.name = name;
         this.location = vmType.getLocation();
         this.vmType = vmType;
+        this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
     }
 
     public VirtualMachine() {
+        this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
     }
     
     public boolean isContainerDeployed(Container container) {
         return deployedContainers.contains(container);
     }
 
-    @Override
-    public int hashCode() {
-    	if(id == null){
-    		return 0;
-    	}
-        return Math.toIntExact(id);
-    }
+//    @Override
+//    public int hashCode() {
+//    	if(id == null){
+//    		return 0;
+//    	}
+//        return Math.toIntExact(id);
+//    }
 
 
     @Override

@@ -6,6 +6,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractContainerProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
@@ -20,7 +21,7 @@ import java.util.*;
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class StartParNotExceedContainerImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class StartParNotExceedContainerImpl extends AbstractContainerProvisioningImpl implements ProcessInstancePlacementProblem {
 
     private Map<WorkflowElement, VirtualMachine> vmStartedBecauseOfWorkflow = new HashMap<>();
 
@@ -46,14 +47,14 @@ public class StartParNotExceedContainerImpl extends AbstractProvisioningImpl imp
             }
 
 
-            if(availableVms.size() < runningWorkflowInstances.size()) {
-                int newVMs = runningWorkflowInstances.size() - availableVms.size();
-                for(int i = 0; i < newVMs; i++) {
-                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
-                    availableVms.add(vm);
-                    optimizationResult.addVirtualMachine(vm);
-                }
-            }
+//            if(availableVms.size() < runningWorkflowInstances.size()) {
+//                int newVMs = runningWorkflowInstances.size() - availableVms.size();
+//                for(int i = 0; i < newVMs; i++) {
+//                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
+//                    availableVms.add(vm);
+//                    optimizationResult.addVirtualMachine(vm);
+//                }
+//            }
 
             if (availableVms.size() == 0) {
                 availableVms.add(startNewDefaultVm(optimizationResult));
@@ -64,20 +65,20 @@ public class StartParNotExceedContainerImpl extends AbstractProvisioningImpl imp
 
             for (ProcessStep processStep : nextProcessSteps) {
 
-                boolean foundVmWithEnoughRemainingBTU = false;
+                boolean deployed = false;
                 Container container = getContainer(processStep);
                 for (VirtualMachine vm : availableVms) {
                     long remainingBTU = getRemainingLeasingDuration(new DateTime(), vm);
                     if (remainingBTU > processStep.getExecutionTime()) {
-                        foundVmWithEnoughRemainingBTU = true;
                         if (checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
+                            deployed = true;
                             deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
                             break;
                         }
                     }
                 }
 
-                if (!foundVmWithEnoughRemainingBTU && availableVms.size() < runningWorkflowInstances.size()) {
+                if (!deployed && availableVms.size() < runningWorkflowInstances.size()) {
                     VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
                     availableVms.add(vm);
                 }

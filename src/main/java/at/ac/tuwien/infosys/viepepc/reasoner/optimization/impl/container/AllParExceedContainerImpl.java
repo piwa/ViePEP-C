@@ -7,6 +7,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.reasoner.impl.ReasoningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractContainerProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
@@ -23,7 +24,7 @@ import java.util.*;
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class AllParExceedContainerImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class AllParExceedContainerImpl extends AbstractContainerProvisioningImpl implements ProcessInstancePlacementProblem {
 
     private Multimap<WorkflowElement, ProcessStep> waitingProcessSteps;
 
@@ -68,7 +69,7 @@ public class AllParExceedContainerImpl extends AbstractProvisioningImpl implemen
                 }
                 for (ProcessStep processStep : nextProcessSteps) {
 
-                    if (processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS && availableVms.size() == 0) {
+                    if ((processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) && availableVms.size() == 0) {
                         if(!waitingProcessSteps.containsEntry(workflowElement, processStep)) {
                             calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
                             waitingProcessSteps.put(workflowElement, processStep);

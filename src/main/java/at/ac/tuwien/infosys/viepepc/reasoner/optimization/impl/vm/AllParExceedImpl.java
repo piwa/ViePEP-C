@@ -7,6 +7,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.impl.ReasoningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractVMProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class AllParExceedImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class AllParExceedImpl extends AbstractVMProvisioningImpl implements ProcessInstancePlacementProblem {
 
     private Multimap<WorkflowElement, ProcessStep> waitingProcessSteps;
 
@@ -78,7 +79,7 @@ public class AllParExceedImpl extends AbstractProvisioningImpl implements Proces
                         }
                     } else {
                         if(availableVms.size() > 0) {
-                            VirtualMachine  deployedVm = availableVms.get(0);
+                            VirtualMachine deployedVm = availableVms.get(0);
                             deployContainerAssignProcessStep(processStep, deployedVm, optimizationResult);
                             availableVms.remove(deployedVm);
                         }

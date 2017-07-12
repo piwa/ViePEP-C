@@ -44,6 +44,10 @@ public abstract class AbstractProvisioningImpl {
     protected InMemoryCacheImpl inMemoryCache;
 
     protected boolean checkIfEnoughResourcesLeftOnVM(VirtualMachine vm, Container container, OptimizationResult optimizationResult) {
+        return checkIfEnoughResourcesLeftOnVM(vm, container.getContainerConfiguration(), optimizationResult);
+    }
+
+    protected boolean checkIfEnoughResourcesLeftOnVM(VirtualMachine vm, ContainerConfiguration containerConfiguration, OptimizationResult optimizationResult) {
 
         Set<ProcessStep> scheduledProcessSteps = new HashSet(optimizationResult.getProcessSteps());
         scheduledProcessSteps.addAll(inMemoryCache.getWaitingForExecutingProcessSteps());
@@ -55,7 +59,7 @@ public abstract class AbstractProvisioningImpl {
         double remainingCPUOnVm     = vm.getVmType().getCpuPoints() - alreadyUsedCPU - scheduledCPUUsage;
         double remainingRAMOnVm     = vm.getVmType().getRamPoints() - alreadyUsedRAM - scheduledRAMUsage;
 
-        return container.getContainerConfiguration().getCPUPoints() <= remainingCPUOnVm && container.getContainerConfiguration().getRam() <= remainingRAMOnVm;
+        return containerConfiguration.getCPUPoints() <= remainingCPUOnVm && containerConfiguration.getRam() <= remainingRAMOnVm;
 
     }
 
@@ -111,38 +115,24 @@ public abstract class AbstractProvisioningImpl {
     }
 
     protected VirtualMachine startNewDefaultVm(OptimizationResult result) {
-        return startNewVm(result, cacheVirtualMachineService.getDefaultVmType());
+        return startNewVm(result, cacheVirtualMachineService.getDefaultVmType(), null);
     }
 
-    protected VirtualMachine startNewVm(OptimizationResult result, VMType vmType) {
-        List<VirtualMachine> virtualMachineList = cacheVirtualMachineService.getVMs(vmType);
-        List<VirtualMachine> vmsShouldBeStarted = result.getProcessSteps().stream().map(ProcessStep::getScheduledAtVM).collect(Collectors.toList());
-        vmsShouldBeStarted.addAll(result.getProcessSteps().stream().map(processStep -> processStep.getScheduledAtContainer().getVirtualMachine()).collect(Collectors.toList()));
-        vmsShouldBeStarted.addAll(result.getVms());
-//        for (VirtualMachine currentVM : virtualMachineList) {
-//            if (!vmsShouldBeStarted.contains(currentVM) && !currentVM.isLeased() && !currentVM.isStarted()) {
-//                return currentVM;
-//            }
-//        }
 
-        VirtualMachine virtualMachine = virtualMachineList.stream().filter(currentVM -> !vmsShouldBeStarted.contains(currentVM) && !currentVM.isLeased() && !currentVM.isStarted()).findFirst().orElse(null);
-
-       return virtualMachine;
-//        return null;
-    }
+    protected abstract VirtualMachine startNewVm(OptimizationResult result, VMType vmType, ContainerConfiguration containerConfiguration);
 
     protected VirtualMachine startNewVmDefaultOrForContainer(OptimizationResult result, ContainerConfiguration containerConfiguration) {
 
         VMType defaultVMType = cacheVirtualMachineService.getDefaultVmType();
 
         if(containerConfiguration.getCPUPoints() <= defaultVMType.getCpuPoints() && containerConfiguration.getRam() <= defaultVMType.getRamPoints()) {
-            return startNewVm(result, defaultVMType);
+            return startNewVm(result, defaultVMType, containerConfiguration);
         }
 
         Set<VMType> vmTypes = cacheVirtualMachineService.getVMTypes();
         for(VMType vmType : vmTypes) {
             if(containerConfiguration.getCPUPoints() <= vmType.getCpuPoints() && containerConfiguration.getRam() <= vmType.getRamPoints()) {
-                return startNewVm(result, vmType);
+                return startNewVm(result, vmType, containerConfiguration);
             }
         }
 

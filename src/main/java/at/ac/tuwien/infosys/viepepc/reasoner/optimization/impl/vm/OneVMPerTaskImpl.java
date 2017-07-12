@@ -9,6 +9,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractVMProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
@@ -25,7 +26,7 @@ import java.util.List;
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class OneVMPerTaskImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class OneVMPerTaskImpl extends AbstractVMProvisioningImpl implements ProcessInstancePlacementProblem {
 
     @Autowired
     protected PlacementHelper placementHelper;
@@ -52,7 +53,7 @@ public class OneVMPerTaskImpl extends AbstractProvisioningImpl implements Proces
             List<WorkflowElement> nextWorkflowInstances = getRunningWorkflowInstancesSorted();
             List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(nextWorkflowInstances);
 
-            if (nextProcessSteps == null) {
+            if (nextProcessSteps == null || nextProcessSteps.size() == 0) {
                 return optimizationResult;
             }
 

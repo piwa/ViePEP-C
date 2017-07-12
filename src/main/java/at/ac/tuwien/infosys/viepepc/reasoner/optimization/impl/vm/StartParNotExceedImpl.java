@@ -6,6 +6,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractVMProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
@@ -19,7 +20,7 @@ import java.util.*;
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class StartParNotExceedImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class StartParNotExceedImpl extends AbstractVMProvisioningImpl implements ProcessInstancePlacementProblem {
 
     private Map<WorkflowElement, VirtualMachine> vmStartedBecauseOfWorkflow = new HashMap<>();
 
@@ -44,43 +45,42 @@ public class StartParNotExceedImpl extends AbstractProvisioningImpl implements P
                 return optimizationResult;
             }
 
-            if(availableVms.size() < runningWorkflowInstances.size()) {
-                int newVMs = runningWorkflowInstances.size() - availableVms.size();
-                for(int i = 0; i < newVMs; i++) {
-                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
-                    availableVms.add(vm);
-                    optimizationResult.addVirtualMachine(vm);
-                }
-            }
+
 
 //            availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
             removeAllBusyVms(availableVms, runningWorkflowInstances);
 
-            if (availableVms.size() == 0) {
-                return optimizationResult;
-            }
+//            if (availableVms.size() == 0) {
+//                return optimizationResult;
+//            }
 
             availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));
 
-            for(ProcessStep processStep : nextProcessSteps) {
-                boolean foundVmWithEnoughRemainingBTU = false;
-                for(VirtualMachine vm : availableVms) {
+            int usedVmCounter = availableVms.size();
+            for (ProcessStep processStep : nextProcessSteps) {
+
+                VirtualMachine deployedVM = null;
+                boolean deployed = false;
+                for (VirtualMachine vm : availableVms) {
                     long remainingBTU = getRemainingLeasingDurationIncludingScheduled(DateTime.now(), vm, optimizationResult);
-                    if(remainingBTU > processStep.getExecutionTime()) {
-                        foundVmWithEnoughRemainingBTU = true;
-                        if(!vmAlreadyUsedInResult(vm, optimizationResult)) {
-                            deployContainerAssignProcessStep(processStep, vm, optimizationResult);
-                            break;
-                        }
+                    if (remainingBTU > processStep.getExecutionTime()) {
+                        deployContainerAssignProcessStep(processStep, vm, optimizationResult);
+                        deployedVM = vm;
+                        deployed = true;
+                        usedVmCounter = usedVmCounter + 1;
+                        break;
                     }
                 }
 
-                if(!foundVmWithEnoughRemainingBTU && availableVms.size() < runningWorkflowInstances.size()) {
-                    VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-//                    availableVms.add(vm);
+                if (!deployed && usedVmCounter < runningWorkflowInstances.size()) {
+                    startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+                    usedVmCounter = usedVmCounter + 1;
+                }
+                else if (deployed) {
+                    availableVms.remove(deployedVM);
                 }
             }
-        } catch(ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {
+        } catch (ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {
             log.error("Container image or configuration not found", ex);
             throw new ProblemNotSolvedException();
         } catch (Exception ex) {

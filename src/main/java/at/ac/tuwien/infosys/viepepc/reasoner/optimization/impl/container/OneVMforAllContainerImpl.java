@@ -6,6 +6,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractContainerProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
@@ -21,7 +22,7 @@ import java.util.List;
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class OneVMforAllContainerImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class OneVMforAllContainerImpl extends AbstractContainerProvisioningImpl implements ProcessInstancePlacementProblem {
 
 
     @Override
@@ -42,7 +43,7 @@ public class OneVMforAllContainerImpl extends AbstractProvisioningImpl implement
 //            List<ProcessStep> runningProcessSteps = getAllRunningSteps(runningWorkflowInstances);
             List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(runningWorkflowInstances);
 
-            if (nextProcessSteps == null) {
+            if (nextProcessSteps == null || nextProcessSteps.size() == 0) {
                 return optimizationResult;
             }
 

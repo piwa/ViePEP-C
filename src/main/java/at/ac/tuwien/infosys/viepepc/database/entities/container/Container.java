@@ -43,7 +43,7 @@ public class Container {
     private boolean running = false;
 
     public Container() {
-        containerID = UUID.randomUUID().toString().substring(0, 8);
+        containerID = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
     }
 
     public String getName() {
@@ -54,7 +54,7 @@ public class Container {
         virtualMachine.undeployContainer(this);
         virtualMachine = null;
         running = false;
-        startedAt = null;
+//        startedAt = null;
     }
 
     @Override
@@ -74,16 +74,16 @@ public class Container {
                 '}';
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = getName().hashCode();
-        result += prime * result + ((containerID == null) ? 0 : containerID.hashCode());
-        result = prime * result + ((containerImage == null) ? 0 : containerImage.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        return result;
-    }
+//    @Override
+//    public int hashCode() {
+//        final int prime = 31;
+//        int result = 1;
+//        result = getName().hashCode();
+//        result += prime * result + ((containerID == null) ? 0 : containerID.hashCode());
+//        result = prime * result + ((containerImage == null) ? 0 : containerImage.hashCode());
+//        result = prime * result + ((id == null) ? 0 : id.hashCode());
+//        return result;
+//    }
 
     @Override
     public boolean equals(Object obj) {

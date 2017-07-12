@@ -6,6 +6,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractVMProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
@@ -20,7 +21,7 @@ import java.util.List;
  * Created by philippwaibel on 30/09/2016.
  */
 @Slf4j
-public class OneVMforAllImpl extends AbstractProvisioningImpl implements ProcessInstancePlacementProblem {
+public class OneVMforAllImpl extends AbstractVMProvisioningImpl implements ProcessInstancePlacementProblem {
 
 
     @Override
@@ -41,7 +42,7 @@ public class OneVMforAllImpl extends AbstractProvisioningImpl implements Process
             List<ProcessStep> runningProcessSteps = getAllRunningSteps(nextWorkflowInstances);
             ProcessStep nextProcessStep = getMostUrgentProcessStep(nextWorkflowInstances);
 
-            if (runningProcessSteps.size() > 0 || nextProcessStep == null) {
+            if (nextProcessStep == null || runningProcessSteps.size() > 0) {
                 return optimizationResult;
             }
             if (runningVMs.size() == 0) {                           // start new vm, deploy container and start first service
