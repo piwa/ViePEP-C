@@ -26,6 +26,8 @@ public class CacheVirtualMachineService {
 
     @Value("${default.vm.cores}")
     private int defaultVMCores;
+    @Value("${default.vm.location}")
+    private String defaultVMLocation;
 
     public void initializeVMs() {
         int V = getVMTypes().size();
@@ -125,7 +127,7 @@ public class CacheVirtualMachineService {
 
     public VMType getDefaultVmType() {
         try {
-            return getVmTypeFromCore(defaultVMCores, "internal");
+            return getVmTypeFromCore(defaultVMCores, defaultVMLocation);
         } catch (Exception e) {
             log.error("EXCEPTION", e);
         }

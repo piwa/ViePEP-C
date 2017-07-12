@@ -9,7 +9,7 @@
       <flavor>m1.small</flavor>
       <location>internal</location>
       <leasingDuration>600000</leasingDuration>
-      <deployTime>30000</deployTime>
+      <deployTime>170000</deployTime>
    </VMType>
    <VMType>
       <identifier>2</identifier>
@@ -20,7 +20,7 @@
       <flavor>m1.medium</flavor>
       <location>internal</location>
       <leasingDuration>600000</leasingDuration>
-      <deployTime>30000</deployTime>
+      <deployTime>170000</deployTime>
    </VMType>
    <VMType>
       <identifier>3</identifier>
@@ -31,7 +31,7 @@
       <flavor>m1.large</flavor>
       <location>internal</location>
       <leasingDuration>600000</leasingDuration>
-      <deployTime>30000</deployTime>
+      <deployTime>170000</deployTime>
    </VMType>
    <VMType>
       <identifier>4</identifier>
@@ -42,7 +42,7 @@
       <flavor>t2.small</flavor>
       <location>aws</location>
       <leasingDuration>600000</leasingDuration>
-      <deployTime>30000</deployTime>
+      <deployTime>170000</deployTime>
    </VMType>
    <VMType>
       <identifier>5</identifier>
@@ -53,7 +53,7 @@
       <flavor>t2.large</flavor>
       <location>aws</location>
       <leasingDuration>600000</leasingDuration>
-      <deployTime>30000</deployTime>
+      <deployTime>170000</deployTime>
    </VMType>
    <VMType>
       <identifier>6</identifier>
@@ -64,7 +64,7 @@
       <flavor>t2.xlarge</flavor>
       <location>aws</location>
       <leasingDuration>600000</leasingDuration>
-      <deployTime>30000</deployTime>
+      <deployTime>170000</deployTime>
    </VMType>
    <VMType>
       <identifier>7</identifier>
@@ -75,7 +75,7 @@
       <flavor>t2.2xlarge</flavor>
       <location>aws</location>
       <leasingDuration>600000</leasingDuration>
-      <deployTime>30000</deployTime>
+      <deployTime>170000</deployTime>
    </VMType>
 </VirtualMachineTypes>
 
