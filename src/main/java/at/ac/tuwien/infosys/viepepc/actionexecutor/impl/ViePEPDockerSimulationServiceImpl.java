@@ -19,6 +19,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,10 +42,9 @@ public class ViePEPDockerSimulationServiceImpl {
 
     public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
 
+//        StopWatch stopWatch = new StopWatch();
 
-        TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
-
-
+//        stopWatch.start("set container info");
         String id = UUID.randomUUID().toString();
         String hostPort = "2000";
 
@@ -54,16 +54,17 @@ public class ViePEPDockerSimulationServiceImpl {
         container.setRunning(true);
         container.setStartedAt(new DateTime());
         container.setExternPort(hostPort);
+//        stopWatch.stop();
 
-
-
+//        stopWatch.start("set used ports");
         /* Update the set of used port on docker host */
-        List<String> usedPorts = virtualMachine.getUsedPorts();
-        usedPorts.add(hostPort);
-        virtualMachine.setUsedPorts(usedPorts);
+        virtualMachine.getUsedPorts().add(hostPort);
+//        stopWatch.stop();
 
-
-        log.info("A new container with the ID: " + id + " on the host: " + virtualMachine.getInstanceId() + " has been started.");
+//        stopWatch.start("text output");
+//        log.info("A new container with the ID: " + id + " on the host: " + virtualMachine.getInstanceId() + " has been started.");
+//        stopWatch.stop();
+//        log.info("Container deploy time: " + container.toString() + "\n" + stopWatch.getTotalTimeMillis());
 
         return container;
     }

@@ -34,7 +34,7 @@
          <dataToTransfer>6</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
-      <onlyInternal>true</onlyInternal>
+      <onlyInternal>false</onlyInternal>
    </serviceType>
    <serviceType>
       <name>Service4</name>
@@ -70,7 +70,7 @@
          <dataToTransfer>6</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
-      <onlyInternal>true</onlyInternal>
+      <onlyInternal>false</onlyInternal>
    </serviceType>
    <serviceType>
       <name>Service7</name>
@@ -105,7 +105,7 @@
          <dataToTransfer>6</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
-      <onlyInternal>true</onlyInternal>
+      <onlyInternal>false</onlyInternal>
    </serviceType>
    <serviceType>
       <name>Service10</name>

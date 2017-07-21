@@ -42,7 +42,7 @@ public class ServiceExecution{
     @Value("${simulate}")
     private boolean simulate;
 
-    @Async
+//    @Async
     public void startExecution(ProcessStep processStep, VirtualMachine virtualMachine) {
         processStep.setStartDate(DateTime.now());
         log.info("Task-Start: " + processStep);
@@ -51,6 +51,7 @@ public class ServiceExecution{
             try {
                 Thread.sleep(processStep.getExecutionTime());
             } catch (InterruptedException e) {
+                log.error("EXCEPTION", e);
             }
         } else {
             InvocationResultDTO invoke = serviceInvoker.invoke(virtualMachine, processStep);
@@ -59,7 +60,7 @@ public class ServiceExecution{
         finaliseExecution(processStep);
     }
 
-    @Async
+//    @Async
 	public void startExecution(ProcessStep processStep, Container container) {
         processStep.setStartDate(DateTime.now());
 		log.info("Task-Start: " + processStep);

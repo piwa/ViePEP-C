@@ -14,6 +14,7 @@ import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachi
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.NoVmFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
@@ -74,14 +75,14 @@ public abstract class AbstractProvisioningImpl {
         deployContainerAssignProcessStep(nextProcessStep, container, vm, optimizationResult);
     }
 
-    protected VirtualMachine startNewVMDeployContainerAssignProcessStep(ProcessStep processStep, OptimizationResult optimizationResult) throws ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
+    protected VirtualMachine startNewVMDeployContainerAssignProcessStep(ProcessStep processStep, OptimizationResult optimizationResult) throws ContainerConfigurationNotFoundException, ContainerImageNotFoundException, NoVmFoundException {
         Container container = getContainer(processStep);
         VirtualMachine newVM = startNewVmDefaultOrForContainer(optimizationResult, container.getContainerConfiguration());
         deployContainerAssignProcessStep(processStep, container, newVM, optimizationResult);
         return newVM;
     }
 
-    protected VirtualMachine startNewVMDeployContainerAssignProcessStep(ProcessStep processStep, Container container, OptimizationResult optimizationResult) throws ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
+    protected VirtualMachine startNewVMDeployContainerAssignProcessStep(ProcessStep processStep, Container container, OptimizationResult optimizationResult) throws ContainerConfigurationNotFoundException, ContainerImageNotFoundException, NoVmFoundException {
         VirtualMachine newVM = startNewVmDefaultOrForContainer(optimizationResult, container.getContainerConfiguration());
         deployContainerAssignProcessStep(processStep, container, newVM, optimizationResult);
         return newVM;
@@ -114,14 +115,14 @@ public abstract class AbstractProvisioningImpl {
         return new ArrayList<>(cacheVirtualMachineService.getStartedAndScheduledForStartVMs());
     }
 
-    protected VirtualMachine startNewDefaultVm(OptimizationResult result) {
+    protected VirtualMachine startNewDefaultVm(OptimizationResult result) throws NoVmFoundException {
         return startNewVm(result, cacheVirtualMachineService.getDefaultVmType(), null);
     }
 
 
-    protected abstract VirtualMachine startNewVm(OptimizationResult result, VMType vmType, ContainerConfiguration containerConfiguration);
+    protected abstract VirtualMachine startNewVm(OptimizationResult result, VMType vmType, ContainerConfiguration containerConfiguration) throws NoVmFoundException;
 
-    protected VirtualMachine startNewVmDefaultOrForContainer(OptimizationResult result, ContainerConfiguration containerConfiguration) {
+    protected VirtualMachine startNewVmDefaultOrForContainer(OptimizationResult result, ContainerConfiguration containerConfiguration) throws NoVmFoundException {
 
         VMType defaultVMType = cacheVirtualMachineService.getDefaultVmType();
 
@@ -202,7 +203,7 @@ public abstract class AbstractProvisioningImpl {
         processSteps.addAll(inMemoryCache.getWaitingForExecutingProcessSteps());
         for(ProcessStep processStep : processSteps) {
             if(processStep.getScheduledAtVM() == vm || processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
-                remainingLeasingDuration = remainingLeasingDuration - processStep.getExecutionTime();
+                remainingLeasingDuration = remainingLeasingDuration - processStep.getScheduledAtContainer().getContainerImage().getDeployTime() - processStep.getExecutionTime();
             }
         }
 
@@ -228,7 +229,6 @@ public abstract class AbstractProvisioningImpl {
             remainingLeasingDuration = 0;
         }
         return remainingLeasingDuration;
-
     }
 
     protected boolean vmAlreadyUsedInResult(VirtualMachine vm, OptimizationResult optimizationResult) {

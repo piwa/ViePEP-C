@@ -13,6 +13,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlaceme
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractContainerProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.NoVmFoundException;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
@@ -71,7 +72,11 @@ public class OneVMPerTaskContainerImpl extends AbstractContainerProvisioningImpl
                     }
                 }
                 if(!deployed) {
-                    runningVMs.add(startNewVMDeployContainerAssignProcessStep(processStep, container, optimizationResult));
+                    try {
+                        runningVMs.add(startNewVMDeployContainerAssignProcessStep(processStep, container, optimizationResult));
+                    } catch (NoVmFoundException e) {
+                        log.error("Could not find a VM. Postpone execution.");
+                    }
                 }
             }
         } catch(ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {

@@ -9,6 +9,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlaceme
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractContainerProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.NoVmFoundException;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
@@ -69,7 +70,7 @@ public class StartParNotExceedContainerImpl extends AbstractContainerProvisionin
                 Container container = getContainer(processStep);
                 for (VirtualMachine vm : availableVms) {
                     long remainingBTU = getRemainingLeasingDuration(new DateTime(), vm);
-                    if (remainingBTU > processStep.getExecutionTime()) {
+                    if (remainingBTU > (processStep.getExecutionTime() + container.getContainerImage().getDeployTime())) {
                         if (checkIfEnoughResourcesLeftOnVM(vm, container, optimizationResult)) {
                             deployed = true;
                             deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
@@ -79,14 +80,19 @@ public class StartParNotExceedContainerImpl extends AbstractContainerProvisionin
                 }
 
                 if (!deployed && availableVms.size() < runningWorkflowInstances.size()) {
-                    VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-                    availableVms.add(vm);
+                    try {
+                        VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+                        availableVms.add(vm);
+                    } catch (NoVmFoundException e) {
+                        log.error("Could not find a VM. Postpone execution.");
+                    }
+
                 }
             }
         } catch (ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {
             log.error("Container image or configuration not found", ex);
             throw new ProblemNotSolvedException();
-        } catch (Exception ex) {
+        } catch (NoVmFoundException | Exception ex) {
             log.error("EXCEPTION", ex);
             throw new ProblemNotSolvedException();
         }

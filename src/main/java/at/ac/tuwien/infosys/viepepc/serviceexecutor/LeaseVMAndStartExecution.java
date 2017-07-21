@@ -50,7 +50,7 @@ public class LeaseVMAndStartExecution {
     private boolean useDocker;
 
 
-    @Async
+//    @Async
     public void leaseVMAndStartExecutionOnVirtualMachine(VirtualMachine virtualMachine, List<ProcessStep> processSteps) {
 
         final StopWatch stopWatch = new StopWatch();
@@ -78,11 +78,17 @@ public class LeaseVMAndStartExecution {
         }
     }
 
-    @Async
+//    @Async
     public void leaseVMAndStartExecutionOnContainer(VirtualMachine virtualMachine, Map<Container, List<ProcessStep>> containerProcessSteps) {
         final StopWatch stopWatch = new StopWatch();
         stopWatch.start();
+
+        log.info("Start VM: " + virtualMachine.toString());
+        StopWatch stopWatch2 = new StopWatch();
+        stopWatch2.start("deploy vm");
         String address = startVM(virtualMachine);
+        stopWatch2.stop();
+        log.info("VM deploy duration: " + virtualMachine.toString() + ": " + stopWatch2.getTotalTimeMillis());
 
         VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);
         reportDaoService.save(report);
@@ -117,7 +123,16 @@ public class LeaseVMAndStartExecution {
 
     public void startExecutionsOnContainer(Map<Container, List<ProcessStep>> containerProcessSteps, VirtualMachine virtualMachine) {
         for (Map.Entry<Container, List<ProcessStep>> entry : containerProcessSteps.entrySet()) {
+
+            log.info("Start Container: " + entry.getKey() + " on VM: " + virtualMachine);
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start("deploy container");
+
             deployContainer(virtualMachine, entry.getKey());
+
+            stopWatch.stop();
+            log.info("Container deploy duration: " + entry.getKey().toString() + ": " + stopWatch.getTotalTimeMillis());
+
             for (final ProcessStep processStep : entry.getValue()) {
                 serviceExecution.startExecution(processStep, entry.getKey());
             }
@@ -140,14 +155,19 @@ public class LeaseVMAndStartExecution {
 
     private void deployContainer(VirtualMachine vm, Container container) {
         if (container.isRunning()) {
-            log.info("Container " + container + " already running on vm " + container.getVirtualMachine());
+            log.info(container + " already running on vm " + container.getVirtualMachine());
             return;
         }
 
         try {
 
-            log.info("Start Container: " + container + " on VM: " + vm);
+//            log.info("Start Container: " + container + " on VM: " + vm);
+//            StopWatch stopWatch = new StopWatch();
+//            stopWatch.start("deploy container");
             dockerControllerService.startContainer(vm, container);
+//            stopWatch.stop();
+//            log.info("Container " + container.toString() + " deployed. Duration: " + stopWatch.getTotalTimeMillis());
+
 //            TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
 
         } catch (InterruptedException | DockerException e) {

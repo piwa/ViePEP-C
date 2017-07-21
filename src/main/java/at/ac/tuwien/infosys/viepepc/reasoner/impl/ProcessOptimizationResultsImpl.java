@@ -51,6 +51,8 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
     @Override
     public Future<Boolean> processResults(OptimizationResult optimize, DateTime tau_t) {
 
+        cleanWaitingForExecutingProcessSteps();
+
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
         optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
         optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtContainer().getVirtualMachine()));
@@ -79,8 +81,16 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
         return new AsyncResult<Boolean>(true);
     }
 
+    private void cleanWaitingForExecutingProcessSteps() {
+        inMemoryCache.getWaitingForExecutingProcessSteps().removeIf(processStep -> processStep.getStartDate() != null);
+    }
+
 
     private void printRunningInformation(StringBuilder stringBuilder) {
+        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+        stringBuilder.append("\nRunning Threads: " + threadSet.size() + "\n");
+
+
         stringBuilder.append("\n------------------------------ VMs running -------------------------------\n");
         List<VirtualMachine> vMs = cacheVirtualMachineService.getAllVMs();
         for (VirtualMachine vm : vMs) {
@@ -170,11 +180,9 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
         for (Element workflow : allWorkflowInstances) {
             List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(workflow.getName());
             for (ProcessStep runningStep : runningSteps) {
-                if ((runningStep.getScheduledAtVM() != null && runningStep.getScheduledAtVM().isStarted() ||
-                        runningStep.getScheduledAtContainer() != null && runningStep.getScheduledAtContainer().isRunning()) &&
+                if (((runningStep.getScheduledAtVM() != null && runningStep.getScheduledAtVM().isStarted()) || (runningStep.getScheduledAtContainer() != null && runningStep.getScheduledAtContainer().isRunning())) &&
                         runningStep.getStartDate() != null) {
                     stringBuilder.append(runningStep).append("\n");
-                    inMemoryCache.getWaitingForExecutingProcessSteps().remove(runningStep);
                 }
             }
 

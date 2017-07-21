@@ -8,6 +8,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlaceme
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractVMProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.NoVmFoundException;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
@@ -73,8 +74,13 @@ public class StartParExceedImpl extends AbstractVMProvisioningImpl implements Pr
                     usedVmCounter = usedVmCounter + 1;
                 }
                 else if(usedVmCounter < runningWorkflowInstances.size()){
-                    startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-                    usedVmCounter = usedVmCounter + 1;
+                    try {
+                        startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+                        usedVmCounter = usedVmCounter + 1;
+                    } catch (NoVmFoundException e) {
+                        log.error("Could not find a VM. Postpone execution.");
+                    }
+
                 }
 
                 if(usedVmCounter >= availableVms.size()) {

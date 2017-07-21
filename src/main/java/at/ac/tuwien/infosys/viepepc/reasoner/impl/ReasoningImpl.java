@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.reasoner.impl;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.WorkflowDaoService;
@@ -201,15 +202,22 @@ public class ReasoningImpl implements Reasoning {
         return difference;
     }
 
+    @Autowired
+    private InMemoryCacheImpl inMemoryCache;
+
     private void terminateVms(DateTime tau_t_0) {
         for(VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
             long timeUntilTermination = placementHelper.getRemainingLeasingDuration(tau_t_0, vm);
             if(timeUntilTermination < MIN_TAU_T_DIFFERENCE_MS) {
-                if(vm.getDeployedContainers().size() > 0) {
+                boolean containerWaitingForVm = inMemoryCache.getWaitingForExecutingProcessSteps().stream().anyMatch(processStep -> processStep.getScheduledAtContainer().getVirtualMachine() == vm);
+                if(vm.getDeployedContainers().size() > 0 || containerWaitingForVm) {
                     log.info("Extend leasing of VM: " + vm.toString());
                     vm.setToBeTerminatedAt(new DateTime(vm.getToBeTerminatedAt().getMillis() + vm.getVmType().getLeasingDuration()));
                 }
                 else {
+                    if(containerWaitingForVm) {
+                        log.debug("VM will be terminated but container waiting for starting");
+                    }
                     placementHelper.terminateVM(vm);
                 }
             }

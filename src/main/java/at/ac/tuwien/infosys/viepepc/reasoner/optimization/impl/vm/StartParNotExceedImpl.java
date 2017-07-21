@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.vm;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
@@ -8,6 +9,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlaceme
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractVMProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.NoVmFoundException;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
@@ -63,8 +65,9 @@ public class StartParNotExceedImpl extends AbstractVMProvisioningImpl implements
                 boolean deployed = false;
                 for (VirtualMachine vm : availableVms) {
                     long remainingBTU = getRemainingLeasingDurationIncludingScheduled(DateTime.now(), vm, optimizationResult);
-                    if (remainingBTU > processStep.getExecutionTime()) {
-                        deployContainerAssignProcessStep(processStep, vm, optimizationResult);
+                    Container container = getContainer(processStep);
+                    if (remainingBTU > (processStep.getExecutionTime() + container.getContainerImage().getDeployTime())) {
+                        deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
                         deployedVM = vm;
                         deployed = true;
                         usedVmCounter = usedVmCounter + 1;
@@ -73,7 +76,11 @@ public class StartParNotExceedImpl extends AbstractVMProvisioningImpl implements
                 }
 
                 if (!deployed && usedVmCounter < runningWorkflowInstances.size()) {
-                    startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+                    try {
+                        startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+                    } catch (NoVmFoundException e) {
+                        log.error("Could not find a VM. Postpone execution.");
+                    }
                     usedVmCounter = usedVmCounter + 1;
                 }
                 else if (deployed) {

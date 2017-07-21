@@ -8,6 +8,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlaceme
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractVMProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.NoVmFoundException;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
@@ -60,7 +61,7 @@ public class OneVMforAllImpl extends AbstractVMProvisioningImpl implements Proce
         } catch(ContainerImageNotFoundException | ContainerConfigurationNotFoundException ex) {
             log.error("Container image or configuration not found");
             throw new ProblemNotSolvedException();
-        } catch (Exception ex) {
+        } catch (NoVmFoundException | Exception ex) {
             throw new ProblemNotSolvedException();
         }
 

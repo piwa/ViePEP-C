@@ -10,6 +10,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlaceme
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractContainerProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.NoVmFoundException;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
@@ -55,6 +56,12 @@ public class AllParExceedContainerImpl extends AbstractContainerProvisioningImpl
 //            removeAllBusyVms(availableVms);
             availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult)).reversed());
 
+
+            int amountOfParallelTasks = 0;
+            for (WorkflowElement workflowElement : runningWorkflowInstances) {
+                amountOfParallelTasks = amountOfParallelTasks + getNextProcessStepsSorted(workflowElement).size();
+            }
+
             for (WorkflowElement workflowElement : runningWorkflowInstances) {
                 List<ProcessStep> runningProcessSteps = getRunningSteps(workflowElement);
                 List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
@@ -69,12 +76,12 @@ public class AllParExceedContainerImpl extends AbstractContainerProvisioningImpl
                 }
                 for (ProcessStep processStep : nextProcessSteps) {
 
-                    if ((processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) && availableVms.size() == 0) {
-                        if(!waitingProcessSteps.containsEntry(workflowElement, processStep)) {
-                            calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
-                            waitingProcessSteps.put(workflowElement, processStep);
-                        }
-                    } else {
+//                    if ((processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) && availableVms.size() == 0) {
+//                        if(!waitingProcessSteps.containsEntry(workflowElement, processStep)) {
+//                            calcTauT1(optimizationResult, executionDurationFirstProcessStep, processStep);
+//                            waitingProcessSteps.put(workflowElement, processStep);
+//                        }
+//                    } else {
                         boolean deployed = false;
                         Container container = getContainer(processStep);
                         for (VirtualMachine vm : availableVms) {
@@ -85,15 +92,21 @@ public class AllParExceedContainerImpl extends AbstractContainerProvisioningImpl
                             }
                         }
 
-                        if (!deployed) {
-                            VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, container, optimizationResult);
-                            availableVms.add(vm);
+                        if (!deployed && availableVms.size() < amountOfParallelTasks) {
+
+                            try {
+                                VirtualMachine vm = startNewVMDeployContainerAssignProcessStep(processStep, container, optimizationResult);
+                                availableVms.add(vm);
+                            } catch (NoVmFoundException e) {
+                                log.error("Could not find a VM. Postpone execution.");
+                            }
+
                         }
 
-                        if (waitingProcessSteps.containsEntry(workflowElement, processStep)) {
-                            waitingProcessSteps.remove(workflowElement, processStep);
-                        }
-                    }
+//                        if (waitingProcessSteps.containsEntry(workflowElement, processStep)) {
+//                            waitingProcessSteps.remove(workflowElement, processStep);
+//                        }
+//                    }
                 }
             }
 
