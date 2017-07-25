@@ -47,20 +47,6 @@ public class StartParExceedContainerImpl extends AbstractContainerProvisioningIm
                 return optimizationResult;
             }
 
-/*
-            if(availableVms.size() < runningWorkflowInstances.size()) {
-                int newVMs = runningWorkflowInstances.size() - availableVms.size();
-                for(int i = 0; i < newVMs; i++) {
-                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
-                    availableVms.add(vm);
-                    optimizationResult.addVirtualMachine(vm);
-                }
-            }
-
-            if (availableVms.size() == 0) {
-                return optimizationResult;
-            }
-*/
             availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));
 
             for(ProcessStep processStep : nextProcessSteps) {
@@ -79,8 +65,8 @@ public class StartParExceedContainerImpl extends AbstractContainerProvisioningIm
 
                     try {
                         VirtualMachine vm = startNewVmDefaultOrForContainer(optimizationResult, container.getContainerConfiguration());
-                        availableVms.add(vm);
                         deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
+                        availableVms.add(vm);
                         availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));
                     } catch (NoVmFoundException e) {
                         log.error("Could not find a VM. Postpone execution.");

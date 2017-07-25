@@ -72,10 +72,6 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
         log.info(stringBuilder.toString());
 
-
-//        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).forEach(ps -> waitingForExecutingContainers.add(ps.getScheduledAtContainer()));
-
-
         cleanupVMs(tau_t);
 
         return new AsyncResult<Boolean>(true);

@@ -46,20 +46,7 @@ public class StartParExceedImpl extends AbstractVMProvisioningImpl implements Pr
                 return optimizationResult;
             }
 
-//            if(availableVms.size() < runningWorkflowInstances.size()) {
-//                int newVMs = runningWorkflowInstances.size() - availableVms.size();
-//                for(int i = 0; i < newVMs; i++) {
-//                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
-//                    availableVms.add(vm);
-////                    optimizationResult.addVirtualMachine(vm);
-//                }
-//            }
-
             removeAllBusyVms(availableVms, runningWorkflowInstances);
-
-//            if (availableVms.size() == 0) {
-//                return optimizationResult;
-//            }
 
             availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));
 
@@ -81,10 +68,6 @@ public class StartParExceedImpl extends AbstractVMProvisioningImpl implements Pr
                         log.error("Could not find a VM. Postpone execution.");
                     }
 
-                }
-
-                if(usedVmCounter >= availableVms.size()) {
-                    break;
                 }
 
             }

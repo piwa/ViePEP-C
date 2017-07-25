@@ -22,11 +22,11 @@ import java.util.concurrent.Executor;
 @EnableScheduling
 @EnableAsync
 @PropertySources({
+        @PropertySource("classpath:application.properties"),
+        @PropertySource("classpath:application-container.properties"),
         @PropertySource("classpath:container-config/container.properties"),
         @PropertySource("classpath:database-config/mysql.properties"),
-        @PropertySource("classpath:cloud-config/viepep4.0.properties"),
-        @PropertySource("classpath:application.properties"),
-        @PropertySource("classpath:application-container.properties")
+        @PropertySource("classpath:cloud-config/viepep4.0.properties")
 })
 public class ApplicationContext implements AsyncConfigurer {
 
@@ -34,8 +34,8 @@ public class ApplicationContext implements AsyncConfigurer {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setMaxPoolSize(200);
-        executor.setCorePoolSize(100);
+        executor.setMaxPoolSize(400);
+        executor.setCorePoolSize(200);
         executor.setQueueCapacity(5);
         executor.initialize();
         return executor;

@@ -9,6 +9,8 @@ import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 @Component
@@ -18,13 +20,17 @@ public class InMemoryCacheImpl {
     private List<WorkflowElement> allWorkflowInstances = new ArrayList<>();
     private Map<VMType, List<VirtualMachine>> vmTypeVmMap = new HashMap<>();
     private List<ContainerConfiguration> containerConfigurations = new ArrayList<>();
+
     private Set<ProcessStep> waitingForExecutingProcessSteps = new HashSet<>();
+    private ConcurrentMap<VirtualMachine, Object> vmDeployedWaitObject = new ConcurrentHashMap<>();
 
     public void clear() {
         runningWorkflows = new ArrayList<>();
         allWorkflowInstances = new ArrayList<>();
         vmTypeVmMap = new HashMap<>();
         containerConfigurations = new ArrayList<>();
+        waitingForExecutingProcessSteps = new HashSet<>();
+        vmDeployedWaitObject = new ConcurrentHashMap<>();
     }
 
     public void addRunningWorkflow(WorkflowElement workflowElement) {

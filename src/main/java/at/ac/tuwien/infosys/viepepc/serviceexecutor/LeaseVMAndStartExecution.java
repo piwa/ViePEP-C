@@ -9,6 +9,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachineReportingAction;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class LeaseVMAndStartExecution {
     @Autowired
     private ServiceExecution serviceExecution;
     @Autowired
-    private PlacementHelper placementHelper;
+    private InMemoryCacheImpl inMemoryCache;
     @Autowired
     private ViePEPDockerControllerService dockerControllerService;
 
@@ -50,7 +51,7 @@ public class LeaseVMAndStartExecution {
     private boolean useDocker;
 
 
-//    @Async
+    @Async
     public void leaseVMAndStartExecutionOnVirtualMachine(VirtualMachine virtualMachine, List<ProcessStep> processSteps) {
 
         final StopWatch stopWatch = new StopWatch();
@@ -78,7 +79,7 @@ public class LeaseVMAndStartExecution {
         }
     }
 
-//    @Async
+    @Async
     public void leaseVMAndStartExecutionOnContainer(VirtualMachine virtualMachine, Map<Container, List<ProcessStep>> containerProcessSteps) {
         final StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -89,9 +90,6 @@ public class LeaseVMAndStartExecution {
         String address = startVM(virtualMachine);
         stopWatch2.stop();
         log.info("VM deploy duration: " + virtualMachine.toString() + ": " + stopWatch2.getTotalTimeMillis());
-
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);
-        reportDaoService.save(report);
 
         if (address == null) {
             log.error("VM " + virtualMachine.getInstanceId() + " was not started, reset task");
@@ -121,6 +119,7 @@ public class LeaseVMAndStartExecution {
         }
     }
 
+    @Async
     public void startExecutionsOnContainer(Map<Container, List<ProcessStep>> containerProcessSteps, VirtualMachine virtualMachine) {
         for (Map.Entry<Container, List<ProcessStep>> entry : containerProcessSteps.entrySet()) {
 
@@ -140,16 +139,33 @@ public class LeaseVMAndStartExecution {
     }
 
     private String startVM(VirtualMachine virtualMachine) {
-//        try {
+
+        Object waitObject = inMemoryCache.getVmDeployedWaitObject().get(virtualMachine);
+        if(waitObject == null) {
+            waitObject = new Object();
+            inMemoryCache.getVmDeployedWaitObject().put(virtualMachine, waitObject);
 
             virtualMachine = viePEPCloudService.startVM(virtualMachine);
             log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
 
-//            TimeUnit.MILLISECONDS.sleep(virtualMachine.getVmType().getDeployTime());
+            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachine.getStartedAt(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);
+            reportDaoService.save(report);
 
-//        } catch (InterruptedException e) {
-//            log.error("EXCEPTION while starting VM", e);
-//        }
+            synchronized(waitObject) {
+                waitObject.notifyAll();
+            }
+            inMemoryCache.getVmDeployedWaitObject().remove(virtualMachine);
+        }
+        else {
+            try {
+                synchronized(waitObject) {
+                    waitObject.wait();
+                }
+            } catch (InterruptedException e) {
+                log.error("Exception", e);
+            }
+        }
+
         return virtualMachine.getIpAddress();
     }
 

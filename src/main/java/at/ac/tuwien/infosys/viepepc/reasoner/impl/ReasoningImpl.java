@@ -48,6 +48,8 @@ public class ReasoningImpl implements Reasoning {
     private CacheVirtualMachineService cacheVirtualMachineService;
     @Autowired
     private WorkflowDaoService workflowDaoService;
+    @Autowired
+    private InMemoryCacheImpl inMemoryCache;
 
     private DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -135,13 +137,13 @@ public class ReasoningImpl implements Reasoning {
             if (lastExecutedElement != null) {
                 DateTime finishedAt = lastExecutedElement.getFinishedAt();
                 workflow.setFinishedAt(finishedAt);
-                boolean ok = workflow.getDeadline() >= finishedAt.getMillis();
-                long delay = finishedAt.getMillis() - workflow.getDeadline();
+                long delay = (finishedAt.getMillis() - workflow.getDeadline()) / 1000;
+                boolean ok = delay < 0;
                 String message = " LastDone: " + dtfOut.print(finishedAt);
                 if (ok) {
                     log.info(message + " : was ok");
                 } else {
-                    log.info(message + " : delayed in seconds: " + delay / 1000);
+                    log.info(message + " : delayed in seconds: " + delay);
                     delayed++;
                 }
                 cacheWorkflowService.deleteRunningWorkflowInstance(workflow);
@@ -202,8 +204,6 @@ public class ReasoningImpl implements Reasoning {
         return difference;
     }
 
-    @Autowired
-    private InMemoryCacheImpl inMemoryCache;
 
     private void terminateVms(DateTime tau_t_0) {
         for(VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {

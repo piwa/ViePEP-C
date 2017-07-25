@@ -4,6 +4,7 @@ import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
     private ViePEPDockerControllerServiceImpl viePEPDockerControllerService;
     @Autowired
     private ViePEPDockerSimulationServiceImpl viePEPDockerSimulationService;
+    @Autowired
+    private InMemoryCacheImpl inMemoryCache;
 
     @Value("${simulate}")
     private boolean simulate;
@@ -36,78 +39,67 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
     @Override
     public VirtualMachine startVM(VirtualMachine vm) {
 
-        if(simulate) {
+        if (simulate) {
             return viePEPCloudSimulatorClientService.startVM(vm);
+        } else {
+            if (vm.getLocation().equals("aws")) {
+                return viePEPAwsClientService.startVM(vm);
+            } else {
+                return viePEPOpenStackClientService.startVM(vm);
+            }
         }
-
-        if(vm.getLocation().equals("aws")) {
-            return viePEPAwsClientService.startVM(vm);
-        }
-        else {
-            return viePEPOpenStackClientService.startVM(vm);
-        }
-
     }
 
     @Override
     public boolean stopVirtualMachine(VirtualMachine vm) {
 
-        if(simulate) {
+        if (simulate) {
             return viePEPCloudSimulatorClientService.stopVirtualMachine(vm);
         }
-
-        if(vm.getLocation().equals("aws")) {
-            return viePEPAwsClientService.stopVirtualMachine(vm);
-        }
         else {
-            return viePEPOpenStackClientService.stopVirtualMachine(vm);
+            if (vm.getLocation().equals("aws")) {
+                return viePEPAwsClientService.stopVirtualMachine(vm);
+            } else {
+                return viePEPOpenStackClientService.stopVirtualMachine(vm);
+            }
         }
     }
 
     @Override
     public boolean checkAvailabilityOfDockerhost(VirtualMachine vm) {
 
-        if(simulate) {
+        if (simulate) {
             return viePEPCloudSimulatorClientService.checkAvailabilityOfDockerhost(vm);
         }
-
-        if(vm.getLocation().equals("aws")) {
-            return viePEPAwsClientService.checkAvailabilityOfDockerhost(vm);
-        }
         else {
-            return viePEPOpenStackClientService.checkAvailabilityOfDockerhost(vm);
+            if (vm.getLocation().equals("aws")) {
+                return viePEPAwsClientService.checkAvailabilityOfDockerhost(vm);
+            } else {
+                return viePEPOpenStackClientService.checkAvailabilityOfDockerhost(vm);
+            }
         }
     }
 
     @Override
     public Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
 
-        if(simulate) {
-//            StopWatch stopWatch = new StopWatch();
+        if (simulate) {
 
-//            log.info("Start sleep for container " + container.toString());
-//            stopWatch.start("deploy container");
             Thread.sleep(container.getContainerImage().getDeployTime());
-//            stopWatch.stop();
-//            log.info("Sleep for container " + container.toString() + " is over after " + stopWatch.getTotalTimeMillis());
 
-//            stopWatch.start();
             Container container1 = viePEPDockerSimulationService.startContainer(virtualMachine, container);
-//            stopWatch.stop();
-//            log.debug("Container: " + container.toString() + " start done. Time: \n" + stopWatch.prettyPrint());
+
             return container1;
-        }
-        else {
+        } else {
             return viePEPDockerControllerService.startContainer(virtualMachine, container);
         }
     }
 
     @Override
     public void removeContainer(Container container) {
-        if(simulate) {
+        if (simulate) {
             viePEPDockerSimulationService.removeContainer(container);
-        }
-        else {
+        } else {
             viePEPDockerControllerService.removeContainer(container);
         }
     }

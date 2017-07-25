@@ -21,7 +21,7 @@ public class ServiceExecutionController{
     @Autowired
     private LeaseVMAndStartExecution leaseVMAndStartExecution;
 
-    @Async//("serviceProcessExecuter")
+//    @Async//("serviceProcessExecuter")
     public void startInvocationViaVMs(List<ProcessStep> processSteps) {
 
         final Map<VirtualMachine, List<ProcessStep>> vmProcessStepsMap = new HashMap<>();
@@ -48,7 +48,7 @@ public class ServiceExecutionController{
         }
     }
     
-    @Async//("serviceProcessExecuter")
+//    @Async//("serviceProcessExecuter")
     public void startInvocationViaContainers(List<ProcessStep> processSteps) {
 
     	final Map<VirtualMachine, Map<Container, List<ProcessStep>>> vmContainerProcessStepMap = new HashMap<>();
