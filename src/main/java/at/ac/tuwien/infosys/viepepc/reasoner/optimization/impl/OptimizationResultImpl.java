@@ -3,7 +3,6 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
