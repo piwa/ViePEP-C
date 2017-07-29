@@ -28,7 +28,7 @@ public class VmTypesReaderImpl {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( VirtualMachineTypes.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File file = Paths.get(ClassLoader.getSystemResource(vmTypesPath).toURI()).toFile();
+            File file = Paths.get(this.getClass().getClassLoader().getResource(vmTypesPath).toURI()).toFile();
             VirtualMachineTypes virtualMachineTypes = (VirtualMachineTypes) jaxbUnmarshaller.unmarshal(file);
             inMemoryCache.addAllVMType(virtualMachineTypes.getVmTypes());
         } catch (JAXBException e) {

@@ -32,7 +32,7 @@ public class ContainerImageRegistryReaderImpl implements ContainerImageRegistryR
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( ContainerImageRegistry.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File file = Paths.get(ClassLoader.getSystemResource(containerImageRegistryPath).toURI()).toFile();
+            File file = Paths.get(this.getClass().getClassLoader().getResource(containerImageRegistryPath).toURI()).toFile();
             this.containerImageRegistry = (ContainerImageRegistry) jaxbUnmarshaller.unmarshal(file);
         } catch (JAXBException e) {
             e.printStackTrace();

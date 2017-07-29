@@ -47,18 +47,11 @@ public class StartParNotExceedImpl extends AbstractVMProvisioningImpl implements
                 return optimizationResult;
             }
 
+            int usedVmCounter = availableVms.size();
 
-
-//            availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
             removeAllBusyVms(availableVms, runningWorkflowInstances);
-
-//            if (availableVms.size() == 0) {
-//                return optimizationResult;
-//            }
-
             availableVms.sort(Comparator.comparing(VirtualMachine::getStartupTime));
 
-            int usedVmCounter = availableVms.size();
             for (ProcessStep processStep : nextProcessSteps) {
 
                 VirtualMachine deployedVM = null;
@@ -70,7 +63,6 @@ public class StartParNotExceedImpl extends AbstractVMProvisioningImpl implements
                         deployContainerAssignProcessStep(processStep, container, vm, optimizationResult);
                         deployedVM = vm;
                         deployed = true;
-                        usedVmCounter = usedVmCounter + 1;
                         break;
                     }
                 }
@@ -78,12 +70,12 @@ public class StartParNotExceedImpl extends AbstractVMProvisioningImpl implements
                 if (!deployed && usedVmCounter < runningWorkflowInstances.size()) {
                     try {
                         startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
+                        usedVmCounter = usedVmCounter + 1;
                     } catch (NoVmFoundException e) {
                         log.error("Could not find a VM. Postpone execution.");
                     }
-                    usedVmCounter = usedVmCounter + 1;
                 }
-                else if (deployed) {
+                if (deployed) {
                     availableVms.remove(deployedVM);
                 }
             }

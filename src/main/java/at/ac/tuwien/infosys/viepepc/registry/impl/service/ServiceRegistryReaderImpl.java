@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.registry.impl.service;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import java.nio.file.Paths;
  * Created by philippwaibel on 18/10/2016.
  */
 @Component
+@Slf4j
 public class ServiceRegistryReaderImpl implements ServiceRegistryReader {
 
     private static ServiceRegistry serviceRegistry;
@@ -29,12 +31,10 @@ public class ServiceRegistryReaderImpl implements ServiceRegistryReader {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( ServiceRegistry.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File file = Paths.get(ClassLoader.getSystemResource(serviceRegistryPath).toURI()).toFile();
+            File file = Paths.get(this.getClass().getClassLoader().getResource(serviceRegistryPath).toURI()).toFile();
             this.serviceRegistry = (ServiceRegistry) jaxbUnmarshaller.unmarshal(file);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        } catch (JAXBException | URISyntaxException e) {
+            log.error("Exception" , e);
         }
     }
 

@@ -28,7 +28,7 @@ public class ContainerConfigurationsReader {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( ContainerConfigurations.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File file = Paths.get(ClassLoader.getSystemResource(containerConfigurationPath).toURI()).toFile();
+            File file = Paths.get(this.getClass().getClassLoader().getResource(containerConfigurationPath).toURI()).toFile();
             ContainerConfigurations containerConfigurations = (ContainerConfigurations) jaxbUnmarshaller.unmarshal(file);
             inMemoryCache.addAllContainerConfiguration(containerConfigurations.getConfiguration());
         } catch (JAXBException e) {

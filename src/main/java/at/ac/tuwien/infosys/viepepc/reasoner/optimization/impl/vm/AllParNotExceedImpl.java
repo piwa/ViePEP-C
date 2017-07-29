@@ -55,30 +55,36 @@ public class AllParNotExceedImpl extends AbstractVMProvisioningImpl implements P
                 return optimizationResult;
             }
 
-            int vmAmount = availableVms.size();
+            int usedVmCounter = availableVms.size();
 
             removeAllBusyVms(availableVms, runningWorkflowInstances);
             availableVms.sort(Comparator.comparingLong((VirtualMachine vm) -> getRemainingLeasingDurationIncludingScheduled(new DateTime(), vm, optimizationResult)).reversed());
 
             int amountOfParallelTasks = 0;
             for (WorkflowElement workflowElement : runningWorkflowInstances) {
-                amountOfParallelTasks = amountOfParallelTasks + getNextProcessStepsSorted(workflowElement).size();
+                int parallelTasks = getNextProcessStepsSorted(workflowElement).size() + getRunningSteps(workflowElement).size();
+                if(parallelTasks == 0) {
+                    amountOfParallelTasks = amountOfParallelTasks + 1;
+                }
+                else {
+                    amountOfParallelTasks = amountOfParallelTasks + parallelTasks;
+                }
             }
 
             for (WorkflowElement workflowElement : runningWorkflowInstances) {
 
-                List<ProcessStep> runningProcessSteps = getRunningSteps(workflowElement);
+//                List<ProcessStep> runningProcessSteps = getRunningSteps(workflowElement);
                 List<ProcessStep> nextProcessSteps = getNextProcessStepsSorted(workflowElement);
-                if (waitingProcessSteps.containsKey(workflowElement)) {
-                    nextProcessSteps.addAll(waitingProcessSteps.get(workflowElement));
-                    nextProcessSteps.sort(Comparator.comparingLong(ProcessStep::getExecutionTime).reversed());
-                }
+//                if (waitingProcessSteps.containsKey(workflowElement)) {
+//                    nextProcessSteps.addAll(waitingProcessSteps.get(workflowElement));
+//                    nextProcessSteps.sort(Comparator.comparingLong(ProcessStep::getExecutionTime).reversed());
+//                }
 
-                long remainingRunningProcessStepExecution = calcRemainingRunningProcessStepExecution(runningProcessSteps);
-                long executionDurationFirstProcessStep = 0;
-                if(nextProcessSteps.size() > 0) {
-                    executionDurationFirstProcessStep = nextProcessSteps.get(0).getExecutionTime();
-                }
+//                long remainingRunningProcessStepExecution = calcRemainingRunningProcessStepExecution(runningProcessSteps);
+//                long executionDurationFirstProcessStep = 0;
+//                if(nextProcessSteps.size() > 0) {
+//                    executionDurationFirstProcessStep = nextProcessSteps.get(0).getExecutionTime();
+//                }
                 for(ProcessStep processStep : nextProcessSteps) {
 
 //                    if ((processStep.getExecutionTime() < executionDurationFirstProcessStep - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS || processStep.getExecutionTime() < remainingRunningProcessStepExecution - ReasoningImpl.MIN_TAU_T_DIFFERENCE_MS) && availableVms.size() == 0) {
@@ -101,15 +107,15 @@ public class AllParNotExceedImpl extends AbstractVMProvisioningImpl implements P
                             }
                         }
 
-                        if (!deployed && vmAmount < amountOfParallelTasks) {
+                        if (!deployed && usedVmCounter < amountOfParallelTasks) {
                             try {
                                 startNewVMDeployContainerAssignProcessStep(processStep, optimizationResult);
-                                vmAmount = vmAmount + 1;
+                                usedVmCounter = usedVmCounter + 1;
                             } catch (NoVmFoundException e) {
                                 log.error("Could not find a VM. Postpone execution.");
                             }
                         }
-                        else if(deployed && deployedVM != null) {
+                        if(deployed) {
                             availableVms.remove(deployedVM);
                         }
 
