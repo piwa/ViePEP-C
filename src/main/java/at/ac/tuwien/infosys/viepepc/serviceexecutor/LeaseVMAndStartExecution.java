@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
@@ -145,7 +146,12 @@ public class LeaseVMAndStartExecution {
             waitObject = new Object();
             inMemoryCache.getVmDeployedWaitObject().put(virtualMachine, waitObject);
 
-            virtualMachine = viePEPCloudService.startVM(virtualMachine);
+            try {
+                virtualMachine = viePEPCloudService.startVM(virtualMachine);
+            } catch (VmCouldNotBeStartedException e) {
+                log.error("EXCEPTION", e);
+                System.exit(1);
+            }
             log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
 
             VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachine.getStartedAt(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);

@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.AbstractViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -17,8 +18,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.sql.Time;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by philippwaibel on 31/03/2017.
@@ -55,7 +58,7 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
         log.debug("Successfully connected to " + openstackAuthUrl + " on tenant " + openstackTenantName + " with user " + openstackUsername);
     }
 
-    public VirtualMachine startVM(VirtualMachine virtualMachine) {
+    public VirtualMachine startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
         setup();
 
         if (virtualMachine == null) {
@@ -91,8 +94,31 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
                 .addSecurityGroup("default")
                 .build();
 
-        log.debug("BootAndWaitActive for VM: " + virtualMachine.toString());
-        Server server = os.compute().servers().bootAndWaitActive(sc, 200000);
+        boolean bootSuccessfully = false;
+
+        Server server = null;
+        int counter = 0;
+        while(!bootSuccessfully) {
+            counter = counter + 1;
+            log.debug("BootAndWaitActive for VM: " + virtualMachine.toString());
+            server = os.compute().servers().bootAndWaitActive(sc, 1200000);
+            log.debug("BootAndWaitActive DONE for VM: " + virtualMachine.toString());
+
+            if (server.getStatus().equals(Server.Status.ERROR)) {
+                ActionResponse r = os.compute().servers().delete(server.getId());
+                try {
+                    TimeUnit.SECONDS.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if(counter >= 5) {
+                    throw new VmCouldNotBeStartedException("Could not boot VM: " + virtualMachine.toString());
+                }
+            }
+            else {
+                bootSuccessfully = true;
+            }
+        }
 
         Map<String, List<? extends Address>> adrMap = server.getAddresses().getAddresses();
 

@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 
 /**
@@ -7,7 +8,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
  */
 public interface ViePEPCloudService {
 
-    VirtualMachine startVM(VirtualMachine vm);
+    VirtualMachine startVM(VirtualMachine vm) throws VmCouldNotBeStartedException;
 
     boolean stopVirtualMachine(VirtualMachine vm);
 
