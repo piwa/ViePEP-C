@@ -82,7 +82,7 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
     }
 
 
-    private void printRunningInformation(StringBuilder stringBuilder) {
+    public void printRunningInformation(StringBuilder stringBuilder) {
         Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
         stringBuilder.append("\nRunning Threads: " + threadSet.size() + "\n");
 
@@ -110,7 +110,7 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
     }
 
 
-    private void printWaitingInformation(StringBuilder stringBuilder) {
+    public void printWaitingInformation(StringBuilder stringBuilder) {
         stringBuilder.append("------------------------ VMs waiting for starting ------------------------\n");
         for (VirtualMachine vm : waitingForExecutingVirtualMachines) {
             stringBuilder.append(vm.toString()).append("\n");

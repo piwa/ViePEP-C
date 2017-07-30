@@ -70,6 +70,7 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
             log.error("Could not load cloud init file");
         }
 
+        log.debug("getFlavor for VM: " + virtualMachine.toString());
         Flavor flavor = os.compute().flavors().get(virtualMachine.getVmType().getFlavor());
 
         for (Flavor f : os.compute().flavors().list()) {
@@ -78,6 +79,8 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
                 break;
             }
         }
+
+        log.debug("Flavor for VM: " + virtualMachine.toString() + ": " + flavor.getName());
 
         ServerCreate sc = Builders.server()
                 .name(virtualMachine.getName())
@@ -88,11 +91,14 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
                 .addSecurityGroup("default")
                 .build();
 
+        log.debug("BootAndWaitActive for VM: " + virtualMachine.toString());
         Server server = os.compute().servers().bootAndWaitActive(sc, 200000);
 
         Map<String, List<? extends Address>> adrMap = server.getAddresses().getAddresses();
 
         String uri = adrMap.get("private").get(0).getAddr();
+
+        log.debug("VM " + virtualMachine.toString() + " active; IP: " + uri);
 
         if (publicUsage) {
             FloatingIP freeIP = null;
