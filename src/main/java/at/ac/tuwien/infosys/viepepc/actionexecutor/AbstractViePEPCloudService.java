@@ -24,7 +24,7 @@ public class AbstractViePEPCloudService {
                 docker.ping();
                 connection = true;
             } catch (InterruptedException | DockerException e) {
-                log.debug("VM is not available yet.", e);
+                log.debug("VM " + virtualMachine + " is not available yet.");
             }
         }
     }

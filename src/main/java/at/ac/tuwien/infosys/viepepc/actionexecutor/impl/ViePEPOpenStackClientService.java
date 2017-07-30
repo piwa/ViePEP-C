@@ -11,15 +11,14 @@ import org.joda.time.DateTimeZone;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.common.ActionResponse;
-import org.openstack4j.model.compute.Flavor;
-import org.openstack4j.model.compute.FloatingIP;
-import org.openstack4j.model.compute.Server;
-import org.openstack4j.model.compute.ServerCreate;
+import org.openstack4j.model.compute.*;
 import org.openstack4j.openstack.OSFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by philippwaibel on 31/03/2017.
@@ -89,9 +88,11 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
                 .addSecurityGroup("default")
                 .build();
 
-        Server server = os.compute().servers().boot(sc);
+        Server server = os.compute().servers().bootAndWaitActive(sc, 200000);
 
-        String uri = server.getAccessIPv4();
+        Map<String, List<? extends Address>> adrMap = server.getAddresses().getAddresses();
+
+        String uri = adrMap.get("private").get(0).getAddr();
 
         if (publicUsage) {
             FloatingIP freeIP = null;
@@ -119,9 +120,16 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
             uri = freeIP.getFloatingIpAddress();
         }
 
+        virtualMachine.setIpAddress(uri);
+//        dh.setBTUend(btuEnd);
+
+
+        log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
+
+        waitUntilVmIsBooted(virtualMachine);
+
         virtualMachine.setResourcepool("openstack");
         virtualMachine.setInstanceId(server.getId());
-        virtualMachine.setIpAddress(uri);
         virtualMachine.getVmType().setCores(flavor.getVcpus());
         virtualMachine.getVmType().setRamPoints(flavor.getRam());
         virtualMachine.setStarted(true);
@@ -133,12 +141,6 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
 //        dh.setScheduledForShutdown(false);
         DateTime btuEnd = new DateTime(DateTimeZone.UTC);
 //        btuEnd = btuEnd.plusSeconds(BTU);
-//        dh.setBTUend(btuEnd);
-
-
-        log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
-
-        waitUntilVmIsBooted(virtualMachine);
 
         log.debug("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " established.");
 
