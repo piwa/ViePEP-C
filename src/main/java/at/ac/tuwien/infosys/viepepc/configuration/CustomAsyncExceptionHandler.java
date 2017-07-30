@@ -18,5 +18,7 @@ public class CustomAsyncExceptionHandler implements AsyncUncaughtExceptionHandle
         for (Object param : obj) {
             log.error("Parameter value - " + param);
         }
+
+        System.exit(1);
     }
 }
