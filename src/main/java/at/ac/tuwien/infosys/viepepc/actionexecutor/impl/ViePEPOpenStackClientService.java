@@ -100,6 +100,7 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
         Server server = os.compute().servers().bootAndWaitActive(sc, 300000);
         if (server.getStatus().equals(Server.Status.ERROR)) {
             ActionResponse r = os.compute().servers().delete(server.getId());
+            log.error("Could not boot VM: " + virtualMachine.toString());
             throw new VmCouldNotBeStartedException("Could not boot VM: " + virtualMachine.toString());
         }
 

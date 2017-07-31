@@ -40,7 +40,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
 
 
     @Override
-    @Retryable(maxAttempts=20, backoff=@Backoff(delay=120000, maxDelay=500000))
+    @Retryable(maxAttempts=20, backoff=@Backoff(delay=120000, maxDelay=250000))
     public VirtualMachine startVM(VirtualMachine vm) throws VmCouldNotBeStartedException {
 
         if (simulate) {
