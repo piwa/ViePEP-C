@@ -94,31 +94,40 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
                 .addSecurityGroup("default")
                 .build();
 
-        boolean bootSuccessfully = false;
 
-        Server server = null;
-        int counter = 0;
-        while(!bootSuccessfully) {
-            counter = counter + 1;
-            log.debug("BootAndWaitActive for VM: " + virtualMachine.toString());
-            server = os.compute().servers().bootAndWaitActive(sc, 1200000);
-            log.debug("BootAndWaitActive DONE for VM: " + virtualMachine.toString());
 
-            if (server.getStatus().equals(Server.Status.ERROR)) {
-                ActionResponse r = os.compute().servers().delete(server.getId());
-                try {
-                    TimeUnit.SECONDS.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if(counter >= 5) {
-                    throw new VmCouldNotBeStartedException("Could not boot VM: " + virtualMachine.toString());
-                }
-            }
-            else {
-                bootSuccessfully = true;
-            }
+        log.debug("BootAndWaitActive for VM: " + virtualMachine.toString());
+        Server server = os.compute().servers().bootAndWaitActive(sc, 300000);
+        if (server.getStatus().equals(Server.Status.ERROR)) {
+            ActionResponse r = os.compute().servers().delete(server.getId());
+            throw new VmCouldNotBeStartedException("Could not boot VM: " + virtualMachine.toString());
         }
+
+//        boolean bootSuccessfully = false;
+//        Server server = null;
+//        int counter = 0;
+//        while(!bootSuccessfully) {
+//            counter = counter + 1;
+//
+//
+//
+//            if (server.getStatus().equals(Server.Status.ERROR)) {
+//                ActionResponse r = os.compute().servers().delete(server.getId());
+//                try {
+//                    TimeUnit.MINUTES.sleep(2);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                if(counter >= 10) {
+//                    throw new VmCouldNotBeStartedException("Could not boot VM: " + virtualMachine.toString());
+//                }
+//            }
+//            else {
+//                bootSuccessfully = true;
+//            }
+//        }
+
+        log.debug("BootAndWaitActive DONE for VM: " + virtualMachine.toString());
 
         Map<String, List<? extends Address>> adrMap = server.getAddresses().getAddresses();
 
