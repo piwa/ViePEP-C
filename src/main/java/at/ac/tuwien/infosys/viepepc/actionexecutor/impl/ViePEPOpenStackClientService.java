@@ -97,7 +97,7 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
 
 
         log.debug("BootAndWaitActive for VM: " + virtualMachine.toString());
-        Server server = os.compute().servers().bootAndWaitActive(sc, 300000);
+        Server server = os.compute().servers().bootAndWaitActive(sc, 600000);
         if (server.getStatus().equals(Server.Status.ERROR)) {
             ActionResponse r = os.compute().servers().delete(server.getId());
             log.error("Could not boot VM: " + virtualMachine.toString());
