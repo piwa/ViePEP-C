@@ -23,7 +23,7 @@
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
-   </serviceType>      
+   </serviceType>
    <serviceType>
       <name>Service3</name>
       <serviceTypeResources>
@@ -34,8 +34,8 @@
          <dataToTransfer>6</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
-      <onlyInternal>true</onlyInternal>
-   </serviceType>      
+      <onlyInternal>false</onlyInternal>
+   </serviceType>
    <serviceType>
       <name>Service4</name>
       <serviceTypeResources>
@@ -47,7 +47,7 @@
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
-   </serviceType>      
+   </serviceType>
    <serviceType>
       <name>Service5</name>
       <serviceTypeResources>
@@ -59,7 +59,7 @@
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
-   </serviceType>   
+   </serviceType>
    <serviceType>
       <name>Service6</name>
       <serviceTypeResources>
@@ -70,8 +70,8 @@
          <dataToTransfer>6</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
-      <onlyInternal>true</onlyInternal>
-   </serviceType>  
+      <onlyInternal>false</onlyInternal>
+   </serviceType>
    <serviceType>
       <name>Service7</name>
       <serviceTypeResources>
@@ -83,18 +83,19 @@
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
-   </serviceType>  
+   </serviceType>
    <serviceType>
       <name>Service8</name>
       <serviceTypeResources>
          <cpuLoad>175</cpuLoad>
          <memory>1680</memory>
          <makeSpan>20000</makeSpan>
+         <bootTime>3000</bootTime>
          <dataToTransfer>4</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
-   </serviceType> 
+   </serviceType>
    <serviceType>
       <name>Service9</name>
       <serviceTypeResources>
@@ -105,8 +106,8 @@
          <dataToTransfer>6</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
-      <onlyInternal>true</onlyInternal>
-   </serviceType> 
+      <onlyInternal>false</onlyInternal>
+   </serviceType>
    <serviceType>
       <name>Service10</name>
       <serviceTypeResources>
@@ -120,18 +121,6 @@
       <onlyInternal>false</onlyInternal>
    </serviceType>
 </ServiceRegistry>
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

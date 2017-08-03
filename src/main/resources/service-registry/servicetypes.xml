@@ -15,11 +15,11 @@
    <serviceType>
       <name>Service2</name>
       <serviceTypeResources>
-         <cpuLoad>75</cpuLoad>
-         <memory>720</memory>
-         <makeSpan>80000</makeSpan>
+         <cpuLoad>50</cpuLoad>
+         <memory>450</memory>
+         <makeSpan>30000</makeSpan>
          <bootTime>3000</bootTime>
-         <dataToTransfer>4</dataToTransfer>
+         <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -27,11 +27,11 @@
    <serviceType>
       <name>Service3</name>
       <serviceTypeResources>
-         <cpuLoad>75</cpuLoad>
-         <memory>720</memory>
-         <makeSpan>120000</makeSpan>
+         <cpuLoad>50</cpuLoad>
+         <memory>450</memory>
+         <makeSpan>30000</makeSpan>
          <bootTime>3000</bootTime>
-         <dataToTransfer>6</dataToTransfer>
+         <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -39,9 +39,9 @@
    <serviceType>
       <name>Service4</name>
       <serviceTypeResources>
-         <cpuLoad>100</cpuLoad>
-         <memory>960</memory>
-         <makeSpan>20000</makeSpan>
+         <cpuLoad>50</cpuLoad>
+         <memory>450</memory>
+         <makeSpan>30000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
@@ -51,11 +51,11 @@
    <serviceType>
       <name>Service5</name>
       <serviceTypeResources>
-         <cpuLoad>120</cpuLoad>
-         <memory>1150</memory>
-         <makeSpan>100000</makeSpan>
+         <cpuLoad>50</cpuLoad>
+         <memory>450</memory>
+         <makeSpan>30000</makeSpan>
          <bootTime>3000</bootTime>
-         <dataToTransfer>4</dataToTransfer>
+         <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -63,11 +63,11 @@
    <serviceType>
       <name>Service6</name>
       <serviceTypeResources>
-         <cpuLoad>125</cpuLoad>
-         <memory>1150</memory>
+         <cpuLoad>50</cpuLoad>
+         <memory>450</memory>
          <makeSpan>30000</makeSpan>
          <bootTime>3000</bootTime>
-         <dataToTransfer>6</dataToTransfer>
+         <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -75,9 +75,9 @@
    <serviceType>
       <name>Service7</name>
       <serviceTypeResources>
-         <cpuLoad>150</cpuLoad>
-         <memory>1440</memory>
-         <makeSpan>40000</makeSpan>
+         <cpuLoad>50</cpuLoad>
+         <memory>450</memory>
+         <makeSpan>30000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
@@ -87,10 +87,11 @@
    <serviceType>
       <name>Service8</name>
       <serviceTypeResources>
-         <cpuLoad>175</cpuLoad>
-         <memory>1680</memory>
-         <makeSpan>20000</makeSpan>
-         <dataToTransfer>4</dataToTransfer>
+         <cpuLoad>50</cpuLoad>
+         <memory>450</memory>
+         <makeSpan>30000</makeSpan>
+         <bootTime>3000</bootTime>
+         <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -98,11 +99,11 @@
    <serviceType>
       <name>Service9</name>
       <serviceTypeResources>
-         <cpuLoad>250</cpuLoad>
-         <memory>2400</memory>
-         <makeSpan>60000</makeSpan>
+         <cpuLoad>50</cpuLoad>
+         <memory>450</memory>
+         <makeSpan>30000</makeSpan>
          <bootTime>3000</bootTime>
-         <dataToTransfer>6</dataToTransfer>
+         <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -110,8 +111,8 @@
    <serviceType>
       <name>Service10</name>
       <serviceTypeResources>
-         <cpuLoad>310</cpuLoad>
-         <memory>3200</memory>
+         <cpuLoad>50</cpuLoad>
+         <memory>450</memory>
          <makeSpan>30000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
