@@ -24,6 +24,17 @@
    </VMType>
    <VMType>
       <identifier>3</identifier>
+      <name>TRIPPLE_CORE</name>
+      <cores>3</cores>
+      <ram>5760</ram>
+      <costs>28</costs>
+      <flavor>m2.medium</flavor>
+      <location>internal</location>
+      <leasingDuration>300000</leasingDuration>
+      <deployTime>170000</deployTime>
+   </VMType>
+   <VMType>
+      <identifier>4</identifier>
       <name>QUAD_CORE</name>
       <cores>4</cores>
       <ram>7680</ram>
@@ -34,7 +45,7 @@
       <deployTime>170000</deployTime>
    </VMType>
    <VMType>
-      <identifier>4</identifier>
+      <identifier>5</identifier>
       <name>AWS_SINGLE_CORE</name>
       <cores>1</cores>
       <ram>2048</ram>
@@ -45,7 +56,7 @@
       <deployTime>170000</deployTime>
    </VMType>
    <VMType>
-      <identifier>5</identifier>
+      <identifier>6</identifier>
       <name>AWS_DUAL_CORE</name>
       <cores>2</cores>
       <ram>8192</ram>
@@ -56,7 +67,7 @@
       <deployTime>170000</deployTime>
    </VMType>
    <VMType>
-      <identifier>6</identifier>
+      <identifier>7</identifier>
       <name>AWS_QUAD_CORE</name>
       <cores>4</cores>
       <ram>16384</ram>
@@ -67,7 +78,7 @@
       <deployTime>170000</deployTime>
    </VMType>
    <VMType>
-      <identifier>7</identifier>
+      <identifier>8</identifier>
       <name>AWS_OCTA_CORE</name>
       <cores>8</cores>
       <ram>32768</ram>

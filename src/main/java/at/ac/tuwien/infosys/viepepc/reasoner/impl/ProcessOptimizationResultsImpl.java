@@ -51,8 +51,6 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
     @Override
     public Future<Boolean> processResults(OptimizationResult optimize, DateTime tau_t) {
 
-        cleanWaitingForExecutingProcessSteps();
-
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
         optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
         optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtContainer().getVirtualMachine()));
@@ -76,11 +74,6 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
         return new AsyncResult<Boolean>(true);
     }
-
-    private void cleanWaitingForExecutingProcessSteps() {
-        inMemoryCache.getWaitingForExecutingProcessSteps().removeIf(processStep -> processStep.getStartDate() != null);
-    }
-
 
     public void printRunningInformation(StringBuilder stringBuilder) {
         Set<Thread> threadSet = Thread.getAllStackTraces().keySet();

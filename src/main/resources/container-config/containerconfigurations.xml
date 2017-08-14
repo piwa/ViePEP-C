@@ -19,6 +19,12 @@
       <disc>30</disc>
    </Configuration>
    <Configuration>
+      <name>TRIPPLE_CORE</name>
+      <cores>3</cores>
+      <ram>3072</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
       <name>QUAD_CORE</name>
       <cores>4</cores>
       <ram>4096</ram>

@@ -53,6 +53,16 @@ public abstract class AbstractProvisioningImpl {
         Set<ProcessStep> scheduledProcessSteps = new HashSet(optimizationResult.getProcessSteps());
         scheduledProcessSteps.addAll(inMemoryCache.getWaitingForExecutingProcessSteps());
 
+        for(ProcessStep processStep : scheduledProcessSteps) {
+            if(processStep.getScheduledAtContainer() == null) {
+                log.error("ScheduldedAtContainer is null. ps: " + processStep.toString());
+            } else if(processStep.getScheduledAtContainer().getVirtualMachine() == null) {
+                log.error("VirtualMachine is null. ps: " + processStep.toString() + " Container: " + processStep.getScheduledAtContainer());
+            } else if(processStep.getScheduledAtContainer().getContainerConfiguration() == null) {
+                log.error("ContainerConfig is null. ps: " + processStep.toString() + " Container: " + processStep.getScheduledAtContainer() + " Config: " + processStep.getScheduledAtContainer().getContainerConfiguration());
+            }
+        }
+
         double scheduledCPUUsage    = scheduledProcessSteps.stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine().equals(vm)).mapToDouble(ps -> ps.getScheduledAtContainer().getContainerConfiguration().getCPUPoints()).sum();
         double scheduledRAMUsage    = scheduledProcessSteps.stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine().equals(vm)).mapToDouble(ps -> ps.getScheduledAtContainer().getContainerConfiguration().getRam()).sum();
         double alreadyUsedCPU       = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();

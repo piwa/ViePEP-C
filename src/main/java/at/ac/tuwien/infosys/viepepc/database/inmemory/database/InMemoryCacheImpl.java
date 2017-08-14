@@ -73,4 +73,9 @@ public class InMemoryCacheImpl {
             addContainerConfiguration(configuration);
         }
     }
+
+    public Set<ProcessStep> getWaitingForExecutingProcessSteps() {
+        waitingForExecutingProcessSteps.removeIf(processStep -> processStep.getStartDate() != null);
+        return waitingForExecutingProcessSteps;
+    }
 }
