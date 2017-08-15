@@ -16,6 +16,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StopWatch;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,7 +54,7 @@ public class ViePEPGCloudClientServiceTest {
     public void startVMAndStopAgain_Success() throws Exception {
 
         VMType vmType = virtualMachineService.getVmTypeFromIdentifier(6);
-        VirtualMachine vm = new VirtualMachine("test", vmType);
+        VirtualMachine vm = new VirtualMachine("test-" + UUID.randomUUID().toString().substring(0,4), vmType);
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
