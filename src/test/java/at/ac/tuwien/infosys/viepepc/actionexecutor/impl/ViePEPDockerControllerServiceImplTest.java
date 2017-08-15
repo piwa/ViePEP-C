@@ -31,6 +31,7 @@ import org.springframework.util.StopWatch;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,6 +57,8 @@ public class ViePEPDockerControllerServiceImplTest {
     private ViePEPAwsClientService viePEPAwsClientService;
     @Autowired
     private ViePEPOpenStackClientService viePEPOpenStackClientService;
+    @Autowired
+    private ViePEPGCloudClientService viePEPGCloudClientService;
     @Autowired
     private CacheVirtualMachineService virtualMachineService;
     @Autowired
@@ -85,6 +88,9 @@ public class ViePEPDockerControllerServiceImplTest {
         if(vm != null) {
             if(vm.getResourcepool().equals("aws")) {
                 viePEPAwsClientService.stopVirtualMachine(vm);
+            }
+            else if(vm.getResourcepool().equals("gcloud")) {
+                viePEPGCloudClientService.stopVirtualMachine(vm);
             }
             else {
                 viePEPOpenStackClientService.stopVirtualMachine(vm);
@@ -127,6 +133,25 @@ public class ViePEPDockerControllerServiceImplTest {
         startAndStopContainer();
     }
 
+    @Test
+    public void startAndStopAContainerOnGCloud_success() throws Exception {
+
+        vmTypesReader.readVMTypes();
+        containerConfigurationsReader.readContainerConfigurations();
+        serviceRegistryReader.getServiceTypeAmount();
+
+        VMType vmType = virtualMachineService.getVmTypeFromIdentifier(6);
+        vm = new VirtualMachine("test-" + UUID.randomUUID().toString().substring(0,4), vmType);
+
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        vm = viePEPGCloudClientService.startVM(vm);
+        stopWatch.stop();
+        log.info("VM bootup time: " + stopWatch.getTotalTimeMillis());
+
+        startAndStopContainer();
+    }
+
     private void startAndStopContainer() throws ServiceTypeNotFoundException, ContainerImageNotFoundException, ContainerConfigurationNotFoundException, DockerException, InterruptedException {
         ServiceType serviceType = serviceRegistryReader.findServiceType("HelloWorldService");
         Container container = getContainer(serviceType);
@@ -137,7 +162,7 @@ public class ViePEPDockerControllerServiceImplTest {
         stopWatch.stop();
         log.info("Docker start time: " + stopWatch.getTotalTimeMillis());
 
-        assertThat(Integer.valueOf(container.getExternPort())).isBetween(2000, 2030);
+        assertThat(Integer.valueOf(container.getExternPort())).isBetween(20000, 20300);
 
         TimeUnit.SECONDS.sleep(10);
         RestTemplate restTemplate = new RestTemplate();

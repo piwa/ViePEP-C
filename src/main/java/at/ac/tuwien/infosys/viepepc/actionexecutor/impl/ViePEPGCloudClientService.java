@@ -63,9 +63,10 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
 
             Instance instance = startInstance(compute, virtualMachine.getName());
 
+            // todo: change machinetype from application.property to vmtypesconfig
 
             virtualMachine.setResourcepool("gcloud");
-            virtualMachine.setInstanceId(instance.getGeneratedId());//.getInstanceId().getInstance());
+            virtualMachine.setInstanceId(instance.getGeneratedId());
             virtualMachine.setIpAddress(instance.getNetworkInterfaces().get(0).getAccessConfigurations().get(0).getNatIp());
             virtualMachine.setStarted(true);
             virtualMachine.setLeased(true);
@@ -134,9 +135,9 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         Operation completedOperation = operation.waitFor(WaitForOption.checkEvery(10, TimeUnit.SECONDS), WaitForOption.timeout(5, TimeUnit.MINUTES));
         Instance instance = null;
         if (completedOperation == null) {
-            // operation no longer exists
+            // todo: operation no longer exists
         } else if (completedOperation.getErrors() != null) {
-            // operation failed, handle error
+            // todo: operation failed, handle error
         } else {
             instance = compute.getInstance(instanceId);
         }
@@ -154,9 +155,9 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         Operation completedOperation = operation.waitFor(WaitForOption.checkEvery(10, TimeUnit.SECONDS), WaitForOption.timeout(5, TimeUnit.MINUTES));
 
         if (completedOperation == null) {
-            // operation no longer exists
+            // todo: operation no longer exists
         } else if (completedOperation.getErrors() != null) {
-            // operation failed, handle error
+            // todo: operation failed, handle error
         }
 
         return true;
