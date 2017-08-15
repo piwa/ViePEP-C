@@ -30,6 +30,10 @@
 		<openstack.version>3.0.3</openstack.version>
         <joda.version>2.9.9</joda.version>
 		<joda.time.persist.version>5.0.0.GA</joda.time.persist.version>
+		<google.cloud.api>1.22.0</google.cloud.api>
+		<project.http.version>1..0</project.http.version>
+		<project.oauth.version>1.22.0</project.oauth.version>
+		<google.cloud.service.compute>v1-rev155-1.22.0</google.cloud.service.compute>
 	</properties>
 
 	<dependencies>
@@ -80,6 +84,7 @@
 			<version>${openstack.version}</version>
 		</dependency>
 
+		<!-- AWS -->
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-ec2</artifactId>
@@ -88,6 +93,28 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-core</artifactId>
         </dependency>
+
+		<!-- Google Cloud -->
+		<dependency>
+			<groupId>com.google.api-client</groupId>
+			<artifactId>google-api-client</artifactId>
+			<version>${google.cloud.api}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-compute</artifactId>
+			<version>${google.cloud.service.compute}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.http-client</groupId>
+			<artifactId>google-http-client-jackson2</artifactId>
+			<version>${project.http.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.oauth-client</groupId>
+			<artifactId>google-oauth-client-jetty</artifactId>
+			<version>${project.oauth.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>mysql</groupId>
