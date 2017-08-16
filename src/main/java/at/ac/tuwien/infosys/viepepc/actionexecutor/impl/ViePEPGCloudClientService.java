@@ -2,46 +2,22 @@ package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.AbstractViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.WaitForOption;
 import com.google.cloud.compute.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.glassfish.jersey.internal.util.Base64;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
 public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
-
-    private final long OPERATION_TIMEOUT_MILLIS = 60 * 1000;
-
-    private final String NETWORK_INTERFACE_CONFIG = "ONE_TO_ONE_NAT";
-    private final String NETWORK_ACCESS_CONFIG = "External NAT";
-
-    private final String APPLICATION_NAME = "viepep-c";
-
-    private static final java.io.File DATA_STORE_DIR = new java.io.File(System.getProperty("user.home"), ".store/compute_engine_sample");
-    private static FileDataStoreFactory dataStoreFactory;
-//    private static final List<String> SCOPES = Arrays.asList(ComputeScopes.COMPUTE);
 
     @Value("${gcloud.default.project.id}")
     private String gcloudProjectId;
@@ -60,10 +36,12 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         try {
             Compute compute = setup();
 
+            if (virtualMachine == null) {
+                virtualMachine = new VirtualMachine();
+                virtualMachine.getVmType().setFlavor("n1-standard-4");
+            }
 
-            Instance instance = startInstance(compute, virtualMachine.getName());
-
-            // todo: change machinetype from application.property to vmtypesconfig
+            Instance instance = startInstance(compute, virtualMachine);
 
             virtualMachine.setResourcepool("gcloud");
             virtualMachine.setInstanceId(instance.getGeneratedId());
@@ -71,7 +49,6 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
             virtualMachine.setStarted(true);
             virtualMachine.setLeased(true);
             virtualMachine.setStartedAt(DateTime.now());
-            //size in GB
 
             log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + virtualMachine.getIpAddress() + " was started. Waiting for connection...");
 
@@ -108,15 +85,15 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
 
 
 
-    private Instance startInstance(Compute compute, String instanceName) throws Exception {
+    private Instance startInstance(Compute compute, VirtualMachine virtualMachine) throws Exception {
 
         ImageId imageId = ImageId.of(gcloudImageProject, gcloudImageId);
         NetworkId networkId = NetworkId.of("default");
         AttachedDisk attachedDisk = AttachedDisk.of(AttachedDisk.CreateDiskConfiguration.of(imageId));
 
         NetworkInterface networkInterface = NetworkInterface.newBuilder(networkId).setAccessConfigurations(NetworkInterface.AccessConfig.newBuilder().setName("external-nat").build()).build();
-        InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, instanceName);
-        MachineTypeId machineTypeId = MachineTypeId.of(gcloudDefaultRegion, gcloudMachineType);
+        InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, virtualMachine.getName());
+        MachineTypeId machineTypeId = MachineTypeId.of(gcloudDefaultRegion, virtualMachine.getVmType().getFlavor());
 
         String cloudInit = "";
         try {
@@ -149,7 +126,6 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
 
 
     private boolean deleteInstance(Compute compute, String instanceName) throws Exception {
-
         InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, instanceName);
         Operation operation = compute.deleteInstance(instanceId);
         Operation completedOperation = operation.waitFor(WaitForOption.checkEvery(10, TimeUnit.SECONDS), WaitForOption.timeout(5, TimeUnit.MINUTES));

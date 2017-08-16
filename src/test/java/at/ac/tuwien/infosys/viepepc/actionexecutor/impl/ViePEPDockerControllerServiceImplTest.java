@@ -140,7 +140,7 @@ public class ViePEPDockerControllerServiceImplTest {
         containerConfigurationsReader.readContainerConfigurations();
         serviceRegistryReader.getServiceTypeAmount();
 
-        VMType vmType = virtualMachineService.getVmTypeFromIdentifier(6);
+        VMType vmType = virtualMachineService.getVmTypeFromIdentifier(10);
         vm = new VirtualMachine("test-" + UUID.randomUUID().toString().substring(0,4), vmType);
 
         StopWatch stopWatch = new StopWatch();

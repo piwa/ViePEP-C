@@ -5,7 +5,6 @@ import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService
 import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StopWatch;
 
 /**
  * Created by philippwaibel on 21/04/2017.
@@ -33,7 +31,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
     @Autowired
     private ViePEPDockerSimulationServiceImpl viePEPDockerSimulationService;
     @Autowired
-    private InMemoryCacheImpl inMemoryCache;
+    private ViePEPGCloudClientService viePEPGCloudClientService;
 
     @Value("${simulate}")
     private boolean simulate;
@@ -45,13 +43,14 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
 
         if (simulate) {
             return viePEPCloudSimulatorClientService.startVM(vm);
+        } else if (vm.getLocation().equals("aws")) {
+            return viePEPAwsClientService.startVM(vm);
+        } else if (vm.getLocation().equals("gcloud")) {
+            return viePEPCloudSimulatorClientService.startVM(vm);
         } else {
-            if (vm.getLocation().equals("aws")) {
-                return viePEPAwsClientService.startVM(vm);
-            } else {
-                return viePEPOpenStackClientService.startVM(vm);
-            }
+            return viePEPOpenStackClientService.startVM(vm);
         }
+
     }
 
     @Override
@@ -59,14 +58,14 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
 
         if (simulate) {
             return viePEPCloudSimulatorClientService.stopVirtualMachine(vm);
+        } else if (vm.getLocation().equals("aws")) {
+            return viePEPAwsClientService.stopVirtualMachine(vm);
+        } else if (vm.getLocation().equals("gcloud")) {
+            return viePEPCloudSimulatorClientService.stopVirtualMachine(vm);
+        } else {
+            return viePEPOpenStackClientService.stopVirtualMachine(vm);
         }
-        else {
-            if (vm.getLocation().equals("aws")) {
-                return viePEPAwsClientService.stopVirtualMachine(vm);
-            } else {
-                return viePEPOpenStackClientService.stopVirtualMachine(vm);
-            }
-        }
+
     }
 
     @Override
@@ -74,14 +73,14 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
 
         if (simulate) {
             return viePEPCloudSimulatorClientService.checkAvailabilityOfDockerhost(vm);
+        } else if (vm.getLocation().equals("aws")) {
+            return viePEPAwsClientService.checkAvailabilityOfDockerhost(vm);
+        } else if (vm.getLocation().equals("gcloud")) {
+            return viePEPCloudSimulatorClientService.checkAvailabilityOfDockerhost(vm);
+        } else {
+            return viePEPOpenStackClientService.checkAvailabilityOfDockerhost(vm);
         }
-        else {
-            if (vm.getLocation().equals("aws")) {
-                return viePEPAwsClientService.checkAvailabilityOfDockerhost(vm);
-            } else {
-                return viePEPOpenStackClientService.checkAvailabilityOfDockerhost(vm);
-            }
-        }
+
     }
 
     @Override

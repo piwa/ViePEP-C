@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by philippwaibel on 10/06/16. modified by Gerta Sheganaku
@@ -61,9 +62,7 @@ public class CacheVirtualMachineService {
 
     public List<VirtualMachine> getAllVMs() {
         List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
-        for (VMType vmType : getVMTypes()) {
-            allVMs.addAll(getVMs(vmType));
-        }
+        getVMTypes().stream().map(this::getVMs).forEach(allVMs::addAll);
         return allVMs;
     }
 
@@ -81,23 +80,11 @@ public class CacheVirtualMachineService {
     }
 
     public Set<VirtualMachine> getStartedVMs() {
-        Set<VirtualMachine> result = new HashSet<VirtualMachine>();
-        for (VirtualMachine vm : getAllVMs()) {
-            if (vm.isStarted()) {
-                result.add(vm);
-            }
-        }
-        return result;
+        return getAllVMs().stream().filter(VirtualMachine::isStarted).collect(Collectors.toSet());
     }
 
     public Set<VirtualMachine> getScheduledForStartVMs() {
-        Set<VirtualMachine> result = new HashSet<VirtualMachine>();
-        for (VirtualMachine vm : getAllVMs()) {
-            if (vm.getToBeTerminatedAt() != null) {
-                result.add(vm);
-            }
-        }
-        return result;
+        return getAllVMs().stream().filter(vm -> vm.getToBeTerminatedAt() != null).collect(Collectors.toSet());
     }
 
     public Set<VirtualMachine> getStartedAndScheduledForStartVMs() {

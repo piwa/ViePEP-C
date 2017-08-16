@@ -1,9 +1,13 @@
 package at.ac.tuwien.infosys.viepepc.configuration;
 
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -26,7 +30,8 @@ import java.util.concurrent.Executor;
         @PropertySource("classpath:application-container.properties"),
         @PropertySource("classpath:container-config/container.properties"),
         @PropertySource("classpath:database-config/mysql.properties"),
-        @PropertySource("classpath:cloud-config/viepep4.0.properties")
+        @PropertySource("classpath:cloud-config/viepep4.0.properties"),
+        @PropertySource("classpath:messagebus-config/messagebus.properties")
 })
 public class ApplicationContext implements AsyncConfigurer {
 

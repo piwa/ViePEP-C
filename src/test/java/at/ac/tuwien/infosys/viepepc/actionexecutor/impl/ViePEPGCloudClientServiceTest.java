@@ -53,7 +53,7 @@ public class ViePEPGCloudClientServiceTest {
     @Test
     public void startVMAndStopAgain_Success() throws Exception {
 
-        VMType vmType = virtualMachineService.getVmTypeFromIdentifier(6);
+        VMType vmType = virtualMachineService.getVmTypeFromIdentifier(10);
         VirtualMachine vm = new VirtualMachine("test-" + UUID.randomUUID().toString().substring(0,4), vmType);
 
         StopWatch stopWatch = new StopWatch();

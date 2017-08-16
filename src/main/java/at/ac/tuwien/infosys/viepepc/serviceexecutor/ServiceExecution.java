@@ -5,6 +5,8 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.ProcessStepElementRepository;
+import at.ac.tuwien.infosys.viepepc.database.externdb.services.ProcessStepDaoService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import at.ac.tuwien.infosys.viepepc.reasoner.Reasoning;
@@ -32,12 +34,7 @@ public class ServiceExecution{
     @Autowired
     private ServiceInvoker serviceInvoker;
     @Autowired
-    private PlacementHelper placementHelper;
-    @Autowired
-    private CacheWorkflowService cacheWorkflowService;
-    @Autowired
-    @Lazy
-    private Reasoning reasoning;
+    private ProcessStepElementRepository processStepElementRepository;
 
     @Value("${simulate}")
     private boolean simulate;
@@ -46,6 +43,8 @@ public class ServiceExecution{
     public void startExecution(ProcessStep processStep, VirtualMachine virtualMachine) {
         processStep.setStartDate(DateTime.now());
         log.info("Task-Start: " + processStep);
+
+        processStepElementRepository.save(processStep);
 
         if (simulate) {
             try {
@@ -57,13 +56,15 @@ public class ServiceExecution{
             InvocationResultDTO invoke = serviceInvoker.invoke(virtualMachine, processStep);
         }
 
-        finaliseExecution(processStep);
+//        finaliseExecution(processStep);
     }
 
 //    @Async
 	public void startExecution(ProcessStep processStep, Container container) {
         processStep.setStartDate(DateTime.now());
 		log.info("Task-Start: " + processStep);
+
+        processStepElementRepository.save(processStep);
 
         if (simulate) {
             try {
@@ -73,38 +74,9 @@ public class ServiceExecution{
         } else {
             InvocationResultDTO invoke = serviceInvoker.invoke(container, processStep);
         }
-        
-        finaliseExecution(processStep);
+
+//        finaliseExecution(processStep);
         	
-	}
-	
-	private void finaliseExecution(ProcessStep processStep) {
-        DateTime finishedAt = new DateTime();
-        processStep.setFinishedAt(finishedAt);
-
-		log.info("Task-Done: " + processStep);
-
-        if(processStep.getScheduledAtContainer() != null) {
-            placementHelper.stopContainer(processStep.getScheduledAtContainer());
-        }
-
-        if (processStep.isLastElement()) {
-
-            List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
-            List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
-            if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
-                WorkflowElement workflowById = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
-                try {
-                    workflowById.setFinishedAt(finishedAt);
-                } catch (Exception e) {
-                }
-
-                cacheWorkflowService.deleteRunningWorkflowInstance(workflowById);
-                log.info("Workflow done. Workflow: " + workflowById);
-            }
-        }
-        reasoning.setNextOptimizeTimeNow();
-        
 	}
 
 }
