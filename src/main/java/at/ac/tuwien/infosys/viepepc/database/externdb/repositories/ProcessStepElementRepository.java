@@ -16,4 +16,11 @@ public interface ProcessStepElementRepository extends CrudRepository<ProcessStep
     
     @Query("select p from process_step p where p.scheduledAtContainer.id = ?1")
     List<ProcessStep> findByContainer(Long containerId) ;
+
+    @Query("select p from process_step p where p.scheduledAtContainer.id = ?1 and p.finishedAt is null")
+    ProcessStep findByContainerAndRunning(Long containerId);
+
+    @Query("select p from process_step p where p.scheduledAtVM.id = ?1 and p.finishedAt is null")
+    List<ProcessStep> findByVMAndRunning(Long virtualMachineId) ;
+
 }

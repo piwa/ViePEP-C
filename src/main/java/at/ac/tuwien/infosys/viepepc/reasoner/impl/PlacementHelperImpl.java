@@ -137,14 +137,13 @@ public class PlacementHelperImpl implements PlacementHelper {
 
     @Override
     public List<ProcessStep> getRunningProcessSteps(String workflowInstanceId) {
-        List<WorkflowElement> workflowInstances = cacheWorkflowService.getRunningWorkflowInstances();
-        for (Element workflowInstance : workflowInstances) {
-            if (workflowInstance.getName().equals(workflowInstanceId)) {
-                List<Element> workflowElement = new ArrayList<>();
-                workflowElement.add(workflowInstance);
-                return getRunningProcessSteps(workflowElement);
-            }
+        WorkflowElement workflowInstance = cacheWorkflowService.getWorkflowById(workflowInstanceId);
+        if (workflowInstance != null) {
+            List<Element> workflowElement = new ArrayList<>();
+            workflowElement.add(workflowInstance);
+            return getRunningProcessSteps(workflowElement);
         }
+
         return new ArrayList<>();
 	}
 

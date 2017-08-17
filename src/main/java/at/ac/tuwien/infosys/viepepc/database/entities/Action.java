@@ -6,5 +6,5 @@ package at.ac.tuwien.infosys.viepepc.database.entities;
 public enum Action {
 
     START,
-    STOPPED
+    FAILED, STOPPED
 }

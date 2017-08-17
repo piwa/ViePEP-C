@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @XmlRootElement(name = "WorkflowElement")
 @Entity(name = "WorkflowElement")
@@ -43,21 +44,13 @@ public class WorkflowElement extends Element {
     }
     
     public long calculateQoS() {
-        long executionTime = 0;
-        for (Element element : elements) {
-        	if(element.getFinishedAt() == null){
-                executionTime += element.calculateQoS();
-        	}
-        }
+        long executionTime = elements.stream().filter(element -> element.getFinishedAt() == null).mapToLong(Element::calculateQoS).sum();
         return executionTime;
     }
 
     @Override
     public ProcessStep getLastExecutedElement() {
-        List<Element> allChildren = new ArrayList<>();
-        for (Element element : elements) {
-            allChildren.add(element.getLastExecutedElement());
-        }
+        List<Element> allChildren = elements.stream().map(Element::getLastExecutedElement).collect(Collectors.toList());
         ProcessStep lastExecutedMaxElement = null;
         for (Element allChild : allChildren) {
             ProcessStep current = (ProcessStep) allChild;

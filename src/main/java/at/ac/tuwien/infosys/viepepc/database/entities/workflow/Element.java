@@ -64,7 +64,7 @@ public abstract class Element implements Serializable {
     @ManyToOne
     private Element nextXOR;
 
-    protected DateTime finishedAt;
+    protected DateTime finishedAt = null;
 
     @XmlElement(name = "lastElement")
     private boolean lastElement;

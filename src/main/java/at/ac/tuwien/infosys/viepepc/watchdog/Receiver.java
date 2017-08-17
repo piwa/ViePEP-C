@@ -36,12 +36,12 @@ public class Receiver {
     public void receiveMessage(@Payload Message message) {
         if(message.getStatus().equals(ServiceExecutionStatus.DONE)) {
             ProcessStep processStep = processStepElementRepository.findOne(message.getProcessStepId());
-            finaliseExecution(processStep);
+            finaliseSuccessfullExecution(processStep);
         }
     }
 
 
-    private void finaliseExecution(ProcessStep processStep) {
+    private void finaliseSuccessfullExecution(ProcessStep processStep) {
         DateTime finishedAt = new DateTime();
         processStep.setFinishedAt(finishedAt);
 
