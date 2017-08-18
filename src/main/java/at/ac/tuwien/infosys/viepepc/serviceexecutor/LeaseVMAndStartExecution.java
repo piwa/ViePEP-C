@@ -104,9 +104,13 @@ public class LeaseVMAndStartExecution {
             }
             return;
         } else {
-            long time = stopWatch.getTotalTimeMillis();
+//            long time = stopWatch.getTotalTimeMillis();
             stopWatch.stop();
-            virtualMachine.setStartupTime(time);
+            virtualMachine.setStartupTime(stopWatch2.getTotalTimeMillis());
+            if(virtualMachine.getStartedAt() == null) {
+                log.error("StartedAt is null");
+                virtualMachine.setStartedAt(DateTime.now());
+            }
             virtualMachine.setToBeTerminatedAt(new DateTime(virtualMachine.getStartedAt().getMillis() + virtualMachine.getVmType().getLeasingDuration()));
             startExecutionsOnContainer(containerProcessSteps, virtualMachine);
 

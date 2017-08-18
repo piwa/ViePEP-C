@@ -46,7 +46,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         } else if (vm.getLocation().equals("aws")) {
             return viePEPAwsClientService.startVM(vm);
         } else if (vm.getLocation().equals("gcloud")) {
-            return viePEPCloudSimulatorClientService.startVM(vm);
+            return viePEPGCloudClientService.startVM(vm);
         } else {
             return viePEPOpenStackClientService.startVM(vm);
         }
@@ -61,7 +61,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         } else if (vm.getLocation().equals("aws")) {
             return viePEPAwsClientService.stopVirtualMachine(vm);
         } else if (vm.getLocation().equals("gcloud")) {
-            return viePEPCloudSimulatorClientService.stopVirtualMachine(vm);
+            return viePEPGCloudClientService.stopVirtualMachine(vm);
         } else {
             return viePEPOpenStackClientService.stopVirtualMachine(vm);
         }
@@ -76,7 +76,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         } else if (vm.getLocation().equals("aws")) {
             return viePEPAwsClientService.checkAvailabilityOfDockerhost(vm);
         } else if (vm.getLocation().equals("gcloud")) {
-            return viePEPCloudSimulatorClientService.checkAvailabilityOfDockerhost(vm);
+            return viePEPGCloudClientService.checkAvailabilityOfDockerhost(vm);
         } else {
             return viePEPOpenStackClientService.checkAvailabilityOfDockerhost(vm);
         }

@@ -1,9 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.watchdog;
 
-import at.ac.tuwien.infosys.viepepc.configuration.MessagingConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
-import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.ProcessStepElementRepository;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import at.ac.tuwien.infosys.viepepc.reasoner.Reasoning;
@@ -11,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -30,15 +28,16 @@ public class Receiver {
     @Lazy
     private Reasoning reasoning;
     @Autowired
-    private ProcessStepElementRepository processStepElementRepository;
+    private InMemoryCacheImpl inMemoryCache;
 
     @RabbitListener(queues = "${messagebus.queue.name}")
     public void receiveMessage(@Payload Message message) {
         log.debug(message.toString());
         if(message.getStatus().equals(ServiceExecutionStatus.DONE)) {
-            ProcessStep processStep = processStepElementRepository.findOne(message.getProcessStepId());
+            ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepId());
             if(processStep != null) {
                 finaliseSuccessfullExecution(processStep);
+                inMemoryCache.getProcessStepsWaitingForServiceDone().remove(message.getProcessStepId());
             }
         }
     }

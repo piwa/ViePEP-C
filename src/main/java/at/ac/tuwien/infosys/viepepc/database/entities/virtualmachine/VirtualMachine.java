@@ -106,6 +106,10 @@ public class VirtualMachine implements Serializable {
 //    }
 
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
