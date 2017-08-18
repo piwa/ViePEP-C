@@ -38,7 +38,7 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
 
             if (virtualMachine == null) {
                 virtualMachine = new VirtualMachine();
-                virtualMachine.getVmType().setFlavor("n1-standard-4");
+                virtualMachine.getVmType().setFlavor(gcloudMachineType);
             }
 
             Instance instance = startInstance(compute, virtualMachine);

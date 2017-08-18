@@ -53,7 +53,7 @@ public class ServiceExecution{
                 log.error("EXCEPTION", e);
             }
         } else {
-            InvocationResultDTO invoke = serviceInvoker.invoke(virtualMachine, processStep);
+            serviceInvoker.invoke(virtualMachine, processStep);
         }
 
 //        finaliseExecution(processStep);
@@ -72,7 +72,7 @@ public class ServiceExecution{
             } catch (InterruptedException e) {
             }
         } else {
-            InvocationResultDTO invoke = serviceInvoker.invoke(container, processStep);
+            serviceInvoker.invoke(container, processStep);
         }
 
 //        finaliseExecution(processStep);

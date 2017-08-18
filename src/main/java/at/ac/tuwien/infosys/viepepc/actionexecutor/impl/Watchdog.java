@@ -45,7 +45,7 @@ public class Watchdog {
     @Value("${messagebus.queue.name}")
     private String queueName;
 
-//    @Scheduled(initialDelay=10000, fixedDelay=10000)        // fixedRate
+    @Scheduled(initialDelay=10000, fixedDelay=10000)        // fixedRate
     public void monitor() {
         Set<VirtualMachine> virtualMachineList = cacheVirtualMachineService.getStartedVMs();
 
@@ -55,19 +55,11 @@ public class Watchdog {
             if(!available) {
 
                 List<ProcessStep> processStepList = new ArrayList<>();
-//                processStepList.add(processStepElementRepository.findByVMAndRunning(vm.getId()));
 
                 Set<Container> containers = vm.getDeployedContainers();
                 containers.forEach(container -> processStepList.add(processStepElementRepository.findByContainerAndRunning(container.getId())));
 
                 for(ProcessStep processStep : processStepList) {
-//                    Message failureMessage = new Message();
-//                    failureMessage.setProcessStepId(processStep.getId());
-//                    failureMessage.setBody("");
-//                    failureMessage.setStatus(ServiceExecutionStatus.FAILURE);
-//                    rabbitTemplate.convertAndSend(queueName, new Message());
-
-//                    receiver.finaliseExecution(processStep);
 
                     processStep.reset();
                     processStepElementRepository.save(processStep);
@@ -76,12 +68,12 @@ public class Watchdog {
 
                     ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED);
                     reportDaoService.save(reportContainer);
-
-                    VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED);
-                    reportDaoService.save(reportVM);
                 }
 
                 vm.terminate();
+
+                VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED);
+                reportDaoService.save(reportVM);
             }
 
 

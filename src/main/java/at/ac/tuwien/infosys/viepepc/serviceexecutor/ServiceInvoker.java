@@ -10,6 +10,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,9 @@ public class ServiceInvoker {
 
     @Autowired
     private ServiceInvokerHttpClient serviceInvokerHttpClient;
+
+    @Value("${spring.rabbitmq.host}")
+    private String mqIp;
 
     /**
      * @param url to be invoked
@@ -68,7 +72,7 @@ public class ServiceInvoker {
 	}
 
 	private String createURI(VirtualMachine vm, String port, String task, String id) {
-        return vm.getURI().concat(":"+port).concat("/service").concat("/" + task).concat("/" + id).concat("/normal").concat("/nodata");
+        return vm.getURI().concat(":"+port).concat("/service").concat("/" + task).concat("/" + id).concat("/normal").concat("/nodata").concat("/" + mqIp);
     }
 
 

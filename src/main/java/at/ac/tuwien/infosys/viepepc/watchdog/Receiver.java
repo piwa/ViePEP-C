@@ -34,9 +34,12 @@ public class Receiver {
 
     @RabbitListener(queues = "${messagebus.queue.name}")
     public void receiveMessage(@Payload Message message) {
+        log.debug(message.toString());
         if(message.getStatus().equals(ServiceExecutionStatus.DONE)) {
             ProcessStep processStep = processStepElementRepository.findOne(message.getProcessStepId());
-            finaliseSuccessfullExecution(processStep);
+            if(processStep != null) {
+                finaliseSuccessfullExecution(processStep);
+            }
         }
     }
 
