@@ -24,7 +24,7 @@ public class InMemoryCacheImpl {
     private Set<ProcessStep> waitingForExecutingProcessSteps = new HashSet<>();
     private ConcurrentMap<VirtualMachine, Object> vmDeployedWaitObject = new ConcurrentHashMap<>();
 
-    private ConcurrentMap<Long, ProcessStep> processStepsWaitingForServiceDone = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ProcessStep> processStepsWaitingForServiceDone = new ConcurrentHashMap<>();
 
     public void clear() {
         runningWorkflows = new ArrayList<>();

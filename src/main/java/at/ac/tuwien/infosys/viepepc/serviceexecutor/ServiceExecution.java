@@ -34,7 +34,7 @@ public class ServiceExecution{
         log.info("Task-Start: " + processStep);
 
 //        processStepElementRepository.save(processStep);
-        inMemoryCache.getProcessStepsWaitingForServiceDone().put(processStep.getId(), processStep);
+        inMemoryCache.getProcessStepsWaitingForServiceDone().put(processStep.getName(), processStep);
 
         if (simulate) {
             try {
@@ -55,7 +55,7 @@ public class ServiceExecution{
 		log.info("Task-Start: " + processStep);
 
 //        processStepElementRepository.save(processStep);
-        inMemoryCache.getProcessStepsWaitingForServiceDone().put(processStep.getId(), processStep);
+        inMemoryCache.getProcessStepsWaitingForServiceDone().put(processStep.getName(), processStep);
 
         if (simulate) {
             try {

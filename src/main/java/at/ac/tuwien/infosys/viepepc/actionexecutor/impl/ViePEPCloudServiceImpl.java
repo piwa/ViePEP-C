@@ -7,6 +7,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
@@ -90,12 +91,16 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
 
             Thread.sleep(container.getContainerImage().getDeployTime());
 
-            Container container1 = viePEPDockerSimulationService.startContainer(virtualMachine, container);
+            container = viePEPDockerSimulationService.startContainer(virtualMachine, container);
 
-            return container1;
         } else {
-            return viePEPDockerControllerService.startContainer(virtualMachine, container);
+            container = viePEPDockerControllerService.startContainer(virtualMachine, container);
         }
+
+        container.setRunning(true);
+        container.setStartedAt(new DateTime());
+
+        return container;
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class Message implements Serializable {
 
-    private Long processStepId;
+    private String processStepName;
     private ServiceExecutionStatus status;
     private String body;
 
@@ -21,7 +21,7 @@ public class Message implements Serializable {
     @Override
     public String toString() {
         return "Message{" +
-                "processStepId=" + processStepId +
+                "processStepName=" + processStepName +
                 ", status=" + status +
                 ", body='" + body + '\'' +
                 '}';

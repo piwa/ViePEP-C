@@ -22,9 +22,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,7 +50,7 @@ public class LeaseVMAndStartExecution {
     private boolean useDocker;
 
 
-    @Async
+//    @Async
     public void leaseVMAndStartExecutionOnVirtualMachine(VirtualMachine virtualMachine, List<ProcessStep> processSteps) {
 
         final StopWatch stopWatch = new StopWatch();
@@ -80,7 +78,7 @@ public class LeaseVMAndStartExecution {
         }
     }
 
-    @Async
+//    @Async
     public void leaseVMAndStartExecutionOnContainer(VirtualMachine virtualMachine, Map<Container, List<ProcessStep>> containerProcessSteps) {
         final StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -124,7 +122,7 @@ public class LeaseVMAndStartExecution {
         }
     }
 
-    @Async
+//    @Async
     public void startExecutionsOnContainer(Map<Container, List<ProcessStep>> containerProcessSteps, VirtualMachine virtualMachine) {
         for (Map.Entry<Container, List<ProcessStep>> entry : containerProcessSteps.entrySet()) {
 
@@ -132,15 +130,39 @@ public class LeaseVMAndStartExecution {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start("deploy container");
 
-            deployContainer(virtualMachine, entry.getKey());
+            boolean success = deployContainer(virtualMachine, entry.getKey());
 
-            stopWatch.stop();
-            log.info("Container deploy duration: " + entry.getKey().toString() + ": " + stopWatch.getTotalTimeMillis());
+            if(success) {
+                stopWatch.stop();
+                log.info("Container deploy duration: " + entry.getKey().toString() + ": " + stopWatch.getTotalTimeMillis());
 
-            for (final ProcessStep processStep : entry.getValue()) {
-                serviceExecution.startExecution(processStep, entry.getKey());
+                for (final ProcessStep processStep : entry.getValue()) {
+                    serviceExecution.startExecution(processStep, entry.getKey());
+                }
+            }
+            else {
+                reset(entry.getValue(), entry.getKey(), virtualMachine);
             }
         }
+    }
+
+    private void reset(List<ProcessStep> value, Container container, VirtualMachine vm) {
+
+        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.FAILED);
+        reportDaoService.save(reportContainer);
+        container.shutdownContainer();
+
+        for(ProcessStep processStep : value) {
+            inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
+            inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+            processStep.reset();
+        }
+
+        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED);
+        reportDaoService.save(reportVM);
+
+        vm.setIpAddress(null);
+        vm.terminate();
     }
 
     private String startVM(VirtualMachine virtualMachine) {
@@ -179,10 +201,10 @@ public class LeaseVMAndStartExecution {
         return virtualMachine.getIpAddress();
     }
 
-    private void deployContainer(VirtualMachine vm, Container container) {
+    private boolean deployContainer(VirtualMachine vm, Container container) {
         if (container.isRunning()) {
             log.info(container + " already running on vm " + container.getVirtualMachine());
-            return;
+            return true;
         }
 
         try {
@@ -196,14 +218,17 @@ public class LeaseVMAndStartExecution {
 
 //            TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
 
+
+
+            ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.START);
+            reportDaoService.save(report);
+
+            return true;
+
         } catch (InterruptedException | DockerException e) {
-            log.error("EXCEPTION while deploying Container", e);
-
+            log.error("EXCEPTION while deploying Container. Reset execution request.", e);
+            return false;
         }
-
-        ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.START);
-        reportDaoService.save(report);
-
     }
 
 }

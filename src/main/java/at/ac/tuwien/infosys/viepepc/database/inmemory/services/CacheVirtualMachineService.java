@@ -44,7 +44,7 @@ public class CacheVirtualMachineService {
                 VMType vmType = getVmTypeFromIdentifier(v);
 
                 for (int k = 1; k <= K; k++) {
-                    inMemoryCache.addVirtualMachine(new VirtualMachine("eval-" + v + "-" + k + "-" + UUID.randomUUID().toString().substring(0,2), vmType));
+                    inMemoryCache.addVirtualMachine(new VirtualMachine(v + "_" + k, vmType));
                 }
             }
         } catch (Exception e) {

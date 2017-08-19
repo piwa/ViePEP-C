@@ -48,26 +48,30 @@ public class Watchdog {
 
             if(!available) {
 
+                log.error("VM not available anymore. Reset execution request. " + vm.toString());
+
                 Set<ProcessStep> processSteps = new HashSet<>();
 
                 Set<Container> containers = vm.getDeployedContainers();
-                containers.forEach(container -> processSteps.addAll(cacheProcessStepService.findByContainerAndRunning(container.getId())));
+                containers.forEach(container -> processSteps.addAll(cacheProcessStepService.findByContainerAndRunning(container)));
 
                 for(ProcessStep processStep : processSteps) {
 
-                    processStep.reset();
-                    inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getId());
+                    ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED);
+                    reportDaoService.save(reportContainer);
 
                     processStep.getScheduledAtContainer().shutdownContainer();
 
-                    ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED);
-                    reportDaoService.save(reportContainer);
+                    inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+                    processStep.reset();
                 }
-
-                vm.terminate();
 
                 VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED);
                 reportDaoService.save(reportVM);
+
+                vm.setIpAddress(null);
+                vm.terminate();
+
             }
         }
 

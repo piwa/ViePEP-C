@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
@@ -41,6 +42,7 @@ public class VirtualMachine implements Serializable {
     private ServiceType serviceType;
 
     private String name;
+    private String googleName;
     private String instanceId;
     private String location;
     private boolean leased = false;
@@ -97,18 +99,6 @@ public class VirtualMachine implements Serializable {
         return deployedContainers.contains(container);
     }
 
-//    @Override
-//    public int hashCode() {
-//    	if(id == null){
-//    		return 0;
-//    	}
-//        return Math.toIntExact(id);
-//    }
-
-
-    public String getName() {
-        return name;
-    }
 
     @Override
     public boolean equals(Object obj) {
@@ -154,6 +144,14 @@ public class VirtualMachine implements Serializable {
         this.setStartedAt(null);
         this.setToBeTerminatedAt(null);
         this.serviceType = null;
+        this.setGoogleName(null);
+    }
+
+    public String getGoogleName() {
+        if(Strings.isNullOrEmpty(googleName)) {
+            googleName = "eval-" + this.getName().replace('_', '-') + "-" + UUID.randomUUID().toString().substring(0,4);
+        }
+        return googleName;
     }
 
     public void undeployContainer(Container container) {

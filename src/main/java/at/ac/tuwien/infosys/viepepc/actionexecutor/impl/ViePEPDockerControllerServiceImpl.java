@@ -88,8 +88,6 @@ public class ViePEPDockerControllerServiceImpl {
         virtualMachine.getDeployedContainers().add(container);
         container.setContainerID(id);
         container.setVirtualMachine(virtualMachine);
-        container.setRunning(true);
-        container.setStartedAt(new DateTime());
         container.setExternPort(hostPort);
 
 

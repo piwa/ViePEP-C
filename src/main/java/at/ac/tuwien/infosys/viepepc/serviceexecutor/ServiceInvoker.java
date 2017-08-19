@@ -60,19 +60,19 @@ public class ServiceInvoker {
 
     public void invoke(VirtualMachine virtualMachine, ProcessStep processStep) {
         String task = processStep.getServiceType().getName().replace("service", "");
-        String uri = createURI(virtualMachine, "8080", task, String.valueOf(processStep.getId()));
+        String uri = createURI(virtualMachine, "8080", task, processStep.getName());
         invoke(uri);
     }
 
 	public void invoke(Container container, ProcessStep processStep) {
 		String task = processStep.getServiceType().getName().replace("service", "");
         task = task.replace("Service", "");
-        String uri = createURI(container.getVirtualMachine(), container.getExternPort(), task, String.valueOf(processStep.getId()));
+        String uri = createURI(container.getVirtualMachine(), container.getExternPort(), task, processStep.getName());
         invoke(uri);
 	}
 
-	private String createURI(VirtualMachine vm, String port, String task, String id) {
-        return vm.getURI().concat(":"+port).concat("/service").concat("/" + task).concat("/" + id).concat("/normal").concat("/nodata").concat("/" + mqIp);
+	private String createURI(VirtualMachine vm, String port, String task, String processStepName) {
+        return vm.getURI().concat(":"+port).concat("/service").concat("/" + task).concat("/" + processStepName).concat("/normal").concat("/nodata").concat("/" + mqIp);
     }
 
 

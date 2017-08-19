@@ -34,10 +34,10 @@ public class Receiver {
     public void receiveMessage(@Payload Message message) {
         log.debug(message.toString());
         if(message.getStatus().equals(ServiceExecutionStatus.DONE)) {
-            ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepId());
+            ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
             if(processStep != null) {
                 finaliseSuccessfullExecution(processStep);
-                inMemoryCache.getProcessStepsWaitingForServiceDone().remove(message.getProcessStepId());
+                inMemoryCache.getProcessStepsWaitingForServiceDone().remove(message.getProcessStepName());
             }
         }
     }

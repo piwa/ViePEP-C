@@ -46,13 +46,14 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
             virtualMachine.setResourcepool("gcloud");
             virtualMachine.setInstanceId(instance.getGeneratedId());
             virtualMachine.setIpAddress(instance.getNetworkInterfaces().get(0).getAccessConfigurations().get(0).getNatIp());
-            virtualMachine.setStarted(true);
             virtualMachine.setLeased(true);
-            virtualMachine.setStartedAt(DateTime.now());
 
             log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + virtualMachine.getIpAddress() + " was started. Waiting for connection...");
 
             waitUntilVmIsBooted(virtualMachine);
+
+            virtualMachine.setStarted(true);
+            virtualMachine.setStartedAt(DateTime.now());
 
             log.info("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + virtualMachine.getIpAddress() + " established.");
 
@@ -70,7 +71,7 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
     public final boolean stopVirtualMachine(VirtualMachine virtualMachine) {
         try {
             Compute compute = setup();
-            deleteInstance(compute, virtualMachine.getName());
+            deleteInstance(compute, virtualMachine.getGoogleName());
         } catch (Exception e) {
             log.error("Exception", e);
             return false;
@@ -92,7 +93,7 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         AttachedDisk attachedDisk = AttachedDisk.of(AttachedDisk.CreateDiskConfiguration.of(imageId));
 
         NetworkInterface networkInterface = NetworkInterface.newBuilder(networkId).setAccessConfigurations(NetworkInterface.AccessConfig.newBuilder().setName("external-nat").build()).build();
-        InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, virtualMachine.getName());
+        InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, virtualMachine.getGoogleName());
         MachineTypeId machineTypeId = MachineTypeId.of(gcloudDefaultRegion, virtualMachine.getVmType().getFlavor());
 
         String cloudInit = "";

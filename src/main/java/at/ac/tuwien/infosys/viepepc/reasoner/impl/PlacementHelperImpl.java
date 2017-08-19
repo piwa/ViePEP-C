@@ -232,7 +232,7 @@ public class PlacementHelperImpl implements PlacementHelper {
         List<ProcessStep> steps = new ArrayList<>();
         for (Element element : elements) {
             if (element instanceof ProcessStep) {
-                if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartedAt() != null)&& ((ProcessStep) element).getFinishedAt() == null) {
+                if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartedAt() != null) && ((ProcessStep) element).getFinishedAt() == null) {
                 	if (!steps.contains(element)) {
                         steps.add((ProcessStep) element);
                     }
