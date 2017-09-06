@@ -26,6 +26,7 @@ gcloud.default.project.id=
 gcloud.default.region=
 gcloud.default.image.prefix=
 gcloud.default.image.path=
+gcloud.credentials=
 
 
 viepep.node.port.available=

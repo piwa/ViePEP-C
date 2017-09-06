@@ -29,6 +29,8 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
     private String gcloudImageId;
     @Value("${gcloud.default.machine.type}")
     private String gcloudMachineType;
+    @Value("${gcloud.credentials}")
+    private String gcloudCredentials;
 
     public VirtualMachine startVM(VirtualMachine virtualMachine) {
 
@@ -81,7 +83,7 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
     }
 
     private Compute setup() throws Exception {
-        return ComputeOptions.newBuilder().setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream("/Users/philippwaibel/Desktop/ViePEP-C-959439b30540.json"))).build().getService();
+        return ComputeOptions.newBuilder().setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream(gcloudCredentials))).build().getService();
     }
 
 
