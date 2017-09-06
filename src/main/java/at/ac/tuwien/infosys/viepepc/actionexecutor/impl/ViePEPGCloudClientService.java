@@ -49,7 +49,13 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
 
             virtualMachine.setResourcepool("gcloud");
             virtualMachine.setInstanceId(instance.getGeneratedId());
-            virtualMachine.setIpAddress(instance.getNetworkInterfaces().get(0).getAccessConfigurations().get(0).getNatIp());
+            if(gcloudUsePublicIp) {
+                virtualMachine.setIpAddress(instance.getNetworkInterfaces().get(0).getAccessConfigurations().get(0).getNatIp());
+            }
+            else {
+                virtualMachine.setIpAddress(instance.getNetworkInterfaces().get(0).getNetworkIp());
+            }
+
             virtualMachine.setLeased(true);
 
             log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + virtualMachine.getIpAddress() + " was started. Waiting for connection...");
