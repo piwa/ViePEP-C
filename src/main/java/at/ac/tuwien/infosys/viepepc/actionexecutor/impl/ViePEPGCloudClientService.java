@@ -31,6 +31,8 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
     private String gcloudMachineType;
     @Value("${gcloud.credentials}")
     private String gcloudCredentials;
+    @Value("${gcloud.use.public.ip}")
+    private boolean gcloudUsePublicIp;
 
     public VirtualMachine startVM(VirtualMachine virtualMachine) {
 
@@ -94,7 +96,13 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         NetworkId networkId = NetworkId.of("default");
         AttachedDisk attachedDisk = AttachedDisk.of(AttachedDisk.CreateDiskConfiguration.of(imageId));
 
-        NetworkInterface networkInterface = NetworkInterface.newBuilder(networkId).setAccessConfigurations(NetworkInterface.AccessConfig.newBuilder().setName("external-nat").build()).build();
+        NetworkInterface networkInterface;
+        if(gcloudUsePublicIp) {
+            networkInterface = NetworkInterface.newBuilder(networkId).setAccessConfigurations(NetworkInterface.AccessConfig.newBuilder().setName("external-nat").build()).build();
+        }
+        else {
+            networkInterface = NetworkInterface.newBuilder(networkId).build();
+        }
         InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, virtualMachine.getGoogleName());
         MachineTypeId machineTypeId = MachineTypeId.of(gcloudDefaultRegion, virtualMachine.getVmType().getFlavor());
 
