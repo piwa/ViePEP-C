@@ -105,8 +105,7 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         NetworkInterface networkInterface;
         if(gcloudUsePublicIp) {
             networkInterface = NetworkInterface.newBuilder(networkId).setAccessConfigurations(NetworkInterface.AccessConfig.newBuilder().setName("external-nat").build()).build();
-        }
-        else {
+        } else {
             networkInterface = NetworkInterface.newBuilder(networkId).build();
         }
         InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, virtualMachine.getGoogleName());
@@ -118,10 +117,17 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         } catch (IOException e) {
             log.error("Could not load cloud init file");
         }
+
         Metadata metadata = Metadata.newBuilder().add("user-data",cloudInit).build();
         SchedulingOptions schedulingOptions = SchedulingOptions.preemptible();
 
         InstanceInfo instanceInfo = InstanceInfo.of(instanceId, machineTypeId, attachedDisk, networkInterface);
+
+        if(!gcloudUsePublicIp) {
+            Tags tags = Tags.newBuilder().setValues("private-nat").build();
+            instanceInfo = instanceInfo.toBuilder().setTags(tags).build();
+        }
+
         instanceInfo = instanceInfo.toBuilder().setMetadata(metadata).setSchedulingOptions(schedulingOptions).build();
         Operation operation = compute.create(instanceInfo);
 
@@ -135,7 +141,6 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         } else {
             instance = compute.getInstance(instanceId);
         }
-
 
         return instance;
     }
