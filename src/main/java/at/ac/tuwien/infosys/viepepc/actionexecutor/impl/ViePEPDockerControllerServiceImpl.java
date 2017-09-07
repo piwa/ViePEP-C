@@ -27,6 +27,8 @@ public class ViePEPDockerControllerServiceImpl {
 
     @Value("${viepep.node.port.available}")
     private String encodedHostNodeAvailablePorts;
+    @Value("${spring.rabbitmq.host}")
+    private String rabbitMQHost;
 
     @Autowired
     private ViePEPCloudService viePEPCloudService;
@@ -74,6 +76,7 @@ public class ViePEPDockerControllerServiceImpl {
                 .hostConfig(hostConfig)
                 .image(containerImage)
                 .exposedPorts(internalPort)
+                .env("spring.rabbitmq.host=" + rabbitMQHost)
 //                .cmd("sh", "-c", "java -jar vispProcessingNode-0.0.1.jar -Djava.security.egd=file:/dev/./urandom")
 //                .env(environmentVariables)
                 .build();
