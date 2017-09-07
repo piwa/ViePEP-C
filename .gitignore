@@ -14,10 +14,10 @@ ViePEP_C.iml
 viepep4.0.properties
 container.properties
 mysql.properties
+messagebus.properties
 .idea
 *.iml
 *.log
 log
 target
-ViePEP-C-959439b30540.json
 src/main/resources/cloud-config/*.json 
