@@ -20,3 +20,4 @@ mysql.properties
 log
 target
 ViePEP-C-959439b30540.json
+src/main/resources/cloud-config/*.json 
