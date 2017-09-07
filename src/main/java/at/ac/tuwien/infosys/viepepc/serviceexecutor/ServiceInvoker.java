@@ -73,7 +73,7 @@ public class ServiceInvoker {
 
 	private String createURI(VirtualMachine vm, String port, String task, String processStepName) {
         mqIp = mqIp.replace(".", "_");
-        return vm.getURI().concat(":"+port).concat("/service").concat("/" + task).concat("/" + processStepName).concat("/normal").concat("/nodata").concat("/" + mqIp);
+        return vm.getURI().concat(":"+port).concat("/" + task).concat("/" + processStepName).concat("/normal").concat("/nodata").concat("/" + mqIp);
     }
 
 
