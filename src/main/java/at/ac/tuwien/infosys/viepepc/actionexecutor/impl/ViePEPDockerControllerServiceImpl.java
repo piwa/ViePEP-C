@@ -77,8 +77,6 @@ public class ViePEPDockerControllerServiceImpl {
                 .image(containerImage)
                 .exposedPorts(internalPort)
                 .env("spring.rabbitmq.host=" + rabbitMQHost)
-//                .cmd("sh", "-c", "java -jar vispProcessingNode-0.0.1.jar -Djava.security.egd=file:/dev/./urandom")
-//                .env(environmentVariables)
                 .build();
 
         /* Start docker container */

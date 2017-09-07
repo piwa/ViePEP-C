@@ -16,10 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * User: Philipp Hoenisch
- * Date: 2/10/14
- */
 @Component
 @Scope("prototype")
 @Slf4j
@@ -27,9 +23,6 @@ public class ServiceInvoker {
 
     @Autowired
     private ServiceInvokerHttpClient serviceInvokerHttpClient;
-
-    @Value("${spring.rabbitmq.host}")
-    private String mqIp;
 
     /**
      * @param url to be invoked
@@ -43,18 +36,9 @@ public class ServiceInvoker {
         try {
             serviceInvokerHttpClient.retryHttpGet(url, stopWatch);
 
-
-//            String result = EntityUtils.toString(response.getEntity());
-//            long elapsed = stopWatch.elapsed(TimeUnit.MILLISECONDS);
-//            invocationResult.setResult(result);
-//            invocationResult.setExecutionTime(elapsed);
-//            invocationResult.setStatus(response.getStatusLine().getStatusCode());
         } catch (Exception e) {
             log.error("Exception", e);
-//            invocationResult.setStatus(404);
-//            invocationResult.setResult(e.getMessage());
         }
-//        return invocationResult;
     }
 
 
@@ -72,8 +56,7 @@ public class ServiceInvoker {
 	}
 
 	private String createURI(VirtualMachine vm, String port, String task, String processStepName) {
-        mqIp = mqIp.replace(".", "_");
-        return vm.getURI().concat(":"+port).concat("/" + task).concat("/" + processStepName).concat("/normal").concat("/nodata").concat("/" + mqIp);
+        return vm.getURI().concat(":"+port).concat("/" + task).concat("/" + processStepName).concat("/normal").concat("/nodata");
     }
 
 
