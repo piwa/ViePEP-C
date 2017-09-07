@@ -6,11 +6,13 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachineReportingAction;
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheProcessStepService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,8 @@ public class Watchdog {
     private InMemoryCacheImpl inMemoryCache;
     @Autowired
     private ReportDaoService reportDaoService;
+    @Autowired
+    private PlacementHelper placementHelper;
 
     @Value("${messagebus.queue.name}")
     private String queueName;
@@ -54,6 +58,12 @@ public class Watchdog {
 
                 Set<Container> containers = vm.getDeployedContainers();
                 containers.forEach(container -> processSteps.addAll(cacheProcessStepService.findByContainerAndRunning(container)));
+
+                for (Element element : placementHelper.getRunningSteps()) {
+                    if(containers.contains(((ProcessStep)element).getScheduledAtContainer())) {
+                        processSteps.add((ProcessStep)element);
+                    }
+                }
 
                 for(ProcessStep processStep : processSteps) {
 
