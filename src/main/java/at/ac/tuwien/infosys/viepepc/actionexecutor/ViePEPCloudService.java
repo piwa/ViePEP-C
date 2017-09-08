@@ -8,7 +8,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
  */
 public interface ViePEPCloudService {
 
-    VirtualMachine startVM(VirtualMachine vm) throws VmCouldNotBeStartedException;
+    VirtualMachine startVM(VirtualMachine vm) throws Exception;
 
     boolean stopVirtualMachine(VirtualMachine vm);
 

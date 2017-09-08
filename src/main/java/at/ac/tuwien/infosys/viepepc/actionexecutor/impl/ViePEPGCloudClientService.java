@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.AbstractViePEPCloudService;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.WaitForOption;
@@ -136,8 +137,12 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         Instance instance = null;
         if (completedOperation == null) {
             // todo: operation no longer exists
+            throw new VmCouldNotBeStartedException("Exception during VM booting: operation no longer exists");
         } else if (completedOperation.getErrors() != null) {
             // todo: operation failed, handle error
+            StringBuilder builder = new StringBuilder();
+            completedOperation.getErrors().forEach(operationError -> builder.append(operationError.getCode()).append(": ").append(operationError.getMessage()).append("\n"));
+            throw new VmCouldNotBeStartedException("Exception during VM booting:  operation failed, " + builder.toString());
         } else {
             instance = compute.getInstance(instanceId);
         }
@@ -154,8 +159,12 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
 
         if (completedOperation == null) {
             // todo: operation no longer exists
+            throw new VmCouldNotBeStartedException("Exception during VM deleting: operation no longer exists");
         } else if (completedOperation.getErrors() != null) {
             // todo: operation failed, handle error
+            StringBuilder builder = new StringBuilder();
+            completedOperation.getErrors().forEach(operationError -> builder.append(operationError.getCode()).append(": ").append(operationError.getMessage()).append("\n"));
+            throw new VmCouldNotBeStartedException("Exception during VM deleting:  operation failed, " + builder.toString());
         }
 
         return true;

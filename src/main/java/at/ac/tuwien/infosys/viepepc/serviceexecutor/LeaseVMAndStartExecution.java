@@ -176,7 +176,7 @@ public class LeaseVMAndStartExecution {
                 virtualMachine = viePEPCloudService.startVM(virtualMachine);
             } catch (VmCouldNotBeStartedException e) {
                 log.error("EXCEPTION", e);
-                System.exit(1);
+                System.exit(1);                 // todo: don't do that
             }
             log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
 
