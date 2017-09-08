@@ -68,8 +68,25 @@ public class Watchdog {
                         containers.forEach(container -> processSteps.addAll(cacheProcessStepService.findByContainerAndRunning(container)));
 
                         for (Element element : placementHelper.getRunningSteps()) {
-                            if (containers.contains(((ProcessStep) element).getScheduledAtContainer())) {
-                                processSteps.add((ProcessStep) element);
+                            ProcessStep processStep = (ProcessStep) element;
+                            if (containers.contains(processStep.getScheduledAtContainer())) {
+                                processSteps.add(processStep);
+                            }
+
+                            if(processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
+                                containers.add(processStep.getScheduledAtContainer());
+                                processSteps.add(processStep);
+                            }
+                        }
+
+                        for(ProcessStep processStep : inMemoryCache.getProcessStepsWaitingForServiceDone().values()) {
+                            if(containers.contains(processStep.getScheduledAtContainer())) {
+                                processSteps.add(processStep);
+                            }
+
+                            if(processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
+                                containers.add(processStep.getScheduledAtContainer());
+                                processSteps.add(processStep);
                             }
                         }
 
@@ -78,9 +95,8 @@ public class Watchdog {
                             ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED, "VM");
                             reportDaoService.save(reportContainer);
 
-                            processStep.getScheduledAtContainer().shutdownContainer();
-
                             inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+                            processStep.getScheduledAtContainer().shutdownContainer();
                             processStep.reset();
                         }
 
