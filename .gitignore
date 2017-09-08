@@ -21,3 +21,5 @@ messagebus.properties
 log
 target
 src/main/resources/cloud-config/*.json 
+slack.properties
+src/test/resources/cloud-config/*.json
