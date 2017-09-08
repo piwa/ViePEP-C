@@ -35,7 +35,7 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
     @Value("${gcloud.use.public.ip}")
     private boolean gcloudUsePublicIp;
 
-    public VirtualMachine startVM(VirtualMachine virtualMachine) {
+    public VirtualMachine startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
 
 
         try {
@@ -73,10 +73,11 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
 
 
         } catch (Exception e) {
-            log.error("Exception", e);
+            log.error("Exception while booting VM", e);
+            throw new VmCouldNotBeStartedException(e);
         }
 
-        return null;
+
     }
 
     public final boolean stopVirtualMachine(VirtualMachine virtualMachine) {
@@ -84,7 +85,7 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
             Compute compute = setup();
             deleteInstance(compute, virtualMachine.getGoogleName());
         } catch (Exception e) {
-            log.error("Exception", e);
+            log.error("Exception while stopping VM", e);
             return false;
         }
 
