@@ -101,7 +101,7 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
 
         ImageId imageId = ImageId.of(gcloudImageProject, gcloudImageId);
         NetworkId networkId = NetworkId.of("default");
-        AttachedDisk attachedDisk = AttachedDisk.of(AttachedDisk.CreateDiskConfiguration.of(imageId));
+        AttachedDisk attachedDisk = AttachedDisk.of(AttachedDisk.CreateDiskConfiguration.newBuilder(imageId).setAutoDelete(true).build());
 
         NetworkInterface networkInterface;
         if(gcloudUsePublicIp) {
