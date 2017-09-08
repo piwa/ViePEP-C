@@ -31,7 +31,8 @@ import java.util.concurrent.Executor;
         @PropertySource("classpath:container-config/container.properties"),
         @PropertySource("classpath:database-config/mysql.properties"),
         @PropertySource("classpath:cloud-config/viepep4.0.properties"),
-        @PropertySource("classpath:messagebus-config/messagebus.properties")
+        @PropertySource("classpath:messagebus-config/messagebus.properties"),
+        @PropertySource("classpath:slack-config/slack.properties")
 })
 public class ApplicationContext implements AsyncConfigurer {
 

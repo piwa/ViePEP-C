@@ -3,6 +3,8 @@ package at.ac.tuwien.infosys.viepepc;
 import at.ac.tuwien.infosys.viepepc.reasoner.ReasoningActivator;
 import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
 import lombok.extern.slf4j.Slf4j;
+import net.gpedro.integrations.slack.SlackApi;
+import net.gpedro.integrations.slack.SlackMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -23,6 +25,11 @@ public class CommandLineListener implements CommandLineRunner {
     private ServiceRegistryReader serviceRegistryReader;
     @Autowired
     private ReasoningActivator reasoningActivator;
+
+    @Value("${slack.webhook}")
+    private String slackWebhook;
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
 
     @Value("${simulate}")
     private boolean simulate;
@@ -77,6 +84,10 @@ public class CommandLineListener implements CommandLineRunner {
             log.error("EXCEPTION", e);
         } finally {
             log.info("Terminating....");
+
+            SlackApi api = new SlackApi(slackWebhook);
+            api.call(new SlackMessage("Evaluation of profile: " + activeProfile + " done!"));
+
             System.exit(1);
         }
 

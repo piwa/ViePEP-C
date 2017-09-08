@@ -1,16 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContainerImages>
     <containerImage>
-        <imageName>hello-world-app</imageName>
-        <repoName>carinamarina</repoName>
-        <deployTime>10000</deployTime>
-        <serviceType>HelloWorldService</serviceType>
+        <imageName>viepep.backend.services.small</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>37000</deployTime>
+        <serviceType>Service1</serviceType>
     </containerImage>
     <containerImage>
-        <imageName>viepep.backend.services</imageName>
+        <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>1000</deployTime>
-        <serviceType>Service1</serviceType>
+        <deployTime>37000</deployTime>
+        <serviceType>Service2</serviceType>
+    </containerImage>
+    <containerImage>
+        <imageName>viepep.backend.services.small</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>37000</deployTime>
+        <serviceType>Service3</serviceType>
+    </containerImage>
+    <containerImage>
+        <imageName>viepep.backend.services.small</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>37000</deployTime>
+        <serviceType>Service4</serviceType>
+    </containerImage>
+    <containerImage>
+        <imageName>viepep.backend.services.small</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>37000</deployTime>
+        <serviceType>Service5</serviceType>
+    </containerImage>
+    <containerImage>
+        <imageName>viepep.backend.services.small</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>37000</deployTime>
+        <serviceType>Service6</serviceType>
+    </containerImage>
+    <containerImage>
+        <imageName>viepep.backend.services.small</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>37000</deployTime>
+        <serviceType>Service7</serviceType>
+    </containerImage>
+    <containerImage>
+        <imageName>viepep.backend.services.small</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>37000</deployTime>
+        <serviceType>Service8</serviceType>
+    </containerImage>
+    <containerImage>
+        <imageName>viepep.backend.services.small</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>37000</deployTime>
+        <serviceType>Service9</serviceType>
+    </containerImage>
+    <containerImage>
+        <imageName>viepep.backend.services.small</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>37000</deployTime>
+        <serviceType>Service10</serviceType>
+    </containerImage>
+    <containerImage>
+        <imageName>viepep.backend.services.small</imageName>
+        <repoName>piwa</repoName>
+        <deployTime>37000</deployTime>
+        <serviceType>Service11</serviceType>
     </containerImage>
 </ContainerImages>
 

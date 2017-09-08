@@ -1,0 +1,5 @@
+messagebus.queue.name=
+
+spring.rabbitmq.host=
+spring.rabbitmq.username=
+spring.rabbitmq.password=

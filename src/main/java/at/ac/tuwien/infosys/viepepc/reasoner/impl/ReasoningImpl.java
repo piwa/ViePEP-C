@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.Watchdog;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
@@ -210,22 +211,24 @@ public class ReasoningImpl implements Reasoning {
 
 
     private void terminateVms(DateTime tau_t_0) {
-        for(VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
-            long timeUntilTermination = placementHelper.getRemainingLeasingDuration(tau_t_0, vm);
-            if(timeUntilTermination < MIN_TAU_T_DIFFERENCE_MS) {
-                try {
-                    boolean containerWaitingForVm = inMemoryCache.getWaitingForExecutingProcessSteps().stream().anyMatch(processStep -> processStep.getScheduledAtContainer().getVirtualMachine() == vm);
-                    if (vm.getDeployedContainers().size() > 0 || containerWaitingForVm) {
-                        log.info("Extend leasing of VM: " + vm.toString());
-                        vm.setToBeTerminatedAt(new DateTime(vm.getToBeTerminatedAt().getMillis() + vm.getVmType().getLeasingDuration()));
-                    } else {
-                        if (containerWaitingForVm) {
-                            log.debug("VM will be terminated but container waiting for starting");
+        synchronized (Watchdog.SYNC_OBJECT) {
+            for (VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
+                long timeUntilTermination = placementHelper.getRemainingLeasingDuration(tau_t_0, vm);
+                if (timeUntilTermination < MIN_TAU_T_DIFFERENCE_MS) {
+                    try {
+                        boolean containerWaitingForVm = inMemoryCache.getWaitingForExecutingProcessSteps().stream().anyMatch(processStep -> processStep.getScheduledAtContainer().getVirtualMachine() == vm);
+                        if (vm.getDeployedContainers().size() > 0 || containerWaitingForVm) {
+                            log.info("Extend leasing of VM: " + vm.toString());
+                            vm.setToBeTerminatedAt(new DateTime(vm.getToBeTerminatedAt().getMillis() + vm.getVmType().getLeasingDuration()));
+                        } else {
+                            if (containerWaitingForVm) {
+                                log.debug("VM will be terminated but container waiting for starting");
+                            }
+                            placementHelper.terminateVM(vm);
                         }
-                        placementHelper.terminateVM(vm);
+                    } catch (NullPointerException ex) {
+                        log.error("Exception", ex);
                     }
-                } catch (NullPointerException ex) {
-                    log.error("Exception", ex);
                 }
             }
         }
