@@ -255,6 +255,8 @@ public class PlacementHelperImpl implements PlacementHelper {
     public void terminateVM(VirtualMachine virtualMachine, DateTime date) {
         log.info("Terminate: " + virtualMachine);
 
+        virtualMachine.setTerminating(true);
+
         if(virtualMachine.getDeployedContainers().size() > 0) {
             virtualMachine.getDeployedContainers().forEach(container -> stopContainer(container));
         }

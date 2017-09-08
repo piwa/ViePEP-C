@@ -54,6 +54,7 @@ public class VirtualMachine implements Serializable {
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime toBeTerminatedAt;
     private String resourcepool;
+    private boolean terminating = false;
 
     @ManyToOne(cascade = CascadeType.ALL)
     private VMType vmType;
@@ -145,6 +146,7 @@ public class VirtualMachine implements Serializable {
         this.setToBeTerminatedAt(null);
         this.serviceType = null;
         this.setGoogleName(null);
+        this.setTerminating(false);
     }
 
     public String getGoogleName() {

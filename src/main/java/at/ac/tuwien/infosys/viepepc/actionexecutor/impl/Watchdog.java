@@ -48,40 +48,44 @@ public class Watchdog {
         Set<VirtualMachine> virtualMachineList = cacheVirtualMachineService.getStartedVMs();
 
         for(VirtualMachine vm : virtualMachineList) {
-            boolean available = viePEPCloudServiceImpl.checkAvailabilityOfDockerhost(vm);
 
-            if(!available) {
+            if (!vm.isTerminating()) {
 
-                log.error("VM not available anymore. Reset execution request. " + vm.toString());
+                boolean available = viePEPCloudServiceImpl.checkAvailabilityOfDockerhost(vm);
 
-                Set<ProcessStep> processSteps = new HashSet<>();
+                if(!available) {
 
-                Set<Container> containers = vm.getDeployedContainers();
-                containers.forEach(container -> processSteps.addAll(cacheProcessStepService.findByContainerAndRunning(container)));
+                    log.error("VM not available anymore. Reset execution request. " + vm.toString());
 
-                for (Element element : placementHelper.getRunningSteps()) {
-                    if(containers.contains(((ProcessStep)element).getScheduledAtContainer())) {
-                        processSteps.add((ProcessStep)element);
+                    Set<ProcessStep> processSteps = new HashSet<>();
+
+                    Set<Container> containers = vm.getDeployedContainers();
+                    containers.forEach(container -> processSteps.addAll(cacheProcessStepService.findByContainerAndRunning(container)));
+
+                    for (Element element : placementHelper.getRunningSteps()) {
+                        if(containers.contains(((ProcessStep)element).getScheduledAtContainer())) {
+                            processSteps.add((ProcessStep)element);
+                        }
                     }
+
+                    for(ProcessStep processStep : processSteps) {
+
+                        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED);
+                        reportDaoService.save(reportContainer);
+
+                        processStep.getScheduledAtContainer().shutdownContainer();
+
+                        inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+                        processStep.reset();
+                    }
+
+                    VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED);
+                    reportDaoService.save(reportVM);
+
+                    vm.setIpAddress(null);
+                    vm.terminate();
+
                 }
-
-                for(ProcessStep processStep : processSteps) {
-
-                    ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED);
-                    reportDaoService.save(reportContainer);
-
-                    processStep.getScheduledAtContainer().shutdownContainer();
-
-                    inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
-                    processStep.reset();
-                }
-
-                VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED);
-                reportDaoService.save(reportVM);
-
-                vm.setIpAddress(null);
-                vm.terminate();
-
             }
         }
 
