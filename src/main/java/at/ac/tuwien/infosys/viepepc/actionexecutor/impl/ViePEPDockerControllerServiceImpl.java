@@ -32,6 +32,8 @@ public class ViePEPDockerControllerServiceImpl {
 
     @Autowired
     private ViePEPCloudService viePEPCloudService;
+    @Autowired
+    private DockerPullHelper dockerPullHelper;
 
     public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
         /* Connect to docker server of the host */
@@ -45,7 +47,8 @@ public class ViePEPDockerControllerServiceImpl {
             return null;
         }
 
-        docker.pull(containerImage);
+        dockerPullHelper.pullContainer(docker, containerImage);
+//        docker.pull(containerImage);
 
         String internalPort = String.valueOf(container.getContainerImage().getServiceType().getServiceTypeResources().getInternPort());
 

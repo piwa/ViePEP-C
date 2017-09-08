@@ -141,14 +141,14 @@ public class LeaseVMAndStartExecution {
                 }
             }
             else {
-                reset(entry.getValue(), entry.getKey(), virtualMachine);
+                reset(entry.getValue(), entry.getKey(), virtualMachine, "Container");
             }
         }
     }
 
-    private void reset(List<ProcessStep> value, Container container, VirtualMachine vm) {
+    private void reset(List<ProcessStep> value, Container container, VirtualMachine vm, String failureReason) {
 
-        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.FAILED);
+        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.FAILED, failureReason);
         reportDaoService.save(reportContainer);
         container.shutdownContainer();
 
@@ -158,7 +158,7 @@ public class LeaseVMAndStartExecution {
             processStep.reset();
         }
 
-        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED);
+        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
         reportDaoService.save(reportVM);
 
         vm.setIpAddress(null);

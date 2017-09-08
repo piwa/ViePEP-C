@@ -70,7 +70,7 @@ public class Watchdog {
 
                     for(ProcessStep processStep : processSteps) {
 
-                        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED);
+                        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED, "VM");
                         reportDaoService.save(reportContainer);
 
                         processStep.getScheduledAtContainer().shutdownContainer();
@@ -79,7 +79,7 @@ public class Watchdog {
                         processStep.reset();
                     }
 
-                    VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED);
+                    VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, "VM");
                     reportDaoService.save(reportVM);
 
                     vm.setIpAddress(null);

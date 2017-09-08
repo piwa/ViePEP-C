@@ -33,6 +33,7 @@ public class ContainerReportingAction implements Serializable {
 
     private String containerID;
     private String virtualMachineID;
+    private String failureReason = "";
 
     @Enumerated(EnumType.STRING)
     private Action dockerAction;
@@ -48,6 +49,14 @@ public class ContainerReportingAction implements Serializable {
         this.containerID = containerID;
         this.virtualMachineID = vmID;
         this.dockerAction = action;
+    }
+
+    public ContainerReportingAction(DateTime date, String containerID, String vmID, Action action, String failureReason) {
+        this.timestamp = date;
+        this.containerID = containerID;
+        this.virtualMachineID = vmID;
+        this.dockerAction = action;
+        this.failureReason = failureReason;
     }
 
 
