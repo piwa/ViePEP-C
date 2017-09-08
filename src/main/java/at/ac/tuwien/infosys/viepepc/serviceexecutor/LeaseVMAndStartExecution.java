@@ -174,7 +174,7 @@ public class LeaseVMAndStartExecution {
 
             try {
                 virtualMachine = viePEPCloudService.startVM(virtualMachine);
-            } catch (VmCouldNotBeStartedException e) {
+            } catch (Exception e) {
                 log.error("EXCEPTION", e);
                 System.exit(1);                 // todo: don't do that
             }
