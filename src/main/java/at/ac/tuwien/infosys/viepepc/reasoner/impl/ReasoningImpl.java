@@ -18,6 +18,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -50,6 +51,9 @@ public class ReasoningImpl implements Reasoning {
     private WorkflowDaoService workflowDaoService;
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
+
+    @Value("${reasoner.autoTerminate.wait.time}")
+    private int autoTerminateWait;
 
     private DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -92,7 +96,7 @@ public class ReasoningImpl implements Reasoning {
                         else {
                             emptyTime = null;
                         }
-                        if (emptyTime != null && ((new Date()).getTime() - emptyTime.getTime()) >= (60 * 1000 * 1)) {
+                        if (emptyTime != null && ((new Date()).getTime() - emptyTime.getTime()) >= (60 * 1000 * autoTerminateWait)) {
                         	if (autoTerminate) {
                         		run = false;
                         	}
