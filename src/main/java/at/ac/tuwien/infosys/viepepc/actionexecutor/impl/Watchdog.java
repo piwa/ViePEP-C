@@ -45,7 +45,7 @@ public class Watchdog {
     @Value("${messagebus.queue.name}")
     private String queueName;
 
-    @Scheduled(initialDelay=10000, fixedDelay=10000)        // fixedRate
+    @Scheduled(initialDelay=10000, fixedDelay=60000)        // fixedRate
     public void monitor() {
 
         synchronized (SYNC_OBJECT) {
@@ -90,12 +90,24 @@ public class Watchdog {
                             }
                         }
 
+                        for(ProcessStep processStep : inMemoryCache.getWaitingForExecutingProcessSteps()) {
+                            if(containers.contains(processStep.getScheduledAtContainer())) {
+                                processSteps.add(processStep);
+                            }
+
+                            if(processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
+                                containers.add(processStep.getScheduledAtContainer());
+                                processSteps.add(processStep);
+                            }
+                        }
+
                         for (ProcessStep processStep : processSteps) {
 
                             ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED, "VM");
                             reportDaoService.save(reportContainer);
 
                             inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+                            inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
                             processStep.getScheduledAtContainer().shutdownContainer();
                             processStep.reset();
                         }
