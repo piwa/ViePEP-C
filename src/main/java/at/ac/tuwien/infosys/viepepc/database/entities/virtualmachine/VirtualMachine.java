@@ -131,6 +131,7 @@ public class VirtualMachine implements Serializable {
                 ", startedAt=" + startString +
                 ", terminateAt=" + toBeTerminatedAtString +
                 ", location=" + location +
+                ", googleName=" + getGoogleName() + 
                 ", ip adress=" + ipAddress +
                 '}';
     }
