@@ -224,6 +224,7 @@ public class ReasoningImpl implements Reasoning {
                             if (containerWaitingForVm) {
                                 log.info("VM will be terminated but container waiting for starting");
                             }
+                            log.info("terminateVms method terminate vm: " + vm);
                             placementHelper.terminateVM(vm);
                         }
                     } catch (NullPointerException ex) {
