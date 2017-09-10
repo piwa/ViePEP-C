@@ -152,7 +152,7 @@ public class VirtualMachine implements Serializable {
 
     public String getGoogleName() {
         if(Strings.isNullOrEmpty(googleName)) {
-            googleName = "eval-" + this.getName().replace('_', '-') + "-" + UUID.randomUUID().toString().substring(0,4);
+            googleName = "eval-" + this.getName().replace('_', '-') + "-" + UUID.randomUUID().toString().substring(0,6);
         }
         return googleName;
     }

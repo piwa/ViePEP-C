@@ -188,7 +188,8 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
         List<VirtualMachine> vMs = cacheVirtualMachineService.getAllVMs();
         for (VirtualMachine vM : vMs) {
             if (vM.getToBeTerminatedAt() != null && vM.getToBeTerminatedAt().isBefore(tau_t_0)) {
-                placementHelper.terminateVM(vM);
+//                placementHelper.terminateVM(vM);
+                log.info("cleanupVMs method Would terminate vm: " + vM);
             }
         }
     }
