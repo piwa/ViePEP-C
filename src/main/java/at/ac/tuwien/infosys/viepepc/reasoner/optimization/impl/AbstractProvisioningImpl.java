@@ -189,7 +189,7 @@ public abstract class AbstractProvisioningImpl {
         StringBuilder builder = new StringBuilder();
         availableVms.stream().filter(vm -> vm.getDeployedContainers().size() > 0).forEach(vm -> forOutput.add(vm));
         alreadyUsedVMs.forEach(vm -> forOutput.add(vm));
-        forOutput.forEach(vm -> builder.append(vm.getInstanceId()));
+        forOutput.forEach(vm -> builder.append(vm.getInstanceId()).append(", "));
         log.info("Busy VMs: " + builder);
 
         availableVms.removeIf(vm -> alreadyUsedVMs.contains(vm));
