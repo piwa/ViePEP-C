@@ -65,7 +65,7 @@ public class ReasoningImpl implements Reasoning {
 
     private static final long POLL_INTERVAL_MILLISECONDS = 1000;
     private static final long TERMINATE_CHECK_INTERVAL_MILLISECONDS = 10000;
-	public static final long MIN_TAU_T_DIFFERENCE_MS = 10 * 1000;
+	public static final long MIN_TAU_T_DIFFERENCE_MS = 30 * 1000;
 	private static final long RETRY_TIMEOUT_MILLIS = 10 * 1000;
 
 
