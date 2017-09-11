@@ -65,7 +65,9 @@ public class ReasoningImpl implements Reasoning {
 
     private static final long POLL_INTERVAL_MILLISECONDS = 1000;
     private static final long TERMINATE_CHECK_INTERVAL_MILLISECONDS = 10000;
-	public static final long MIN_TAU_T_DIFFERENCE_MS = 20 * 1000;
+
+    @Value("${min.optimization.interval.ms}")
+    private int minTauTDifference;
 	private static final long RETRY_TIMEOUT_MILLIS = 10 * 1000;
 
 
@@ -200,7 +202,7 @@ public class ReasoningImpl implements Reasoning {
         
         long difference = tau_t_1 - new DateTime().getMillis();
         if (difference < 0 || difference > 60*60*1000) {
-            difference = MIN_TAU_T_DIFFERENCE_MS;
+            difference = minTauTDifference;
         }
         log.info("------------------------- sleep for: " + difference / 1000 + " seconds --------------------------");
         log.info("------------- next iteration: " + DateTime.now().plus(difference) + " --------------");
@@ -214,7 +216,7 @@ public class ReasoningImpl implements Reasoning {
         synchronized (Watchdog.SYNC_OBJECT) {
             for (VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
                 long timeUntilTermination = placementHelper.getRemainingLeasingDuration(tau_t_0, vm);
-                if (timeUntilTermination < MIN_TAU_T_DIFFERENCE_MS) {
+                if (timeUntilTermination < minTauTDifference) {
                     try {
                         boolean containerWaitingForVm = inMemoryCache.getWaitingForExecutingProcessSteps().stream().anyMatch(processStep -> processStep.getScheduledAtContainer().getVirtualMachine() == vm);
                         if (vm.getDeployedContainers().size() > 0 || containerWaitingForVm) {
