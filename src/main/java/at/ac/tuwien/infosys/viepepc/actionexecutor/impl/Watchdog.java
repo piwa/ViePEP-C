@@ -48,6 +48,8 @@ public class Watchdog {
     @Scheduled(initialDelay=10000, fixedDelay=60000)        // fixedRate
     public void monitor() {
 
+        log.info("Start Watchdog Iteration");
+
         synchronized (SYNC_OBJECT) {
 
             Set<VirtualMachine> virtualMachineList = cacheVirtualMachineService.getStartedVMs();
@@ -108,6 +110,8 @@ public class Watchdog {
                 }
             }
         }
+
+        log.info("Done Watchdog Iteration");
 
     }
 
