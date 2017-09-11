@@ -60,7 +60,7 @@ public class Watchdog {
                 if (!vm.isTerminating()) {
 
                     boolean available = false;
-
+                    int sleepTimer = 0;
                     for(int i = 0; i < 3; i++) {
                         available = viePEPCloudServiceImpl.checkAvailabilityOfDockerhost(vm);
                         if(available) {
@@ -68,7 +68,8 @@ public class Watchdog {
                         }
 
                         try {
-                            TimeUnit.SECONDS.sleep(5);
+                            sleepTimer = sleepTimer + 10;
+                            TimeUnit.SECONDS.sleep(sleepTimer);
                         } catch (InterruptedException e) {
                         }
                     }
