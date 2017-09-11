@@ -56,7 +56,14 @@ public class Watchdog {
 
                 if (!vm.isTerminating()) {
 
-                    boolean available = viePEPCloudServiceImpl.checkAvailabilityOfDockerhost(vm);
+                    boolean available = false;
+
+                    for(int i = 0; i < 3; i++) {
+                        available = viePEPCloudServiceImpl.checkAvailabilityOfDockerhost(vm);
+                        if(available) {
+                            break;
+                        }
+                    }
 
                     if (!available) {
 
@@ -69,36 +76,15 @@ public class Watchdog {
 
                         for (Element element : placementHelper.getRunningSteps()) {
                             ProcessStep processStep = (ProcessStep) element;
-                            if (containers.contains(processStep.getScheduledAtContainer())) {
-                                processSteps.add(processStep);
-                            }
-
-                            if(processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
-                                containers.add(processStep.getScheduledAtContainer());
-                                processSteps.add(processStep);
-                            }
+                            getContainersAndProcesses(vm, processSteps, containers, processStep);
                         }
 
                         for(ProcessStep processStep : inMemoryCache.getProcessStepsWaitingForServiceDone().values()) {
-                            if(containers.contains(processStep.getScheduledAtContainer())) {
-                                processSteps.add(processStep);
-                            }
-
-                            if(processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
-                                containers.add(processStep.getScheduledAtContainer());
-                                processSteps.add(processStep);
-                            }
+                            getContainersAndProcesses(vm, processSteps, containers, processStep);
                         }
 
                         for(ProcessStep processStep : inMemoryCache.getWaitingForExecutingProcessSteps()) {
-                            if(containers.contains(processStep.getScheduledAtContainer())) {
-                                processSteps.add(processStep);
-                            }
-
-                            if(processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
-                                containers.add(processStep.getScheduledAtContainer());
-                                processSteps.add(processStep);
-                            }
+                            getContainersAndProcesses(vm, processSteps, containers, processStep);
                         }
 
                         for (ProcessStep processStep : processSteps) {
@@ -123,6 +109,17 @@ public class Watchdog {
             }
         }
 
+    }
+
+    private void getContainersAndProcesses(VirtualMachine vm, Set<ProcessStep> processSteps, Set<Container> containers, ProcessStep processStep) {
+        if(containers.contains(processStep.getScheduledAtContainer())) {
+            processSteps.add(processStep);
+        }
+
+        if(processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
+            containers.add(processStep.getScheduledAtContainer());
+            processSteps.add(processStep);
+        }
     }
 
 
