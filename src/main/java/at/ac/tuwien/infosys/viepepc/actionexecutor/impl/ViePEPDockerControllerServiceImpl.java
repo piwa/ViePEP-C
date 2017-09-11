@@ -41,7 +41,7 @@ public class ViePEPDockerControllerServiceImpl {
 
         String containerImage = container.getContainerImage().getRepoName() + "/" + container.getContainerImage().getImageName();
 
-        boolean result = checkDockerHostAvailability(virtualMachine);
+        boolean result = checkAvailabilityOfDockerhostWithRetry(virtualMachine);
 
         if(result == false) {
             return null;
@@ -124,14 +124,14 @@ public class ViePEPDockerControllerServiceImpl {
         return container;
     }
 
-    private boolean checkDockerHostAvailability(VirtualMachine virtualMachine) {
+    private boolean checkAvailabilityOfDockerhostWithRetry(VirtualMachine virtualMachine) {
 
-        for(int i = 0; i < 50; i++) {
+        for(int i = 0; i < 30; i++) {
             if(viePEPCloudService.checkAvailabilityOfDockerhost(virtualMachine)) {
                 return true;
             }
             try {
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
                 log.error("Exception", e);
             }

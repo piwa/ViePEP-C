@@ -184,8 +184,15 @@ public abstract class AbstractProvisioningImpl {
         Set<VirtualMachine> alreadyUsedVMs = new HashSet<>();
         runningWorkflowInstances.forEach(workflow -> getRunningSteps(workflow).forEach(ps -> alreadyUsedVMs.add(ps.getScheduledAtContainer().getVirtualMachine())));
         inMemoryCache.getWaitingForExecutingProcessSteps().forEach(ps -> alreadyUsedVMs.add(ps.getScheduledAtContainer().getVirtualMachine()));
+
+        StringBuilder builder = new StringBuilder();
+        availableVms.stream().filter(vm -> vm.getDeployedContainers().size() > 0).forEach(vm -> builder.append(vm.getInstanceId()).append(", "));
+        alreadyUsedVMs.forEach(vm -> builder.append(vm.getInstanceId()).append(", "));
+        log.info("Busy VMs: " + builder);
+
         availableVms.removeIf(vm -> alreadyUsedVMs.contains(vm));
         availableVms.removeIf(vm -> vm.getDeployedContainers().size() > 0);
+
     }
 
     protected long getRemainingLeasingDurationIncludingScheduled(DateTime tau_t, VirtualMachine vm, OptimizationResult optimizationResult) {

@@ -203,7 +203,7 @@ public class ReasoningImpl implements Reasoning {
             difference = MIN_TAU_T_DIFFERENCE_MS;
         }
         log.info("------------------------- sleep for: " + difference / 1000 + " seconds --------------------------");
-        log.info("------------- next iteration: " + DateTime.now().plus(tau_t_1) + " --------------");
+        log.info("------------- next iteration: " + DateTime.now().plus(difference) + " --------------");
         
         
         return difference;

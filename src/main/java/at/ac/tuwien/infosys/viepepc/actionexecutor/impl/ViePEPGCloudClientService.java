@@ -156,17 +156,18 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
     private boolean deleteInstance(Compute compute, String instanceName) throws Exception {
         InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, instanceName);
         Operation operation = compute.deleteInstance(instanceId);
-        Operation completedOperation = operation.waitFor(WaitForOption.checkEvery(10, TimeUnit.SECONDS), WaitForOption.timeout(5, TimeUnit.MINUTES));
 
-        if (completedOperation == null) {
-            // todo: operation no longer exists
-            throw new VmCouldNotBeStartedException("Exception during VM deleting: operation no longer exists");
-        } else if (completedOperation.getErrors() != null) {
-            // todo: operation failed, handle error
-            StringBuilder builder = new StringBuilder();
-            completedOperation.getErrors().forEach(operationError -> builder.append(operationError.getCode()).append(": ").append(operationError.getMessage()).append("\n"));
-            throw new VmCouldNotBeStartedException("Exception during VM deleting:  operation failed, " + builder.toString());
-        }
+//        Operation completedOperation = operation.waitFor(WaitForOption.checkEvery(10, TimeUnit.SECONDS), WaitForOption.timeout(5, TimeUnit.MINUTES));
+
+//        if (completedOperation == null) {
+//            // todo: operation no longer exists
+//            throw new VmCouldNotBeStartedException("Exception during VM deleting: operation no longer exists");
+//        } else if (completedOperation.getErrors() != null) {
+//            // todo: operation failed, handle error
+//            StringBuilder builder = new StringBuilder();
+//            completedOperation.getErrors().forEach(operationError -> builder.append(operationError.getCode()).append(": ").append(operationError.getMessage()).append("\n"));
+//            throw new VmCouldNotBeStartedException("Exception during VM deleting:  operation failed, " + builder.toString());
+//        }
 
         return true;
 

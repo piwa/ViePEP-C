@@ -34,6 +34,7 @@ public class AbstractViePEPCloudService {
         try {
             return docker.ping().equals("OK");
         } catch (DockerException | InterruptedException e) {
+            log.error("Docker Availability exception: ", e);
             return false;
         }
     }
