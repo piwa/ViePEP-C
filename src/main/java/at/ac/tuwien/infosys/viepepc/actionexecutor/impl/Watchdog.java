@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -45,7 +46,7 @@ public class Watchdog {
     @Value("${messagebus.queue.name}")
     private String queueName;
 
-    @Scheduled(initialDelay=10000, fixedDelay=60000)        // fixedRate
+    @Scheduled(initialDelay=60000, fixedDelay=60000)        // fixedRate
     public void monitor() {
 
         log.info("Start Watchdog Iteration");
@@ -64,6 +65,11 @@ public class Watchdog {
                         available = viePEPCloudServiceImpl.checkAvailabilityOfDockerhost(vm);
                         if(available) {
                             break;
+                        }
+
+                        try {
+                            TimeUnit.SECONDS.sleep(5);
+                        } catch (InterruptedException e) {
                         }
                     }
 
