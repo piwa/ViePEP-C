@@ -148,6 +148,7 @@ public class VirtualMachine implements Serializable {
         this.serviceType = null;
         this.setGoogleName(null);
         this.setTerminating(false);
+        this.setIpAddress(null);
     }
 
     public String getGoogleName() {

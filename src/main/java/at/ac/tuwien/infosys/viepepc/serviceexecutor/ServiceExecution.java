@@ -29,11 +29,10 @@ public class ServiceExecution{
     private boolean simulate;
 
 //    @Async
-    public void startExecution(ProcessStep processStep, VirtualMachine virtualMachine) {
+    public void startExecution(ProcessStep processStep, VirtualMachine virtualMachine) throws ServiceInvokeException {
         processStep.setStartDate(DateTime.now());
         log.info("Task-Start: " + processStep);
 
-//        processStepElementRepository.save(processStep);
         inMemoryCache.getProcessStepsWaitingForServiceDone().put(processStep.getName(), processStep);
 
         if (simulate) {
@@ -45,16 +44,13 @@ public class ServiceExecution{
         } else {
             serviceInvoker.invoke(virtualMachine, processStep);
         }
-
-//        finaliseExecution(processStep);
     }
 
 //    @Async
-	public void startExecution(ProcessStep processStep, Container container) {
+	public void startExecution(ProcessStep processStep, Container container) throws ServiceInvokeException {
         processStep.setStartDate(DateTime.now());
 		log.info("Task-Start: " + processStep);
 
-//        processStepElementRepository.save(processStep);
         inMemoryCache.getProcessStepsWaitingForServiceDone().put(processStep.getName(), processStep);
 
         if (simulate) {
@@ -66,8 +62,6 @@ public class ServiceExecution{
             serviceInvoker.invoke(container, processStep);
         }
 
-//        finaliseExecution(processStep);
-        	
 	}
 
 }

@@ -70,7 +70,7 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
         log.info(stringBuilder.toString());
 
-        cleanupVMs(tau_t);
+//        cleanupVMs(tau_t);
 
         return new AsyncResult<Boolean>(true);
     }
@@ -184,13 +184,13 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
     }
 
 
-    private void cleanupVMs(DateTime tau_t_0) {
-        List<VirtualMachine> vMs = cacheVirtualMachineService.getAllVMs();
-        for (VirtualMachine vM : vMs) {
-            if (vM.getToBeTerminatedAt() != null && vM.getToBeTerminatedAt().isBefore(tau_t_0)) {
-                log.info("cleanupVMs method terminate vm: " + vM);
-                placementHelper.terminateVM(vM);
-            }
-        }
-    }
+//    private void cleanupVMs(DateTime tau_t_0) {
+//        List<VirtualMachine> vMs = cacheVirtualMachineService.getAllVMs();
+//        for (VirtualMachine vM : vMs) {
+//            if (vM.getToBeTerminatedAt() != null && vM.getToBeTerminatedAt().isBefore(tau_t_0)) {
+//                log.info("cleanupVMs method terminate vm: " + vM);
+//                placementHelper.terminateVM(vM);            // todo delete
+//            }
+//        }
+//    }
 }

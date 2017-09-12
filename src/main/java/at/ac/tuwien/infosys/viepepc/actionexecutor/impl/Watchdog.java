@@ -76,6 +76,8 @@ public class Watchdog {
 
                     if (!available) {
 
+
+
                         log.error("VM not available anymore. Reset execution request. " + vm.toString());
 
                         Set<ProcessStep> processSteps = new HashSet<>();
@@ -110,7 +112,8 @@ public class Watchdog {
                         VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, "VM");
                         reportDaoService.save(reportVM);
 
-                        vm.setIpAddress(null);
+                        viePEPCloudServiceImpl.stopVirtualMachine(vm);
+
                         vm.terminate();
 
                     }

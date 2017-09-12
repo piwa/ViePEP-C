@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.AbstractViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import com.google.api.gax.paging.Page;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.WaitForOption;
 import com.google.cloud.compute.*;
@@ -96,7 +97,17 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         return ComputeOptions.newBuilder().setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream(gcloudCredentials))).build().getService();
     }
 
+    public Page<Instance> listAllInstances() throws Exception {
+        return listAllInstances(setup());
+    }
 
+    public Page<Instance> listAllInstances(Compute compute) {
+//        Compute.InstanceFilter instanceFilter = Compute.InstanceFilter.equals(Compute.InstanceField.TAGS,"viepep-eval");
+//        Compute.InstanceListOption instanceListOption = Compute.InstanceListOption.filter(instanceFilter);
+        Compute.InstanceListOption instanceListOption = Compute.InstanceListOption.pageSize(100);
+        Page<Instance> instances = compute.listInstances(gcloudDefaultRegion,instanceListOption);
+        return instances;
+    }
 
     private Instance startInstance(Compute compute, VirtualMachine virtualMachine) throws Exception {
 

@@ -2,7 +2,7 @@ package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.ViePEPCloudServiceImpl;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
@@ -11,19 +11,17 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
-import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by philippwaibel on 18/05/16.
@@ -116,10 +114,15 @@ public class LeaseVMAndStartExecution {
     }
 
     public void startExecutionsOnVirtualMachine(final List<ProcessStep> processSteps, final VirtualMachine virtualMachine) {
-        for (final ProcessStep processStep : processSteps) {
-            serviceExecution.startExecution(processStep, virtualMachine);
-
+        try {
+            for (final ProcessStep processStep : processSteps) {
+                serviceExecution.startExecution(processStep, virtualMachine);
+            }
+        } catch (ServiceInvokeException e) {
+            log.error("Exception while invoking service. Stop VM and reset.", e);
+            reset(processSteps, null, virtualMachine, "Service");
         }
+
     }
 
 //    @Async
@@ -137,7 +140,12 @@ public class LeaseVMAndStartExecution {
                 log.info("Container deploy duration: " + entry.getKey().toString() + ": " + stopWatch.getTotalTimeMillis());
 
                 for (final ProcessStep processStep : entry.getValue()) {
-                    serviceExecution.startExecution(processStep, entry.getKey());
+                    try {
+                        serviceExecution.startExecution(processStep, entry.getKey());
+                    } catch (ServiceInvokeException e) {
+                        log.error("Exception while invoking service. Stop VM and reset.", e);
+                        reset(entry.getValue(), entry.getKey(), virtualMachine, "Service");
+                    }
                 }
             }
             else {
@@ -148,9 +156,11 @@ public class LeaseVMAndStartExecution {
 
     private void reset(List<ProcessStep> value, Container container, VirtualMachine vm, String failureReason) {
 
-        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.FAILED, failureReason);
-        reportDaoService.save(reportContainer);
-        container.shutdownContainer();
+        if(container != null) {
+            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.FAILED, failureReason);
+            reportDaoService.save(reportContainer);
+            container.shutdownContainer();
+        }
 
         for(ProcessStep processStep : value) {
             inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
@@ -160,6 +170,8 @@ public class LeaseVMAndStartExecution {
 
         VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
         reportDaoService.save(reportVM);
+
+        viePEPCloudService.stopVirtualMachine(vm);
 
         vm.setIpAddress(null);
         vm.terminate();
@@ -209,16 +221,7 @@ public class LeaseVMAndStartExecution {
 
         try {
 
-//            log.info("Start Container: " + container + " on VM: " + vm);
-//            StopWatch stopWatch = new StopWatch();
-//            stopWatch.start("deploy container");
             dockerControllerService.startContainer(vm, container);
-//            stopWatch.stop();
-//            log.info("Container " + container.toString() + " deployed. Duration: " + stopWatch.getTotalTimeMillis());
-
-//            TimeUnit.MILLISECONDS.sleep(container.getContainerImage().getDeployTime());
-
-
 
             ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.START);
             reportDaoService.save(report);

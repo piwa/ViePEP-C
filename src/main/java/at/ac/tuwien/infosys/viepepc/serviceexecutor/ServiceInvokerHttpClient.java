@@ -31,21 +31,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ServiceInvokerHttpClient {
 
-//    private CloseableHttpClient httpclient = null;
-//
-//    public ServiceInvokerHttpClient() {
-//        int timeout = 180;
-//        RequestConfig config = RequestConfig.custom()
-//                .setConnectTimeout(timeout * 1000)
-//                .setConnectionRequestTimeout(timeout * 1000)
-//                .setSocketTimeout(timeout * 1000).build();
-//        httpclient = HttpClientBuilder.create().setDefaultRequestConfig(config).disableAutomaticRetries().build();
-//    }
-
     @Retryable(value = Exception.class, maxAttempts = 20, backoff=@Backoff(delay=1000, maxDelay=3000))
     public HttpStatus retryHttpGet(String url, Stopwatch stopWatch) throws Exception {
-
-
 
         if(stopWatch.isRunning()) {
             stopWatch.reset();
@@ -57,9 +44,6 @@ public class ServiceInvokerHttpClient {
         headers.setContentType(MediaType.TEXT_HTML);
         HttpEntity<String> entity = new HttpEntity<String>(headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-
-
-//        ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
 
         stopWatch.stop();
 

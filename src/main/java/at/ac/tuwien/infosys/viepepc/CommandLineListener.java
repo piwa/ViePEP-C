@@ -1,7 +1,6 @@
 package at.ac.tuwien.infosys.viepepc;
 
 import at.ac.tuwien.infosys.viepepc.reasoner.ReasoningActivator;
-import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
 import lombok.extern.slf4j.Slf4j;
 import net.gpedro.integrations.slack.SlackApi;
 import net.gpedro.integrations.slack.SlackMessage;
@@ -21,8 +20,7 @@ import java.util.concurrent.Future;
 @Slf4j
 @Profile("!test")
 public class CommandLineListener implements CommandLineRunner {
-    @Autowired
-    private ServiceRegistryReader serviceRegistryReader;
+
     @Autowired
     private ReasoningActivator reasoningActivator;
 

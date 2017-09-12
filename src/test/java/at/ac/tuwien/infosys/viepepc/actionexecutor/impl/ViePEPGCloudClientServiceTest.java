@@ -4,6 +4,8 @@ import at.ac.tuwien.infosys.viepepc.bootstrap.vmTypes.VmTypesReaderImpl;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import com.google.api.gax.paging.Page;
+import com.google.cloud.compute.Instance;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
@@ -20,6 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
@@ -70,6 +73,13 @@ public class ViePEPGCloudClientServiceTest {
 
         boolean success = viePEPGCloudClientService.stopVirtualMachine(vm);
         assertThat(success).isTrue();
+
+    }
+
+    @Test
+    public void listAllInstances_Success() throws Exception {
+        Page<Instance> instances = viePEPGCloudClientService.listAllInstances();
+        instances.getValues().forEach(instance -> log.info(instance.getInstanceId().getInstance()));
 
     }
 
