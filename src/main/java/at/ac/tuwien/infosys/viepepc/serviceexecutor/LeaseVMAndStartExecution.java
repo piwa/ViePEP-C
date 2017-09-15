@@ -2,7 +2,6 @@ package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.ViePEPCloudServiceImpl;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
@@ -72,7 +71,8 @@ public class LeaseVMAndStartExecution {
                 startExecutionsOnVirtualMachine(processSteps, virtualMachine);
             }
         } catch (VmCouldNotBeStartedException e) {
-            // everything is already done
+            log.error("VM could not be started. Stop VM and reset.", e);
+            reset(processSteps, null, virtualMachine, "VM");
         }
     }
 
@@ -113,8 +113,14 @@ public class LeaseVMAndStartExecution {
 
             }
         } catch (VmCouldNotBeStartedException e) {
-            // everything is already done
+            log.error("VM could not be started. Stop VM and reset.", e);
+            for(Map.Entry<Container, List<ProcessStep>> entry : containerProcessSteps.entrySet()) {
+                resetContainer(entry.getKey(), virtualMachine, "VM");
+                resetProcessSteps(entry.getValue());
+            }
+            resetVM(virtualMachine, "VM");
         }
+
     }
 
     public void startExecutionsOnVirtualMachine(final List<ProcessStep> processSteps, final VirtualMachine virtualMachine) {
@@ -158,33 +164,6 @@ public class LeaseVMAndStartExecution {
         }
     }
 
-    private void reset(List<ProcessStep> value, Container container, VirtualMachine vm, String failureReason) {
-
-        if(container != null) {
-            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.FAILED, failureReason);
-            reportDaoService.save(reportContainer);
-            container.shutdownContainer();
-        }
-
-        for(ProcessStep processStep : value) {
-            inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
-            inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
-            processStep.reset();
-        }
-
-        reset(vm, failureReason);
-    }
-
-    private void reset(VirtualMachine vm, String failureReason) {
-        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
-        reportDaoService.save(reportVM);
-
-        viePEPCloudService.stopVirtualMachine(vm);
-
-        vm.setIpAddress(null);
-        vm.terminate();
-    }
-
     private String startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
 
         Object waitObject = inMemoryCache.getVmDeployedWaitObject().get(virtualMachine);
@@ -195,13 +174,10 @@ public class LeaseVMAndStartExecution {
             try {
                 virtualMachine = viePEPCloudService.startVM(virtualMachine);
             } catch (VmCouldNotBeStartedException e) {
-                log.error("VM could not be started. Stop VM and reset.", e);
-
                 synchronized(waitObject) {
                     waitObject.notifyAll();
                 }
                 inMemoryCache.getVmDeployedWaitObject().remove(virtualMachine);
-                reset(virtualMachine, "VM");
                 throw e;
             }
 
@@ -223,8 +199,6 @@ public class LeaseVMAndStartExecution {
                 log.error("Exception", e);
             }
             if(!virtualMachine.isStarted()) {
-                log.error("VM could not be started. Stop VM and reset.");
-                reset(virtualMachine, "VM");
                 throw new VmCouldNotBeStartedException("VM could not be started");
             }
         }
@@ -239,18 +213,49 @@ public class LeaseVMAndStartExecution {
         }
 
         try {
-
             dockerControllerService.startContainer(vm, container);
-
             ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.START);
             reportDaoService.save(report);
-
             return true;
 
         } catch (InterruptedException | DockerException e) {
             log.error("EXCEPTION while deploying Container. Reset execution request.", e);
             return false;
         }
+    }
+
+
+    private void reset(List<ProcessStep> value, Container container, VirtualMachine vm, String failureReason) {
+
+        resetContainer(container, vm, failureReason);
+        resetProcessSteps(value);
+        resetVM(vm, failureReason);
+    }
+
+    private void resetProcessSteps(List<ProcessStep> value) {
+        for(ProcessStep processStep : value) {
+            inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
+            inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+            processStep.reset();
+        }
+    }
+
+    private void resetContainer(Container container, VirtualMachine vm, String failureReason) {
+        if(container != null) {
+            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.FAILED, failureReason);
+            reportDaoService.save(reportContainer);
+            container.shutdownContainer();
+        }
+    }
+
+    private void resetVM(VirtualMachine vm, String failureReason) {
+        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
+        reportDaoService.save(reportVM);
+
+        viePEPCloudService.stopVirtualMachine(vm);
+
+        vm.setIpAddress(null);
+        vm.terminate();
     }
 
 }

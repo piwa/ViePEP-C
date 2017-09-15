@@ -31,7 +31,9 @@ public abstract class AbstractViePEPCloudService {
                 log.debug("VM " + virtualMachine + " is not available yet.");
             }
         } while(!connection && counter <= 5);
-        throw new VmCouldNotBeStartedException("VM " + virtualMachine + " is not available.");
+        if(!connection) {
+            throw new VmCouldNotBeStartedException("VM " + virtualMachine + " is not available.");
+        }
     }
 
     public boolean checkAvailabilityOfDockerhost(VirtualMachine vm) {
