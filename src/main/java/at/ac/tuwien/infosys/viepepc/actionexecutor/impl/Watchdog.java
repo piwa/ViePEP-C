@@ -113,8 +113,7 @@ public class Watchdog {
             List<ProcessStep> processSteps = getAllRunningSteps();
 
             for(ProcessStep processStep : processSteps) {
-                Duration maxDuration = new Duration(processStep.getServiceType().getServiceTypeResources().getMakeSpan());
-                maxDuration = maxDuration.multipliedBy(2);
+                long maxDuration = processStep.getServiceType().getServiceTypeResources().getMakeSpan() * 2;
                 if(processStep.getStartDate().plus(maxDuration).isBeforeNow()) {
                     resetContainerAndProcessStep(processStep.getScheduledAtContainer().getVirtualMachine(), processStep);
                 }
@@ -139,7 +138,7 @@ public class Watchdog {
 
 
     private List<ProcessStep> getAllRunningSteps() {
-        List<WorkflowElement> workflows = Collections.synchronizedList(cacheWorkflowService.getRunningWorkflowInstances())
+        List<WorkflowElement> workflows = Collections.synchronizedList(cacheWorkflowService.getRunningWorkflowInstances());
         Set<ProcessStep> runningProcesses = new HashSet<>();
 
         workflows.forEach(workflowElement -> runningProcesses.addAll(placementHelper.getRunningProcessSteps(workflowElement.getName())));
