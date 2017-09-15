@@ -37,8 +37,6 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
     private boolean gcloudUsePublicIp;
 
     public VirtualMachine startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
-
-
         try {
             Compute compute = setup();
 
@@ -148,10 +146,10 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
         Operation completedOperation = operation.waitFor(WaitForOption.checkEvery(10, TimeUnit.SECONDS), WaitForOption.timeout(5, TimeUnit.MINUTES));
         Instance instance = null;
         if (completedOperation == null) {
-            // todo: operation no longer exists
+            // operation no longer exists
             throw new VmCouldNotBeStartedException("Exception during VM booting: operation no longer exists");
         } else if (completedOperation.getErrors() != null) {
-            // todo: operation failed, handle error
+            // operation failed, handle error
             StringBuilder builder = new StringBuilder();
             completedOperation.getErrors().forEach(operationError -> builder.append(operationError.getCode()).append(": ").append(operationError.getMessage()).append("\n"));
             throw new VmCouldNotBeStartedException("Exception during VM booting:  operation failed, " + builder.toString());
@@ -171,10 +169,10 @@ public class ViePEPGCloudClientService extends AbstractViePEPCloudService {
 //        Operation completedOperation = operation.waitFor(WaitForOption.checkEvery(10, TimeUnit.SECONDS), WaitForOption.timeout(5, TimeUnit.MINUTES));
 
 //        if (completedOperation == null) {
-//            // todo: operation no longer exists
+//            // operation no longer exists
 //            throw new VmCouldNotBeStartedException("Exception during VM deleting: operation no longer exists");
 //        } else if (completedOperation.getErrors() != null) {
-//            // todo: operation failed, handle error
+//            // operation failed, handle error
 //            StringBuilder builder = new StringBuilder();
 //            completedOperation.getErrors().forEach(operationError -> builder.append(operationError.getCode()).append(": ").append(operationError.getMessage()).append("\n"));
 //            throw new VmCouldNotBeStartedException("Exception during VM deleting:  operation failed, " + builder.toString());

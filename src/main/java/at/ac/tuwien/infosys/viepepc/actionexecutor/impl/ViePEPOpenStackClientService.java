@@ -1,7 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.AbstractViePEPCloudService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +17,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.sql.Time;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by philippwaibel on 31/03/2017.
@@ -59,50 +56,52 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
     }
 
     public VirtualMachine startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
-        setup();
 
-        if (virtualMachine == null) {
-            virtualMachine = new VirtualMachine();
-            virtualMachine.getVmType().setFlavor("m1.large");
-        }
-
-        String cloudInit = "";
         try {
-            cloudInit = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("docker-config/cloud-init"), "UTF-8");
-        } catch (IOException e) {
-            log.error("Could not load cloud init file");
-        }
 
-        log.debug("getFlavor for VM: " + virtualMachine.toString());
-        Flavor flavor = os.compute().flavors().get(virtualMachine.getVmType().getFlavor());
+            setup();
 
-        for (Flavor f : os.compute().flavors().list()) {
-            if (f.getName().equals(virtualMachine.getVmType().getFlavor())) {
-                flavor = f;
-                break;
+            if (virtualMachine == null) {
+                virtualMachine = new VirtualMachine();
+                virtualMachine.getVmType().setFlavor("m1.large");
             }
-        }
 
-        log.debug("Flavor for VM: " + virtualMachine.toString() + ": " + flavor.getName());
+            String cloudInit = "";
+            try {
+                cloudInit = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("docker-config/cloud-init"), "UTF-8");
+            } catch (IOException e) {
+                log.error("Could not load cloud init file");
+            }
 
-        ServerCreate sc = Builders.server()
-                .name(virtualMachine.getName())
-                .flavor(flavor)
-                .image(openStackDefaultImageId)
-                .userData(Base64.encodeAsString(cloudInit))
-                .keypairName(openstackKeypairName)
-                .addSecurityGroup("default")
-                .build();
+            log.debug("getFlavor for VM: " + virtualMachine.toString());
+            Flavor flavor = os.compute().flavors().get(virtualMachine.getVmType().getFlavor());
+
+            for (Flavor f : os.compute().flavors().list()) {
+                if (f.getName().equals(virtualMachine.getVmType().getFlavor())) {
+                    flavor = f;
+                    break;
+                }
+            }
+
+            log.debug("Flavor for VM: " + virtualMachine.toString() + ": " + flavor.getName());
+
+            ServerCreate sc = Builders.server()
+                    .name(virtualMachine.getName())
+                    .flavor(flavor)
+                    .image(openStackDefaultImageId)
+                    .userData(Base64.encodeAsString(cloudInit))
+                    .keypairName(openstackKeypairName)
+                    .addSecurityGroup("default")
+                    .build();
 
 
-
-        log.debug("BootAndWaitActive for VM: " + virtualMachine.toString());
-        Server server = os.compute().servers().bootAndWaitActive(sc, 600000);
-        if (server.getStatus().equals(Server.Status.ERROR)) {
-            ActionResponse r = os.compute().servers().delete(server.getId());
-            log.error("Could not boot VM: " + virtualMachine.toString());
-            throw new VmCouldNotBeStartedException("Could not boot VM: " + virtualMachine.toString());
-        }
+            log.debug("BootAndWaitActive for VM: " + virtualMachine.toString());
+            Server server = os.compute().servers().bootAndWaitActive(sc, 600000);
+            if (server.getStatus().equals(Server.Status.ERROR)) {
+                ActionResponse r = os.compute().servers().delete(server.getId());
+                log.error("Could not boot VM: " + virtualMachine.toString());
+                throw new VmCouldNotBeStartedException("Could not boot VM: " + virtualMachine.toString());
+            }
 
 //        boolean bootSuccessfully = false;
 //        Server server = null;
@@ -128,64 +127,71 @@ public class ViePEPOpenStackClientService extends AbstractViePEPCloudService  {
 //            }
 //        }
 
-        log.debug("BootAndWaitActive DONE for VM: " + virtualMachine.toString());
+            log.debug("BootAndWaitActive DONE for VM: " + virtualMachine.toString());
 
-        Map<String, List<? extends Address>> adrMap = server.getAddresses().getAddresses();
+            Map<String, List<? extends Address>> adrMap = server.getAddresses().getAddresses();
 
-        String uri = adrMap.get("private").get(0).getAddr();
+            String uri = adrMap.get("private").get(0).getAddr();
 
-        log.debug("VM " + virtualMachine.toString() + " active; IP: " + uri);
+            log.debug("VM " + virtualMachine.toString() + " active; IP: " + uri);
 
-        if (publicUsage) {
-            FloatingIP freeIP = null;
+            if (publicUsage) {
+                FloatingIP freeIP = null;
 
-            for (FloatingIP ip : os.compute().floatingIps().list()) {
-                if (ip.getFixedIpAddress() == null) {
-                    freeIP = ip;
-                    break;
+                for (FloatingIP ip : os.compute().floatingIps().list()) {
+                    if (ip.getFixedIpAddress() == null) {
+                        freeIP = ip;
+                        break;
+                    }
                 }
-            }
-            if (freeIP == null) {
-                freeIP = os.compute().floatingIps().allocateIP("cloud");
+                if (freeIP == null) {
+                    freeIP = os.compute().floatingIps().allocateIP("cloud");
+                }
+
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    //TODO remove if openstack behaves again
+                }
+
+                ActionResponse ipresponse = os.compute().floatingIps().addFloatingIP(server, freeIP.getFloatingIpAddress());
+                if (!ipresponse.isSuccess()) {
+                    log.error("IP could not be retrieved:" + ipresponse.getFault());
+                }
+                uri = freeIP.getFloatingIpAddress();
             }
 
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                //TODO remove if openstack behaves again
-            }
-
-            ActionResponse ipresponse = os.compute().floatingIps().addFloatingIP(server, freeIP.getFloatingIpAddress());
-            if (!ipresponse.isSuccess()) {
-                log.error("IP could not be retrieved:" + ipresponse.getFault());
-            }
-            uri = freeIP.getFloatingIpAddress();
-        }
-
-        virtualMachine.setIpAddress(uri);
+            virtualMachine.setIpAddress(uri);
 //        dh.setBTUend(btuEnd);
 
 
-        log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
+            log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
 
-        waitUntilVmIsBooted(virtualMachine);
 
-        virtualMachine.setResourcepool("openstack");
-        virtualMachine.setInstanceId(server.getId());
-        virtualMachine.getVmType().setCores(flavor.getVcpus());
-        virtualMachine.getVmType().setRamPoints(flavor.getRam());
-        virtualMachine.setStarted(true);
-        virtualMachine.setLeased(true);
-        virtualMachine.setStartedAt(DateTime.now());
-        //size in GB
+            waitUntilVmIsBooted(virtualMachine);
 
-        virtualMachine.getVmType().setStorage(flavor.getDisk() * 1024 + 0F);
+
+            virtualMachine.setResourcepool("openstack");
+            virtualMachine.setInstanceId(server.getId());
+            virtualMachine.getVmType().setCores(flavor.getVcpus());
+            virtualMachine.getVmType().setRamPoints(flavor.getRam());
+            virtualMachine.setStarted(true);
+            virtualMachine.setLeased(true);
+            virtualMachine.setStartedAt(DateTime.now());
+            //size in GB
+
+            virtualMachine.getVmType().setStorage(flavor.getDisk() * 1024 + 0F);
 //        dh.setScheduledForShutdown(false);
-        DateTime btuEnd = new DateTime(DateTimeZone.UTC);
+            DateTime btuEnd = new DateTime(DateTimeZone.UTC);
 //        btuEnd = btuEnd.plusSeconds(BTU);
 
-        log.debug("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " established.");
+            log.debug("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " established.");
 
+
+        } catch (Exception e) {
+            log.error("Exception while booting VM", e);
+            throw new VmCouldNotBeStartedException(e);
+        }
 
         return virtualMachine;
     }

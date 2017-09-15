@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
@@ -13,12 +14,15 @@ import java.util.concurrent.TimeUnit;
  * Created by philippwaibel on 20/04/2017.
  */
 @Slf4j
-public class AbstractViePEPCloudService {
+public abstract class AbstractViePEPCloudService {
 
-    protected void waitUntilVmIsBooted(VirtualMachine virtualMachine) {
+
+    protected void waitUntilVmIsBooted(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
+        int counter = 0;
         Boolean connection = false;
-        while (!connection) {
+        do {
             try {
+                counter = counter + 1;
                 TimeUnit.SECONDS.sleep(1);
                 final DockerClient docker = DefaultDockerClient.builder().uri(URI.create("http://" + virtualMachine.getIpAddress() + ":2375")).connectTimeoutMillis(100000).build();
                 docker.ping();
@@ -26,7 +30,8 @@ public class AbstractViePEPCloudService {
             } catch (InterruptedException | DockerException e) {
                 log.debug("VM " + virtualMachine + " is not available yet.");
             }
-        }
+        } while(!connection && counter <= 5);
+        throw new VmCouldNotBeStartedException("VM " + virtualMachine + " is not available.");
     }
 
     public boolean checkAvailabilityOfDockerhost(VirtualMachine vm) {

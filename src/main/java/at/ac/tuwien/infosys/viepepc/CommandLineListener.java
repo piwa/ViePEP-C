@@ -58,7 +58,7 @@ public class CommandLineListener implements CommandLineRunner {
             }
             else {
                 while (running) {
-                    log.info("-----------Enter 'start' to begin or 'stop' to end -------------");
+                    log.info("----------- Enter 'start' to begin or 'stop' to end -------------");
                     input = scanner.nextLine();
                     while (!input.equalsIgnoreCase("start") && !input.equalsIgnoreCase("stop")) {
                         input = scanner.nextLine();

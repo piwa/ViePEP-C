@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.ViePEPCloudServiceImpl;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.Action;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
@@ -48,68 +49,71 @@ public class LeaseVMAndStartExecution {
     private boolean useDocker;
 
 
-//    @Async
     public void leaseVMAndStartExecutionOnVirtualMachine(VirtualMachine virtualMachine, List<ProcessStep> processSteps) {
+        try {
+            final StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
+            String address = startVM(virtualMachine);
 
-        final StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-        String address = startVM(virtualMachine);
-
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);
-        reportDaoService.save(report);
-
-        if (address == null) {
-            log.error("VM " + virtualMachine.getInstanceId() + " was not started, reset task");
-            for (ProcessStep processStep : processSteps) {
-                processStep.setStartDate(null);
-                processStep.setScheduled(false);
-                processStep.setScheduledAtVM(null);
-            }
-            return;
-        } else {
-            long time = stopWatch.getTotalTimeMillis();
-            stopWatch.stop();
-            virtualMachine.setStartupTime(time);
-            virtualMachine.setToBeTerminatedAt(new DateTime(virtualMachine.getStartedAt().getMillis() + virtualMachine.getVmType().getLeasingDuration()));
-
-            startExecutionsOnVirtualMachine(processSteps, virtualMachine);
-        }
-    }
-
-//    @Async
-    public void leaseVMAndStartExecutionOnContainer(VirtualMachine virtualMachine, Map<Container, List<ProcessStep>> containerProcessSteps) {
-        final StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-
-        log.info("Start VM: " + virtualMachine.toString());
-        StopWatch stopWatch2 = new StopWatch();
-        stopWatch2.start("deploy vm");
-        String address = startVM(virtualMachine);
-        stopWatch2.stop();
-        log.info("VM deploy duration: " + virtualMachine.toString() + ": " + stopWatch2.getTotalTimeMillis());
-
-        if (address == null) {
-            log.error("VM " + virtualMachine.getInstanceId() + " was not started, reset task");
-            for (Container container : containerProcessSteps.keySet()) {
-                for (ProcessStep processStep : containerProcessSteps.get(container)) {
+            if (address == null) {
+                log.error("VM " + virtualMachine.getInstanceId() + " was not started, reset task");
+                for (ProcessStep processStep : processSteps) {
                     processStep.setStartDate(null);
                     processStep.setScheduled(false);
                     processStep.setScheduledAtVM(null);
                 }
-                container.shutdownContainer();
-            }
-            return;
-        } else {
-//            long time = stopWatch.getTotalTimeMillis();
-            stopWatch.stop();
-            virtualMachine.setStartupTime(stopWatch2.getTotalTimeMillis());
-            if(virtualMachine.getStartedAt() == null) {
-                log.error("StartedAt is null");
-                virtualMachine.setStartedAt(DateTime.now());
-            }
-            virtualMachine.setToBeTerminatedAt(new DateTime(virtualMachine.getStartedAt().getMillis() + virtualMachine.getVmType().getLeasingDuration()));
-            startExecutionsOnContainer(containerProcessSteps, virtualMachine);
+                return;
+            } else {
+                long time = stopWatch.getTotalTimeMillis();
+                stopWatch.stop();
+                virtualMachine.setStartupTime(time);
+                virtualMachine.setToBeTerminatedAt(new DateTime(virtualMachine.getStartedAt().getMillis() + virtualMachine.getVmType().getLeasingDuration()));
 
+                startExecutionsOnVirtualMachine(processSteps, virtualMachine);
+            }
+        } catch (VmCouldNotBeStartedException e) {
+            // everything is already done
+        }
+    }
+
+    public void leaseVMAndStartExecutionOnContainer(VirtualMachine virtualMachine, Map<Container, List<ProcessStep>> containerProcessSteps) {
+
+        try {
+            final StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
+
+            log.info("Start VM: " + virtualMachine.toString());
+            StopWatch stopWatch2 = new StopWatch();
+            stopWatch2.start("deploy vm");
+            String address = startVM(virtualMachine);
+            stopWatch2.stop();
+            log.info("VM deploy duration: " + virtualMachine.toString() + ": " + stopWatch2.getTotalTimeMillis());
+
+            if (address == null) {
+                log.error("VM " + virtualMachine.getInstanceId() + " was not started, reset task");
+                for (Container container : containerProcessSteps.keySet()) {
+                    for (ProcessStep processStep : containerProcessSteps.get(container)) {
+                        processStep.setStartDate(null);
+                        processStep.setScheduled(false);
+                        processStep.setScheduledAtVM(null);
+                    }
+                    container.shutdownContainer();
+                }
+                return;
+            } else {
+//            long time = stopWatch.getTotalTimeMillis();
+                stopWatch.stop();
+                virtualMachine.setStartupTime(stopWatch2.getTotalTimeMillis());
+                if (virtualMachine.getStartedAt() == null) {
+                    log.error("StartedAt is null");
+                    virtualMachine.setStartedAt(DateTime.now());
+                }
+                virtualMachine.setToBeTerminatedAt(new DateTime(virtualMachine.getStartedAt().getMillis() + virtualMachine.getVmType().getLeasingDuration()));
+                startExecutionsOnContainer(containerProcessSteps, virtualMachine);
+
+            }
+        } catch (VmCouldNotBeStartedException e) {
+            // everything is already done
         }
     }
 
@@ -168,6 +172,10 @@ public class LeaseVMAndStartExecution {
             processStep.reset();
         }
 
+        reset(vm, failureReason);
+    }
+
+    private void reset(VirtualMachine vm, String failureReason) {
         VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
         reportDaoService.save(reportVM);
 
@@ -177,7 +185,7 @@ public class LeaseVMAndStartExecution {
         vm.terminate();
     }
 
-    private String startVM(VirtualMachine virtualMachine) {
+    private String startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
 
         Object waitObject = inMemoryCache.getVmDeployedWaitObject().get(virtualMachine);
         if(waitObject == null) {
@@ -186,12 +194,18 @@ public class LeaseVMAndStartExecution {
 
             try {
                 virtualMachine = viePEPCloudService.startVM(virtualMachine);
-            } catch (Exception e) {
-                log.error("EXCEPTION", e);
-                System.exit(1);                 // todo: don't do that
-            }
-            log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
+            } catch (VmCouldNotBeStartedException e) {
+                log.error("VM could not be started. Stop VM and reset.", e);
 
+                synchronized(waitObject) {
+                    waitObject.notifyAll();
+                }
+                inMemoryCache.getVmDeployedWaitObject().remove(virtualMachine);
+                reset(virtualMachine, "VM");
+                throw e;
+            }
+
+            log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
             VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachine.getStartedAt(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);
             reportDaoService.save(report);
 
@@ -207,6 +221,11 @@ public class LeaseVMAndStartExecution {
                 }
             } catch (InterruptedException e) {
                 log.error("Exception", e);
+            }
+            if(!virtualMachine.isStarted()) {
+                log.error("VM could not be started. Stop VM and reset.");
+                reset(virtualMachine, "VM");
+                throw new VmCouldNotBeStartedException("VM could not be started");
             }
         }
 
