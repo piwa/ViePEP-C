@@ -96,8 +96,8 @@ public class Watchdog {
 
                         inMemoryCache.getWaitingForExecutingProcessSteps().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
 
-                        processSteps.forEach(processStep -> resetContainerAndProcessStep(vm, processStep));
-                        resetVM(vm);
+                        processSteps.forEach(processStep -> resetContainerAndProcessStep(vm, processStep, "VM"));
+                        resetVM(vm, "VM");
 
                     }
                 }
@@ -111,8 +111,8 @@ public class Watchdog {
                     if (processStep.getStartDate() != null && processStep.getServiceType() != null && processStep.getScheduledAtContainer() != null && processStep.getScheduledAtContainer().getVirtualMachine() != null) {
                         long maxDuration = processStep.getServiceType().getServiceTypeResources().getMakeSpan() * 2;
                         if (processStep.getStartDate().plus(maxDuration).isBeforeNow()) {
-                            resetContainerAndProcessStep(processStep.getScheduledAtContainer().getVirtualMachine(), processStep);
-                            resetVM(processStep.getScheduledAtContainer().getVirtualMachine());
+                            resetContainerAndProcessStep(processStep.getScheduledAtContainer().getVirtualMachine(), processStep, "Service");
+                            resetVM(processStep.getScheduledAtContainer().getVirtualMachine(), "Service");
                         }
                     }
                 }
@@ -127,8 +127,8 @@ public class Watchdog {
 
     }
 
-    private void resetVM(VirtualMachine vm) {
-        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, "VM");
+    private void resetVM(VirtualMachine vm, String reason) {
+        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, reason);
         reportDaoService.save(reportVM);
 
         viePEPCloudServiceImpl.stopVirtualMachine(vm);
@@ -136,8 +136,8 @@ public class Watchdog {
         vm.terminate();
     }
 
-    private void resetContainerAndProcessStep(VirtualMachine vm, ProcessStep processStep) {
-        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED, "VM");
+    private void resetContainerAndProcessStep(VirtualMachine vm, ProcessStep processStep, String reason) {
+        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED, reason);
         reportDaoService.save(reportContainer);
 
         inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
