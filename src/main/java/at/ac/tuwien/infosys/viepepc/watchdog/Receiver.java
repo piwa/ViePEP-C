@@ -32,18 +32,24 @@ public class Receiver {
 
     @RabbitListener(queues = "${messagebus.queue.name}")
     public void receiveMessage(@Payload Message message) {
-        log.debug(message.toString());
-        if(message.getStatus().equals(ServiceExecutionStatus.DONE)) {
-            ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
-            if(processStep != null) {
-                finaliseSuccessfullExecution(processStep);
-                inMemoryCache.getProcessStepsWaitingForServiceDone().remove(message.getProcessStepName());
+        try {
+
+
+            log.debug(message.toString());
+            if (message.getStatus().equals(ServiceExecutionStatus.DONE)) {
+                ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
+                if (processStep != null) {
+                    finaliseSuccessfullExecution(processStep);
+                    inMemoryCache.getProcessStepsWaitingForServiceDone().remove(message.getProcessStepName());
+                }
             }
+        } catch (Exception ex) {
+            log.error("Exception in receive message method", ex);
         }
     }
 
 
-    private void finaliseSuccessfullExecution(ProcessStep processStep) {
+    private void finaliseSuccessfullExecution(ProcessStep processStep) throws Exception {
         DateTime finishedAt = new DateTime();
         processStep.setFinishedAt(finishedAt);
 
