@@ -14,6 +14,9 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Created by philippwaibel on 21/04/2017.
  */
@@ -84,12 +87,24 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
 
     }
 
+    @Value("${container.simulation.deploy.duration.average}")
+    private int durationAverage;
+    @Value("${container.simulation.deploy.duration.stddev}")
+    private int durationStdDev;
+
     @Override
     public Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
 
         if (simulate) {
 
-            Thread.sleep(container.getContainerImage().getDeployTime());
+            int minDuration = durationAverage - durationStdDev;
+            int maxDuration = durationAverage + durationStdDev;
+            if(minDuration < 0) {
+                minDuration = 0;
+            }
+            Random rand = new Random();
+            int sleepTime = rand.ints(minDuration, maxDuration).findAny().getAsInt();
+            TimeUnit.MILLISECONDS.sleep(sleepTime);
 
             container = viePEPDockerSimulationService.startContainer(virtualMachine, container);
 

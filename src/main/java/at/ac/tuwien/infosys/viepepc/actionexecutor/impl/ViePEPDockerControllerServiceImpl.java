@@ -90,6 +90,7 @@ public class ViePEPDockerControllerServiceImpl {
         /* Save docker container information on repository */
 
         virtualMachine.getDeployedContainers().add(container);
+        virtualMachine.setHasImage(true);
         container.setContainerID(id);
         container.setVirtualMachine(virtualMachine);
         container.setExternPort(hostPort);

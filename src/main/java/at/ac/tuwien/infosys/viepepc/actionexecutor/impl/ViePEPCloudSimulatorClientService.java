@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -35,12 +36,24 @@ public class ViePEPCloudSimulatorClientService extends AbstractViePEPCloudServic
     @Value("${use.container}")
     private boolean useDocker;
 
+    @Value("${vm.simulation.deploy.duration.average}")
+    private int durationAverage;
+    @Value("${vm.simulation.deploy.duration.stddev}")
+    private int durationStdDev;
+
     public VirtualMachine startVM(VirtualMachine virtualMachine) {
 
 
         try {
 
-            TimeUnit.MILLISECONDS.sleep(virtualMachine.getVmType().getDeployTime());
+            int minDuration = durationAverage - durationStdDev;
+            int maxDuration = durationAverage + durationStdDev;
+            if(minDuration < 0) {
+                minDuration = 0;
+            }
+            Random rand = new Random();
+            int sleepTime = rand.ints(minDuration, maxDuration).findAny().getAsInt();
+            TimeUnit.MILLISECONDS.sleep(sleepTime);
 
         } catch (InterruptedException e) {
             log.error("EXCEPTION", e);

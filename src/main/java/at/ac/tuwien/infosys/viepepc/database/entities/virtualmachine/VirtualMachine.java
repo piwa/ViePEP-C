@@ -64,7 +64,7 @@ public class VirtualMachine implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="virtualMachine")
     private Set<Container> deployedContainers = new HashSet<>();
-
+    private boolean hasImage = false;
 
 
     public VirtualMachine(String name, Integer numberCores, ServiceType serviceType, String location) {
@@ -149,6 +149,7 @@ public class VirtualMachine implements Serializable {
         this.setGoogleName(null);
         this.setTerminating(false);
         this.setIpAddress(null);
+        this.setHasImage(false);
     }
 
     public String getGoogleName() {
