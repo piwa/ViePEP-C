@@ -87,25 +87,28 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
 
     }
 
-    @Value("${container.simulation.deploy.duration.average}")
-    private int durationAverage;
-    @Value("${container.simulation.deploy.duration.stddev}")
-    private int durationStdDev;
+    @Value("${container.imageNotAvailable.simulation.deploy.duration.average}")
+    private int imageNotAvailableAverage;
+    @Value("${container.imageNotAvailable.simulation.deploy.duration.stddev}")
+    private int imageNotAvailableStdDev;
+    @Value("${container.imageAvailable.simulation.deploy.duration.average}")
+    private int imageAvailableAverage;
+    @Value("${container.imageAvailable.simulation.deploy.duration.stddev}")
+    private int imageAvailableStdDev;
 
     @Override
     public Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
 
         if (simulate) {
 
-            int minDuration = durationAverage - durationStdDev;
-            int maxDuration = durationAverage + durationStdDev;
-            if(minDuration < 0) {
-                minDuration = 0;
-            }
-            Random rand = new Random();
-            int sleepTime = rand.ints(minDuration, maxDuration).findAny().getAsInt();
-            TimeUnit.MILLISECONDS.sleep(sleepTime);
 
+
+            if(!virtualMachine.isHasImage()) {
+                TimeUnit.MILLISECONDS.sleep(getSleepTime(imageNotAvailableAverage, imageNotAvailableStdDev));
+            }
+            else {
+                TimeUnit.MILLISECONDS.sleep(getSleepTime(imageAvailableAverage, imageAvailableStdDev));
+            }
             container = viePEPDockerSimulationService.startContainer(virtualMachine, container);
 
         } else {
@@ -116,6 +119,16 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         container.setStartedAt(new DateTime());
 
         return container;
+    }
+
+    private int getSleepTime(int average, int stdDev) {
+        int minDuration = average - stdDev;
+        int maxDuration = average + stdDev;
+        if (minDuration < 0) {
+            minDuration = 0;
+        }
+        Random rand = new Random();
+        return rand.ints(minDuration, maxDuration).findAny().getAsInt();
     }
 
     @Override
