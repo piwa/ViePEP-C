@@ -27,9 +27,13 @@ public class ViePEPDockerControllerServiceImpl {
 
     @Value("${viepep.node.port.available}")
     private String encodedHostNodeAvailablePorts;
+    @Value("${spring.rabbitmq.host}")
+    private String rabbitMQHost;
 
     @Autowired
     private ViePEPCloudService viePEPCloudService;
+    @Autowired
+    private DockerPullHelper dockerPullHelper;
 
     public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
         /* Connect to docker server of the host */
@@ -37,13 +41,14 @@ public class ViePEPDockerControllerServiceImpl {
 
         String containerImage = container.getContainerImage().getRepoName() + "/" + container.getContainerImage().getImageName();
 
-        boolean result = checkDockerHostAvailability(virtualMachine);
+        boolean result = checkAvailabilityOfDockerhostWithRetry(virtualMachine);
 
         if(result == false) {
             return null;
         }
 
-        docker.pull(containerImage);
+        dockerPullHelper.pullContainer(docker, containerImage);
+//        docker.pull(containerImage);
 
         String internalPort = String.valueOf(container.getContainerImage().getServiceType().getServiceTypeResources().getInternPort());
 
@@ -74,8 +79,7 @@ public class ViePEPDockerControllerServiceImpl {
                 .hostConfig(hostConfig)
                 .image(containerImage)
                 .exposedPorts(internalPort)
-//                .cmd("sh", "-c", "java -jar vispProcessingNode-0.0.1.jar -Djava.security.egd=file:/dev/./urandom")
-//                .env(environmentVariables)
+                .env("spring.rabbitmq.host=" + rabbitMQHost)
                 .build();
 
         /* Start docker container */
@@ -86,10 +90,9 @@ public class ViePEPDockerControllerServiceImpl {
         /* Save docker container information on repository */
 
         virtualMachine.getDeployedContainers().add(container);
+        virtualMachine.setHasImage(true);
         container.setContainerID(id);
         container.setVirtualMachine(virtualMachine);
-        container.setRunning(true);
-        container.setStartedAt(new DateTime());
         container.setExternPort(hostPort);
 
 
@@ -122,14 +125,14 @@ public class ViePEPDockerControllerServiceImpl {
         return container;
     }
 
-    private boolean checkDockerHostAvailability(VirtualMachine virtualMachine) {
+    private boolean checkAvailabilityOfDockerhostWithRetry(VirtualMachine virtualMachine) {
 
-        for(int i = 0; i < 50; i++) {
+        for(int i = 0; i < 30; i++) {
             if(viePEPCloudService.checkAvailabilityOfDockerhost(virtualMachine)) {
                 return true;
             }
             try {
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
                 log.error("Exception", e);
             }

@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
@@ -41,6 +42,7 @@ public class VirtualMachine implements Serializable {
     private ServiceType serviceType;
 
     private String name;
+    private String googleName;
     private String instanceId;
     private String location;
     private boolean leased = false;
@@ -52,6 +54,7 @@ public class VirtualMachine implements Serializable {
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime toBeTerminatedAt;
     private String resourcepool;
+    private boolean terminating = false;
 
     @ManyToOne(cascade = CascadeType.ALL)
     private VMType vmType;
@@ -61,7 +64,7 @@ public class VirtualMachine implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="virtualMachine")
     private Set<Container> deployedContainers = new HashSet<>();
-
+    private boolean hasImage = false;
 
 
     public VirtualMachine(String name, Integer numberCores, ServiceType serviceType, String location) {
@@ -97,14 +100,6 @@ public class VirtualMachine implements Serializable {
         return deployedContainers.contains(container);
     }
 
-//    @Override
-//    public int hashCode() {
-//    	if(id == null){
-//    		return 0;
-//    	}
-//        return Math.toIntExact(id);
-//    }
-
 
     @Override
     public boolean equals(Object obj) {
@@ -136,6 +131,7 @@ public class VirtualMachine implements Serializable {
                 ", startedAt=" + startString +
                 ", terminateAt=" + toBeTerminatedAtString +
                 ", location=" + location +
+                ", googleName=" + getGoogleName() +
                 ", ip adress=" + ipAddress +
                 '}';
     }
@@ -150,6 +146,17 @@ public class VirtualMachine implements Serializable {
         this.setStartedAt(null);
         this.setToBeTerminatedAt(null);
         this.serviceType = null;
+        this.setGoogleName(null);
+        this.setTerminating(false);
+        this.setIpAddress(null);
+        this.setHasImage(false);
+    }
+
+    public String getGoogleName() {
+        if(Strings.isNullOrEmpty(googleName)) {
+            googleName = "eval-" + this.getName().replace('_', '-') + "-" + UUID.randomUUID().toString().substring(0,6);
+        }
+        return googleName;
     }
 
     public void undeployContainer(Container container) {

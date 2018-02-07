@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by philippwaibel on 10/06/16.
@@ -23,14 +24,7 @@ public class CacheWorkflowService {
     public List<WorkflowElement> getRunningWorkflowInstances() {
         synchronized (inMemoryCache.getRunningWorkflows()) {
             List<WorkflowElement> workflows = Collections.synchronizedList(inMemoryCache.getRunningWorkflows());
-            List<WorkflowElement> returnList = new ArrayList<>();
-            Iterator<WorkflowElement> iterator = workflows.iterator();
-            while (iterator.hasNext()) {
-                WorkflowElement workflow = iterator.next(); // TODO rerun if: java.util.ConcurrentModificationException: null
-                if (workflow.getFinishedAt() == null) {
-                    returnList.add(workflow);
-                }
-            }
+            List<WorkflowElement> returnList = workflows.stream().filter(workflow -> workflow.getFinishedAt() == null).collect(Collectors.toList());
 
             return returnList;
         }
@@ -60,15 +54,8 @@ public class CacheWorkflowService {
     public WorkflowElement getWorkflowById(String workflowInstanceId) {
         synchronized (inMemoryCache.getRunningWorkflows()) {
 	        List<WorkflowElement> nextWorkflows = inMemoryCache.getRunningWorkflows();
-	        Iterator<WorkflowElement> iterator = nextWorkflows.iterator();
-	
-	        while(iterator.hasNext()) {
-	            WorkflowElement nextWorkflow = iterator.next();
-	            if (nextWorkflow.getName().equals(workflowInstanceId)) {
-	                return nextWorkflow;
-	            }
-	        }
-	        return null;
+
+            return nextWorkflows.stream().filter(nextWorkflow -> nextWorkflow.getName().equals(workflowInstanceId)).findFirst().orElse(null);
         }
     }
 }

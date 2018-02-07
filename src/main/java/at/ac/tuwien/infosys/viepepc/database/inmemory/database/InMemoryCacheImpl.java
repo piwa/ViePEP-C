@@ -24,6 +24,8 @@ public class InMemoryCacheImpl {
     private Set<ProcessStep> waitingForExecutingProcessSteps = new HashSet<>();
     private ConcurrentMap<VirtualMachine, Object> vmDeployedWaitObject = new ConcurrentHashMap<>();
 
+    private ConcurrentMap<String, ProcessStep> processStepsWaitingForServiceDone = new ConcurrentHashMap<>();
+
     public void clear() {
         runningWorkflows = new ArrayList<>();
         allWorkflowInstances = new ArrayList<>();
@@ -31,6 +33,7 @@ public class InMemoryCacheImpl {
         containerConfigurations = new ArrayList<>();
         waitingForExecutingProcessSteps = new HashSet<>();
         vmDeployedWaitObject = new ConcurrentHashMap<>();
+        processStepsWaitingForServiceDone = new ConcurrentHashMap();
     }
 
     public void addRunningWorkflow(WorkflowElement workflowElement) {

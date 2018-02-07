@@ -21,5 +21,5 @@ slack.properties
 *.log
 log
 target
-src/main/resources/cloud-config/*.json
+src/main/resources/cloud-config/*.json 
 src/test/resources/cloud-config/*.json

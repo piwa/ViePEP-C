@@ -1,33 +1,33 @@
-#these are just example values, create a copy of these and rename the file to viepep2.0.properties or change the
-#environment variable in viepep2.0.env
-#openstack authentication url
-openstack_auth_url=http://example-uri.com
 
-#openstack authentication user name
-openstack_username=username
+openstack.auth.url=
+openstack.username=
+openstack.password=
+openstack.server.ip=
+openstack.tenant.name=
+openstack.tenant.id=
+openstack.default.image.id=
+openstack.default.image.flavor=
+openstack.use.public.ip=
+openstack.keypair.name=
 
-#openstack authentication password
-openstack_password=password
-
-#local server IP
-server_ip=localhost
-
-#openstack tenant name
-OS_TENANT_NAME=ViePEP
-
-#openstack tenant identifier
-OS_TENANT_ID=123xxxxxx
-
-#default image identifier
-IMAGE_ID=123-abc-xxxxxx
-
-#default flavor type
-FLAVOR=flavor
 
 #AWS credentials
-AWS_ACCESS_KEY_ID=accesskeyid
-AWS_ACCESS_KEY=accesssecret
-AWS_DEFAULT_IMAGE=123-abc-xxxxxx
-AWS_DEFAULT_FLAVOR=t1.micro
-AWS_DEFAULT_REGION=us-west-2
-WAS_DEFAULT_SECURITYGROUP=viepep
+aws.access.key.id=
+aws.access.key=
+aws.default.image.id=
+aws.default.image.flavor=
+aws.default.region=
+aws.default.securitygroup=
+aws.keypair.name=
+
+
+# Google Cloud
+gcloud.default.project.id=
+gcloud.default.region=
+gcloud.default.image.prefix=
+gcloud.default.image.path=
+gcloud.credentials=
+gcloud.use.public.ip=
+
+
+viepep.node.port.available=

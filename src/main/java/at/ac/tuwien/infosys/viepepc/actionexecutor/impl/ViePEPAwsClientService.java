@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.AbstractViePEPCloudService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -55,53 +55,60 @@ public class ViePEPAwsClientService extends AbstractViePEPCloudService {
     }
 
 
-    public VirtualMachine startVM(VirtualMachine virtualMachine) {
+    public VirtualMachine startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
 
-        setup();
-
-        if (virtualMachine == null) {
-            virtualMachine = new VirtualMachine();
-            virtualMachine.getVmType().setFlavor("m1.large");
-        }
-
-        String cloudInit = "";
         try {
-            cloudInit = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("docker-config/cloud-init"), "UTF-8");
-        } catch (IOException e) {
-            log.error("Could not load cloud init file");
+
+            setup();
+
+            if (virtualMachine == null) {
+                virtualMachine = new VirtualMachine();
+                virtualMachine.getVmType().setFlavor("m1.large");
+            }
+
+            String cloudInit = "";
+            try {
+                cloudInit = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("docker-config/cloud-init"), "UTF-8");
+            } catch (IOException e) {
+                log.error("Could not load cloud init file");
+            }
+
+            RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
+
+            runInstancesRequest.withImageId(awsDefaultImageId)
+                    .withInstanceType(virtualMachine.getVmType().getFlavor())
+                    .withMinCount(1)
+                    .withMaxCount(1)
+                    .withUserData(Base64.encodeAsString(cloudInit))
+                    .withKeyName(awsKeypairName)
+                    .withSecurityGroups(awsDefaultSecuritygroup);
+
+            RunInstancesResult run_response = amazonEC2Client.runInstances(runInstancesRequest);
+
+            String instanceId = run_response.getReservation().getInstances().get(0).getInstanceId();
+
+            Instance instance = getAwsInstance(instanceId);
+
+            virtualMachine.setResourcepool("aws");
+            virtualMachine.setInstanceId(instance.getInstanceId());
+            virtualMachine.setIpAddress(instance.getPublicIpAddress());
+            virtualMachine.setStarted(true);
+            virtualMachine.setLeased(true);
+            virtualMachine.setStartedAt(DateTime.now());
+            //size in GB
+
+            log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + instance.getPublicIpAddress() + " was started. Waiting for connection...");
+
+
+            waitUntilVmIsBooted(virtualMachine);
+
+
+            log.info("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + instance.getPublicIpAddress() + " established.");
+
+        } catch (Exception e) {
+            log.error("Exception while booting VM", e);
+            throw new VmCouldNotBeStartedException(e);
         }
-
-        RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
-
-        runInstancesRequest.withImageId(awsDefaultImageId)
-                .withInstanceType(virtualMachine.getVmType().getFlavor())
-                .withMinCount(1)
-                .withMaxCount(1)
-                .withUserData(Base64.encodeAsString(cloudInit))
-                .withKeyName(awsKeypairName)
-                .withSecurityGroups(awsDefaultSecuritygroup);
-
-        RunInstancesResult run_response = amazonEC2Client.runInstances(runInstancesRequest);
-
-        String instanceId = run_response.getReservation().getInstances().get(0).getInstanceId();
-
-        Instance instance = getAwsInstance(instanceId);
-
-        virtualMachine.setResourcepool("aws");
-        virtualMachine.setInstanceId(instance.getInstanceId());
-        virtualMachine.setIpAddress(instance.getPublicIpAddress());
-        virtualMachine.setStarted(true);
-        virtualMachine.setLeased(true);
-        virtualMachine.setStartedAt(DateTime.now());
-        //size in GB
-
-        log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + instance.getPublicIpAddress() + " was started. Waiting for connection...");
-
-
-        waitUntilVmIsBooted(virtualMachine);
-
-        log.info("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + instance.getPublicIpAddress() + " established.");
-
 
         return virtualMachine;
     }

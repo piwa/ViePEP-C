@@ -14,9 +14,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.TimeUnit;
 
@@ -29,27 +31,27 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ServiceInvokerHttpClient {
 
-    private CloseableHttpClient httpclient = null;
-
-    public ServiceInvokerHttpClient() {
-        int timeout = 180;
-        RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(timeout * 1000)
-                .setConnectionRequestTimeout(timeout * 1000)
-                .setSocketTimeout(timeout * 1000).build();
-        httpclient = HttpClientBuilder.create().setDefaultRequestConfig(config).disableAutomaticRetries().build();
-    }
-
     @Retryable(value = Exception.class, maxAttempts = 20, backoff=@Backoff(delay=1000, maxDelay=3000))
-    public HttpResponse retryHttpGet(HttpGet httpGet, Stopwatch stopWatch) throws Exception {
+    public HttpStatus retryHttpGet(String url, Stopwatch stopWatch) throws Exception {
+
         if(stopWatch.isRunning()) {
             stopWatch.reset();
         }
-        log.info("Send " + httpGet.toString());
+        log.info("Send " + url);
         stopWatch.start();
-        HttpResponse response = httpclient.execute(httpGet);
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_HTML);
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
         stopWatch.stop();
-        return response;
+
+        if(!responseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new Exception("Exception while sending GET: " + url + "; Status Code: " + responseEntity.getStatusCodeValue());
+        }
+
+        return responseEntity.getStatusCode();
     }
 
 }

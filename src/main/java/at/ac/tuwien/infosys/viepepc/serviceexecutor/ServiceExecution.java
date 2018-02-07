@@ -4,22 +4,16 @@ package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
-import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
-import at.ac.tuwien.infosys.viepepc.reasoner.Reasoning;
-import at.ac.tuwien.infosys.viepepc.serviceexecutor.dto.InvocationResultDTO;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import at.ac.tuwien.infosys.viepepc.watchdog.Message;
+import at.ac.tuwien.infosys.viepepc.watchdog.ServiceExecutionStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * Created by philippwaibel on 18/05/16.
@@ -32,20 +26,17 @@ public class ServiceExecution{
     @Autowired
     private ServiceInvoker serviceInvoker;
     @Autowired
-    private PlacementHelper placementHelper;
-    @Autowired
-    private CacheWorkflowService cacheWorkflowService;
-    @Autowired
-    @Lazy
-    private Reasoning reasoning;
+    private InMemoryCacheImpl inMemoryCache;
 
     @Value("${simulate}")
     private boolean simulate;
 
 //    @Async
-    public void startExecution(ProcessStep processStep, VirtualMachine virtualMachine) {
+    public void startExecution(ProcessStep processStep, VirtualMachine virtualMachine) throws ServiceInvokeException {
         processStep.setStartDate(DateTime.now());
         log.info("Task-Start: " + processStep);
+
+        inMemoryCache.getProcessStepsWaitingForServiceDone().put(processStep.getName(), processStep);
 
         if (simulate) {
             try {
@@ -54,57 +45,38 @@ public class ServiceExecution{
                 log.error("EXCEPTION", e);
             }
         } else {
-            InvocationResultDTO invoke = serviceInvoker.invoke(virtualMachine, processStep);
+            serviceInvoker.invoke(virtualMachine, processStep);
         }
-
-        finaliseExecution(processStep);
     }
 
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    @Value("${messagebus.queue.name}")
+    private String queueName;
+
 //    @Async
-	public void startExecution(ProcessStep processStep, Container container) {
+	public void startExecution(ProcessStep processStep, Container container) throws ServiceInvokeException {
         processStep.setStartDate(DateTime.now());
 		log.info("Task-Start: " + processStep);
+
+        inMemoryCache.getProcessStepsWaitingForServiceDone().put(processStep.getName(), processStep);
 
         if (simulate) {
             try {
                 Thread.sleep(processStep.getExecutionTime());
+                Message message = new Message();
+                message.setBody("Done");
+                message.setProcessStepName(processStep.getName());
+                message.setStatus(ServiceExecutionStatus.DONE);
+
+                rabbitTemplate.convertAndSend(queueName, message);
+
             } catch (InterruptedException e) {
             }
         } else {
-            InvocationResultDTO invoke = serviceInvoker.invoke(container, processStep);
-        }
-        
-        finaliseExecution(processStep);
-        	
-	}
-	
-	private void finaliseExecution(ProcessStep processStep) {
-        DateTime finishedAt = new DateTime();
-        processStep.setFinishedAt(finishedAt);
-
-		log.info("Task-Done: " + processStep);
-
-        if(processStep.getScheduledAtContainer() != null) {
-            placementHelper.stopContainer(processStep.getScheduledAtContainer());
+            serviceInvoker.invoke(container, processStep);
         }
 
-        if (processStep.isLastElement()) {
-
-            List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
-            List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
-            if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
-                WorkflowElement workflowById = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
-                try {
-                    workflowById.setFinishedAt(finishedAt);
-                } catch (Exception e) {
-                }
-
-                cacheWorkflowService.deleteRunningWorkflowInstance(workflowById);
-                log.info("Workflow done. Workflow: " + workflowById);
-            }
-        }
-        reasoning.setNextOptimizeTimeNow();
-        
 	}
 
 }

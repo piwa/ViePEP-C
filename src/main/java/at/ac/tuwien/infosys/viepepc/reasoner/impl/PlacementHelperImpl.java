@@ -137,14 +137,13 @@ public class PlacementHelperImpl implements PlacementHelper {
 
     @Override
     public List<ProcessStep> getRunningProcessSteps(String workflowInstanceId) {
-        List<WorkflowElement> workflowInstances = cacheWorkflowService.getRunningWorkflowInstances();
-        for (Element workflowInstance : workflowInstances) {
-            if (workflowInstance.getName().equals(workflowInstanceId)) {
-                List<Element> workflowElement = new ArrayList<>();
-                workflowElement.add(workflowInstance);
-                return getRunningProcessSteps(workflowElement);
-            }
+        WorkflowElement workflowInstance = cacheWorkflowService.getWorkflowById(workflowInstanceId);
+        if (workflowInstance != null) {
+            List<Element> workflowElement = new ArrayList<>();
+            workflowElement.add(workflowInstance);
+            return getRunningProcessSteps(workflowElement);
         }
+
         return new ArrayList<>();
 	}
 
@@ -233,7 +232,7 @@ public class PlacementHelperImpl implements PlacementHelper {
         List<ProcessStep> steps = new ArrayList<>();
         for (Element element : elements) {
             if (element instanceof ProcessStep) {
-                if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartedAt() != null)&& ((ProcessStep) element).getFinishedAt() == null) {
+                if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartedAt() != null) && ((ProcessStep) element).getFinishedAt() == null) {
                 	if (!steps.contains(element)) {
                         steps.add((ProcessStep) element);
                     }
@@ -255,6 +254,12 @@ public class PlacementHelperImpl implements PlacementHelper {
     
     public void terminateVM(VirtualMachine virtualMachine, DateTime date) {
         log.info("Terminate: " + virtualMachine);
+
+        virtualMachine.setTerminating(true);
+
+        if(virtualMachine.getDeployedContainers().size() > 0) {
+            virtualMachine.getDeployedContainers().forEach(container -> stopContainer(container));
+        }
 
         viePEPCloudService.stopVirtualMachine(virtualMachine);
 

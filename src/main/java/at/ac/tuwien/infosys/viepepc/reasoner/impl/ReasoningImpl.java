@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.Watchdog;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
@@ -18,6 +19,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -51,6 +53,9 @@ public class ReasoningImpl implements Reasoning {
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
 
+    @Value("${reasoner.autoTerminate.wait.time}")
+    private int autoTerminateWait;
+
     private DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
     private boolean run = true;
@@ -60,7 +65,9 @@ public class ReasoningImpl implements Reasoning {
 
     private static final long POLL_INTERVAL_MILLISECONDS = 1000;
     private static final long TERMINATE_CHECK_INTERVAL_MILLISECONDS = 10000;
-	public static final long MIN_TAU_T_DIFFERENCE_MS = 10 * 1000;
+
+    @Value("${min.optimization.interval.ms}")
+    private int minTauTDifference;
 	private static final long RETRY_TIMEOUT_MILLIS = 10 * 1000;
 
 
@@ -92,7 +99,7 @@ public class ReasoningImpl implements Reasoning {
                         else {
                             emptyTime = null;
                         }
-                        if (emptyTime != null && ((new Date()).getTime() - emptyTime.getTime()) >= (60 * 1000 * 1)) {
+                        if (emptyTime != null && ((new Date()).getTime() - emptyTime.getTime()) >= (60 * 1000 * autoTerminateWait)) {
                         	if (autoTerminate) {
                         		run = false;
                         	}
@@ -195,10 +202,10 @@ public class ReasoningImpl implements Reasoning {
         
         long difference = tau_t_1 - new DateTime().getMillis();
         if (difference < 0 || difference > 60*60*1000) {
-            difference = MIN_TAU_T_DIFFERENCE_MS;
+            difference = minTauTDifference;
         }
         log.info("------------------------- sleep for: " + difference / 1000 + " seconds --------------------------");
-        log.info("------------- next iteration: " + DateTime.now().plus(tau_t_1) + " --------------");
+        log.info("------------- next iteration: " + DateTime.now().plus(difference) + " --------------");
         
         
         return difference;
@@ -206,19 +213,25 @@ public class ReasoningImpl implements Reasoning {
 
 
     private void terminateVms(DateTime tau_t_0) {
-        for(VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
-            long timeUntilTermination = placementHelper.getRemainingLeasingDuration(tau_t_0, vm);
-            if(timeUntilTermination < MIN_TAU_T_DIFFERENCE_MS) {
-                boolean containerWaitingForVm = inMemoryCache.getWaitingForExecutingProcessSteps().stream().anyMatch(processStep -> processStep.getScheduledAtContainer().getVirtualMachine() == vm);
-                if(vm.getDeployedContainers().size() > 0 || containerWaitingForVm) {
-                    log.info("Extend leasing of VM: " + vm.toString());
-                    vm.setToBeTerminatedAt(new DateTime(vm.getToBeTerminatedAt().getMillis() + vm.getVmType().getLeasingDuration()));
-                }
-                else {
-                    if(containerWaitingForVm) {
-                        log.debug("VM will be terminated but container waiting for starting");
+        synchronized (Watchdog.SYNC_OBJECT) {
+            for (VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
+                long timeUntilTermination = placementHelper.getRemainingLeasingDuration(tau_t_0, vm);
+                if (timeUntilTermination < minTauTDifference) {
+                    try {
+                        boolean containerWaitingForVm = inMemoryCache.getWaitingForExecutingProcessSteps().stream().anyMatch(processStep -> processStep.getScheduledAtContainer().getVirtualMachine() == vm);
+                        if (vm.getDeployedContainers().size() > 0 || containerWaitingForVm) {
+                            log.info("Extend leasing of VM: " + vm.toString());
+                            vm.setToBeTerminatedAt(new DateTime(vm.getToBeTerminatedAt().getMillis() + vm.getVmType().getLeasingDuration()));
+                        } else {
+                            if (containerWaitingForVm) {
+                                log.info("VM will be terminated but container waiting for starting");
+                            }
+                            log.info("terminateVms method terminate vm: " + vm);
+                            placementHelper.terminateVM(vm);
+                        }
+                    } catch (NullPointerException ex) {
+                        log.error("Exception", ex);
                     }
-                    placementHelper.terminateVM(vm);
                 }
             }
         }

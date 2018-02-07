@@ -58,4 +58,15 @@ public class ServiceType {
         serviceType1.name = serviceType;
         return serviceType1;
     }
+
+    @Override
+    public String toString() {
+        return "ServiceType{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", onlyInternal=" + onlyInternal +
+//                ", serviceTypeResources=" + serviceTypeResources +
+//                ", monitoredServiceTypeResources=" + monitoredServiceTypeResources +
+                '}';
+    }
 }
