@@ -49,7 +49,7 @@ public class ViePEPDockerSimulationServiceImpl {
         String hostPort = "2000";
 
         virtualMachine.getDeployedContainers().add(container);
-        virtualMachine.setHasImage(true);
+        virtualMachine.getAvailableContainerImages().add(container.getContainerImage());
         container.setContainerID(id);
         container.setVirtualMachine(virtualMachine);
         container.setRunning(true);

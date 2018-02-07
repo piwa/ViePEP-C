@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
@@ -64,7 +65,9 @@ public class VirtualMachine implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="virtualMachine")
     private Set<Container> deployedContainers = new HashSet<>();
-    private boolean hasImage = false;
+
+    @OneToMany
+    private Set<ContainerImage> availableContainerImages = new HashSet<>();
 
 
     public VirtualMachine(String name, Integer numberCores, ServiceType serviceType, String location) {
@@ -149,7 +152,7 @@ public class VirtualMachine implements Serializable {
         this.setGoogleName(null);
         this.setTerminating(false);
         this.setIpAddress(null);
-        this.setHasImage(false);
+        this.availableContainerImages = new HashSet<>();
     }
 
     public String getGoogleName() {

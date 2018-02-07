@@ -97,6 +97,18 @@
 			<version>0.21.1-alpha</version>
 		</dependency>
 
+		<!-- Jenetics -->
+		<dependency>
+			<groupId>io.jenetics</groupId>
+			<artifactId>jenetics</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jenetics</groupId>
+			<artifactId>prngine</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+
 		<!-- 3d Party -->
 		<dependency>
 			<groupId>mysql</groupId>

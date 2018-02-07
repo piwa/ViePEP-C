@@ -103,7 +103,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
 
 
 
-            if(!virtualMachine.isHasImage()) {
+            if(!virtualMachine.getAvailableContainerImages().contains(container.getContainerImage())) {
                 TimeUnit.MILLISECONDS.sleep(getSleepTime(imageNotAvailableAverage, imageNotAvailableStdDev));
             }
             else {
