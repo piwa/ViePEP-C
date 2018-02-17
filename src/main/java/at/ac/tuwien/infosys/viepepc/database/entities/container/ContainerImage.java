@@ -38,6 +38,9 @@ public class ContainerImage {
     private ServiceType serviceType;
 	@XmlElement
 	private long deployTime;
+	@XmlElement
+	private long startupTime;
+
 
 	public ContainerImage() {
 	}

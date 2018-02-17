@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
@@ -7,7 +8,6 @@ import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
-import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.AbstractProvisioningImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
@@ -17,21 +17,19 @@ import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionStatistics;
 import io.jenetics.engine.Limits;
 import io.jenetics.util.Factory;
-import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
-import jersey.repackaged.com.google.common.base.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.function.Function;
 
 import static io.jenetics.engine.EvolutionResult.toBestPhenotype;
 
 @Slf4j
-public class PIPPImpl extends AbstractContainerProvisioningImpl implements ProcessInstancePlacementProblem {
+public class PIPPImpl extends AbstractHeuristicImpl implements ProcessInstancePlacementProblem {
 
     @Autowired
     private CacheVirtualMachineService cacheVirtualMachineService;
@@ -46,6 +44,7 @@ public class PIPPImpl extends AbstractContainerProvisioningImpl implements Proce
     @Override
     public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
 
+        DateTime now = DateTime.now();
         List<WorkflowElement> workflowElements = getRunningWorkflowInstancesSorted();
         processSteps = getNextProcessStepsSorted(workflowElements);
         processSteps.addAll(getAllRunningSteps(workflowElements));
@@ -56,7 +55,7 @@ public class PIPPImpl extends AbstractContainerProvisioningImpl implements Proce
 
         Factory<Genotype<AnyGene<VirtualMachine>>> genotype = Genotype.of(AnyChromosome.of(this::getRandomVirtualMachine, processSteps.size()));
 
-        Function<Genotype<AnyGene<VirtualMachine>>, Double> fitnessFunction = new PIPPFitnessFunction(processSteps);
+        Function<Genotype<AnyGene<VirtualMachine>>, Double> fitnessFunction = new PIPPFitnessFunction(processSteps, now);
 
 
         Engine<AnyGene<VirtualMachine>, Double> engine = Engine.builder(fitnessFunction, genotype)
@@ -92,7 +91,12 @@ public class PIPPImpl extends AbstractContainerProvisioningImpl implements Proce
             List<ProcessStep> processSteps = entry.getValue();
 
 
-            if (!checkResourceAvailability(vm, processSteps)) {
+            try {
+                if (!checkResourceAvailability(vm, processSteps)) {
+                    return false;
+                }
+            } catch (ContainerConfigurationNotFoundException e) {
+                log.error("Container Configuration not found");
                 return false;
             }
         }
@@ -100,40 +104,19 @@ public class PIPPImpl extends AbstractContainerProvisioningImpl implements Proce
         return true;
     }
 
-    private Map<VirtualMachine, List<ProcessStep>> createVirtualMachineListMap(Chromosome<AnyGene<VirtualMachine>> chromosome) {
-        Map<VirtualMachine, List<ProcessStep>> vmToProcessMap = new HashMap<>();
-        for (int i = 0; i < chromosome.length(); i++) {
-            VirtualMachine vm = chromosome.getGene(i).getAllele();
-            if (!vmToProcessMap.containsKey(vm)) {
-                vmToProcessMap.put(vm, new ArrayList<>());
-            }
-            vmToProcessMap.get(vm).add(processSteps.get(i));
-        }
-        return vmToProcessMap;
-    }
 
 
-    private boolean checkResourceAvailability(VirtualMachine vm, List<ProcessStep> processStepList) {
 
-        // Todo: use container configurations instead of service types
+    private boolean checkResourceAvailability(VirtualMachine vm, List<ProcessStep> processStepList) throws ContainerConfigurationNotFoundException {
+
         double cpuRequirement = 0.0;
         double ramRequirement = 0.0;
 
-        List<ServiceType> alreadyIncludedServiceTypes = new ArrayList<>();
-        for(ProcessStep processStep : processStepList) {
-            if(alreadyIncludedServiceTypes.contains(processStep.getServiceType())) {
-                cpuRequirement = cpuRequirement + processStep.getServiceType().getServiceTypeResources().getCpuLoad() / 4;
-                ramRequirement = ramRequirement + processStep.getServiceType().getServiceTypeResources().getMemory() / 4;
-            }
-            else {
-                cpuRequirement = cpuRequirement + processStep.getServiceType().getServiceTypeResources().getCpuLoad();
-                ramRequirement = ramRequirement + processStep.getServiceType().getServiceTypeResources().getMemory();
-                alreadyIncludedServiceTypes.add(processStep.getServiceType());
-            }
+        List<ContainerConfiguration> containerConfigurations = getContainerConfigurations(processStepList);
+        for(ContainerConfiguration config : containerConfigurations) {
+            cpuRequirement = cpuRequirement + config.getCPUPoints();
+            ramRequirement = ramRequirement + config.getRam();
         }
-
-//        double cpuRequirement = processStepList.stream().mapToDouble(ps -> ps.getServiceType().getServiceTypeResources().getCpuLoad()).sum();
-//        double ramRequirement = processStepList.stream().mapToDouble(ps -> ps.getServiceType().getServiceTypeResources().getCpuLoad()).sum();
 
         if (vm.getVmType().getCpuPoints() >= cpuRequirement && vm.getVmType().getRamPoints() >= ramRequirement) {
             return true;
@@ -142,12 +125,13 @@ public class PIPPImpl extends AbstractContainerProvisioningImpl implements Proce
         return false;
     }
 
+
     private VirtualMachine getRandomVirtualMachine() {
         Random rand = RandomRegistry.getRandom();
         return cacheVirtualMachineService.getAllVMs().get(rand.nextInt(cacheVirtualMachineService.getAllVMs().size()));
     }
 
-    private OptimizationResult decode(Phenotype<AnyGene<VirtualMachine>, Double> result, List<ProcessStep> processSteps) {
+    private OptimizationResult decode(@NotNull Phenotype<AnyGene<VirtualMachine>, Double> result, @NotNull List<ProcessStep> processSteps) {
         OptimizationResult optimizationResult = new OptimizationResultImpl();
 
         StringBuilder stringBuilder = new StringBuilder("[");

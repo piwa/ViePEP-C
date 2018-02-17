@@ -73,7 +73,7 @@ public class ProcessStep extends Element {
     }
 
     public long calculateQoS() {
-    	return getRemainingExecutionTime(new Date());
+    	return getRemainingExecutionTime(DateTime.now());
     }
 
     public boolean hasBeenExecuted() {
@@ -85,12 +85,12 @@ public class ProcessStep extends Element {
     }
 
 
-    public long getRemainingExecutionTime(Date date) {
-        long time = date.getTime();
+    public long getRemainingExecutionTime(DateTime date) {
+        long time = date.getMillis();
         if (startDate != null) {
             time = startDate.getMillis();
         }
-        long difference = date.getTime() - time;
+        long difference = date.getMillis() - time;
         long remaining = serviceType.getServiceTypeResources().getMakeSpan() - difference;
         return remaining > 0 ? remaining : serviceType.getServiceTypeResources().getMakeSpan() ;
     }
