@@ -11,6 +11,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.NoVmFo
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import io.jenetics.AnyGene;
 import io.jenetics.Chromosome;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,20 +24,10 @@ import java.util.stream.Collectors;
  */
 public class AbstractHeuristicImpl extends AbstractProvisioningImpl {
 
+    // Not needed
     @Override
     protected VirtualMachine startNewVm(OptimizationResult result, VMType vmType, ContainerConfiguration containerConfiguration) throws NoVmFoundException {
-        List<VirtualMachine> virtualMachineList = cacheVirtualMachineService.getVMs(vmType);
-        List<VirtualMachine> vmsShouldBeStarted = result.getProcessSteps().stream().map(ProcessStep::getScheduledAtVM).collect(Collectors.toList());
-
-        vmsShouldBeStarted.addAll(result.getProcessSteps().stream().map(processStep -> processStep.getScheduledAtContainer().getVirtualMachine()).collect(Collectors.toList()));
-        vmsShouldBeStarted.addAll(result.getVms());
-
-        if(containerConfiguration != null) {
-            List<VirtualMachine> waitingVMs = inMemoryCache.getWaitingForExecutingProcessSteps().stream().map(processStep -> processStep.getScheduledAtContainer().getVirtualMachine()).collect(Collectors.toList());
-            vmsShouldBeStarted.addAll(waitingVMs.stream().filter(virtualMachine -> checkIfEnoughResourcesLeftOnVM(virtualMachine, containerConfiguration, result)).collect(Collectors.toList()));
-        }
-
-        return virtualMachineList.stream().filter(currentVM -> !vmsShouldBeStarted.contains(currentVM) && !currentVM.isLeased() && !currentVM.isStarted()).findFirst().orElseThrow(() -> new NoVmFoundException());
+        throw new NotImplementedException();
     }
 
     protected List<ContainerConfiguration> getContainerConfigurations(List<ProcessStep> processStepList) throws ContainerConfigurationNotFoundException {
@@ -71,14 +62,22 @@ public class AbstractHeuristicImpl extends AbstractProvisioningImpl {
         return containerConfigurations;
     }
 
-    protected Map<VirtualMachine, List<ProcessStep>> createVirtualMachineListMap(Chromosome<AnyGene<VirtualMachine>> chromosome) {
+    protected Map<VirtualMachine, List<ProcessStep>> createVirtualMachineListMap(Chromosome<AnyGene<VirtualMachine>> chromosome, List<ProcessStep> notScheduledProcessSteps, List<ProcessStep> alreadyScheduledProcessSteps) {
         Map<VirtualMachine, List<ProcessStep>> vmToProcessMap = new HashMap<>();
         for (int i = 0; i < chromosome.length(); i++) {
             VirtualMachine vm = chromosome.getGene(i).getAllele();
+
             if (!vmToProcessMap.containsKey(vm)) {
                 vmToProcessMap.put(vm, new ArrayList<>());
             }
-            vmToProcessMap.get(vm).add(processSteps.get(i));
+            vmToProcessMap.get(vm).add(notScheduledProcessSteps.get(i));
+
+            for(ProcessStep ps : alreadyScheduledProcessSteps) {
+                if(ps.getScheduledAtContainer().getVirtualMachine() == vm) {
+                    vmToProcessMap.get(vm).add(ps);
+                }
+            }
+
         }
         return vmToProcessMap;
     }

@@ -42,7 +42,6 @@ public class ProcessStep extends Element {
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startDate;
     private String workflowName;
-    private boolean isScheduled;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime scheduledStartedAt;
     private int numberOfExecutions;
@@ -96,13 +95,11 @@ public class ProcessStep extends Element {
     }
 
     public void setScheduledForExecution(boolean isScheduled, DateTime tau_t, VirtualMachine vm) {
-        this.isScheduled = isScheduled;
         this.scheduledStartedAt = tau_t;
         this.scheduledAtVM = vm;
     }
 
     public void setScheduledForExecution(boolean isScheduled, DateTime tau_t, Container container) {
-        this.isScheduled = isScheduled;
         this.scheduledStartedAt = tau_t;
         this.scheduledAtContainer = container;
     }
@@ -157,7 +154,10 @@ public class ProcessStep extends Element {
         this.setScheduledAtVM(null);
         this.setScheduledAtContainer(null);
         this.setHasBeenExecuted(false);
-        this.setScheduled(false);
         this.setScheduledStartedAt(null);
+    }
+
+    public boolean isScheduled() {
+        return this.getScheduledAtContainer() != null && this.getScheduledAtContainer().getVirtualMachine() != null;
     }
 }

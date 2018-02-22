@@ -58,7 +58,6 @@ public class LeaseVMAndStartExecution {
                 log.error("VM " + virtualMachine.getInstanceId() + " was not started, reset task");
                 for (ProcessStep processStep : processSteps) {
                     processStep.setStartDate(null);
-                    processStep.setScheduled(false);
                     processStep.setScheduledAtVM(null);
                 }
                 return;
@@ -94,7 +93,6 @@ public class LeaseVMAndStartExecution {
                 for (Container container : containerProcessSteps.keySet()) {
                     for (ProcessStep processStep : containerProcessSteps.get(container)) {
                         processStep.setStartDate(null);
-                        processStep.setScheduled(false);
                         processStep.setScheduledAtVM(null);
                     }
                     container.shutdownContainer();

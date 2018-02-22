@@ -96,6 +96,10 @@ public abstract class Element implements Serializable {
                 '}';
     }
 
+    public DateTime getDeadlineDateTime() {
+        return new DateTime(deadline);
+    }
+
 //    @Override
 //    public boolean equals(Object o) {
 //        if (this == o) return true;
