@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.watchdog;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
@@ -14,7 +15,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -53,8 +56,27 @@ public class Receiver {
 
         log.info("Task-Done: " + processStep);
 
+
+
+
+
         if(processStep.getScheduledAtContainer() != null) {
-            placementHelper.stopContainer(processStep.getScheduledAtContainer());
+
+            List<ProcessStep> processSteps = new ArrayList<>();
+            placementHelper.getRunningSteps().stream().filter(ele -> ((ProcessStep) ele) != processStep).forEach(element -> processSteps.add((ProcessStep)element));
+            processSteps.addAll(placementHelper.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).collect(Collectors.toList()));
+
+            boolean stillNeeded = false;
+            for(ProcessStep tmp : processSteps) {
+                if(tmp.getScheduledAtContainer() != null && tmp != processStep && tmp.getScheduledAtContainer().getContainerID().equals(processStep.getScheduledAtContainer().getContainerID())) {
+                    stillNeeded = true;
+                    break;
+                }
+            }
+
+            if(!stillNeeded) {
+                placementHelper.stopContainer(processStep.getScheduledAtContainer());
+            }
         }
 
         if (processStep.isLastElement()) {

@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
@@ -32,25 +33,6 @@ public class ValidityChecker extends AbstractHeuristicImpl {
         return check(vmToProcessMap);
     }
 
-    private boolean checkResourceAvailability(VirtualMachine vm, List<ProcessStep> processStepList) throws ContainerConfigurationNotFoundException {
-
-        double cpuRequirement = 0.0;
-        double ramRequirement = 0.0;
-
-        List<ContainerConfiguration> containerConfigurations = getContainerConfigurations(processStepList);
-        for(ContainerConfiguration config : containerConfigurations) {
-            cpuRequirement = cpuRequirement + config.getCPUPoints();
-            ramRequirement = ramRequirement + config.getRam();
-        }
-
-        if (vm.getVmType().getCpuPoints() >= cpuRequirement && vm.getVmType().getRamPoints() >= ramRequirement) {
-            return true;
-        }
-
-        return false;
-    }
-
-
     public boolean isValidNewInstance(ISeq<VirtualMachine> object) {
         Map<VirtualMachine, List<ProcessStep>> vmToProcessMap = new HashMap<>();
         for (int i = 0; i < object.length(); i++) {
@@ -79,5 +61,26 @@ public class ValidityChecker extends AbstractHeuristicImpl {
             }
         }
         return true;
+    }
+
+
+    private boolean checkResourceAvailability(VirtualMachine vm, List<ProcessStep> processStepList) throws ContainerConfigurationNotFoundException {
+
+        double cpuRequirement = 0.0;
+        double ramRequirement = 0.0;
+
+        cpuRequirement = cpuRequirement + vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
+        ramRequirement = ramRequirement + vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getRam()).sum();
+
+        for(ContainerConfiguration config : getContainerConfigurations(vm, processStepList)) {
+            cpuRequirement = cpuRequirement + config.getCPUPoints();
+            ramRequirement = ramRequirement + config.getRam();
+        }
+
+        if (vm.getVmType().getCpuPoints() >= cpuRequirement && vm.getVmType().getRamPoints() >= ramRequirement) {
+            return true;
+        }
+
+        return false;
     }
 }

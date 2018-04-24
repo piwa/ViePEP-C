@@ -46,7 +46,7 @@ public class VirtualMachine implements Serializable {
     private String googleName;
     private String instanceId;
     private String location;
-    private boolean leased = false;
+    private boolean leased = false;         // TODO check when it is set
     private String ipAddress;
     private long startupTime;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")

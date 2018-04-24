@@ -216,7 +216,7 @@ public abstract class AbstractProvisioningImpl {
 
         processSteps.addAll(inMemoryCache.getWaitingForExecutingProcessSteps());
         for(ProcessStep processStep : processSteps) {
-            if(processStep.getScheduledAtVM() == vm || processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
+            if(processStep.getScheduledAtVM() == vm || (processStep.getScheduledAtContainer()!= null && processStep.getScheduledAtContainer().getVirtualMachine() == vm)) {
                 remainingLeasingDuration = remainingLeasingDuration - processStep.getScheduledAtContainer().getContainerImage().getDeployTime() - processStep.getExecutionTime();
             }
         }

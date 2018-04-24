@@ -224,7 +224,7 @@ public class ReasoningImpl implements Reasoning {
                             vm.setToBeTerminatedAt(new DateTime(vm.getToBeTerminatedAt().getMillis() + vm.getVmType().getLeasingDuration()));
                         } else {
                             if (containerWaitingForVm) {
-                                log.info("VM will be terminated but container waiting for starting");
+                                log.error("VM will be terminated but container waiting for starting");
                             }
                             log.info("terminateVms method terminate vm: " + vm);
                             placementHelper.terminateVM(vm);

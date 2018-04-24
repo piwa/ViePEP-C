@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by philippwaibel on 12/07/2017.
@@ -30,7 +30,7 @@ public class AbstractHeuristicImpl extends AbstractProvisioningImpl {
         throw new NotImplementedException();
     }
 
-    protected List<ContainerConfiguration> getContainerConfigurations(List<ProcessStep> processStepList) throws ContainerConfigurationNotFoundException {
+    protected List<ContainerConfiguration> getContainerConfigurations(VirtualMachine vm, List<ProcessStep> processStepList) throws ContainerConfigurationNotFoundException {
 
         Map<ServiceType, Integer> serviceTypeCounter = new HashMap<>();
         List<ContainerConfiguration> containerConfigurations = new ArrayList<>();
@@ -45,19 +45,26 @@ public class AbstractHeuristicImpl extends AbstractProvisioningImpl {
         }
 
         for(Map.Entry<ServiceType, Integer> entry : serviceTypeCounter.entrySet()) {
-            double cpuRequirement = 0.0;
-            double ramRequirement = 0.0;
 
-            cpuRequirement = entry.getKey().getServiceTypeResources().getCpuLoad();
-            ramRequirement = entry.getKey().getServiceTypeResources().getMemory();
-
-            if(entry.getValue() > 1) {
-                cpuRequirement = cpuRequirement + (entry.getValue()-1) * entry.getKey().getServiceTypeResources().getCpuLoad() / 4;
-                ramRequirement = ramRequirement + (entry.getValue()-1) * entry.getKey().getServiceTypeResources().getMemory() / 4;
+            boolean alreadyDeployed = false;
+            for(Container container : vm.getDeployedContainers()) {
+                if(entry.getKey() == container.getContainerImage().getServiceType()) {
+                    alreadyDeployed = true;
+                    break;
+                }
             }
+            if(!alreadyDeployed) {
 
-            containerConfigurations.add(cacheContainerService.getBestContainerConfigurations(cpuRequirement, ramRequirement));
+                double cpuRequirement = entry.getKey().getServiceTypeResources().getCpuLoad();
+                double ramRequirement = entry.getKey().getServiceTypeResources().getMemory();
 
+                if (entry.getValue() > 1) {
+                    cpuRequirement = cpuRequirement + (entry.getValue() - 1) * entry.getKey().getServiceTypeResources().getCpuLoad() / 4;
+                    ramRequirement = ramRequirement + (entry.getValue() - 1) * entry.getKey().getServiceTypeResources().getMemory() / 4;
+                }
+
+                containerConfigurations.add(cacheContainerService.getBestContainerConfigurations(cpuRequirement, ramRequirement));
+            }
         }
         return containerConfigurations;
     }

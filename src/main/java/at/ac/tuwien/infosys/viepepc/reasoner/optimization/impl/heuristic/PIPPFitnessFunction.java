@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
@@ -39,11 +40,13 @@ public class PIPPFitnessFunction extends AbstractHeuristicImpl implements Functi
     @Value("${vm.default.startup.time}")
     private long defaultVMStartupTime;
 
-    private double containerDeployTimeFactor = 0.001;
-    private double vmLeasingPreferenceFactor = 0.001;
+    private double containerDeployTimeFactor = 0.01;
+    private double vmLeasingPreferenceFactor = 0.01;
     private double freeCPUResourcesFactor = 0.001;          // gerta -> 0.01
     private double freeRAMResourcesFactor = 0.001;
     private double scheduledServiceImportanceFactor = 0.001;
+    private double containerStartupTimeFactor = 0.01;
+    private double penaltyTimeFactor = 0.000001;
 
     @Setter private List<ProcessStep> alreadyScheduledProcessSteps;
     @Setter private List<ProcessStep> notScheduledProcessSteps;
@@ -65,22 +68,23 @@ public class PIPPFitnessFunction extends AbstractHeuristicImpl implements Functi
 
         double overallCost = 0.0;
 
-        // TODO prever already running VMs, before it was done by Term 4
+        // TODO prefer already running VMs, before it was done by Term 4 -> solved by new term 8?
+        // TODO consider container start time. Prefer already running container. -> solved by new term 9?
 
-
-        // Term 1
-        double leasingCost = 0;
         for (Map.Entry<VirtualMachine, List<ProcessStep>> entry : vmToProcessMap.entrySet()) {
-            leasingCost = leasingCost + entry.getKey().getVmType().getCosts() * getAmountOfLeasingBTUs(entry.getKey(), entry.getValue());
-
             consideredWorkflow.addAll(entry.getValue().stream().map(ps -> ps.getWorkflowName()).collect(Collectors.toSet()));
-
             for(ProcessStep processStep : entry.getValue()) {
                 if(!workflowProcessStep.containsKey(processStep.getWorkflowName())) {
                     workflowProcessStep.put(processStep.getWorkflowName(), new HashSet<>());
                 }
                 workflowProcessStep.get(processStep.getWorkflowName()).add(processStep);
             }
+        }
+
+        // Term 1
+        double leasingCost = 0;
+        for (Map.Entry<VirtualMachine, List<ProcessStep>> entry : vmToProcessMap.entrySet()) {
+            leasingCost = leasingCost + entry.getKey().getVmType().getCosts() * getAmountOfLeasingBTUs(entry.getKey(), entry.getValue());
         }
 
         // Term 2
@@ -92,14 +96,16 @@ public class PIPPFitnessFunction extends AbstractHeuristicImpl implements Functi
 
             long remainingExecutionTimeAndDeployTimes = 0;
             WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(workflowMap.getKey());
-            Element rootElement = workflowElement.getElements().get(0);
-            remainingExecutionTimeAndDeployTimes = getRemainingWorkflowExecutionTimeAndDeployTimes(rootElement);
+            if(workflowElement != null && workflowElement.getElements() != null) {
+                Element rootElement = workflowElement.getElements().get(0);
+                remainingExecutionTimeAndDeployTimes = getRemainingWorkflowExecutionTimeAndDeployTimes(rootElement);
 
-            long executionTimeViolation = workflowElement.getDeadline() - (epocheTime.getMillis() + remainingExecutionTimeAndDeployTimes);
+                long executionTimeViolation = workflowElement.getDeadline() - (epocheTime.getMillis() + remainingExecutionTimeAndDeployTimes);
 
-            if(executionTimeViolation < 0) {
-                executionTimeViolation = executionTimeViolation * (-1);
-                penaltyCost = penaltyCost + workflowElement.getPenalty() * executionTimeViolation;
+                if (executionTimeViolation < 0) {
+                    executionTimeViolation = executionTimeViolation * (-1);
+                    penaltyCost = penaltyCost + workflowElement.getPenalty() * executionTimeViolation * penaltyTimeFactor;
+                }
             }
         }
 
@@ -110,7 +116,7 @@ public class PIPPFitnessFunction extends AbstractHeuristicImpl implements Functi
                 try {
                     ContainerImage image = containerImageRegistryReader.findContainerImage(ps.getServiceType());
                     if(!entry.getKey().getAvailableContainerImages().contains(image)) {
-                        containerAvailableValue = containerAvailableValue + containerDeployTimeFactor;
+                        containerAvailableValue = containerAvailableValue + defaultContainerDeployTime * containerDeployTimeFactor;
                     }
                 } catch (ContainerImageNotFoundException e) {
                     log.error("Container Image not found");
@@ -133,10 +139,12 @@ public class PIPPFitnessFunction extends AbstractHeuristicImpl implements Functi
 
                 VirtualMachine vm = entry.getKey();
                 List<ProcessStep> processSteps = entry.getValue();
-                List<ContainerConfiguration> containerConfigurations = getContainerConfigurations(processSteps);
+                List<ContainerConfiguration> containerConfigurations = getContainerConfigurations(vm, processSteps);
 
                 double requiredCPU = containerConfigurations.stream().mapToDouble(c -> c.getCPUPoints()).sum();
                 double requiredRam = containerConfigurations.stream().mapToDouble(c -> c.getRam()).sum();
+                requiredCPU = requiredCPU + vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
+                requiredRam = requiredRam + vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getRam()).sum();
                 double freeCPU = vm.getVmType().getCpuPoints() - requiredCPU;
                 double freeRam = vm.getVmType().getRamPoints() - requiredRam;
 
@@ -157,10 +165,40 @@ public class PIPPFitnessFunction extends AbstractHeuristicImpl implements Functi
         double scheduledServiceImportance = 0;
         for(Map.Entry<String, Set<ProcessStep>> workflowMap : workflowProcessStep.entrySet()) {
             WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(workflowMap.getKey());
+            if(workflowElement == null) {
+                log.error("WorkflowElement not found: " + workflowMap.getKey());
+            }
             scheduledServiceImportance = scheduledServiceImportance + scheduledServiceImportanceFactor * (workflowElement.getDeadline() - epocheTime.getMillis()) / 1000;
         }
 
-        overallCost = leasingCost + penaltyCost + containerAvailableValue + remainingLeasingDurationValue + freeResourcesValue + scheduledServiceImportance;
+
+        // Prefer already running vms: Term 8 (new)
+        double preferRunningVms = 0;
+        Set<VirtualMachine> scheduledAndStartedVMs = cacheVirtualMachineService.getStartedAndScheduledForStartVMs();
+        for (Map.Entry<VirtualMachine, List<ProcessStep>> entry : vmToProcessMap.entrySet()) {
+            if(!scheduledAndStartedVMs.contains(entry.getKey())) {
+                preferRunningVms = preferRunningVms + defaultVMStartupTime * vmLeasingPreferenceFactor;
+            }
+        }
+
+        // Prefer vms where the container is already running: Term 9 (new)
+        double runningContainer = 0;
+        for (Map.Entry<VirtualMachine, List<ProcessStep>> entry : vmToProcessMap.entrySet()) {
+            List<ServiceType> runningServiceTypes = new ArrayList<>();
+
+//            List<ServiceType> runningServiceTypes = entry.getKey().getDeployedContainers().stream().map(container -> container.getContainerImage().getServiceType()).collect(Collectors.toList());
+            for(Container container : entry.getKey().getDeployedContainers()) {
+                runningServiceTypes.add(container.getContainerImage().getServiceType());
+            }
+
+            for(ProcessStep ps : entry.getValue()) {
+                if(!runningServiceTypes.contains(ps.getServiceType())) {
+                    runningContainer = runningContainer + defaultContainerStartupTime * containerStartupTimeFactor;
+                }
+            }
+        }
+
+        overallCost = leasingCost + penaltyCost + containerAvailableValue + remainingLeasingDurationValue + freeResourcesValue + scheduledServiceImportance + preferRunningVms + runningContainer;
         return overallCost;
     }
 
@@ -230,7 +268,7 @@ public class PIPPFitnessFunction extends AbstractHeuristicImpl implements Functi
 
         long remainingBTU = getRemainingLeasingDuration(epocheTime, vm);
 
-        int leasedBTUs = 0;
+        int leasedBTUs = 1;
         while(leasedBTUs * vm.getVmType().getLeasingDuration() + remainingBTU < overallExecutionTime) {
             leasedBTUs = leasedBTUs + 1;
         }

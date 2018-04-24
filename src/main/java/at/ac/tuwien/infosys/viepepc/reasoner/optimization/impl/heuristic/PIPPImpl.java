@@ -18,6 +18,7 @@ import io.jenetics.util.RandomRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +34,9 @@ public class PIPPImpl extends AbstractHeuristicImpl implements ProcessInstancePl
     private ValidityChecker validityChecker;
     @Autowired
     private PIPPCoder pippCoder;
+
+    @Value("${default.vm.location}")
+    private String vmLocation;
 
     private List<ProcessStep> alreadyScheduledProcessSteps;
     private List<ProcessStep> notScheduledProcessSteps;
@@ -71,7 +75,7 @@ public class PIPPImpl extends AbstractHeuristicImpl implements ProcessInstancePl
         Engine<AnyGene<VirtualMachine>, Double> engine = Engine.builder(fitnessFunction, genotype)
                 .optimize(Optimize.MINIMUM)
                 .maximalPhenotypeAge(11)
-                .populationSize(100)
+                .populationSize(500)
                 .genotypeValidator(validityChecker::isValid)
 //                .alterers(new SwapMutator<>(0.2), new PartiallyMatchedCrossover<>(0.35))
                 .build();
@@ -84,28 +88,27 @@ public class PIPPImpl extends AbstractHeuristicImpl implements ProcessInstancePl
 //                .limit(50)
 //                .peek(statistics)
 //                .collect(toBestPhenotype());
+        try {
+            final EvolutionResult<AnyGene<VirtualMachine>, Double> evaluationResult = engine.stream()
+                    .limit(Limits.bySteadyFitness(16))
+                    .limit(100)
+                    .peek(statistics)
+                    .collect(EvolutionResult.toBestEvolutionResult());
+            Phenotype<AnyGene<VirtualMachine>, Double> best = evaluationResult.getBestPhenotype();
 
-        final EvolutionResult<AnyGene<VirtualMachine>, Double> evaluationResult = engine.stream()
-                .limit(Limits.bySteadyFitness(16))
-                .limit(50)
-                .peek(statistics)
-                .collect(EvolutionResult.toBestEvolutionResult());
-        Phenotype<AnyGene<VirtualMachine>, Double> best = evaluationResult.getBestPhenotype();
-        log.error("number of invalidate results: " + evaluationResult.getInvalidCount());
+            log.info("\n" + statistics);
+            return pippCoder.decode(best, notScheduledProcessSteps);
 
-        if(!best.isValid()) {
-            log.error("warum?");
+        } catch (Exception ex) {
+            log.error("Exception", ex);
+            return new OptimizationResultImpl();
         }
-
-        log.info("\n" + statistics);
-
-        return pippCoder.decode(best, notScheduledProcessSteps);
     }
 
     private VirtualMachine getRandomVirtualMachine() {
-        // TODO if ps already has an assigned vm return that one
         Random rand = RandomRegistry.getRandom();
-        return cacheVirtualMachineService.getAllVMs().get(rand.nextInt(cacheVirtualMachineService.getAllVMs().size()));
+        List<VirtualMachine> vms = cacheVirtualMachineService.getAllVMsFromLocation(vmLocation).stream().collect(Collectors.toList());
+        return vms.get(rand.nextInt(vms.size()));
     }
 
 }
