@@ -19,16 +19,6 @@ public class ContainerImageDaoService {
     }
 
     public ContainerImage getContainerImage(ContainerImage containerImage) {
-/*
-    	// full scan should be ok here, as we don't expect to have many images in the DB
-        for(ContainerImage img : containerImageRepository.findAll()) {
-//        	if(img.getServiceName().equals(containerImage.getServiceName())) {
-            if(img.getId().equals(containerImage.getId())) {
-        		return img;
-        	}
-        }
-        return null;
-       */
         if(containerImage.getId() != null) {
             return containerImageRepository.findOne(containerImage.getId());
         }

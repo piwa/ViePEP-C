@@ -79,6 +79,10 @@ public class CacheVirtualMachineService {
         return null;
     }
 
+    public Set<VirtualMachine> getAllVMsFromLocation(String location) {
+        return getAllVMs().stream().filter(vm -> vm.getLocation().equals(location)).collect(Collectors.toSet());
+    }
+
     public Set<VirtualMachine> getStartedVMs() {
         return getAllVMs().stream().filter(VirtualMachine::isStarted).collect(Collectors.toSet());
     }

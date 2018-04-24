@@ -32,15 +32,11 @@ import java.util.*;
 public class PlacementHelperImpl implements PlacementHelper {
 
     @Autowired
-    private ElementDaoService elementDaoService;
-    @Autowired
     private ViePEPCloudService viePEPCloudService;
     @Autowired
     private ReportDaoService reportDaoService;
     @Autowired
     private ViePEPDockerControllerService containerControllerService;
-    @Autowired
-    private CacheVirtualMachineService cacheVirtualMachineService;
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
 
@@ -66,8 +62,7 @@ public class PlacementHelperImpl implements PlacementHelper {
                         if (element.getFinishedAt() == null) {
                             workflowDone = false;
                             break;
-                        }
-                        else {
+                        } else {
                             if (element.getFinishedAt().isAfter(finishedDate)) {
                                 finishedDate = element.getFinishedAt();
                             }
@@ -94,13 +89,13 @@ public class PlacementHelperImpl implements PlacementHelper {
     public List<ProcessStep> getNotStartedUnfinishedSteps() {
 
         List<ProcessStep> processSteps = new ArrayList<>();
-        for(WorkflowElement workflowElement : cacheWorkflowService.getRunningWorkflowInstances()) {//.getAllWorkflowElements()) {
+        for (WorkflowElement workflowElement : cacheWorkflowService.getRunningWorkflowInstances()) {//.getAllWorkflowElements()) {
             List<Element> flattenWorkflowList = getFlattenWorkflow(new ArrayList<Element>(), workflowElement);
-            for(Element element : flattenWorkflowList) {
-                if(element instanceof ProcessStep && element.getFinishedAt() == null) {
-                	if(((ProcessStep) element).getStartDate() == null && ((ProcessStep)element).getScheduledStartedAt() == null) {
-                        processSteps.add((ProcessStep) element);                		
-                	}
+            for (Element element : flattenWorkflowList) {
+                if (element instanceof ProcessStep && element.getFinishedAt() == null) {
+                    if (((ProcessStep) element).getStartDate() == null && ((ProcessStep) element).getScheduledStartedAt() == null) {
+                        processSteps.add((ProcessStep) element);
+                    }
                 }
             }
         }
@@ -145,78 +140,8 @@ public class PlacementHelperImpl implements PlacementHelper {
         }
 
         return new ArrayList<>();
-	}
+    }
 
-	@Override
-	public long getRemainingSetupTime(VirtualMachine vm, Date now) {
-        DateTime startedAt = vm.getStartedAt();
-		if (vm.isLeased() && startedAt != null && !vm.isStarted()) {
-			long startupTime = vm.getStartupTime();
-			long serviceDeployTime = vm.getVmType().getDeployTime();
-			long nowTime = now.getTime();
-			long startedAtTime = startedAt.getMillis();
-			long remaining = (startedAtTime + startupTime + serviceDeployTime) - nowTime;
-
-			if (remaining > 0) { // should never be < 0
-				return remaining;
-			} else {
-				return startedAtTime;
-			}
-		}
-		if (vm.isStarted()) {
-			return 0;
-		}
-
-		return 0;
-	}
-
-	@Override
-	public long getRemainingSetupTime(Container container, Date now) {
-		VirtualMachine vm = container.getVirtualMachine();
-		if(vm==null){
-			log.error("VM not set for scheduled service on container: " + container);
-			return 0;
-		} else if(!vm.isLeased()) {
-			log.error("VM " + vm + " not leased for scheduled service on container: " + container);
-			return 0;
-		}
-
-        DateTime vmStartedAt = vm.getStartedAt();
-		if (vm.isLeased() && vmStartedAt != null && !vm.isStarted()) {
-			long vmStartupTime = vm.getStartupTime();
-			long containerDeployTime = container.getContainerImage().getDeployTime();
-			long nowTime = now.getTime();
-			long startedAtTime = vmStartedAt.getMillis();
-			
-			long remaining = (startedAtTime + vmStartupTime + containerDeployTime) - nowTime;
-
-			if (remaining > 0) { // should never be < 0
-				return remaining;
-			} else {
-				return startedAtTime;
-			}
-		}
-		if (vm.isStarted()) {
-            DateTime containerStartedAt = container.getStartedAt();
-			if (containerStartedAt != null && !container.isRunning()) {
-				long containerDeployTime = container.getContainerImage().getDeployTime();
-				long nowTime = now.getTime();
-				long startedAtTime = containerStartedAt.getMillis();
-				long remaining = (startedAtTime + containerDeployTime) - nowTime;
-
-				if (remaining > 0) { // should never be < 0
-					return remaining;
-				} else {
-					return 0;//startedAtTime;
-				}
-			}
-			if (container.isRunning()) {
-				return 0;
-			}		}
-
-		return 0;
-	}
-	
     @Override
     public List<Element> getRunningSteps() {
         List<Element> running = new ArrayList<>();
@@ -233,13 +158,12 @@ public class PlacementHelperImpl implements PlacementHelper {
         for (Element element : elements) {
             if (element instanceof ProcessStep) {
                 if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartedAt() != null) && ((ProcessStep) element).getFinishedAt() == null) {
-                	if (!steps.contains(element)) {
+                    if (!steps.contains(element)) {
                         steps.add((ProcessStep) element);
                     }
                 }
                 // ignore else
-            }
-            else {
+            } else {
                 steps.addAll(getRunningProcessSteps(element.getElements()));
             }
 
@@ -251,13 +175,13 @@ public class PlacementHelperImpl implements PlacementHelper {
     public void terminateVM(VirtualMachine virtualMachine) {
         terminateVM(virtualMachine, DateTime.now());
     }
-    
+
     public void terminateVM(VirtualMachine virtualMachine, DateTime date) {
         log.info("Terminate: " + virtualMachine);
 
         virtualMachine.setTerminating(true);
 
-        if(virtualMachine.getDeployedContainers().size() > 0) {
+        if (virtualMachine.getDeployedContainers().size() > 0) {
             virtualMachine.getDeployedContainers().forEach(container -> stopContainer(container));
         }
 
@@ -268,16 +192,16 @@ public class PlacementHelperImpl implements PlacementHelper {
         VirtualMachineReportingAction report = new VirtualMachineReportingAction(date, virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.STOPPED);
         reportDaoService.save(report);
     }
-    
+
     public void stopContainer(Container container) {
-    	VirtualMachine vm = container.getVirtualMachine();
+        VirtualMachine vm = container.getVirtualMachine();
         log.info("Stop Container: " + container + " on VM: " + vm);
 
         ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.STOPPED);
         reportDaoService.save(report);
 
         containerControllerService.removeContainer(container);
-    	//container.shutdownContainer();
+        //container.shutdownContainer();
 
     }
 
@@ -288,15 +212,13 @@ public class PlacementHelperImpl implements PlacementHelper {
             if (!((ProcessStep) workflow).hasBeenExecuted() && ((ProcessStep) workflow).getStartDate() == null && ((ProcessStep) workflow).getScheduledStartedAt() == null) {
                 nextSteps.add((ProcessStep) workflow);
                 return nextSteps;
-            }
-            else if ((((ProcessStep) workflow).getStartDate() != null || ((ProcessStep) workflow).getScheduledStartedAt() != null) && ((ProcessStep) workflow).getFinishedAt() == null) {
+            } else if ((((ProcessStep) workflow).getStartDate() != null || ((ProcessStep) workflow).getScheduledStartedAt() != null) && ((ProcessStep) workflow).getFinishedAt() == null) {
                 //Step is still running, ignore next step
-                if(andParent != null) {
+                if (andParent != null) {
                     andParentHasRunningChild.put(andParent, true);
                 }
                 return nextSteps;
-            }
-            else {
+            } else {
                 return nextSteps;
             }
 
@@ -306,90 +228,36 @@ public class PlacementHelperImpl implements PlacementHelper {
                 if (!((ProcessStep) element).hasBeenExecuted() && ((ProcessStep) element).getStartDate() == null && ((ProcessStep) element).getScheduledStartedAt() == null) {
                     nextSteps.add((ProcessStep) element);
                     return nextSteps;
-                }
-                else if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartedAt() != null) && ((ProcessStep) element).getFinishedAt() == null) {
+                } else if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartedAt() != null) && ((ProcessStep) element).getFinishedAt() == null) {
                     //Step is still running, ignore next step
-                    if(andParent != null) {
+                    if (andParent != null) {
                         andParentHasRunningChild.put(andParent, true);
                     }
                     return nextSteps;
                 }
-            }
-            else {
+            } else {
                 List<Element> subElementList = element.getElements();
                 if (element instanceof ANDConstruct) {
                     andParentHasRunningChild.put(element, false);
                     List<ProcessStep> tempNextSteps = new ArrayList<>();
                     for (Element subElement : subElementList) {
                         tempNextSteps.addAll(getNextSteps(subElement, element));
-                        if(andParentHasRunningChild.get(element)) {
+                        if (andParentHasRunningChild.get(element)) {
                             return nextSteps;
                         }
                     }
                     nextSteps.addAll(tempNextSteps);
 
-                }
-                else if (element instanceof XORConstruct) {
-//                    int size = subElementList.size();                 // PW: already done at the initialization of the workflow
-//                    if (element.getParent().getNextXOR() == null) {
-//                        Random random = new Random();
-//                        int i = random.nextInt(size);
-//                        Element subelement1 = subElementList.get(i);
-//                        element.getParent().setNextXOR(subelement1);
-//                        nextSteps.addAll(getNextSteps(subelement1));
-//         //INVALID due to in memory cache only               elementDaoService.update(element.getParent());
-//
-//                    }
-//                    else {
-                        nextSteps.addAll(getNextSteps(element.getParent().getNextXOR(), andParent));
-//                    }
-                }
-                else if (element instanceof LoopConstruct) {
-//                	System.out.println("*********** ***** number of Executions: " + element.getNumberOfExecutions() + " Number of Iterations: "+ ((LoopConstruct) element).getNumberOfIterationsToBeExecuted());
-                	if((element.getNumberOfExecutions() < ((LoopConstruct) element).getNumberOfIterationsToBeExecuted())) {
-                		for(Element subElement : subElementList) {
-                			nextSteps.addAll(getNextSteps(subElement, andParent));
-                		}
+                } else if (element instanceof XORConstruct) {
+                    nextSteps.addAll(getNextSteps(element.getParent().getNextXOR(), andParent));
+                } else if (element instanceof LoopConstruct) {
+                    if ((element.getNumberOfExecutions() < ((LoopConstruct) element).getNumberOfIterationsToBeExecuted())) {
+                        for (Element subElement : subElementList) {
+                            nextSteps.addAll(getNextSteps(subElement, andParent));
+                        }
 
-//                		int futureIterations = ((LoopConstruct) element).getNumberOfIterationsToBeExecuted() - element.getNumberOfExecutions() - 1;
-//                		if(futureIterations >= 1){
-//                			for(int i = 0; i<futureIterations; i++) {
-//
-//                			}
-//                		}
-
-                		//	((LoopConstruct) element).setIterations(((LoopConstruct) element).getIterations()+1);
-
-                	}
-//                    LoopConstruct loopConstruct = (LoopConstruct) element;
-//                    for (Element subElement : subElementList) {
-//                        if (subElement instanceof ProcessStep) {
-//                            ProcessStep processStep = (ProcessStep) subElement;
-//
-//                            if (!(processStep).hasBeenExecuted() && (processStep).getStartDate() == null) {
-//                                nextSteps.add(processStep);
-//                                return nextSteps;
-//                            }
-//                            else {
-//                                boolean lastElement = subElement.equals(subElementList.get(subElementList.size() - 1));
-//                                Random random = new Random();
-//                                boolean rand = random.nextInt(2) == 1;
-//                                if (lastElement && loopConstruct.getNumberOfIterationsInWorstCase() > loopConstruct.getIterations() && rand) {
-//                                    loopConstruct.setIterations(loopConstruct.getIterations() + 1);
-//                                    nextSteps.add(subElementList.get(0));
-//                                    resetChildren(subElementList);
-//
-//         //INVALID due to in memory cache only                           elementDaoService.update(workflow);
-//                                    return nextSteps;
-//                                }
-//                            }
-//                        }
-//                        else {
-//                            nextSteps.addAll(getNextSteps(subElement));
-//                        }
-//                    }
-                }
-                else { //sequence
+                    }
+                } else { //sequence
                     nextSteps.addAll(getNextSteps(element, andParent));
                 }
             }
@@ -407,41 +275,18 @@ public class PlacementHelperImpl implements PlacementHelper {
                 if (element instanceof ProcessStep) {
                     ((ProcessStep) element).reset();
 
-                }
-                else {
+                } else {
                     resetChildren(element.getElements());
                 }
             }
         }
     }
-    
-    
-	// ******************** Helpers FOR VMs
 
-    /**
-     * indicates if a VM with ID v_k is leased
-     * @return 0 if not leased, 1 if leased
-     */
-    public int getBeta(VirtualMachine vm) {
-        return vm.isLeased() ? 1 : 0;
-    }
-    
-    /**
-     * indicates if a specific service (serviceType) runs on a virtual machine (v, k)
-     * @return 0 if false, 1 if true
-     */
-    public int getZ(String serviceType, VirtualMachine vm) {
-    	if (vm.isLeased() && vm.getServiceType() != null && vm.getServiceType().getName().equals(serviceType)) {
-    		   return 1;   
-        }
-        return 0;
-    }
-    
 
-    
     /**
      * @return the remaining leasing duration for a particular vm (v,k) starting from tau_t
      */
+    @Override
     public long getRemainingLeasingDuration(DateTime tau_t, VirtualMachine vm) {
         DateTime startedAt = vm.getStartedAt();
         if (startedAt == null) {
@@ -456,129 +301,55 @@ public class PlacementHelperImpl implements PlacementHelper {
             remainingLeasingDuration = 0;
         }
         return remainingLeasingDuration;
-        
-    }
 
-    public double getSuppliedCPUPoints(VirtualMachine vm) {
-    	return vm.getVmType().getCpuPoints();
-    }
-    
-    public double getSuppliedRAMPoints(VirtualMachine vm) {
-    	return vm.getVmType().getRamPoints();
-    }
-
-    public String getDecisionVariableY(VirtualMachine vm) {
-		return "y_" + vm.getName();
-	}
-	
-    /**
-     * gamma is the amount of all leased VMs
-     *
-     * @param vmType defines specific VMType
-     * @return gamma variable for a particular VM Type
-     */
-    public String getGammaVariable(VMType vmType) {
-        return "gamma_" + vmType.getIdentifier();
-    }
-	public String getFValueCVariable(VirtualMachine vm) {
-		return "f_" + vm.getName() + "^C";
-	}
-	public String getFValueRVariable(VirtualMachine vm) {
-		return "f_" + vm.getName() + "^R";
-	}
-	public String getGVariable(VirtualMachine vm) {
-		return "g_" + vm.getName();
-	}
-	public String getGYVariable(VirtualMachine vm) {
-		return "g_y_" + vm.getName();
-	}
-	
-	
-	// ******************** Helpers FOR CONTAINERs
-	
-	public double getSuppliedRAMPoints(Container dockerContainer) {
-		return dockerContainer.getContainerConfiguration().getRam();
-	}
-	
-	public double getSuppliedCPUPoints(Container dockerContainer) {
-		return dockerContainer.getContainerConfiguration().getCPUPoints();
-	}
-	
-	public String getDecisionVariableA(Container dockerContainer, VirtualMachine vm) {
-		return "a_" + dockerContainer.getName() + "," + vm.getName();
-	}
-	
-	// ******************** Helpers FOR WORKFLOWs
-	
-    public double getPenaltyCostPerQoSViolationForProcessInstance(WorkflowElement workflowelement) {
-        return workflowelement.getPenaltyPerViolation();
-    }
-    
-    public long getEnactmentDeadline(WorkflowElement workflowInstance) {
-    	return workflowInstance.getDeadline(); //- workflowInstance.getRemainingExecutionTime(); 
     }
 
     @Override
-    public double getRequiredCPUPoints(ProcessStep step) {
-    	return step.getServiceType().getServiceTypeResources().getCpuLoad();
+    public long getRemainingSetupTime(Container container, DateTime now) {
+        VirtualMachine vm = container.getVirtualMachine();
+        if(vm==null){
+            log.error("VM not set for scheduled service on container: " + container);
+            return 0;
+        } else if(!vm.isLeased()) {
+//			log.error("VM " + vm + " not leased for scheduled service on container: " + container);
+            return vm.getStartupTime() + container.getContainerImage().getDeployTime() + container.getContainerImage().getStartupTime();
+        }
+
+        DateTime vmStartedAt = vm.getStartedAt();
+        if (vm.isLeased() && vmStartedAt != null && !vm.isStarted()) {
+            long vmStartupTime = vm.getStartupTime();
+            long containerDeployTime = container.getContainerImage().getDeployTime();
+            long containerStartupTime = container.getContainerImage().getStartupTime();
+            long nowTime = now.getMillis();
+            long startedAtTime = vmStartedAt.getMillis();
+
+            long remaining = (startedAtTime + vmStartupTime + containerDeployTime + containerStartupTime) - nowTime;
+
+            if (remaining > 0) { // should never be < 0
+                return remaining;
+            } else {
+                return startedAtTime;
+            }
+        }
+        if (vm.isStarted()) {
+            DateTime containerStartedAt = container.getStartedAt();
+            if (containerStartedAt != null && !container.isRunning()) {
+                long containerDeployTime = container.getContainerImage().getDeployTime();
+                long containerStartupTime = container.getContainerImage().getStartupTime();
+                long nowTime = now.getMillis();
+                long startedAtTime = containerStartedAt.getMillis();
+                long remaining = (startedAtTime + containerDeployTime + containerStartupTime) - nowTime;
+
+                if (remaining > 0) { // should never be < 0
+                    return remaining;
+                } else {
+                    return 0;//startedAtTime;
+                }
+            }
+            if (container.isRunning()) {
+                return 0;
+            }		}
+
+        return 0;
     }
-    
-    @Override
-    public double getRequiredRAMPoints(ProcessStep step) {
-    	return step.getServiceType().getServiceTypeResources().getMemory();
-    }
-    
-	public String getDecisionVariableX(Element step, VirtualMachine vm) {
-		return "x_" + step.getName() + "," + vm.getName();
-	}
-	
-	@Override
-	public String getDecisionVariableX(Element step, Container container) {
-		return "x_" + step.getName() + "," + container.getName();
-	}
-
-	public String getExecutionTimeViolationVariable(WorkflowElement workflowInstance) {
-		return  "e_w_" + workflowInstance.getName() + "^p";
-	}
-
-	public String getExecutionTimeVariable(WorkflowElement workflowInstance) {
-		return "e_w_" + workflowInstance.getName();
-	}
-	
-	public String getATimesG(VirtualMachine vm, Container container) {
-		String decisionVariableA = getDecisionVariableA(container, vm);
-        String decisionVariableG = getGVariable(vm);
-        return decisionVariableA + "_times_" + decisionVariableG;
-	}
-
-	public String getATimesT1(Container container, VirtualMachine vm) {
-		String decisionVariableA = getDecisionVariableA(container, vm);
-		return decisionVariableA + "_times_tau_t_1";
-	}
-	
-	@Override
-	public String getAtimesX(ProcessStep step, Container container, VirtualMachine vm) {
-		String decisionVariableA = getDecisionVariableA(container, vm);
-		String decisionVariableX = getDecisionVariableX(step, container);
-		return decisionVariableA + "_times_" + decisionVariableX;
-	}
-	
-	public int imageForStepEverDeployedOnVM(ProcessStep step, VirtualMachine vm) {
-		for(Container container : vm.getDeployedContainers()){
-			if(step.getServiceType().equals(container.getContainerImage().getServiceType())) {
-				return 1;
-			}
-		}	
-		return 0;
-	}
-	
-	public int imageForContainerEverDeployedOnVM(Container container, VirtualMachine vm) {
-/*		for(Container containerOnVm : vm.getDeployedContainers()){
-			if(container.getContainerImage().getServiceName().equals(containerOnVm.getContainerImage().getServiceName())) {
-				return 1;
-			}
-		}
-		*/
-		return 0;
-	}
 }

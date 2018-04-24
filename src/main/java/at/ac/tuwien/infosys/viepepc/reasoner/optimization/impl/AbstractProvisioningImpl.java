@@ -198,6 +198,11 @@ public abstract class AbstractProvisioningImpl {
     }
 
     protected long getRemainingLeasingDurationIncludingScheduled(DateTime tau_t, VirtualMachine vm, OptimizationResult optimizationResult) {
+        List<ProcessStep> processSteps = new ArrayList<>(optimizationResult.getProcessSteps());
+        return getRemainingLeasingDurationIncludingScheduled(tau_t, vm, processSteps);
+    }
+
+    protected long getRemainingLeasingDurationIncludingScheduled(DateTime tau_t, VirtualMachine vm, List<ProcessStep> processSteps) {
         DateTime startedAt = vm.getStartedAt();
         if (startedAt == null) {
             startedAt = tau_t;
@@ -208,10 +213,10 @@ public abstract class AbstractProvisioningImpl {
         }
         long remainingLeasingDuration = toBeTerminatedAt.getMillis() - tau_t.getMillis();
 
-        List<ProcessStep> processSteps = new ArrayList<>(optimizationResult.getProcessSteps());
+
         processSteps.addAll(inMemoryCache.getWaitingForExecutingProcessSteps());
         for(ProcessStep processStep : processSteps) {
-            if(processStep.getScheduledAtVM() == vm || processStep.getScheduledAtContainer().getVirtualMachine() == vm) {
+            if(processStep.getScheduledAtVM() == vm || (processStep.getScheduledAtContainer()!= null && processStep.getScheduledAtContainer().getVirtualMachine() == vm)) {
                 remainingLeasingDuration = remainingLeasingDuration - processStep.getScheduledAtContainer().getContainerImage().getDeployTime() - processStep.getExecutionTime();
             }
         }
@@ -246,7 +251,7 @@ public abstract class AbstractProvisioningImpl {
 
     protected long calcRemainingRunningProcessStepExecution(List<ProcessStep> runningProcessSteps) {
         long remainingRunningProcessStepExecution = -1;
-        Date now = new Date();
+        DateTime now = DateTime.now();
         for (ProcessStep processStep : runningProcessSteps) {
             if (remainingRunningProcessStepExecution == -1 && remainingRunningProcessStepExecution < processStep.getRemainingExecutionTime(now)) {
                 remainingRunningProcessStepExecution = processStep.getRemainingExecutionTime(now);

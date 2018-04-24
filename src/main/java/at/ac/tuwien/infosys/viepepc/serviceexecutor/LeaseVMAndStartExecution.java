@@ -17,6 +17,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -47,7 +48,7 @@ public class LeaseVMAndStartExecution {
     @Value("${use.container}")
     private boolean useDocker;
 
-
+    @Async
     public void leaseVMAndStartExecutionOnVirtualMachine(VirtualMachine virtualMachine, List<ProcessStep> processSteps) {
         try {
             final StopWatch stopWatch = new StopWatch();
@@ -58,7 +59,6 @@ public class LeaseVMAndStartExecution {
                 log.error("VM " + virtualMachine.getInstanceId() + " was not started, reset task");
                 for (ProcessStep processStep : processSteps) {
                     processStep.setStartDate(null);
-                    processStep.setScheduled(false);
                     processStep.setScheduledAtVM(null);
                 }
                 return;
@@ -76,6 +76,7 @@ public class LeaseVMAndStartExecution {
         }
     }
 
+    @Async
     public void leaseVMAndStartExecutionOnContainer(VirtualMachine virtualMachine, Map<Container, List<ProcessStep>> containerProcessSteps) {
 
         try {
@@ -94,7 +95,6 @@ public class LeaseVMAndStartExecution {
                 for (Container container : containerProcessSteps.keySet()) {
                     for (ProcessStep processStep : containerProcessSteps.get(container)) {
                         processStep.setStartDate(null);
-                        processStep.setScheduled(false);
                         processStep.setScheduledAtVM(null);
                     }
                     container.shutdownContainer();
@@ -123,6 +123,7 @@ public class LeaseVMAndStartExecution {
 
     }
 
+    @Async
     public void startExecutionsOnVirtualMachine(final List<ProcessStep> processSteps, final VirtualMachine virtualMachine) {
         try {
             for (final ProcessStep processStep : processSteps) {
@@ -135,7 +136,7 @@ public class LeaseVMAndStartExecution {
 
     }
 
-//    @Async
+    @Async
     public void startExecutionsOnContainer(Map<Container, List<ProcessStep>> containerProcessSteps, VirtualMachine virtualMachine) {
         for (Map.Entry<Container, List<ProcessStep>> entry : containerProcessSteps.entrySet()) {
 
