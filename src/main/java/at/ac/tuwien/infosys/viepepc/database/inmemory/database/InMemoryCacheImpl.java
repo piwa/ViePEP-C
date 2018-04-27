@@ -1,11 +1,13 @@
 package at.ac.tuwien.infosys.viepepc.database.inmemory.database;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import lombok.Getter;
+import org.openstack4j.openstack.barbican.domain.BarbicanContainer;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -23,6 +25,8 @@ public class InMemoryCacheImpl {
 
     private Set<ProcessStep> waitingForExecutingProcessSteps = new HashSet<>();
     private ConcurrentMap<VirtualMachine, Object> vmDeployedWaitObject = new ConcurrentHashMap<>();
+
+    private List<Container> runningContainers = new ArrayList<>();
 
     private ConcurrentMap<String, ProcessStep> processStepsWaitingForServiceDone = new ConcurrentHashMap<>();
 
@@ -81,4 +85,9 @@ public class InMemoryCacheImpl {
         waitingForExecutingProcessSteps.removeIf(processStep -> processStep.getStartDate() != null);
         return waitingForExecutingProcessSteps;
     }
+
+    public void addRunningContainer(Container container) {
+        runningContainers.add(container);
+    }
+
 }

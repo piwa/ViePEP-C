@@ -17,6 +17,8 @@ public interface ViePEPDockerControllerService {
 
     Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException;
 
+    Container startContainer(Container container) throws DockerException, InterruptedException;
+
     void removeContainer(Container container);
 
 

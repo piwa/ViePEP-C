@@ -1,12 +1,10 @@
-package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic;
+package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.withvm;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import io.jenetics.Gene;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.MSeq;
 import io.jenetics.util.RandomRegistry;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Random;

@@ -5,6 +5,7 @@ import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService
 import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -36,9 +37,23 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
     private ViePEPDockerSimulationServiceImpl viePEPDockerSimulationService;
     @Autowired
     private ViePEPGCloudClientService viePEPGCloudClientService;
+    @Autowired
+    private ViePEPAWSFargateSimulationServiceImpl viePEPAWSFargateSimulation;
+    @Autowired
+    private InMemoryCacheImpl inMemoryCache;
 
     @Value("${simulate}")
     private boolean simulate;
+
+
+    @Value("${container.imageNotAvailable.simulation.deploy.duration.average}")
+    private int imageNotAvailableAverage;
+    @Value("${container.imageNotAvailable.simulation.deploy.duration.stddev}")
+    private int imageNotAvailableStdDev;
+    @Value("${container.imageAvailable.simulation.deploy.duration.average}")
+    private int imageAvailableAverage;
+    @Value("${container.imageAvailable.simulation.deploy.duration.stddev}")
+    private int imageAvailableStdDev;
 
 
     @Override
@@ -87,22 +102,10 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
 
     }
 
-    @Value("${container.imageNotAvailable.simulation.deploy.duration.average}")
-    private int imageNotAvailableAverage;
-    @Value("${container.imageNotAvailable.simulation.deploy.duration.stddev}")
-    private int imageNotAvailableStdDev;
-    @Value("${container.imageAvailable.simulation.deploy.duration.average}")
-    private int imageAvailableAverage;
-    @Value("${container.imageAvailable.simulation.deploy.duration.stddev}")
-    private int imageAvailableStdDev;
-
     @Override
     public Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
 
         if (simulate) {
-
-
-
             if(!virtualMachine.getAvailableContainerImages().contains(container.getContainerImage())) {
                 TimeUnit.MILLISECONDS.sleep(getSleepTime(imageNotAvailableAverage, imageNotAvailableStdDev));
             }
@@ -121,6 +124,25 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         return container;
     }
 
+    @Override
+    public Container startContainer(Container container) throws DockerException, InterruptedException {
+
+        if (simulate) {
+
+            TimeUnit.MILLISECONDS.sleep(getSleepTime(imageAvailableAverage, imageAvailableStdDev));
+            container = viePEPAWSFargateSimulation.startContainer(container);
+
+        } else {
+//            container = viePEPAwsClientService.startContainer(container);
+        }
+
+        container.setRunning(true);
+        container.setStartedAt(new DateTime());
+        inMemoryCache.addRunningContainer(container);
+
+        return container;
+    }
+
     private int getSleepTime(int average, int stdDev) {
         int minDuration = average - stdDev;
         int maxDuration = average + stdDev;
@@ -133,10 +155,20 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
 
     @Override
     public void removeContainer(Container container) {
-        if (simulate) {
-            viePEPDockerSimulationService.removeContainer(container);
-        } else {
-            viePEPDockerControllerService.removeContainer(container);
+        if(container.isBareMetal()) {
+            if (simulate) {
+                viePEPAWSFargateSimulation.removeContainer(container);
+                inMemoryCache.getRunningContainers().remove(container);
+            } else {
+//                viePEPAwsClientService.removeContainer(container);
+            }
+        }
+        else {
+            if (simulate) {
+                viePEPDockerSimulationService.removeContainer(container);
+            } else {
+                viePEPDockerControllerService.removeContainer(container);
+            }
         }
     }
 }

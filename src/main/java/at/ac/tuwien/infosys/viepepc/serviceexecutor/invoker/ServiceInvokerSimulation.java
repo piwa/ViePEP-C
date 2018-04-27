@@ -1,17 +1,14 @@
-package at.ac.tuwien.infosys.viepepc.serviceexecutor;
+package at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.watchdog.Message;
 import at.ac.tuwien.infosys.viepepc.watchdog.ServiceExecutionStatus;
-import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 //@Component
 //@Scope("prototype")

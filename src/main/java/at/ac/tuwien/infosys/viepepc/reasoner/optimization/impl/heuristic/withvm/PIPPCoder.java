@@ -1,4 +1,4 @@
-package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic;
+package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.withvm;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

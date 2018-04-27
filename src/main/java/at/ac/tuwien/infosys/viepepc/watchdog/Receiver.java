@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.watchdog;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ActionExecutorUtilities;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Receiver {
 
+    @Autowired
+    private ActionExecutorUtilities actionExecutorUtilities;
     @Autowired
     private PlacementHelper placementHelper;
     @Autowired
@@ -75,7 +78,7 @@ public class Receiver {
             }
 
             if(!stillNeeded) {
-                placementHelper.stopContainer(processStep.getScheduledAtContainer());
+                actionExecutorUtilities.stopContainer(processStep.getScheduledAtContainer());
             }
         }
 

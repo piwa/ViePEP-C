@@ -30,6 +30,10 @@ public class OptimizationResultImpl implements OptimizationResult {
         tauT1 = new DateTime().plusSeconds(minTauTDifference).getMillis();
     }
 
+    public OptimizationResultImpl(DateTime epocheTime) {
+        tauT1 = epocheTime.plusSeconds(minTauTDifference).getMillis();
+    }
+
     @Override
     public void addProcessStep(ProcessStep processStep) {
         processSteps.add(processStep);

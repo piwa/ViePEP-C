@@ -1,19 +1,12 @@
 package at.ac.tuwien.infosys.viepepc.configuration;
 
-import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
-import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.PIPPImpl;
-import at.ac.tuwien.infosys.viepepc.serviceexecutor.ServiceInvoker;
-import at.ac.tuwien.infosys.viepepc.serviceexecutor.ServiceInvokerImpl;
-import at.ac.tuwien.infosys.viepepc.serviceexecutor.ServiceInvokerSimulation;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.amqp.support.converter.MessageConverter;
+import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvoker;
+import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokerImpl;
+import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokerSimulation;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;

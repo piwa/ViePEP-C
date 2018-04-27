@@ -4,7 +4,6 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -16,10 +15,10 @@ import java.util.*;
  */
 @Slf4j
 @Component
-public class ServiceExecutionController{
+public class ServiceExecutionController {
 
     @Autowired
-    private LeaseVMAndStartExecution leaseVMAndStartExecution;
+    private WithVMDeploymentController withVMDeploymentController;
 
     @Async//("serviceProcessExecuter")
     public void startInvocationViaVMs(List<ProcessStep> processSteps) {
@@ -40,37 +39,28 @@ public class ServiceExecutionController{
 
             final List<ProcessStep> processStepsOnVm = vmProcessStepsMap.get(virtualMachine);
             if (!virtualMachine.isLeased()) {
-                leaseVMAndStartExecution.leaseVMAndStartExecutionOnVirtualMachine(virtualMachine, processStepsOnVm);
+                withVMDeploymentController.leaseVMAndStartExecutionOnVirtualMachine(virtualMachine, processStepsOnVm);
 
             } else {
-                leaseVMAndStartExecution.startExecutionsOnVirtualMachine(vmProcessStepsMap.get(virtualMachine), virtualMachine);
+                withVMDeploymentController.startExecutionsOnVirtualMachine(vmProcessStepsMap.get(virtualMachine), virtualMachine);
             }
         }
     }
-    
+
     @Async//("serviceProcessExecuter")
-    public void startInvocationViaContainers(List<ProcessStep> processSteps) {
+    public void startInvocationViaContainersOnVms(List<ProcessStep> processSteps) {
 
-    	final Map<VirtualMachine, Map<Container, List<ProcessStep>>> vmContainerProcessStepMap = new HashMap<>();
-    	final Map<Container, List<ProcessStep>> containerProcessStepsMap = new HashMap<>();
+        final Map<VirtualMachine, Map<Container, List<ProcessStep>>> vmContainerProcessStepMap = new HashMap<>();
+        final Map<Container, List<ProcessStep>> containerProcessStepsMap = createContainerProcessStepMap(processSteps);
 
-        for (final ProcessStep processStep : processSteps) {
-//            processStep.setStartDate(DateTime.now());
-            Container scheduledAt = processStep.getScheduledAtContainer();
-            if (!containerProcessStepsMap.containsKey(scheduledAt)) {
-            	containerProcessStepsMap.put(scheduledAt, new ArrayList<>());
-            }
-            containerProcessStepsMap.get(scheduledAt).add(processStep);
-        }
-        
         for (final Container container : containerProcessStepsMap.keySet()) {
-            
+
             VirtualMachine scheduledAt = container.getVirtualMachine();
-            if(scheduledAt == null) {
-            	log.error("No VM set for Container " + container);
+            if (scheduledAt == null) {
+                log.error("No VM set for Container " + container);
             }
-            if(!vmContainerProcessStepMap.containsKey(scheduledAt)) {
-            	vmContainerProcessStepMap.put(scheduledAt, new HashMap<>());
+            if (!vmContainerProcessStepMap.containsKey(scheduledAt)) {
+                vmContainerProcessStepMap.put(scheduledAt, new HashMap<>());
             }
             vmContainerProcessStepMap.get(scheduledAt).put(container, containerProcessStepsMap.get(container));
         }
@@ -79,14 +69,37 @@ public class ServiceExecutionController{
             final Map<Container, List<ProcessStep>> containerProcessSteps = vmContainerProcessStepMap.get(virtualMachine);
             try {
                 if (!virtualMachine.isLeased()) {
-                    leaseVMAndStartExecution.leaseVMAndStartExecutionOnContainer(virtualMachine, containerProcessSteps);
+                    withVMDeploymentController.leaseVMAndStartExecutionOnContainer(virtualMachine, containerProcessSteps);
 
                 } else {
-                    leaseVMAndStartExecution.startExecutionsOnContainer(vmContainerProcessStepMap.get(virtualMachine), virtualMachine);
+                    withVMDeploymentController.startExecutionsOnContainer(vmContainerProcessStepMap.get(virtualMachine), virtualMachine);
                 }
-			} catch (Exception e) {
-				log.error("Unable start invocation: " + e);
-			}
+            } catch (Exception e) {
+                log.error("Unable start invocation: " + e);
+            }
         }
+    }
+
+    @Async
+    public void startInvocationViaContainers(List<ProcessStep> processSteps) {
+        final Map<Container, List<ProcessStep>> containerProcessStepsMap = createContainerProcessStepMap(processSteps);
+
+        for (final Container container : containerProcessStepsMap.keySet()) {
+
+        }
+
+    }
+
+    private Map<Container, List<ProcessStep>> createContainerProcessStepMap(List<ProcessStep> processSteps) {
+        final Map<Container, List<ProcessStep>> containerProcessStepsMap = new HashMap<>();
+
+        for (final ProcessStep processStep : processSteps) {
+            Container scheduledAt = processStep.getScheduledAtContainer();
+            if (!containerProcessStepsMap.containsKey(scheduledAt)) {
+                containerProcessStepsMap.put(scheduledAt, new ArrayList<>());
+            }
+            containerProcessStepsMap.get(scheduledAt).add(processStep);
+        }
+        return containerProcessStepsMap;
     }
 }

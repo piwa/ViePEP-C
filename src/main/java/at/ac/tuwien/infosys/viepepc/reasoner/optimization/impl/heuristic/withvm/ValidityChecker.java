@@ -1,6 +1,5 @@
-package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic;
+package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.withvm;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;

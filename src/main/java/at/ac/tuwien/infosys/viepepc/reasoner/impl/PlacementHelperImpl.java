@@ -32,12 +32,6 @@ import java.util.*;
 public class PlacementHelperImpl implements PlacementHelper {
 
     @Autowired
-    private ViePEPCloudService viePEPCloudService;
-    @Autowired
-    private ReportDaoService reportDaoService;
-    @Autowired
-    private ViePEPDockerControllerService containerControllerService;
-    @Autowired
     private CacheWorkflowService cacheWorkflowService;
 
     private Map<Element, Boolean> andParentHasRunningChild = new HashMap<>();
@@ -169,40 +163,6 @@ public class PlacementHelperImpl implements PlacementHelper {
 
         }
         return steps;
-    }
-
-    @Override
-    public void terminateVM(VirtualMachine virtualMachine) {
-        terminateVM(virtualMachine, DateTime.now());
-    }
-
-    public void terminateVM(VirtualMachine virtualMachine, DateTime date) {
-        log.info("Terminate: " + virtualMachine);
-
-        virtualMachine.setTerminating(true);
-
-        if (virtualMachine.getDeployedContainers().size() > 0) {
-            virtualMachine.getDeployedContainers().forEach(container -> stopContainer(container));
-        }
-
-        viePEPCloudService.stopVirtualMachine(virtualMachine);
-
-        virtualMachine.terminate();
-
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(date, virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.STOPPED);
-        reportDaoService.save(report);
-    }
-
-    public void stopContainer(Container container) {
-        VirtualMachine vm = container.getVirtualMachine();
-        log.info("Stop Container: " + container + " on VM: " + vm);
-
-        ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.STOPPED);
-        reportDaoService.save(report);
-
-        containerControllerService.removeContainer(container);
-        //container.shutdownContainer();
-
     }
 
     @Override
@@ -352,4 +312,6 @@ public class PlacementHelperImpl implements PlacementHelper {
 
         return 0;
     }
+
+
 }

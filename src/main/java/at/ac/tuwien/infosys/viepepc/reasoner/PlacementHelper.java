@@ -31,15 +31,11 @@ public interface PlacementHelper {
 
     List<ProcessStep> getRunningProcessSteps(List<Element> elements);
 
-    void terminateVM(VirtualMachine virtualMachine);
-
     List<ProcessStep> getNextSteps(Element workflow, Element andElement);
 
     void resetChildren(List<Element> elementList);
 
 	long getRemainingLeasingDuration(DateTime tau_t, VirtualMachine vm);
-
-	void stopContainer(Container container);
 
     long getRemainingSetupTime(Container scheduledAtContainer, DateTime tau_t);
 }

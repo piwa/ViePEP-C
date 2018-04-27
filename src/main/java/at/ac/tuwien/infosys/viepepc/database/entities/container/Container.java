@@ -41,6 +41,7 @@ public class Container {
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startedAt;
     private boolean running = false;
+    private boolean bareMetal = false;
 
     public Container() {
         containerID = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
@@ -54,6 +55,7 @@ public class Container {
         virtualMachine.undeployContainer(this);
         virtualMachine = null;
         running = false;
+        bareMetal = false;
 //        startedAt = null;
     }
 

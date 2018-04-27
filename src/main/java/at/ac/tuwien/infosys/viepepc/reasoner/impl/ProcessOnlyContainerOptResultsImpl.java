@@ -20,7 +20,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -30,8 +32,8 @@ import java.util.stream.Collectors;
 @Scope("prototype")
 @Component
 @Slf4j
-@Profile("!OnlyContainerGeneticAlgorithm")
-public class ProcessOptimizationResultsImpl implements ProcessOptimizationResults {
+@Profile("OnlyContainerGeneticAlgorithm")
+public class ProcessOnlyContainerOptResultsImpl implements ProcessOptimizationResults {
 
 
     @Autowired
@@ -39,25 +41,19 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
     @Autowired
     private ServiceExecutionController serviceExecutionController;
     @Autowired
-    private CacheVirtualMachineService cacheVirtualMachineService;
-    @Autowired
     private CacheWorkflowService cacheWorkflowService;
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
 
     private Set<Container> waitingForExecutingContainers = new HashSet<>();
-    private Set<VirtualMachine> waitingForExecutingVirtualMachines = new HashSet<>();
-
-
 
     @Override
     public Future<Boolean> processResults(OptimizationResult optimize, DateTime tau_t) {
 
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
-        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
-        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtContainer().getVirtualMachine()));
+        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).forEach(ps -> waitingForExecutingContainers.add(ps.getScheduledAtContainer()));
 
-        serviceExecutionController.startInvocationViaContainersOnVms(optimize.getProcessSteps());
+        serviceExecutionController.startInvocationViaContainers(optimize.getProcessSteps());
 
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -79,22 +75,10 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
         Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
         stringBuilder.append("\nRunning Threads: " + threadSet.size() + "\n");
 
-
-        stringBuilder.append("\n------------------------------ VMs running -------------------------------\n");
-        List<VirtualMachine> vMs = cacheVirtualMachineService.getAllVMs();
-        for (VirtualMachine vm : vMs) {
-            if (vm.isLeased() && vm.isStarted()) {
-                stringBuilder.append(vm.toString()).append("\n");
-                waitingForExecutingVirtualMachines.remove(vm);
-            }
-        }
-
         stringBuilder.append("--------------------------- Containers running ---------------------------\n");
-        for (VirtualMachine vm : vMs) {
-            for (Container container : vm.getDeployedContainers()) {
-                if (container.isRunning()) {
-                    stringBuilder.append(container.toString()).append("\n");
-                }
+        for (Container container : inMemoryCache.getRunningContainers()) {
+            if (container.isRunning()) {
+                stringBuilder.append(container.toString()).append("\n");
             }
         }
 
@@ -104,10 +88,6 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
 
     public void printWaitingInformation(StringBuilder stringBuilder) {
-        stringBuilder.append("------------------------ VMs waiting for starting ------------------------\n");
-        for (VirtualMachine vm : waitingForExecutingVirtualMachines) {
-            stringBuilder.append(vm.toString()).append("\n");
-        }
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
         Set<Container> containers = inMemoryCache.getWaitingForExecutingProcessSteps().stream().map(ProcessStep::getScheduledAtContainer).collect(Collectors.toSet());
         for (Container container : containers) {
@@ -123,12 +103,9 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
 
     private void printOptimizationResultInformation(OptimizationResult optimize, DateTime tau_t, StringBuilder stringBuilder) {
-        Set<VirtualMachine> vmsToStart = new HashSet<>();
         Set<Container> containersToDeploy = new HashSet<>();
-        processProcessSteps(optimize, vmsToStart, containersToDeploy, tau_t);
-        stringBuilder.append("----------- VM should be used (running or has to be started): ------------\n");
-        for (VirtualMachine virtualMachine : vmsToStart) {
-            stringBuilder.append(virtualMachine).append("\n");
+        for (ProcessStep processStep : optimize.getProcessSteps()) {
+            containersToDeploy.add(processStep.getScheduledAtContainer());
         }
 
         stringBuilder.append("-------- Container should be used (running or has to be started): --------\n");
@@ -143,34 +120,13 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
     }
 
 
-    private void processProcessSteps(OptimizationResult optimize, Set<VirtualMachine> vmsToStart, Set<Container> containersToDeploy, DateTime tau_t) {
-        for (ProcessStep processStep : optimize.getProcessSteps()) {
-            if (processStep.getScheduledAtVM() != null) {
-                vmsToStart.add(processStep.getScheduledAtVM());
-            }
-            if (processStep.getScheduledAtContainer().getVirtualMachine() != null) {
-                vmsToStart.add(processStep.getScheduledAtContainer().getVirtualMachine());
-            }
-            containersToDeploy.add(processStep.getScheduledAtContainer());
-            if (processStep.getScheduledAtContainer() != null) {
-                processStep.setScheduledForExecution(true, tau_t, processStep.getScheduledAtContainer());
-            } else if (processStep.getScheduledAtVM() != null) {
-                processStep.setScheduledForExecution(true, tau_t, processStep.getScheduledAtVM());
-            } else {
-                processStep.setScheduledForExecution(false, new DateTime(0), (Container) null);
-            }
-        }
-    }
-
-
     private void getRunningTasks(StringBuilder stringBuilder) {
         List<WorkflowElement> allWorkflowInstances = cacheWorkflowService.getRunningWorkflowInstances();
         List<ProcessStep> nextSteps = placementHelper.getNotStartedUnfinishedSteps();
         for (Element workflow : allWorkflowInstances) {
             List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(workflow.getName());
             for (ProcessStep runningStep : runningSteps) {
-                if (((runningStep.getScheduledAtVM() != null && runningStep.getScheduledAtVM().isStarted()) || (runningStep.getScheduledAtContainer() != null && runningStep.getScheduledAtContainer().isRunning())) &&
-                        runningStep.getStartDate() != null) {
+                if (runningStep.getScheduledAtContainer() != null && runningStep.getScheduledAtContainer().isRunning() && runningStep.getStartDate() != null) {
                     stringBuilder.append(runningStep).append("\n");
                 }
             }

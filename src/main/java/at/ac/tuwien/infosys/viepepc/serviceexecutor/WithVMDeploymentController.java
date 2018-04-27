@@ -11,6 +11,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMach
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokeException;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -30,7 +31,7 @@ import java.util.Map;
 @Component
 @Scope("prototype")
 @Slf4j
-public class LeaseVMAndStartExecution {
+public class WithVMDeploymentController {
 
     @Autowired
     private ReportDaoService reportDaoService;

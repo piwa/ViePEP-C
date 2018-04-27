@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ActionExecutorUtilities;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.Watchdog;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
@@ -52,6 +53,8 @@ public class ReasoningImpl implements Reasoning {
     private WorkflowDaoService workflowDaoService;
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
+    @Autowired
+    private ActionExecutorUtilities actionExecutorUtilities;
 
     @Value("${reasoner.autoTerminate.wait.time}")
     private int autoTerminateWait;
@@ -227,7 +230,7 @@ public class ReasoningImpl implements Reasoning {
                                 log.error("VM will be terminated but container waiting for starting");
                             }
                             log.info("terminateVms method terminate vm: " + vm);
-                            placementHelper.terminateVM(vm);
+                            actionExecutorUtilities.terminateVM(vm);
                         }
                     } catch (NullPointerException ex) {
                         log.error("Exception", ex);

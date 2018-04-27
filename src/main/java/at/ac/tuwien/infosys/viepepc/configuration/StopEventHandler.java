@@ -1,6 +1,11 @@
 package at.ac.tuwien.infosys.viepepc.configuration;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ActionExecutorUtilities;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
+import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -22,15 +27,21 @@ public class StopEventHandler implements ApplicationListener<ContextClosedEvent>
     @Autowired
     private CacheVirtualMachineService cacheVirtualMachineService;
     @Autowired
-    private PlacementHelper placementHelper;
+    private ActionExecutorUtilities actionExecutorUtilities;
+    @Autowired
+    private InMemoryCacheImpl inMemoryCache;
 
     public void onApplicationEvent(ContextClosedEvent event) {
-        log.info("Stop all running VMs...");
-
-        for(VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
-            placementHelper.terminateVM(vm);
+        log.info("Stop all running Containers...");
+        for (Container container : inMemoryCache.getRunningContainers()) {
+            actionExecutorUtilities.stopContainer(container);
         }
+        log.info("All Containers stopped");
 
+        log.info("Stop all running VMs...");
+        for(VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
+            actionExecutorUtilities.terminateVM(vm);
+        }
         log.info("All VMs stopped");
     }
 

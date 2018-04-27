@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl.configurations.heuristic;
 
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.OnlyContainerImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.withvm.PIPPImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -9,13 +10,13 @@ import org.springframework.context.annotation.Profile;
 
 @Slf4j
 @Configuration
-@Profile("GeneticAlgorithm")
-public class GeneticAlgorithmConfiguration {
+@Profile("OnlyContainerGeneticAlgorithm")
+public class OnlyContainerGeneticAlgorithmConfiguration {
 	
 	@Bean
 	public ProcessInstancePlacementProblem initializeParameters() {
-		log.info("Profile GeneticAlgorithm");
-		return new PIPPImpl();
+		log.info("Profile OnlyContainerGeneticAlgorithm");
+		return new OnlyContainerImpl();
 	}
 
 }
