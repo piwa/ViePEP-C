@@ -127,6 +127,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
     @Override
     public Container startContainer(Container container) throws DockerException, InterruptedException {
 
+        container.setDeploying(true);
         if (simulate) {
 
             TimeUnit.MILLISECONDS.sleep(getSleepTime(imageAvailableAverage, imageAvailableStdDev));
@@ -135,7 +136,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         } else {
 //            container = viePEPAwsClientService.startContainer(container);
         }
-
+        container.setDeploying(false);
         container.setRunning(true);
         container.setStartedAt(new DateTime());
         inMemoryCache.addRunningContainer(container);

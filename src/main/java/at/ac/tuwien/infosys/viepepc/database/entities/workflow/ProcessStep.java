@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -36,8 +37,10 @@ import java.util.List;
 @DiscriminatorValue(value = "process_step")
 @Getter
 @Setter
-@NoArgsConstructor
-public class ProcessStep extends Element {
+public class ProcessStep extends Element implements Cloneable {
+
+
+    private UUID internId;
 
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startDate;
@@ -69,6 +72,10 @@ public class ProcessStep extends Element {
     @Override
     public List<Element> getElements() {
         return super.getElements();
+    }
+
+    public ProcessStep() {
+        internId = UUID.randomUUID();
     }
 
     public long calculateQoS() {
@@ -117,23 +124,87 @@ public class ProcessStep extends Element {
     }
 
     @Override
+    public ProcessStep clone() throws CloneNotSupportedException {
+
+        ServiceType serviceType = this.serviceType.clone();
+        return this.clone(serviceType);
+    }
+
+
+    public ProcessStep clone(ServiceType serviceType) throws CloneNotSupportedException {
+        ProcessStep processStep = new ProcessStep();
+
+        processStep.setStartDate(new DateTime(this.startDate));
+        processStep.setFinishedAt(new DateTime(this.finishedAt));
+        processStep.setWorkflowName(this.workflowName);
+        processStep.setScheduledStartedAt(new DateTime(this.scheduledStartedAt));
+        processStep.setNumberOfExecutions(this.numberOfExecutions);
+        processStep.setHasToBeExecuted(this.hasToBeExecuted);
+
+
+        processStep.setServiceType(serviceType);
+
+        //VirtualMachine cloneVM = new VirtualMachine();
+        //processStep.setScheduledAtVM(this.scheduledAtVM);
+
+        if(scheduledAtContainer != null) {
+            processStep.setScheduledAtContainer(this.scheduledAtContainer.clone(serviceType));
+        }
+        else {
+            processStep.setScheduledAtContainer(null);
+        }
+
+        processStep.setRestrictedVMs(this.restrictedVMs);
+        processStep.setInternId(this.internId);
+
+        return processStep;
+    }
+
+
+
+
+    @Override
     public String toString() {
         DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-        String startDateformat = startDate != null ? dtfOut.print(startDate) : null;
-        String finishedAtformat = finishedAt != null ? dtfOut.print(finishedAt) : null;
+        String startDateformat = startDate != null ? startDate.toString() : null;
+        String scheduledStart = scheduledStartedAt != null ? scheduledStartedAt.toString() : null;
+        String finishedAtformat = finishedAt != null ? finishedAt.toString() : null;
         String vmName = scheduledAtVM != null ? scheduledAtVM.getInstanceId() : null;
-        String dockerName = scheduledAtContainer != null ? scheduledAtContainer.getName() : null;
-        return "ProcessStep{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", serviceType=" + serviceType +
-                ", startDate=" + startDateformat +
-                ", finishedAt=" + finishedAtformat +
-                ", scheduledAtVM=" + vmName +
-                ", scheduledAtContainer=" + dockerName +
-                ", lastElement=" + isLastElement() +
-                '}';
+        String containerName = scheduledAtContainer != null ? scheduledAtContainer.getName() : null;
+
+        if(scheduledAtContainer == null && scheduledAtVM == null) {
+            return "ProcessStep{" +
+                    "name='" + name + '\'' +
+                    ", serviceType=" + serviceType.getName() +
+                    ", scheduledStart=" + scheduledStart +
+                    ", startDate=" + startDateformat +
+                    ", finishedAt=" + finishedAtformat +
+                    ", lastElement=" + isLastElement() +
+                    '}';
+        }
+        else if(scheduledAtContainer.isBareMetal()) {
+            return "ProcessStep{" +
+                    "name='" + name + '\'' +
+                    ", serviceType=" + serviceType.getName() +
+                    ", scheduledStart=" + scheduledStart +
+                    ", startDate=" + startDateformat +
+                    ", finishedAt=" + finishedAtformat +
+                    ", scheduledAtContainer=" + containerName +
+                    ", lastElement=" + isLastElement() +
+                    '}';
+        }
+        else {
+            return "ProcessStep{" +
+                    "name='" + name + '\'' +
+                    ", serviceType=" + serviceType.getName() +
+                    ", startDate=" + startDateformat +
+                    ", finishedAt=" + finishedAtformat +
+                    ", scheduledAtVM=" + vmName +
+                    ", scheduledAtContainer=" + containerName +
+                    ", lastElement=" + isLastElement() +
+                    '}';
+        }
     }
 
     public void setHasBeenExecuted(boolean hasBeenExecuted) {

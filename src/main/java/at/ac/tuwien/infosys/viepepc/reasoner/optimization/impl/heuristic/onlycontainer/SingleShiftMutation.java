@@ -68,7 +68,8 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
         Chromosome.cloneGenes(candidate, newCandidate);
 
         int mutationCount = Math.abs(mutationCountVariable.nextValue());
-        while (mutationCount > 0)
+        int counter = 0;
+        while (mutationCount > 0 && counter < 100)
         {
             int rowIndex = random.nextInt(candidate.getGenes().size());
             List<Chromosome.Gene> row = candidate.getRow(rowIndex);
@@ -101,6 +102,7 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
                 }
 
             }
+            counter = counter + 1;
 
         }
 

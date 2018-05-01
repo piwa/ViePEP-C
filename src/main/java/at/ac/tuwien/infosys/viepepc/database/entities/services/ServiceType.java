@@ -27,7 +27,7 @@ import java.util.Map;
 @Table(name = "service_type")
 @XmlRootElement(name="ServiceType")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ServiceType {
+public class ServiceType implements Cloneable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,11 +62,15 @@ public class ServiceType {
     @Override
     public String toString() {
         return "ServiceType{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", onlyInternal=" + onlyInternal +
+                "name='" + name + '\'' +
+//                ", onlyInternal=" + onlyInternal +
 //                ", serviceTypeResources=" + serviceTypeResources +
 //                ", monitoredServiceTypeResources=" + monitoredServiceTypeResources +
                 '}';
+    }
+
+    @Override
+    public ServiceType clone() throws CloneNotSupportedException {
+        return (ServiceType)super.clone();
     }
 }

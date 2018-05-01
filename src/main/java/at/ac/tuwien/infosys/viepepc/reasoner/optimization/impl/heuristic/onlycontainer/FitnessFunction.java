@@ -30,10 +30,11 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
 
+    private double leasingCostFactor = 100;
     private double penaltyTimeFactor = 0.000001;
 
-    private double cpuCost = 0.00001406; // dollar cost for 1 vCPU for 1 second
-    private double ramCost = 0.00000353; // dollar cost for 1 GB for 1 second
+    private double cpuCost = 0.1406; // dollar cost for 1 vCPU for 1 second
+    private double ramCost = 0.0353; // dollar cost for 1 GB for 1 second
 
     @Override
     public double getFitness(Chromosome chromosome, List<? extends Chromosome> list) {
@@ -47,10 +48,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
             try {
                 ContainerConfiguration containerConfiguration = optimizationUtility.getContainerConfiguration(serviceTypeSchedulingUnit.getServiceType());
-//                VMType vmType = optimizationUtility.getFittingVirtualMachine(container.getContainerConfiguration());
-
-//                leasingCost = leasingCost + vmType.getCosts() * optimizationUtility.getAmountOfLeasingBTUs(vmType, serviceTypeSchedulingUnit.getDeploymentInterval());
-                leasingCost = leasingCost + containerConfiguration.getCores() * cpuCost + containerConfiguration.getRam() / 1000 * ramCost;
+                leasingCost = leasingCost + (containerConfiguration.getCores() * cpuCost + containerConfiguration.getRam() / 1000 * ramCost) * leasingCostFactor;
             } catch (ContainerConfigurationNotFoundException e) {
                 log.error("Exception", e);
             }
@@ -61,11 +59,13 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         for (Chromosome.Gene lastGeneOfProcess : lastGeneOfProcessList) {
             // get deadline of workflow
             WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(lastGeneOfProcess.getProcessStep().getWorkflowName());
-            DateTime deadline = workflowElement.getDeadlineDateTime();
+            if(workflowElement != null) {
+                DateTime deadline = workflowElement.getDeadlineDateTime();
 
-            if(lastGeneOfProcess.getExecutionInterval().getEnd().isAfter(deadline)) {
-                Duration duration = new Duration(lastGeneOfProcess.getExecutionInterval().getEnd(), deadline);
-                penaltyCost = penaltyCost + workflowElement.getPenalty() * duration.getMillis() * penaltyTimeFactor;
+                if (lastGeneOfProcess.getExecutionInterval().getEnd().isAfter(deadline)) {
+                    Duration duration = new Duration(deadline, lastGeneOfProcess.getExecutionInterval().getEnd());
+                    penaltyCost = penaltyCost + workflowElement.getPenalty() * duration.getMillis() * penaltyTimeFactor;
+                }
             }
 
         }

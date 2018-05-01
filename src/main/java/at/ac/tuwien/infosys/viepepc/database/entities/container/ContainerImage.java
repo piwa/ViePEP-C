@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @Table(name = "container_image")
 @Getter
 @Setter
-public class ContainerImage {
+public class ContainerImage implements Cloneable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,6 +49,13 @@ public class ContainerImage {
 		this.serviceType = serviceType;
 		this.repoName = repoName;
 		this.imageName = imageName;
+	}
+
+
+	public ContainerImage clone(ServiceType serviceType) throws CloneNotSupportedException {
+		ContainerImage image = (ContainerImage)super.clone();
+		image.setServiceType(serviceType);
+		return image;
 	}
 
 	@Override

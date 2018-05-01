@@ -1,14 +1,18 @@
 package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 
+import at.ac.tuwien.infosys.viepepc.configuration.ApplicationContext;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * Created by philippwaibel on 18/05/16. edited by Gerta Sheganaku
@@ -19,6 +23,8 @@ public class ServiceExecutionController {
 
     @Autowired
     private WithVMDeploymentController withVMDeploymentController;
+    @Autowired
+    private ThreadPoolTaskScheduler taskScheduler;
 
     @Async//("serviceProcessExecuter")
     public void startInvocationViaVMs(List<ProcessStep> processSteps) {
@@ -80,11 +86,22 @@ public class ServiceExecutionController {
         }
     }
 
+    private Map<ProcessStep, ScheduledFuture<OnlyContainerDeploymentController>> processStepScheduledTasksMap = new ConcurrentHashMap<>();
+    @Autowired private ApplicationContext applicationContext;
+
     @Async
     public void startInvocationViaContainers(List<ProcessStep> processSteps) {
-        final Map<Container, List<ProcessStep>> containerProcessStepsMap = createContainerProcessStepMap(processSteps);
 
-        for (final Container container : containerProcessStepsMap.keySet()) {
+        for (ProcessStep processStep : processSteps) {
+
+            if(processStepScheduledTasksMap.containsKey(processStep)) {
+                processStepScheduledTasksMap.get(processStep).cancel(false);
+                processStepScheduledTasksMap.remove(processStep);
+            }
+
+            OnlyContainerDeploymentController runnable = applicationContext.getOnlyContainerDeploymentController(processStep);
+            ScheduledFuture scheduledFuture = taskScheduler.schedule(runnable, processStep.getScheduledStartedAt().toDate());
+            processStepScheduledTasksMap.put(processStep, scheduledFuture);
 
         }
 

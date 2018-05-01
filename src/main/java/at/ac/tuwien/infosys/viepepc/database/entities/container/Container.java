@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.database.entities.container;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @AllArgsConstructor
-public class Container {
+public class Container implements Cloneable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,6 +43,7 @@ public class Container {
     private DateTime startedAt;
     private boolean running = false;
     private boolean bareMetal = false;
+    private boolean deploying = false;
 
     public Container() {
         containerID = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
@@ -52,40 +54,68 @@ public class Container {
     }
 
     public void shutdownContainer() {
-        virtualMachine.undeployContainer(this);
-        virtualMachine = null;
-        running = false;
+        if(virtualMachine != null) {
+            virtualMachine.undeployContainer(this);
+            virtualMachine = null;
+        }
+        setRunning(false);
         bareMetal = false;
-//        startedAt = null;
+        setDeploying(false);
+    }
+
+    public synchronized boolean isRunning() {
+        return running;
+    }
+
+    public synchronized void setRunning(boolean running) {
+        this.running = running;
+    }
+
+    public synchronized boolean isDeploying() {
+        return deploying;
+    }
+
+    public synchronized void setDeploying(boolean deploying) {
+        this.deploying = deploying;
+    }
+
+    public Container clone(ServiceType serviceType) throws CloneNotSupportedException {
+        Container container = (Container)super.clone();
+        container.setContainerConfiguration(this.containerConfiguration.clone());
+        container.setContainerImage(this.containerImage.clone(serviceType));
+        return container;
     }
 
     @Override
     public String toString() {
         DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-        String startString = startedAt == null ? "NULL" : dtfOut.print(startedAt);
+        String startString = startedAt == null ? "NULL" : startedAt.toString();
         String vmString = virtualMachine == null ? "NULL" : virtualMachine.getInstanceId();
-        return "Container{" +
-                "id=" + id +
-                ", name='" + getName() + '\'' +
-                ", running=" + running +
-                ", startedAt=" + startString +
-                ", runningOnVM=" + vmString +
-                ", externalPort=" + externPort +
-                ", serviceType=" + containerImage.getServiceType().getName() +
-                '}';
+
+        if(isBareMetal()) {
+            return "Container{" +
+                    "name='" + getName() + '\'' +
+                    ", running=" + running +
+                    ", deploying=" + deploying +
+                    ", startedAt=" + startString +
+                    ", externalPort=" + externPort +
+                    ", serviceType=" + containerImage.getServiceType().getName() +
+                    '}';
+        }
+        else {
+            return "Container{" +
+                    "name='" + getName() + '\'' +
+                    ", running=" + running +
+                    ", startedAt=" + startString +
+                    ", runningOnVM=" + vmString +
+                    ", externalPort=" + externPort +
+                    ", serviceType=" + containerImage.getServiceType().getName() +
+                    '}';
+        }
     }
 
-//    @Override
-//    public int hashCode() {
-//        final int prime = 31;
-//        int result = 1;
-//        result = getName().hashCode();
-//        result += prime * result + ((containerID == null) ? 0 : containerID.hashCode());
-//        result = prime * result + ((containerImage == null) ? 0 : containerImage.hashCode());
-//        result = prime * result + ((id == null) ? 0 : id.hashCode());
-//        return result;
-//    }
+
 
     @Override
     public boolean equals(Object obj) {

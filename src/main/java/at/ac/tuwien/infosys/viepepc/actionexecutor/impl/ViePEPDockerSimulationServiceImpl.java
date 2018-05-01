@@ -74,14 +74,21 @@ public class ViePEPDockerSimulationServiceImpl {
     public void removeContainer(Container container) {
 
 
-        // Free monitoring port previously used by the docker container
-        List<String> usedPorts = container.getVirtualMachine().getUsedPorts();
-        usedPorts.remove(container.getExternPort());
-        container.getVirtualMachine().setUsedPorts(usedPorts);
+        if(container.getVirtualMachine() != null) {
+            // Free monitoring port previously used by the docker container
+            List<String> usedPorts = container.getVirtualMachine().getUsedPorts();
+            usedPorts.remove(container.getExternPort());
+            container.getVirtualMachine().setUsedPorts(usedPorts);
+        }
 
         container.shutdownContainer();
 
-        log.info("The container: " + container.getContainerID() + " on the host: " + container.getVirtualMachine() + " was removed.");
+        if(container.getVirtualMachine() != null) {
+            log.info("The container: " + container.getContainerID() + " on the host: " + container.getVirtualMachine() + " was removed.");
+        }
+        else {
+            log.info("The container: " + container.getContainerID() + " was removed.");
+        }
 
     }
 

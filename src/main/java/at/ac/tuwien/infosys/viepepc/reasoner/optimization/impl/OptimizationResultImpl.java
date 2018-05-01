@@ -27,7 +27,7 @@ public class OptimizationResultImpl implements OptimizationResult {
     private List<VirtualMachine> vms = new ArrayList<>();
 
     public OptimizationResultImpl() {
-        tauT1 = new DateTime().plusSeconds(minTauTDifference).getMillis();
+        tauT1 = DateTime.now().plus(minTauTDifference).getMillis();
     }
 
     public OptimizationResultImpl(DateTime epocheTime) {

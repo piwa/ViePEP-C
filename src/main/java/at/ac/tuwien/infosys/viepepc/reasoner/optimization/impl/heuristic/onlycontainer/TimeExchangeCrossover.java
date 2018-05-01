@@ -57,7 +57,11 @@ public class TimeExchangeCrossover extends AbstractCrossover<Chromosome> {
             List<Chromosome.Gene> rowOffspring1 = offspring1Chromosome.getRow(rowIndex);
             List<Chromosome.Gene> rowOffspring2 = offspring2Chromosome.getRow(rowIndex);
 
-            int crossoverStartIndex = random.nextInt(rowOffspring1.size() - 2);
+            int bound = rowOffspring1.size() - 2;
+            if(bound <= 0 ){
+                bound = 1;
+            }
+            int crossoverStartIndex = random.nextInt(bound);
             int crossoverEndIndex = (crossoverStartIndex + random.nextInt(rowOffspring1.size()));
 
             for(int j = crossoverStartIndex; j < crossoverEndIndex; j++) {

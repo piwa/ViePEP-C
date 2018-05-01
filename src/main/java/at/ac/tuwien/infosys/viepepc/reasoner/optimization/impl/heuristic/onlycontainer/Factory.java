@@ -1,34 +1,34 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.uncommons.watchmaker.framework.factories.AbstractCandidateFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import javax.xml.ws.Service;
+import java.util.*;
 
+@Slf4j
 public class Factory extends AbstractCandidateFactory<Chromosome> {
 
     private final List<List<Chromosome.Gene>> template = new ArrayList<>();
-    private final List<ProcessStep> runningProcesses;
+    //    private final List<ProcessStep> runningProcesses;
     private final DateTime startTime;
+    private final long gapDuration;
+    private Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
 
-    public Factory(List<WorkflowElement> workflowElementList, List<ProcessStep> runningProcesses, DateTime startTime) {
+    public Factory(List<WorkflowElement> workflowElementList, DateTime startTime, long gapDuration) {
 
         this.startTime = startTime;
-        this.runningProcesses = runningProcesses;
+        this.gapDuration = gapDuration;
 
-        for(WorkflowElement workflowElement : workflowElementList) {
+        clonedServiceTypes = new HashMap<>();
+        for (WorkflowElement workflowElement : workflowElementList) {
             List<Chromosome.Gene> subChromosome = new ArrayList<>();
             createStartChromosome(workflowElement, startTime, subChromosome);
             template.add(subChromosome);
         }
-
-
-
-
-
     }
 
     /***
@@ -46,10 +46,12 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
 
             List<Chromosome.Gene> subChromosome = new ArrayList<>();
             long intervalDelta = 0;
+            boolean allProcessStepFixed = true;
             for (Chromosome.Gene gene : genes) {
 
-                if(!gene.isFixed()) {
+                if (!gene.isFixed()) {
                     intervalDelta = intervalDelta + rand.nextInt(10000);    // max 10 seconds gap
+                    allProcessStepFixed = false;
                 }
 
                 Chromosome.Gene newGene = Chromosome.Gene.clone(gene);
@@ -59,29 +61,38 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
             }
 
             candidate.add(subChromosome);
+
         }
 
         return new Chromosome(candidate);
     }
 
 
-
-
     private DateTime createStartChromosome(Element currentElement, DateTime startTime, List<Chromosome.Gene> chromosome) {
         if (currentElement instanceof ProcessStep) {
-            if (!((ProcessStep) currentElement).hasBeenExecuted() && !runningProcesses.contains(currentElement)) {
+            ProcessStep processStep = (ProcessStep) currentElement;
+            boolean containerAlreadyDeployed = false;
+            boolean isRunning = processStep.getStartDate() != null && processStep.getFinishedAt() == null;
+            if (processStep.getStartDate() != null && processStep.getFinishedAt() != null) {
+                return startTime;
+            }
+            if (processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isDeploying() || processStep.getScheduledAtContainer().isRunning())) {
+                containerAlreadyDeployed = true;
+            }
+            if (processStep.isHasToBeExecuted() && !isRunning && !containerAlreadyDeployed) {
 
-                startTime = startTime.plus(100);     // add a small gap
-                Chromosome.Gene gene = new Chromosome.Gene((ProcessStep) currentElement, startTime, false);
+                startTime = startTime.plus(gapDuration);     // add a small gap
+
+                Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep((ProcessStep) currentElement), startTime, false);
                 chromosome.add(gene);
 
                 return gene.getExecutionInterval().getEnd();
-            } else if (runningProcesses.contains(currentElement)) {
+            } else if (isRunning || containerAlreadyDeployed) {
                 DateTime realStartTime = ((ProcessStep) currentElement).getStartDate();
-                if(realStartTime == null) {
+                if (realStartTime == null) {
                     realStartTime = ((ProcessStep) currentElement).getScheduledStartedAt();
                 }
-                Chromosome.Gene gene = new Chromosome.Gene((ProcessStep) currentElement, realStartTime, true);
+                Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep((ProcessStep) currentElement), realStartTime, true);
                 chromosome.add(gene);
 
                 return gene.getExecutionInterval().getEnd();
@@ -116,6 +127,25 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
 
             }
             return startTime;
+        }
+    }
+
+
+
+    private ProcessStep getClonedProcessStep(ProcessStep processStep) {
+
+        try {
+            ServiceType clonedServiceType = clonedServiceTypes.get(processStep.getServiceType());
+
+            if (clonedServiceType == null) {
+                clonedServiceType = processStep.getServiceType().clone();
+                clonedServiceTypes.put(processStep.getServiceType(), clonedServiceType);
+            }
+
+            return processStep.clone(clonedServiceType);
+        } catch (CloneNotSupportedException e) {
+            log.error("Exception", e);
+            return null;
         }
     }
 

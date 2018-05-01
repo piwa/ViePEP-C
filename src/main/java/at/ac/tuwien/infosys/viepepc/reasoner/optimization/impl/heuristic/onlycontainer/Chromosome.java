@@ -3,12 +3,14 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlyco
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class Chromosome {
 
     @Getter private final List<List<Gene>> genes;
@@ -76,7 +78,7 @@ public class Chromosome {
         private Interval executionInterval;
 
         private final boolean fixed;
-        private final ProcessStep processStep;
+        private ProcessStep processStep;
 
 
         public Gene(ProcessStep processStep, DateTime startTime, boolean fixed) {

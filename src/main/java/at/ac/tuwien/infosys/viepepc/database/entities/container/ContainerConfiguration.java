@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "container_configuration")
 @XmlRootElement(name = "ContainerConfiguration")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ContainerConfiguration {
+public class ContainerConfiguration implements Cloneable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,4 +46,8 @@ public class ContainerConfiguration {
         return cores * 100;
     }
 
+    @Override
+    public ContainerConfiguration clone() throws CloneNotSupportedException {
+        return (ContainerConfiguration)super.clone();
+    }
 }

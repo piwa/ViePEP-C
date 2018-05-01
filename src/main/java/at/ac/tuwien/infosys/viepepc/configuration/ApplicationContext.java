@@ -1,5 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.configuration;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.serviceexecutor.OnlyContainerDeploymentController;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvoker;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokerImpl;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokerSimulation;
@@ -12,6 +14,7 @@ import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.concurrent.Executor;
 
@@ -47,6 +50,12 @@ public class ApplicationContext implements AsyncConfigurer {
         return new ServiceInvokerImpl();
     }
 
+    @Bean
+    @Scope("prototype")
+    public OnlyContainerDeploymentController getOnlyContainerDeploymentController(ProcessStep processStep) {
+        return new OnlyContainerDeploymentController(processStep);
+    }
+
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -60,6 +69,14 @@ public class ApplicationContext implements AsyncConfigurer {
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new CustomAsyncExceptionHandler();
+    }
+
+    @Bean
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler(){
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+        threadPoolTaskScheduler.setPoolSize(5);
+        threadPoolTaskScheduler.setThreadNamePrefix("ThreadPoolTaskScheduler");
+        return threadPoolTaskScheduler;
     }
 
 //    @Bean

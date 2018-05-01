@@ -28,10 +28,8 @@ import java.util.Map;
 /**
  * Created by philippwaibel on 18/05/16.
  */
-@Component
-@Scope("prototype")
 @Slf4j
-public class OnlyContainerDeploymentController {
+public class OnlyContainerDeploymentController implements Runnable {
 
     @Autowired
     private ReportDaoService reportDaoService;
@@ -42,14 +40,16 @@ public class OnlyContainerDeploymentController {
     @Autowired
     private ViePEPDockerControllerService dockerControllerService;
 
-    @Value("${simulate}")
-    private boolean simulate;
-    @Value("${use.container}")
-    private boolean useDocker;
+    private ProcessStep processStep;
+    private Container container;
 
+    public OnlyContainerDeploymentController(ProcessStep processStep) {
+        this.processStep = processStep;
+        this.container = processStep.getScheduledAtContainer();
+    }
 
-    @Async
-    public void deployContainerAndStartExecution(Container container, List<ProcessStep> processSteps) {
+    @Override
+    public void run() {
 
         log.info("Start Container: " + container);
         StopWatch stopWatch = new StopWatch();
@@ -61,74 +61,51 @@ public class OnlyContainerDeploymentController {
             stopWatch.stop();
             log.info("Container deploy duration: " + container.toString() + ": " + stopWatch.getTotalTimeMillis());
 
-            startExecutionsOnContainer(container, processSteps);
-//            for (final ProcessStep processStep : processSteps) {
-//                try {
-//                    serviceExecution.startExecution(processStep, container);
-//                } catch (ServiceInvokeException e) {
-//                    log.error("Exception while invoking service. Stop VM and reset.", e);
-//                    reset(processSteps, container, "Service");
-//                }
-//            }
-        }
-        else {
-            reset(processSteps, container, "Container");
-        }
-
-    }
-
-    @Async
-    public void startExecutionsOnContainer(Container container, List<ProcessStep> processSteps) {
-
-        for (final ProcessStep processStep : processSteps) {
             try {
                 serviceExecution.startExecution(processStep, container);
             } catch (ServiceInvokeException e) {
-                log.error("Exception while invoking service. Stop VM and reset.", e);
-                reset(processSteps, container, "Service");
+                log.error("Exception while invoking service. Reset.", e);
+                reset("Service");
             }
         }
+        else {
+            reset("Container");
+        }
 
     }
+
 
     private boolean deployContainer(Container container) {
-        if (container.isRunning()) {
-            log.info(container + " already running on vm " + container.getVirtualMachine());
-            return true;
-        }
+        synchronized (container) {
+            if (container.isRunning()) {
+                log.info(container + " already running");
+                return true;
+            }
 
-        try {
-            dockerControllerService.startContainer(container);
-            ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), null, Action.START);
-            reportDaoService.save(report);
-            return true;
+            try {
+                dockerControllerService.startContainer(container);
+                ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), null, Action.START);
+                reportDaoService.save(report);
+                return true;
 
-        } catch (InterruptedException | DockerException e) {
-            log.error("EXCEPTION while deploying Container. Reset execution request.", e);
-            return false;
-        }
-    }
-
-
-    private void reset(List<ProcessStep> value, Container container, String failureReason) {
-        resetContainer(container, failureReason);
-        resetProcessSteps(value);
-    }
-
-    private void resetProcessSteps(List<ProcessStep> value) {
-        for(ProcessStep processStep : value) {
-            inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
-            inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
-            processStep.reset();
+            } catch (InterruptedException | DockerException e) {
+                log.error("EXCEPTION while deploying Container. Reset execution request.", e);
+                return false;
+            }
         }
     }
 
-    private void resetContainer(Container container, String failureReason) {
+
+    private void reset(String failureReason) {
         if(container != null) {
             ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), null, Action.FAILED, failureReason);
             reportDaoService.save(reportContainer);
             container.shutdownContainer();
         }
+
+        inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
+        inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+        processStep.reset();
     }
 
 }
