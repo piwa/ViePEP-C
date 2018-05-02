@@ -16,6 +16,7 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
     private final List<List<Chromosome.Gene>> template = new ArrayList<>();
     //    private final List<ProcessStep> runningProcesses;
     private Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
+    private Map<UUID, Chromosome.Gene> stepGeneMap = new HashMap<>();
 
     private long defaultContainerStartupTime;
     private long defaultContainerDeployTime;
@@ -29,6 +30,14 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
         for (WorkflowElement workflowElement : workflowElementList) {
             List<Chromosome.Gene> subChromosome = new ArrayList<>();
             createStartChromosome(workflowElement, new DateTime(startTime.getMillis()), subChromosome);
+
+
+            for (Chromosome.Gene gene : subChromosome) {
+                stepGeneMap.put(gene.getProcessStep().getInternId(), gene);
+            }
+
+            fillProcessStepChain(workflowElement, subChromosome);
+
             template.add(subChromosome);
         }
         this.defaultContainerDeployTime = defaultContainerDeployTime;
@@ -49,12 +58,10 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
 
             List<Chromosome.Gene> subChromosome = new ArrayList<>();
             long intervalDelta = 0;
-            boolean allProcessStepFixed = true;
             for (Chromosome.Gene gene : genes) {
 
                 if (!gene.isFixed()) {
-                    intervalDelta = intervalDelta + rand.nextInt(10000);    // max 10 seconds gap
-                    allProcessStepFixed = false;
+                    intervalDelta = intervalDelta + rand.nextInt(60000);    // max 10 seconds gap
                 }
 
                 Chromosome.Gene newGene = Chromosome.Gene.clone(gene);
@@ -127,7 +134,7 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
                         latestEndTime = tmpEndTime;
                     }
                 }
-                return latestEndTime;
+                startTime = latestEndTime;
             } else if (currentElement instanceof LoopConstruct) {
 
                 if ((currentElement.getNumberOfExecutions() < ((LoopConstruct) currentElement).getNumberOfIterationsToBeExecuted())) {
@@ -139,6 +146,77 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
 
             }
             return startTime;
+        }
+    }
+
+
+
+    private void fillProcessStepChain(Element workflowElement, List<Chromosome.Gene> subChromosome) {
+
+        Map<Chromosome.Gene, List<Chromosome.Gene>> andMembersMap = new HashMap<>();
+
+        fillProcessStepChainRec(workflowElement, null, andMembersMap);
+
+        for (Chromosome.Gene gene : subChromosome) {
+            if(andMembersMap.containsKey(gene)) {
+                List<Chromosome.Gene> andMembers = andMembersMap.get(gene);
+                for (Chromosome.Gene andMember : andMembers) {
+                    andMember.setNextGene(gene.getNextGene());
+                }
+            }
+        }
+    }
+
+
+
+    private ProcessStep fillProcessStepChainRec(Element currentElement, ProcessStep previousProcessStep, Map<Chromosome.Gene, List<Chromosome.Gene>> andMembersMap) {
+        if (currentElement instanceof ProcessStep) {
+            ProcessStep processStep = (ProcessStep) currentElement;
+
+            if(processStep.isHasToBeExecuted()) {
+                if (previousProcessStep != null) {
+                    Chromosome.Gene currentGene = stepGeneMap.get(processStep.getInternId());
+                    Chromosome.Gene previousGene = stepGeneMap.get(previousProcessStep.getInternId());
+
+                    previousGene.setNextGene(currentGene);
+                    currentGene.setPreviousGene(previousGene);
+                }
+
+                return processStep;
+            }
+
+            return previousProcessStep;
+        } else {
+            if (currentElement instanceof WorkflowElement) {
+                for (Element element : currentElement.getElements()) {
+                    previousProcessStep = fillProcessStepChainRec(element, previousProcessStep, andMembersMap);
+                }
+            } else if (currentElement instanceof Sequence) {
+                for (Element element1 : currentElement.getElements()) {
+                    previousProcessStep = fillProcessStepChainRec(element1, previousProcessStep, andMembersMap);
+                }
+            } else if (currentElement instanceof ANDConstruct || currentElement instanceof XORConstruct) {
+                ProcessStep tempPreviousProcessStep = null;
+                List<Chromosome.Gene> geneList = new ArrayList<>();
+                for (Element element1 : currentElement.getElements()) {
+                    tempPreviousProcessStep = fillProcessStepChainRec(element1, previousProcessStep, andMembersMap);
+                    if(tempPreviousProcessStep != null) {
+                        geneList.add(stepGeneMap.get(tempPreviousProcessStep.getInternId()));
+                    }
+                }
+                if(tempPreviousProcessStep != null) {
+                    andMembersMap.put(stepGeneMap.get(tempPreviousProcessStep.getInternId()), geneList);
+                }
+                previousProcessStep = tempPreviousProcessStep;
+            } else if (currentElement instanceof LoopConstruct) {
+
+                if ((currentElement.getNumberOfExecutions() < ((LoopConstruct) currentElement).getNumberOfIterationsToBeExecuted())) {
+                    for (Element subElement : currentElement.getElements()) {
+                        previousProcessStep = fillProcessStepChainRec(subElement, previousProcessStep, andMembersMap);
+                    }
+                }
+            }
+            return previousProcessStep;
         }
     }
 

@@ -134,6 +134,7 @@ public class ProcessStep extends Element implements Cloneable {
     public ProcessStep clone(ServiceType serviceType) throws CloneNotSupportedException {
         ProcessStep processStep = new ProcessStep();
 
+        processStep.setName(this.name);
         processStep.setStartDate(new DateTime(this.startDate));
         processStep.setFinishedAt(new DateTime(this.finishedAt));
         processStep.setWorkflowName(this.workflowName);

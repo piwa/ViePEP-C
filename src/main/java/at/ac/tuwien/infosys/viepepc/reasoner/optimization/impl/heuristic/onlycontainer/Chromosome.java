@@ -37,8 +37,12 @@ public class Chromosome {
         {
             for (Gene cell : row)
             {
-                buffer.append(' ');
-                buffer.append(cell.getExecutionInterval());
+                buffer.append("{");
+                buffer.append("processStep=" + cell.getProcessStep().getName() + ", ");
+                buffer.append("start=" + cell.getExecutionInterval().getStart().toString() + ", ");
+                buffer.append("end=" + cell.getExecutionInterval().getEnd().toString() + ", ");
+                buffer.append("fixed=" + cell.isFixed());
+                buffer.append("} ");
             }
             buffer.append('\n');
         }
@@ -79,6 +83,8 @@ public class Chromosome {
 
         private final boolean fixed;
         private ProcessStep processStep;
+        private Chromosome.Gene previousGene;
+        private Chromosome.Gene nextGene;
 
 
         public Gene(ProcessStep processStep, DateTime startTime, boolean fixed) {
@@ -88,11 +94,11 @@ public class Chromosome {
         }
 
         public void moveIntervalPlus(long delta) {
-            executionInterval = new Interval(executionInterval.getStart().plus(delta), executionInterval.getEnd().plus(delta));
+            executionInterval = new Interval(executionInterval.getStart().plus(delta + 1000), executionInterval.getEnd().plus(delta + 1000));
         }
 
         public void moveIntervalMinus(long delta) {
-            executionInterval = new Interval(executionInterval.getStart().minus(delta), executionInterval.getEnd().minus(delta));
+            executionInterval = new Interval(executionInterval.getStart().minus(delta + 1000), executionInterval.getEnd().minus(delta + 1000));
         }
 
         public static Gene clone(Gene gene) {

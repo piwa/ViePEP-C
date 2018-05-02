@@ -1,5 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer;
 
+import lombok.extern.slf4j.Slf4j;
+import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.watchmaker.framework.operators.AbstractCrossover;
@@ -8,7 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+@Slf4j
 public class TimeExchangeCrossover extends AbstractCrossover<Chromosome> {
+
+    private OrderMaintainer orderMaintainer = new OrderMaintainer();
 
     /**
      * Single-point cross-over.
@@ -53,48 +58,41 @@ public class TimeExchangeCrossover extends AbstractCrossover<Chromosome> {
 
         for (int i = 0; i < numberOfCrossoverPoints; i++)
         {
-            int rowIndex = random.nextInt(parent1.getRowAmount());
+            int rowIndex = random.nextInt(offspring1.size());
             List<Chromosome.Gene> rowOffspring1 = offspring1Chromosome.getRow(rowIndex);
             List<Chromosome.Gene> rowOffspring2 = offspring2Chromosome.getRow(rowIndex);
 
-            int bound = rowOffspring1.size() - 2;
-            if(bound <= 0 ){
-                bound = 1;
+            int bound = rowOffspring1.size() - 1;
+            int crossoverStartIndex = 0;
+            if (bound > 0) {         // the nextInt can only be performed for bound >= 1
+                crossoverStartIndex = random.nextInt(bound);
             }
-            int crossoverStartIndex = random.nextInt(bound);
-            int crossoverEndIndex = (crossoverStartIndex + random.nextInt(rowOffspring1.size()));
-
-            for(int j = crossoverStartIndex; j < crossoverEndIndex; j++) {
-
-                Chromosome.Gene tempGene = Chromosome.Gene.clone(rowOffspring1.get(j));
-                rowOffspring1.add(j, rowOffspring2.get(j));
-                rowOffspring2.add(j, tempGene);
+            int crossoverEndIndex = crossoverStartIndex + random.nextInt(rowOffspring1.size() - crossoverStartIndex);
+            if (crossoverEndIndex >= rowOffspring1.size()) {
+                crossoverEndIndex = rowOffspring1.size() - 1;
             }
 
+            for (int j = crossoverStartIndex; j <= crossoverEndIndex; j++) {
 
+                Interval rowOffspring1Interval = rowOffspring1.get(j).getExecutionInterval();
+                Interval rowOffspring2Interval = rowOffspring2.get(j).getExecutionInterval();
 
-            Interval overlapNextGene = null;
-            if(crossoverEndIndex < rowOffspring1.size() - 1) {
-                Chromosome.Gene lastCrossoverGene = rowOffspring1.get(crossoverEndIndex);
-                Chromosome.Gene nextGene = rowOffspring1.get(crossoverEndIndex + 1);
-                overlapNextGene = lastCrossoverGene.getExecutionInterval().overlap(nextGene.getExecutionInterval());
-
-                if(overlapNextGene != null) {
-                    Chromosome.moveAllGenesOfARow(rowOffspring1, crossoverEndIndex + 1, overlapNextGene.toDurationMillis(), true);
-                }
+                Interval tempInterval = new Interval(rowOffspring1Interval.getStart().getMillis(), rowOffspring1Interval.getEnd().getMillis());
+                rowOffspring1.get(j).setExecutionInterval(new Interval(rowOffspring2Interval.getStart().getMillis(), rowOffspring2Interval.getEnd().getMillis()));
+                rowOffspring2.get(j).setExecutionInterval(tempInterval);
             }
 
-            Interval overlapPreviousGene = null;
-            if(crossoverStartIndex > 0) {
-                Chromosome.Gene lastCrossoverGene = rowOffspring1.get(crossoverEndIndex);
-                Chromosome.Gene previousGene = rowOffspring1.get(crossoverStartIndex - 1);
-                overlapPreviousGene = lastCrossoverGene.getExecutionInterval().overlap(previousGene.getExecutionInterval());
 
-                if(overlapPreviousGene != null) {
-                    Chromosome.moveAllGenesOfARow(rowOffspring2, crossoverStartIndex, overlapPreviousGene.toDurationMillis(), true);
-                }
-            }
+            orderMaintainer.checkAndMaintainOrder(rowOffspring1);
+            orderMaintainer.checkAndMaintainOrder(rowOffspring2);
 
+        }
+
+        if (!orderMaintainer.orderIsOk(offspring1Chromosome.getGenes())) {
+            log.error("Order is not ok in offspring1: " + offspring1Chromosome.toString());
+        }
+        if (!orderMaintainer.orderIsOk(offspring2Chromosome.getGenes())) {
+            log.error("Order is not ok in offspring2: " + offspring2Chromosome.toString());
         }
 
         List<Chromosome> result = new ArrayList<>(2);
@@ -102,5 +100,8 @@ public class TimeExchangeCrossover extends AbstractCrossover<Chromosome> {
         result.add(offspring2Chromosome);
         return result;
     }
+
+
+
 
 }

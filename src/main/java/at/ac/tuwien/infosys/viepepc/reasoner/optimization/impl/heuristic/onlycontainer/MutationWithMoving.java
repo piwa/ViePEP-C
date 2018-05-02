@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Random;
 
 @Slf4j
-public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
+public class MutationWithMoving implements EvolutionaryOperator<Chromosome> {
 
     private final NumberGenerator<Integer> mutationCountVariable;
     private final NumberGenerator<Integer> mutationDeltaTimeVariable;
@@ -22,7 +22,7 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
     /**
      * Default is one mutation per candidate.
      */
-    public SingleShiftMutation() {
+    public MutationWithMoving() {
         this(1, 1, DateTime.now());
     }
 
@@ -32,7 +32,7 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
      * @param mutationAmount The constant number of positions by
      *                       which a list element will be displaced as a result of mutation.
      */
-    public SingleShiftMutation(int mutationCount, int mutationAmount, DateTime optimizationTime) {
+    public MutationWithMoving(int mutationCount, int mutationAmount, DateTime optimizationTime) {
         this(new ConstantGenerator<>(mutationCount), new ConstantGenerator<>(mutationAmount), optimizationTime);
         if (mutationCount < 1) {
             throw new IllegalArgumentException("Mutation count must be at least 1.");
@@ -49,7 +49,7 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
      * @param mutationCount  A random variable that provides a number
      *                       of mutations that will be applied to each row in an individual.
      */
-    public SingleShiftMutation(NumberGenerator<Integer> mutationCount, NumberGenerator<Integer> mutationDeltaTimeVariable, DateTime optimizationTime) {
+    public MutationWithMoving(NumberGenerator<Integer> mutationCount, NumberGenerator<Integer> mutationDeltaTimeVariable, DateTime optimizationTime) {
         this.mutationCountVariable = mutationCount;
         this.mutationDeltaTimeVariable = mutationDeltaTimeVariable;
         this.optimizationTime = optimizationTime;
@@ -90,31 +90,11 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
                 Interval oldInterval = gene.getExecutionInterval();
                 Interval newInterval = new Interval(oldInterval.getStartMillis() + deltaTime, oldInterval.getEndMillis() + deltaTime);
 
-                Interval overlapNextGene = null;
-                boolean overlappWithNextGene = false;
-                Chromosome.Gene nextGene = gene.getNextGene();
-                if(nextGene != null) {
-                    if (newInterval.getEnd().isAfter(nextGene.getExecutionInterval().getStart())) {
-                        overlappWithNextGene = true;
-                    }
-                }
-
-                boolean overlappWithPreviousGene = false;
-                Chromosome.Gene previousGene = gene.getPreviousGene();
-                if(previousGene != null) {
-                    if (newInterval.getStart().isBefore(previousGene.getExecutionInterval().getEnd())) {
-                        overlappWithPreviousGene = true;
-                    }
-                }
-
-                boolean firstEnactmentIsInTheFuture = true;
-                if(geneIndex == 0 && (newInterval.getStart().isBefore(optimizationTime) || newInterval.getStart().isBeforeNow())) {
-                    firstEnactmentIsInTheFuture = false;
-                }
-
-                if(!overlappWithNextGene && !overlappWithPreviousGene && firstEnactmentIsInTheFuture) {
+                if(geneIndex == 0 && (newInterval.getStart().isAfter(optimizationTime) || newInterval.getStart().isAfterNow())) {
                     gene.setExecutionInterval(newInterval);
                     mutationCount = mutationCount - 1;
+
+                    orderMaintainer.checkAndMaintainOrder(row);
                 }
 
             }
@@ -123,7 +103,6 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
         }
 
         Chromosome newChromosome = new Chromosome(newCandidate);
-        orderMaintainer.checkAndMaintainOrder(newChromosome);
 
         if(!orderMaintainer.orderIsOk(newCandidate)) {
             log.error("Order is not ok: " + newCandidate.toString());

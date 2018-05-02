@@ -65,8 +65,9 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
 
         Random rng = new MersenneTwisterRNG();
         List<EvolutionaryOperator<Chromosome>> operators = new ArrayList<>(2);
-//        operators.add(new TimeExchangeCrossover());
-        operators.add(new SingleShiftMutation(new PoissonGenerator(2, rng), new DiscreteUniformRangeGenerator(10000, 10000, rng), optimizationTime));
+        operators.add(new TimeExchangeCrossover());
+        operators.add(new MutationWithMoving(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(60000, 60000, rng), optimizationTime));
+        operators.add(new SingleShiftMutation(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(30000, 30000, rng), optimizationTime));
         EvolutionaryOperator<Chromosome> pipeline = new EvolutionPipeline<>(operators);
 
         EvolutionEngine<Chromosome> engine = new GenerationalEvolutionEngine<>(new Factory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime),
@@ -75,7 +76,7 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
                 selectionStrategy,
                 rng);
 
-        Chromosome winner = engine.evolve(populationSize, eliteCount, new Stagnation(10, false));
+        Chromosome winner = engine.evolve(populationSize, eliteCount, new Stagnation(20, false));
 
         return createOptimizationResult(winner, workflowElements);
     }
@@ -88,6 +89,7 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
             placementHelper.getFlattenWorkflow(flattenWorkflowList, workflowElement);
         }
 
+        System.out.println(winner.toString());
 
         List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnitList = optimizationUtility.getRequiredServiceTypes(winner);
         Duration duration = new Duration(optimizationTime, DateTime.now());
@@ -99,12 +101,13 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
                 Container container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType());
                 container.setBareMetal(true);
 
-                for (ProcessStep processStep : serviceTypeSchedulingUnit.getProcessSteps()) {
+                for (Chromosome.Gene processStepGene : serviceTypeSchedulingUnit.getProcessSteps()) {
+                    ProcessStep processStep = processStepGene.getProcessStep();
                     if(processStep.getStartDate() != null && processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isRunning() == true || processStep.getScheduledAtContainer().isDeploying() == true)) {
 
                     }
                     else {
-                        DateTime scheduledStartTime = serviceTypeSchedulingUnit.getDeploymentInterval().getStart();
+                        DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
                         scheduledStartTime = scheduledStartTime.plus(duration);
 
                         ProcessStep realProcessStep = null;

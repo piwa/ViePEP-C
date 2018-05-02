@@ -16,9 +16,9 @@ public class ServiceTypeSchedulingUnit {
 
     @Setter private Interval deploymentInterval;
     private final ServiceType serviceType;
-    private List<ProcessStep> processSteps = new ArrayList<>();
+    private List<Chromosome.Gene> processSteps = new ArrayList<>();
 
-    public void addProcessStep(ProcessStep processStep) {
+    public void addProcessStep(Chromosome.Gene processStep) {
         processSteps.add(processStep);
     }
 

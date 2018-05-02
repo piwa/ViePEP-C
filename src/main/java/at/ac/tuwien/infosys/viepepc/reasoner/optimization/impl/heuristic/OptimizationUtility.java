@@ -16,7 +16,9 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycon
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,7 +121,7 @@ public class OptimizationUtility {
                         }
 
                         requiredServiceType.setDeploymentInterval(new Interval(newStartTime, newEndTime));
-                        requiredServiceType.getProcessSteps().add(gene.getProcessStep());
+                        requiredServiceType.getProcessSteps().add(gene);
 
                         overlapFound = true;
                         break;
@@ -129,7 +131,7 @@ public class OptimizationUtility {
                 if (!overlapFound) {
                     ServiceTypeSchedulingUnit newServiceTypeSchedulingUnit = new ServiceTypeSchedulingUnit(gene.getProcessStep().getServiceType());
                     newServiceTypeSchedulingUnit.setDeploymentInterval(gene.getExecutionInterval());
-                    newServiceTypeSchedulingUnit.addProcessStep(gene.getProcessStep());
+                    newServiceTypeSchedulingUnit.addProcessStep(gene);
 
                     requiredServiceTypeMap.get(gene.getProcessStep().getServiceType()).add(newServiceTypeSchedulingUnit);
                 }
@@ -139,4 +141,7 @@ public class OptimizationUtility {
         requiredServiceTypeMap.forEach((k, v) -> requiredServiceTypeList.addAll(v));
 
     }
+
+
+
 }
