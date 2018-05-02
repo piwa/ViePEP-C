@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer;
 
+import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.uncommons.maths.number.ConstantGenerator;
 import org.uncommons.maths.number.NumberGenerator;
@@ -13,12 +14,13 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
 
     private final NumberGenerator<Integer> mutationCountVariable;
     private final NumberGenerator<Integer> mutationDeltaTimeVariable;
+    private final DateTime optimizationTime;
 
     /**
      * Default is one mutation per candidate.
      */
     public SingleShiftMutation() {
-        this(1, 1);
+        this(1, 1, DateTime.now());
     }
 
     /**
@@ -27,8 +29,8 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
      * @param mutationAmount The constant number of positions by
      *                       which a list element will be displaced as a result of mutation.
      */
-    public SingleShiftMutation(int mutationCount, int mutationAmount) {
-        this(new ConstantGenerator<>(mutationCount), new ConstantGenerator<>(mutationAmount));
+    public SingleShiftMutation(int mutationCount, int mutationAmount, DateTime optimizationTime) {
+        this(new ConstantGenerator<>(mutationCount), new ConstantGenerator<>(mutationAmount), optimizationTime);
         if (mutationCount < 1) {
             throw new IllegalArgumentException("Mutation count must be at least 1.");
         } else if (mutationAmount < 1) {
@@ -44,9 +46,10 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
      * @param mutationCount  A random variable that provides a number
      *                       of mutations that will be applied to each row in an individual.
      */
-    public SingleShiftMutation(NumberGenerator<Integer> mutationCount, NumberGenerator<Integer> mutationDeltaTimeVariable) {
+    public SingleShiftMutation(NumberGenerator<Integer> mutationCount, NumberGenerator<Integer> mutationDeltaTimeVariable, DateTime optimizationTime) {
         this.mutationCountVariable = mutationCount;
         this.mutationDeltaTimeVariable = mutationDeltaTimeVariable;
+        this.optimizationTime = optimizationTime;
     }
 
     @Override
@@ -71,8 +74,8 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
         int counter = 0;
         while (mutationCount > 0 && counter < 100)
         {
-            int rowIndex = random.nextInt(candidate.getGenes().size());
-            List<Chromosome.Gene> row = candidate.getRow(rowIndex);
+            int rowIndex = random.nextInt(newCandidate.size());
+            List<Chromosome.Gene> row = newCandidate.get(rowIndex);
 
             int geneIndex = random.nextInt(row.size());
             Chromosome.Gene gene = row.get(geneIndex);
@@ -96,7 +99,12 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
                     overlapPreviousGene = newInterval.overlap(previousGene.getExecutionInterval());
                 }
 
-                if(overlapNextGene == null && overlapPreviousGene == null) {
+                boolean firstEnactmentIsInTheFuture = true;
+                if(geneIndex == 0 && (newInterval.getStart().isBefore(optimizationTime) || newInterval.getStart().isBeforeNow())) {
+                    firstEnactmentIsInTheFuture = false;
+                }
+
+                if(overlapNextGene == null && overlapPreviousGene == null && firstEnactmentIsInTheFuture) {
                     gene.setExecutionInterval(newInterval);
                     mutationCount = mutationCount - 1;
                 }

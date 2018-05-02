@@ -31,7 +31,8 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
     private CacheWorkflowService cacheWorkflowService;
 
     private double leasingCostFactor = 100;
-    private double penaltyTimeFactor = 0.000001;
+    private double penaltyTimeFactor = 0.0001;
+    private double earlyEnactmentTimeFactor = 0.00001;
 
     private double cpuCost = 0.1406; // dollar cost for 1 vCPU for 1 second
     private double ramCost = 0.0353; // dollar cost for 1 GB for 1 second
@@ -67,10 +68,29 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
                     penaltyCost = penaltyCost + workflowElement.getPenalty() * duration.getMillis() * penaltyTimeFactor;
                 }
             }
-
         }
 
-        double overallCost = leasingCost + penaltyCost;
+        // prefer earlier enactments
+        double earlyEnactmentCost = 0;
+        for (Chromosome.Gene lastGeneOfProcess : lastGeneOfProcessList) {
+            WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(lastGeneOfProcess.getProcessStep().getWorkflowName());
+            if(workflowElement != null) {
+                DateTime deadline = workflowElement.getDeadlineDateTime();
+
+                if (lastGeneOfProcess.getExecutionInterval().getEnd().isBefore(deadline)) {
+                    Duration duration = new Duration(lastGeneOfProcess.getExecutionInterval().getEnd(), deadline);
+
+                    double cost = 10 - duration.getMillis() * earlyEnactmentTimeFactor;
+                    if(cost < 0) {
+                        cost = 0;
+                    }
+
+                    earlyEnactmentCost = earlyEnactmentCost + cost;      // if duration is big its good
+                }
+            }
+        }
+
+        double overallCost = leasingCost + penaltyCost + earlyEnactmentCost;
         return overallCost;
     }
 

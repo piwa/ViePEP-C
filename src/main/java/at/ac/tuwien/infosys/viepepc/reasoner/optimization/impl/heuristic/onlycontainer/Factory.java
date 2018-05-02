@@ -4,6 +4,7 @@ import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Value;
 import org.uncommons.watchmaker.framework.factories.AbstractCandidateFactory;
 
 import javax.xml.ws.Service;
@@ -14,21 +15,23 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
 
     private final List<List<Chromosome.Gene>> template = new ArrayList<>();
     //    private final List<ProcessStep> runningProcesses;
-    private final DateTime startTime;
-    private final long gapDuration;
     private Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
 
-    public Factory(List<WorkflowElement> workflowElementList, DateTime startTime, long gapDuration) {
+    private long defaultContainerStartupTime;
+    private long defaultContainerDeployTime;
 
-        this.startTime = startTime;
-        this.gapDuration = gapDuration;
+    public Factory(List<WorkflowElement> workflowElementList, DateTime startTime, long defaultContainerDeployTime, long defaultContainerStartupTime) {
+
+        this.defaultContainerStartupTime = defaultContainerStartupTime;
+        this.defaultContainerDeployTime = defaultContainerDeployTime;
 
         clonedServiceTypes = new HashMap<>();
         for (WorkflowElement workflowElement : workflowElementList) {
             List<Chromosome.Gene> subChromosome = new ArrayList<>();
-            createStartChromosome(workflowElement, startTime, subChromosome);
+            createStartChromosome(workflowElement, new DateTime(startTime.getMillis()), subChromosome);
             template.add(subChromosome);
         }
+        this.defaultContainerDeployTime = defaultContainerDeployTime;
     }
 
     /***
@@ -73,15 +76,24 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
             ProcessStep processStep = (ProcessStep) currentElement;
             boolean containerAlreadyDeployed = false;
             boolean isRunning = processStep.getStartDate() != null && processStep.getFinishedAt() == null;
+
             if (processStep.getStartDate() != null && processStep.getFinishedAt() != null) {
                 return startTime;
             }
             if (processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isDeploying() || processStep.getScheduledAtContainer().isRunning())) {
                 containerAlreadyDeployed = true;
             }
+
             if (processStep.isHasToBeExecuted() && !isRunning && !containerAlreadyDeployed) {
 
-                startTime = startTime.plus(gapDuration);     // add a small gap
+                if(processStep.getScheduledStartedAt() != null) {
+                    startTime = processStep.getScheduledStartedAt();
+                }
+                else {
+                    startTime = startTime.plus(defaultContainerDeployTime + defaultContainerStartupTime);
+                }
+
+                //startTime = startTime.plus(gapDuration);     // add a small gap
 
                 Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep((ProcessStep) currentElement), startTime, false);
                 chromosome.add(gene);

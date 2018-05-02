@@ -140,7 +140,7 @@ public class ProcessStep extends Element implements Cloneable {
         processStep.setScheduledStartedAt(new DateTime(this.scheduledStartedAt));
         processStep.setNumberOfExecutions(this.numberOfExecutions);
         processStep.setHasToBeExecuted(this.hasToBeExecuted);
-
+        processStep.setLastElement(this.isLastElement());
 
         processStep.setServiceType(serviceType);
 

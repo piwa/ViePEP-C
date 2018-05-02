@@ -43,6 +43,8 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
 
     @Value("${container.default.startup.time}")
     private long defaultContainerStartupTime;
+    @Value("${container.default.deploy.time}")
+    private long defaultContainerDeployTime;
 
     private AdjustableNumberGenerator<Probability> numberGenerator = new AdjustableNumberGenerator<>(new Probability(0.85d));
     private int populationSize = 500;
@@ -64,10 +66,10 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
         Random rng = new MersenneTwisterRNG();
         List<EvolutionaryOperator<Chromosome>> operators = new ArrayList<>(2);
 //        operators.add(new TimeExchangeCrossover());
-        operators.add(new SingleShiftMutation(new PoissonGenerator(2, rng), new DiscreteUniformRangeGenerator(-10000, 10000, rng)));
+        operators.add(new SingleShiftMutation(new PoissonGenerator(2, rng), new DiscreteUniformRangeGenerator(10000, 10000, rng), optimizationTime));
         EvolutionaryOperator<Chromosome> pipeline = new EvolutionPipeline<>(operators);
 
-        EvolutionEngine<Chromosome> engine = new GenerationalEvolutionEngine<>(new Factory(workflowElements, this.optimizationTime, defaultContainerStartupTime),
+        EvolutionEngine<Chromosome> engine = new GenerationalEvolutionEngine<>(new Factory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime),
                 pipeline,
                 fitnessFunction,
                 selectionStrategy,
