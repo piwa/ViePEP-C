@@ -47,7 +47,7 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
     private long defaultContainerDeployTime;
 
     private AdjustableNumberGenerator<Probability> numberGenerator = new AdjustableNumberGenerator<>(new Probability(0.85d));
-    private int populationSize = 500;
+    private int populationSize = 250;
     private int eliteCount = (int) Math.round(populationSize * 0.05);
     private DateTime optimizationTime;
 

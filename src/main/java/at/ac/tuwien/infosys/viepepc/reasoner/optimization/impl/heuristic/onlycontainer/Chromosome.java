@@ -7,8 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 public class Chromosome {
@@ -55,13 +54,38 @@ public class Chromosome {
     }
 
     public static void cloneGenes(Chromosome chromosome, List<List<Chromosome.Gene>> offspring) {
+
+        Map<Gene, Gene> originalToCloneMap = new HashMap<>();
+
         for (List<Chromosome.Gene> subChromosome : chromosome.getGenes()) {
             List<Chromosome.Gene> newSubChromosome = new ArrayList<>();
             for (Chromosome.Gene gene : subChromosome) {
-                newSubChromosome.add(Chromosome.Gene.clone(gene));
+                Gene clonedGene = Chromosome.Gene.clone(gene);
+                originalToCloneMap.put(gene, clonedGene);
+                newSubChromosome.add(clonedGene);
             }
             offspring.add(newSubChromosome);
         }
+
+        for (List<Chromosome.Gene> subChromosome : chromosome.getGenes()) {
+            for (Chromosome.Gene originalGene : subChromosome) {
+                Chromosome.Gene clonedGene = originalToCloneMap.get(originalGene);
+                Set<Chromosome.Gene> originalNextGenes = originalGene.getNextGenes();
+                Set<Chromosome.Gene> originalPreviousGenes = originalGene.getPreviousGenes();
+
+                for (Chromosome.Gene originalNextGene : originalNextGenes) {
+                    clonedGene.addNextGene(originalToCloneMap.get(originalNextGene));
+                }
+
+                for (Chromosome.Gene originalPreviousGene : originalPreviousGenes) {
+                    clonedGene.addPreviousGene(originalToCloneMap.get(originalPreviousGene));
+                }
+
+            }
+        }
+
+
+        return;
     }
 
     public static void moveAllGenesOfARow(List<Chromosome.Gene> row, int startIndex, long deltaTime, boolean toFuture) {
@@ -83,8 +107,8 @@ public class Chromosome {
 
         private final boolean fixed;
         private ProcessStep processStep;
-        private Chromosome.Gene previousGene;
-        private Chromosome.Gene nextGene;
+        private Set<Chromosome.Gene> previousGenes = new HashSet<>();
+        private Set<Gene> nextGenes = new HashSet<>();
 
 
         public Gene(ProcessStep processStep, DateTime startTime, boolean fixed) {
@@ -102,7 +126,22 @@ public class Chromosome {
         }
 
         public static Gene clone(Gene gene) {
-            return new Gene(gene.getProcessStep(), gene.getExecutionInterval().getStart(), gene.isFixed());
+            Gene clonedGene = new Gene(gene.getProcessStep(), gene.getExecutionInterval().getStart(), gene.isFixed());
+            return clonedGene;
+        }
+
+        public void addNextGene(Gene nextGene) {
+            if(this.nextGenes == null) {
+                this.nextGenes = new HashSet<>();
+            }
+            this.nextGenes.add(nextGene);
+        }
+
+        public void addPreviousGene(Gene previousGene) {
+            if(this.previousGenes == null) {
+                this.previousGenes = new HashSet<>();
+            }
+            this.previousGenes.add(previousGene);
         }
     }
 

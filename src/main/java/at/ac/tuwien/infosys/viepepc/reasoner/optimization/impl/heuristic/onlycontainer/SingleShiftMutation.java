@@ -90,20 +90,22 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
                 Interval oldInterval = gene.getExecutionInterval();
                 Interval newInterval = new Interval(oldInterval.getStartMillis() + deltaTime, oldInterval.getEndMillis() + deltaTime);
 
-                Interval overlapNextGene = null;
-                boolean overlappWithNextGene = false;
-                Chromosome.Gene nextGene = gene.getNextGene();
-                if(nextGene != null) {
-                    if (newInterval.getEnd().isAfter(nextGene.getExecutionInterval().getStart())) {
-                        overlappWithNextGene = true;
+                boolean overlapWithNextGene = false;
+                for(Chromosome.Gene nextGene : gene.getNextGenes()) {
+                    if (nextGene != null) {
+                        if (newInterval.getEnd().isAfter(nextGene.getExecutionInterval().getStart())) {
+                            overlapWithNextGene = true;
+                            break;
+                        }
                     }
                 }
 
-                boolean overlappWithPreviousGene = false;
-                Chromosome.Gene previousGene = gene.getPreviousGene();
-                if(previousGene != null) {
-                    if (newInterval.getStart().isBefore(previousGene.getExecutionInterval().getEnd())) {
-                        overlappWithPreviousGene = true;
+                boolean overlapWithPreviousGene = false;
+                for(Chromosome.Gene previousGene : gene.getPreviousGenes()) {
+                    if (previousGene != null) {
+                        if (newInterval.getStart().isBefore(previousGene.getExecutionInterval().getEnd())) {
+                            overlapWithPreviousGene = true;
+                        }
                     }
                 }
 
@@ -112,7 +114,7 @@ public class SingleShiftMutation implements EvolutionaryOperator<Chromosome> {
                     firstEnactmentIsInTheFuture = false;
                 }
 
-                if(!overlappWithNextGene && !overlappWithPreviousGene && firstEnactmentIsInTheFuture) {
+                if(!overlapWithNextGene && !overlapWithPreviousGene && firstEnactmentIsInTheFuture) {
                     gene.setExecutionInterval(newInterval);
                     mutationCount = mutationCount - 1;
                 }

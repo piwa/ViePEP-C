@@ -14,7 +14,6 @@ import java.util.*;
 public class Factory extends AbstractCandidateFactory<Chromosome> {
 
     private final List<List<Chromosome.Gene>> template = new ArrayList<>();
-    //    private final List<ProcessStep> runningProcesses;
     private Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
     private Map<UUID, Chromosome.Gene> stepGeneMap = new HashMap<>();
 
@@ -28,9 +27,9 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
 
         clonedServiceTypes = new HashMap<>();
         for (WorkflowElement workflowElement : workflowElementList) {
+            stepGeneMap = new HashMap<>();
             List<Chromosome.Gene> subChromosome = new ArrayList<>();
             createStartChromosome(workflowElement, new DateTime(startTime.getMillis()), subChromosome);
-
 
             for (Chromosome.Gene gene : subChromosome) {
                 stepGeneMap.put(gene.getProcessStep().getInternId(), gene);
@@ -54,6 +53,8 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
         List<List<Chromosome.Gene>> candidate = new ArrayList<>();
         Random rand = new Random();
 
+        Map<Chromosome.Gene, Chromosome.Gene> originalToCloneMap = new HashMap<>();
+
         for (List<Chromosome.Gene> genes : template) {
 
             List<Chromosome.Gene> subChromosome = new ArrayList<>();
@@ -65,6 +66,7 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
                 }
 
                 Chromosome.Gene newGene = Chromosome.Gene.clone(gene);
+                originalToCloneMap.put(gene, newGene);
 
                 newGene.moveIntervalPlus(intervalDelta);
                 subChromosome.add(newGene);
@@ -72,6 +74,23 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
 
             candidate.add(subChromosome);
 
+        }
+
+        for (List<Chromosome.Gene> subChromosome : template) {
+            for (Chromosome.Gene originalGene : subChromosome) {
+                Chromosome.Gene clonedGene = originalToCloneMap.get(originalGene);
+                Set<Chromosome.Gene> originalNextGenes = originalGene.getNextGenes();
+                Set<Chromosome.Gene> originalPreviousGenes = originalGene.getPreviousGenes();
+
+                for (Chromosome.Gene originalNextGene : originalNextGenes) {
+                    clonedGene.addNextGene(originalToCloneMap.get(originalNextGene));
+                }
+
+                for (Chromosome.Gene originalPreviousGene : originalPreviousGenes) {
+                    clonedGene.addPreviousGene(originalToCloneMap.get(originalPreviousGene));
+                }
+
+            }
         }
 
         return new Chromosome(candidate);
@@ -161,7 +180,16 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
             if(andMembersMap.containsKey(gene)) {
                 List<Chromosome.Gene> andMembers = andMembersMap.get(gene);
                 for (Chromosome.Gene andMember : andMembers) {
-                    andMember.setNextGene(gene.getNextGene());
+                    andMember.getNextGenes().addAll(gene.getNextGenes());
+
+                    for(Chromosome.Gene beforeAnd : gene.getPreviousGenes()) {
+                        beforeAnd.getNextGenes().add(andMember);
+                    }
+
+                    for(Chromosome.Gene afterAnd : andMember.getNextGenes()) {
+                        afterAnd.getPreviousGenes().add(andMember);
+                    }
+
                 }
             }
         }
@@ -174,12 +202,12 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
             ProcessStep processStep = (ProcessStep) currentElement;
 
             if(processStep.isHasToBeExecuted()) {
-                if (previousProcessStep != null) {
+                if (previousProcessStep != null && stepGeneMap.get(previousProcessStep.getInternId()) != null) {
                     Chromosome.Gene currentGene = stepGeneMap.get(processStep.getInternId());
                     Chromosome.Gene previousGene = stepGeneMap.get(previousProcessStep.getInternId());
 
-                    previousGene.setNextGene(currentGene);
-                    currentGene.setPreviousGene(previousGene);
+                    previousGene.addNextGene(currentGene);
+                    currentGene.addPreviousGene(previousGene);
                 }
 
                 return processStep;
@@ -196,17 +224,24 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
                     previousProcessStep = fillProcessStepChainRec(element1, previousProcessStep, andMembersMap);
                 }
             } else if (currentElement instanceof ANDConstruct || currentElement instanceof XORConstruct) {
+
                 ProcessStep tempPreviousProcessStep = null;
                 List<Chromosome.Gene> geneList = new ArrayList<>();
+                ProcessStep lastNotNullTempPreviousProcessStep = null;
+
                 for (Element element1 : currentElement.getElements()) {
                     tempPreviousProcessStep = fillProcessStepChainRec(element1, previousProcessStep, andMembersMap);
-                    if(tempPreviousProcessStep != null) {
+                    if(tempPreviousProcessStep != null && stepGeneMap.get(tempPreviousProcessStep.getInternId()) != null && tempPreviousProcessStep != previousProcessStep) {
                         geneList.add(stepGeneMap.get(tempPreviousProcessStep.getInternId()));
+                        lastNotNullTempPreviousProcessStep = tempPreviousProcessStep;
                     }
+
                 }
-                if(tempPreviousProcessStep != null) {
-                    andMembersMap.put(stepGeneMap.get(tempPreviousProcessStep.getInternId()), geneList);
+
+                if(lastNotNullTempPreviousProcessStep != null && stepGeneMap.get(lastNotNullTempPreviousProcessStep.getInternId()) != null) {
+                    andMembersMap.put(stepGeneMap.get(lastNotNullTempPreviousProcessStep.getInternId()), geneList);
                 }
+
                 previousProcessStep = tempPreviousProcessStep;
             } else if (currentElement instanceof LoopConstruct) {
 

@@ -31,21 +31,23 @@ public class OrderMaintainer {
         for (int i = 0; i < row.size(); i++) {
             Chromosome.Gene currentGene = row.get(i);
 
-            Chromosome.Gene previousGene = currentGene.getPreviousGene();
-            if (previousGene != null) {
-                if (currentGene.getExecutionInterval().getStart().isBefore(previousGene.getExecutionInterval().getEnd())) {
-                    this.firstGene = previousGene;
-                    this.secondGene = currentGene;
-                    return false;
+            for(Chromosome.Gene previousGene : currentGene.getPreviousGenes()) {
+                if (previousGene != null) {
+                    if (currentGene.getExecutionInterval().getStart().isBefore(previousGene.getExecutionInterval().getEnd())) {
+                        this.firstGene = previousGene;
+                        this.secondGene = currentGene;
+                        return false;
+                    }
                 }
             }
 
-            Chromosome.Gene nextGene = currentGene.getNextGene();
-            if (nextGene != null) {
-                if (currentGene.getExecutionInterval().getEnd().isAfter(nextGene.getExecutionInterval().getStart())) {
-                    this.firstGene = currentGene;
-                    this.secondGene = nextGene;
-                    return false;
+            for(Chromosome.Gene nextGene : currentGene.getNextGenes()){
+                if (nextGene != null) {
+                    if (currentGene.getExecutionInterval().getEnd().isAfter(nextGene.getExecutionInterval().getStart())) {
+                        this.firstGene = currentGene;
+                        this.secondGene = nextGene;
+                        return false;
+                    }
                 }
             }
 
