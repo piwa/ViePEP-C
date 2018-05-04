@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,9 @@ public class Receiver {
     private Reasoning reasoning;
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
+
+    @Value("${optimization.after.task.done}")
+    private boolean optimizationAfterTaskDone = false;
 
     @RabbitListener(queues = "${messagebus.queue.name}")
     public void receiveMessage(@Payload Message message) {
@@ -97,7 +101,9 @@ public class Receiver {
                 log.info("Workflow done. Workflow: " + workflowById);
             }
         }
-        reasoning.setNextOptimizeTimeNow();
+        if(optimizationAfterTaskDone) {
+            reasoning.setNextOptimizeTimeNow();
+        }
 
     }
 

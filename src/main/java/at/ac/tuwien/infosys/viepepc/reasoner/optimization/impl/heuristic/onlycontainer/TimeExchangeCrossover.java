@@ -88,6 +88,9 @@ public class TimeExchangeCrossover extends AbstractCrossover<Chromosome> {
 
         }
 
+        orderMaintainer.checkAndMaintainOrder(offspring1Chromosome);
+        orderMaintainer.checkAndMaintainOrder(offspring2Chromosome);
+
         if (!orderMaintainer.orderIsOk(offspring1Chromosome.getGenes())) {
             log.error("Order is not ok in offspring1: " + offspring1Chromosome.toString());
         }

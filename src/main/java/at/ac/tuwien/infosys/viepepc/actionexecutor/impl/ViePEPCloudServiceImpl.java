@@ -130,7 +130,8 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         container.setDeploying(true);
         if (simulate) {
 
-            TimeUnit.MILLISECONDS.sleep(getSleepTime(imageAvailableAverage, imageAvailableStdDev));
+//            TimeUnit.MILLISECONDS.sleep(getSleepTime(imageAvailableAverage, imageAvailableStdDev));
+            TimeUnit.MILLISECONDS.sleep(0);
             container = viePEPAWSFargateSimulation.startContainer(container);
 
         } else {

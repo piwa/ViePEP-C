@@ -55,6 +55,8 @@ public class ReasoningImpl implements Reasoning {
     private InMemoryCacheImpl inMemoryCache;
     @Autowired
     private ActionExecutorUtilities actionExecutorUtilities;
+    @Autowired
+    private PrintRunningInfoOnlyContainer printRunningInfoOnlyContainer;
 
     @Value("${reasoner.autoTerminate.wait.time}")
     private int autoTerminateWait;
@@ -64,10 +66,12 @@ public class ReasoningImpl implements Reasoning {
     private boolean run = true;
 
     private AtomicLong lastTerminateCheckTime = new AtomicLong(0);
+    private AtomicLong lastPrintStatusTime = new AtomicLong(0);
     private AtomicLong nextOptimizeTime = new AtomicLong(0);
 
     private static final long POLL_INTERVAL_MILLISECONDS = 1000;
     private static final long TERMINATE_CHECK_INTERVAL_MILLISECONDS = 10000;
+    private static final long PRINT_STATUS_INTERVAL_MILLISECONDS = 60000;
 
     @Value("${min.optimization.interval.ms}")
     private int minTauTDifference;
@@ -109,9 +113,14 @@ public class ReasoningImpl implements Reasoning {
                         }
                 	}
 
+                    if (now - lastPrintStatusTime.get() > PRINT_STATUS_INTERVAL_MILLISECONDS) {
+                        lastPrintStatusTime.set(now);
+                        printRunningInfoOnlyContainer.printRunningInformation();
+                    }
+
                 	if (now >= nextOptimizeTime.get()) {
                 		 long difference = performOptimisation();
-                		 nextOptimizeTime.set(now + difference);
+                		 nextOptimizeTime.set(DateTime.now().getMillis() + difference);
                 	}
                    
                 	Thread.sleep(POLL_INTERVAL_MILLISECONDS);

@@ -37,9 +37,6 @@ public class ViePEPDockerSimulationServiceImpl {
     @Value("${viepep.node.port.available}")
     private String encodedHostNodeAvailablePorts;
 
-    @Autowired
-    private PlacementHelper placementHelper;
-
     public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
 
 //        StopWatch stopWatch = new StopWatch();

@@ -216,7 +216,7 @@ public class WithVMDeploymentController {
 
         try {
             dockerControllerService.startContainer(vm, container);
-            ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.START);
+            ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.START);
             reportDaoService.save(report);
             return true;
 
@@ -244,7 +244,7 @@ public class WithVMDeploymentController {
 
     private void resetContainer(Container container, VirtualMachine vm, String failureReason) {
         if(container != null) {
-            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.FAILED, failureReason);
+            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, failureReason);
             reportDaoService.save(reportContainer);
             container.shutdownContainer();
         }

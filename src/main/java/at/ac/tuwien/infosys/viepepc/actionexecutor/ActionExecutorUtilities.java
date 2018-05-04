@@ -50,14 +50,14 @@ public class ActionExecutorUtilities {
                     VirtualMachine vm = container.getVirtualMachine();
                     log.info("Stop Container: " + container + " on VM: " + vm);
 
-                    ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), vm.getInstanceId(), Action.STOPPED);
+                    ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.STOPPED);
                     reportDaoService.save(report);
 
                     containerControllerService.removeContainer(container);
                 } else {
                     log.info("Stop Container: " + container);
 
-                    ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), null, Action.STOPPED);
+                    ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(),null, Action.STOPPED);
                     reportDaoService.save(report);
 
                     containerControllerService.removeContainer(container);

@@ -15,6 +15,7 @@ import at.ac.tuwien.infosys.viepepc.serviceexecutor.ServiceExecutionController;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 @Scope("prototype")
 @Component
 @Slf4j
-@Profile("!OnlyContainerGeneticAlgorithm")
+@Conditional(NotOnlyContainerCondition.class)
 public class ProcessOptimizationResultsImpl implements ProcessOptimizationResults {
 
 

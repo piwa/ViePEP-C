@@ -104,6 +104,8 @@ public class MutationWithMoving implements EvolutionaryOperator<Chromosome> {
 
         Chromosome newChromosome = new Chromosome(newCandidate);
 
+        orderMaintainer.checkAndMaintainOrder(newChromosome);
+
         if(!orderMaintainer.orderIsOk(newCandidate)) {
             log.error("Order is not ok: " + newCandidate.toString());
         }

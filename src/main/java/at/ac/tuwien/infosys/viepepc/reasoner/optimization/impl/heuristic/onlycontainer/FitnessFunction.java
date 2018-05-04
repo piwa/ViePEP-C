@@ -30,12 +30,16 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
 
-    private double leasingCostFactor = 100;
-    private double penaltyTimeFactor = 0.0001;
-    private double earlyEnactmentTimeFactor = 0.00001;
+    private double leasingCostFactor = 1;
+    private double penaltyTimeFactor = 0.01;
+    private double earlyEnactmentTimeFactor = 0.000001;
 
-    private double cpuCost = 0.1406; // dollar cost for 1 vCPU for 1 second
-    private double ramCost = 0.0353; // dollar cost for 1 GB for 1 second
+    private double cpuCost = 14; // dollar cost for 1 vCPU for 1 second
+    private double ramCost =  3; // dollar cost for 1 GB for 1 second
+
+    @Getter private double leasingCost = 0;
+    @Getter private double penaltyCost = 0;
+    @Getter private double earlyEnactmentCost = 0;
 
     @Override
     public double getFitness(Chromosome chromosome, List<? extends Chromosome> list) {
@@ -48,8 +52,9 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         double leasingCost = 0;
         for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
             try {
+                Duration deploymentDuration = serviceTypeSchedulingUnit.getDeploymentInterval().toDuration();
                 ContainerConfiguration containerConfiguration = optimizationUtility.getContainerConfiguration(serviceTypeSchedulingUnit.getServiceType());
-                leasingCost = leasingCost + (containerConfiguration.getCores() * cpuCost + containerConfiguration.getRam() / 1000 * ramCost) * leasingCostFactor;
+                leasingCost = leasingCost + (containerConfiguration.getCores() * cpuCost * deploymentDuration.getStandardSeconds()  + containerConfiguration.getRam() / 1000 * ramCost * deploymentDuration.getStandardSeconds()) * leasingCostFactor;
             } catch (ContainerConfigurationNotFoundException e) {
                 log.error("Exception", e);
             }
@@ -80,18 +85,21 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
                 if (lastGeneOfProcess.getExecutionInterval().getEnd().isBefore(deadline)) {
                     Duration duration = new Duration(lastGeneOfProcess.getExecutionInterval().getEnd(), deadline);
 
-                    double cost = 10 - duration.getMillis() * earlyEnactmentTimeFactor;
+                    double cost = leasingCost / 100 - duration.getMillis() * earlyEnactmentTimeFactor;
                     if(cost < 0) {
                         cost = 0;
                     }
 
-                    earlyEnactmentCost = earlyEnactmentCost + cost;      // if duration is big its good
+//                    earlyEnactmentCost = earlyEnactmentCost + cost;      // if duration is big its good
                 }
             }
         }
 
-        double overallCost = leasingCost + penaltyCost + earlyEnactmentCost;
-        return overallCost;
+        this.leasingCost = leasingCost;
+        this.penaltyCost = penaltyCost;
+        this.earlyEnactmentCost = earlyEnactmentCost;
+
+        return leasingCost + penaltyCost + earlyEnactmentCost;
     }
 
 

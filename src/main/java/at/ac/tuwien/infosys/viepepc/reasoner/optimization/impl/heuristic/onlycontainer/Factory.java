@@ -2,6 +2,8 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlyco
 
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
+import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,9 +15,10 @@ import java.util.*;
 @Slf4j
 public class Factory extends AbstractCandidateFactory<Chromosome> {
 
-    private final List<List<Chromosome.Gene>> template = new ArrayList<>();
+    @Getter private final List<List<Chromosome.Gene>> template = new ArrayList<>();
     private Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
     private Map<UUID, Chromosome.Gene> stepGeneMap = new HashMap<>();
+    private OrderMaintainer orderMaintainer = new OrderMaintainer();
 
     private long defaultContainerStartupTime;
     private long defaultContainerDeployTime;
@@ -31,9 +34,8 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
             List<Chromosome.Gene> subChromosome = new ArrayList<>();
             createStartChromosome(workflowElement, new DateTime(startTime.getMillis()), subChromosome);
 
-            for (Chromosome.Gene gene : subChromosome) {
-                stepGeneMap.put(gene.getProcessStep().getInternId(), gene);
-            }
+            subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStep().getInternId(), gene));
+
 
             fillProcessStepChain(workflowElement, subChromosome);
 
@@ -41,6 +43,8 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
         }
         this.defaultContainerDeployTime = defaultContainerDeployTime;
     }
+
+
 
     /***
      * Guarantee that the process step order is preserved and that there are no overlapping steps
@@ -82,18 +86,16 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
                 Set<Chromosome.Gene> originalNextGenes = originalGene.getNextGenes();
                 Set<Chromosome.Gene> originalPreviousGenes = originalGene.getPreviousGenes();
 
-                for (Chromosome.Gene originalNextGene : originalNextGenes) {
-                    clonedGene.addNextGene(originalToCloneMap.get(originalNextGene));
-                }
+                originalNextGenes.stream().map(originalToCloneMap::get).forEach(clonedGene::addNextGene);
 
-                for (Chromosome.Gene originalPreviousGene : originalPreviousGenes) {
-                    clonedGene.addPreviousGene(originalToCloneMap.get(originalPreviousGene));
-                }
-
+                originalPreviousGenes.stream().map(originalToCloneMap::get).forEach(clonedGene::addPreviousGene);
             }
         }
 
-        return new Chromosome(candidate);
+        Chromosome newChromosome = new Chromosome(candidate);
+        orderMaintainer.checkAndMaintainOrder(newChromosome);
+
+        return newChromosome;
     }
 
 
@@ -102,8 +104,9 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
             ProcessStep processStep = (ProcessStep) currentElement;
             boolean containerAlreadyDeployed = false;
             boolean isRunning = processStep.getStartDate() != null && processStep.getFinishedAt() == null;
+            boolean isDone = processStep.getStartDate() != null && processStep.getFinishedAt() != null;
 
-            if (processStep.getStartDate() != null && processStep.getFinishedAt() != null) {
+            if (isDone) {
                 return startTime;
             }
             if (processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isDeploying() || processStep.getScheduledAtContainer().isRunning())) {
@@ -130,7 +133,9 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
                 if (realStartTime == null) {
                     realStartTime = ((ProcessStep) currentElement).getScheduledStartedAt();
                 }
-                Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep((ProcessStep) currentElement), realStartTime, true);
+
+                boolean isFixed = isRunning || isDone;
+                Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep((ProcessStep) currentElement), realStartTime, isFixed);
                 chromosome.add(gene);
 
                 return gene.getExecutionInterval().getEnd();
@@ -182,13 +187,9 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
                 for (Chromosome.Gene andMember : andMembers) {
                     andMember.getNextGenes().addAll(gene.getNextGenes());
 
-                    for(Chromosome.Gene beforeAnd : gene.getPreviousGenes()) {
-                        beforeAnd.getNextGenes().add(andMember);
-                    }
+                    gene.getPreviousGenes().forEach(beforeAnd -> beforeAnd.getNextGenes().add(andMember));
 
-                    for(Chromosome.Gene afterAnd : andMember.getNextGenes()) {
-                        afterAnd.getPreviousGenes().add(andMember);
-                    }
+                    andMember.getNextGenes().forEach(afterAnd -> afterAnd.getPreviousGenes().add(andMember));
 
                 }
             }
@@ -202,7 +203,7 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
             ProcessStep processStep = (ProcessStep) currentElement;
 
             if(processStep.isHasToBeExecuted()) {
-                if (previousProcessStep != null && stepGeneMap.get(previousProcessStep.getInternId()) != null) {
+                if (previousProcessStep != null && stepGeneMap.get(previousProcessStep.getInternId()) != null && stepGeneMap.get(processStep.getInternId()) != null) {
                     Chromosome.Gene currentGene = stepGeneMap.get(processStep.getInternId());
                     Chromosome.Gene previousGene = stepGeneMap.get(previousProcessStep.getInternId());
 
@@ -230,6 +231,7 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
                 ProcessStep lastNotNullTempPreviousProcessStep = null;
 
                 for (Element element1 : currentElement.getElements()) {
+//                    ProcessStep firstProcessStepOfBranch = getFirstProcessStepOfBranch(element1);
                     tempPreviousProcessStep = fillProcessStepChainRec(element1, previousProcessStep, andMembersMap);
                     if(tempPreviousProcessStep != null && stepGeneMap.get(tempPreviousProcessStep.getInternId()) != null && tempPreviousProcessStep != previousProcessStep) {
                         geneList.add(stepGeneMap.get(tempPreviousProcessStep.getInternId()));
@@ -255,6 +257,53 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
         }
     }
 
+
+    private ProcessStep getFirstProcessStepOfBranch(Element currentElement) {
+        ProcessStep returnProcessStep = null;
+        if (currentElement instanceof ProcessStep) {
+            ProcessStep processStep = (ProcessStep) currentElement;
+
+            if (processStep.isHasToBeExecuted()) {
+                return processStep;
+            }
+        } else {
+            if (currentElement instanceof WorkflowElement) {
+                for (Element element : currentElement.getElements()) {
+                    returnProcessStep = getFirstProcessStepOfBranch(element);
+                    if(returnProcessStep != null) {
+                        return returnProcessStep;
+                    }
+                }
+            } else if (currentElement instanceof Sequence) {
+                for (Element element1 : currentElement.getElements()) {
+                    returnProcessStep = getFirstProcessStepOfBranch(element1);
+                    if(returnProcessStep != null) {
+                        return returnProcessStep;
+                    }
+                }
+            } else if (currentElement instanceof ANDConstruct || currentElement instanceof XORConstruct) {
+                for (Element element1 : currentElement.getElements()) {
+                    returnProcessStep = getFirstProcessStepOfBranch(element1);
+                    if(returnProcessStep != null) {
+                        return returnProcessStep;
+                    }
+                }
+            } else if (currentElement instanceof LoopConstruct) {
+
+                if ((currentElement.getNumberOfExecutions() < ((LoopConstruct) currentElement).getNumberOfIterationsToBeExecuted())) {
+                    for (Element subElement : currentElement.getElements()) {
+                        returnProcessStep = getFirstProcessStepOfBranch(subElement);
+                        if(returnProcessStep != null) {
+                            return returnProcessStep;
+                        }
+                    }
+                }
+
+
+            }
+        }
+        return returnProcessStep;
+    }
 
 
     private ProcessStep getClonedProcessStep(ProcessStep processStep) {

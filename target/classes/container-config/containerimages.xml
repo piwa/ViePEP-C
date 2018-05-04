@@ -3,78 +3,78 @@
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service1</serviceType>
     </containerImage>
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service2</serviceType>
     </containerImage>
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service3</serviceType>
     </containerImage>
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service4</serviceType>
     </containerImage>
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service5</serviceType>
     </containerImage>
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service6</serviceType>
     </containerImage>
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service7</serviceType>
     </containerImage>
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service8</serviceType>
     </containerImage>
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service9</serviceType>
     </containerImage>
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service10</serviceType>
     </containerImage>
     <containerImage>
         <imageName>viepep.backend.services.small</imageName>
         <repoName>piwa</repoName>
-        <deployTime>37000</deployTime>
-        <startupTime>3000</startupTime>
+        <deployTime>3395</deployTime>
+        <startupTime>1047</startupTime>
         <serviceType>Service11</serviceType>
     </containerImage>
 </ContainerImages>

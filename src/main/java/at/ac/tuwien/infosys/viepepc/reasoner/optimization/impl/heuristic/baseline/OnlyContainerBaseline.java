@@ -1,12 +1,17 @@
-package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer;
+package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.baseline;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.OptimizationUtility;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Factory;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.ServiceTypeSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.withvm.AbstractHeuristicImpl;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
@@ -15,29 +20,13 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.uncommons.maths.number.AdjustableNumberGenerator;
-import org.uncommons.maths.random.MersenneTwisterRNG;
-import org.uncommons.maths.random.PoissonGenerator;
-import org.uncommons.maths.random.Probability;
-import org.uncommons.watchmaker.framework.EvolutionEngine;
-import org.uncommons.watchmaker.framework.EvolutionaryOperator;
-import org.uncommons.watchmaker.framework.GenerationalEvolutionEngine;
-import org.uncommons.watchmaker.framework.SelectionStrategy;
-import org.uncommons.watchmaker.framework.operators.EvolutionPipeline;
-import org.uncommons.watchmaker.framework.selection.TournamentSelection;
-import org.uncommons.watchmaker.framework.termination.Stagnation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.UUID;
 
 @Slf4j
-public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessInstancePlacementProblem {
+public class OnlyContainerBaseline extends AbstractHeuristicImpl implements ProcessInstancePlacementProblem {
 
-    @Autowired
-    private FitnessFunction fitnessFunction;
     @Autowired
     private OptimizationUtility optimizationUtility;
 
@@ -46,39 +35,23 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
     @Value("${container.default.deploy.time}")
     private long defaultContainerDeployTime;
 
-    private AdjustableNumberGenerator<Probability> numberGenerator = new AdjustableNumberGenerator<>(new Probability(0.85d));
-    private int populationSize = 250;
-    private int eliteCount = (int) Math.round(populationSize * 0.05);
     private DateTime optimizationTime;
 
     @Override
     public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
 
+
         List<WorkflowElement> workflowElements = getRunningWorkflowInstancesSorted();
+
         this.optimizationTime = DateTime.now();
 
         if (workflowElements.size() == 0) {
             return new OptimizationResultImpl();
         }
 
-        SelectionStrategy<Object> selectionStrategy = new TournamentSelection(numberGenerator);
+        Factory factory = new Factory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime);
 
-        Random rng = new MersenneTwisterRNG();
-        List<EvolutionaryOperator<Chromosome>> operators = new ArrayList<>(2);
-        operators.add(new TimeExchangeCrossover());
-        operators.add(new MutationWithMoving(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(120000, 120000, rng), optimizationTime));
-        operators.add(new SingleShiftMutation(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(60000, 60000, rng), optimizationTime));
-        EvolutionaryOperator<Chromosome> pipeline = new EvolutionPipeline<>(operators);
-
-        EvolutionEngine<Chromosome> engine = new GenerationalEvolutionEngine<>(new Factory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime),
-                pipeline,
-                fitnessFunction,
-                selectionStrategy,
-                rng);
-
-        Chromosome winner = engine.evolve(populationSize, eliteCount, new Stagnation(20, false));
-
-        return createOptimizationResult(winner, workflowElements);
+        return createOptimizationResult(new Chromosome(factory.getTemplate()), workflowElements);
     }
 
     private OptimizationResult createOptimizationResult(Chromosome winner, List<WorkflowElement> workflowElements) {
@@ -89,15 +62,7 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
             placementHelper.getFlattenWorkflow(flattenWorkflowList, workflowElement);
         }
 
-        fitnessFunction.getFitness(winner, null);
-        StringBuilder builder = new StringBuilder();
-        builder.append("Optimization Result:\n--------------------------- Winner Chromosome ---------------------------- \n").append(winner.toString()).append("\n");
-        builder.append("----------------------------- Winner Fitness -----------------------------\n");
-        builder.append("Leasing=").append(fitnessFunction.getLeasingCost()).append("\n");
-        builder.append("Penalty=").append(fitnessFunction.getPenaltyCost()).append("\n");
-        builder.append("Early Enactment=").append(fitnessFunction.getEarlyEnactmentCost()).append("\n");
-        builder.append("Total Fitness=").append(fitnessFunction.getLeasingCost() + fitnessFunction.getPenaltyCost() + fitnessFunction.getEarlyEnactmentCost()).append("\n");
-        log.info(builder.toString());
+        System.out.println(winner.toString());
 
         List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnitList = optimizationUtility.getRequiredServiceTypes(winner);
         Duration duration = new Duration(optimizationTime, DateTime.now());
@@ -151,7 +116,6 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
 
         return optimizationResult;
     }
-
 
     @Override
     public void initializeParameters() {

@@ -137,7 +137,7 @@ public class Watchdog {
     }
 
     private void resetContainerAndProcessStep(VirtualMachine vm, ProcessStep processStep, String reason) {
-        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED, reason);
+        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), processStep.getScheduledAtContainer().getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, reason);
         reportDaoService.save(reportContainer);
 
         inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());

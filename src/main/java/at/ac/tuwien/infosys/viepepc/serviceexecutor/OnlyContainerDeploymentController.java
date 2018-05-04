@@ -84,7 +84,7 @@ public class OnlyContainerDeploymentController implements Runnable {
 
             try {
                 dockerControllerService.startContainer(container);
-                ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), null, Action.START);
+                ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(),null, Action.START);
                 reportDaoService.save(report);
                 return true;
 
@@ -98,7 +98,7 @@ public class OnlyContainerDeploymentController implements Runnable {
 
     private void reset(String failureReason) {
         if(container != null) {
-            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), null, Action.FAILED, failureReason);
+            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(),null, Action.FAILED, failureReason);
             reportDaoService.save(reportContainer);
             container.shutdownContainer();
         }

@@ -73,13 +73,9 @@ public class Chromosome {
                 Set<Chromosome.Gene> originalNextGenes = originalGene.getNextGenes();
                 Set<Chromosome.Gene> originalPreviousGenes = originalGene.getPreviousGenes();
 
-                for (Chromosome.Gene originalNextGene : originalNextGenes) {
-                    clonedGene.addNextGene(originalToCloneMap.get(originalNextGene));
-                }
+                originalNextGenes.stream().map(originalToCloneMap::get).forEach(clonedGene::addNextGene);
 
-                for (Chromosome.Gene originalPreviousGene : originalPreviousGenes) {
-                    clonedGene.addPreviousGene(originalToCloneMap.get(originalPreviousGene));
-                }
+                originalPreviousGenes.stream().map(originalToCloneMap::get).forEach(clonedGene::addPreviousGene);
 
             }
         }

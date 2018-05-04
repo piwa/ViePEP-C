@@ -9,8 +9,11 @@ import java.util.List;
 @Slf4j
 public class OrderMaintainer {
 
-    @Getter private Chromosome.Gene firstGene;
-    @Getter private Chromosome.Gene secondGene;
+    @Getter
+    private Chromosome.Gene firstGene;
+    @Getter
+    private Chromosome.Gene secondGene;
+    private boolean moveBack = false;
 
     public void checkAndMaintainOrder(Chromosome chromosome) {
         for (List<Chromosome.Gene> row : chromosome.getGenes()) {
@@ -22,6 +25,9 @@ public class OrderMaintainer {
         while (!rowOrderIsOk(rowOffspring)) {
             long duration = new Duration(firstGene.getExecutionInterval().getEnd(), secondGene.getExecutionInterval().getStart()).getMillis();
             duration = Math.abs(duration);
+            if(moveBack && !firstGene.isFixed()) {
+                firstGene.moveIntervalMinus(duration);
+            }
             secondGene.moveIntervalPlus(duration);
         }
     }
@@ -31,21 +37,23 @@ public class OrderMaintainer {
         for (int i = 0; i < row.size(); i++) {
             Chromosome.Gene currentGene = row.get(i);
 
-            for(Chromosome.Gene previousGene : currentGene.getPreviousGenes()) {
+            for (Chromosome.Gene previousGene : currentGene.getPreviousGenes()) {
                 if (previousGene != null) {
                     if (currentGene.getExecutionInterval().getStart().isBefore(previousGene.getExecutionInterval().getEnd())) {
                         this.firstGene = previousGene;
                         this.secondGene = currentGene;
+                        this.moveBack = true;
                         return false;
                     }
                 }
             }
 
-            for(Chromosome.Gene nextGene : currentGene.getNextGenes()){
+            for (Chromosome.Gene nextGene : currentGene.getNextGenes()) {
                 if (nextGene != null) {
                     if (currentGene.getExecutionInterval().getEnd().isAfter(nextGene.getExecutionInterval().getStart())) {
                         this.firstGene = currentGene;
                         this.secondGene = nextGene;
+                        this.moveBack = false;
                         return false;
                     }
                 }
@@ -58,8 +66,25 @@ public class OrderMaintainer {
     public boolean orderIsOk(List<List<Chromosome.Gene>> chromosome) {
 
         for (List<Chromosome.Gene> row : chromosome) {
-            if(!rowOrderIsOk(row)) {
+            if (!rowOrderIsOk(row)) {
+
+                StringBuilder buffer = new StringBuilder();
+
+                for (Chromosome.Gene cell : row) {
+                    buffer.append("{");
+                    buffer.append("processStep=" + cell.getProcessStep().getName() + ", ");
+                    buffer.append("start=" + cell.getExecutionInterval().getStart().toString() + ", ");
+                    buffer.append("end=" + cell.getExecutionInterval().getEnd().toString() + ", ");
+                    buffer.append("fixed=" + cell.isFixed());
+                    buffer.append("} ");
+                }
+                buffer.append('\n');
+
+                log.error("Order of row is not ok: " + buffer.toString());
+
+                checkAndMaintainOrder(row);
                 rowOrderIsOk(row);
+
                 return false;
             }
         }
