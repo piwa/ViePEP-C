@@ -31,14 +31,18 @@ public class PrintRunningInfoOnlyContainer {
 
 
     public void printRunningInformation() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Running Workflows:\n");
-        printRunningInformation(stringBuilder);
-        stringBuilder.append("\n");
+        try {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("Running Workflows:\n");
+            printRunningInformation(stringBuilder);
+            stringBuilder.append("\n");
 
-        printWaitingInformation(stringBuilder);
+            printWaitingInformation(stringBuilder);
 
-        log.info(stringBuilder.toString());
+            log.info(stringBuilder.toString());
+        } catch (Exception ex) {
+            log.error("Exception while printing running information. But is ignored :D");
+        }
     }
 
 

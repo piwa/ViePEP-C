@@ -1,13 +1,15 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer;
 
+import lombok.Getter;
 import org.uncommons.maths.number.NumberGenerator;
 
 import java.util.Random;
 
+
 public class DiscreteUniformRangeGenerator  implements NumberGenerator<Integer> {
     private final Random rng;
-    private final int maximumValue;
-    private final int minimumValue;
+    @Getter private int maximumValue;
+    @Getter private int minimumValue;
 
     public DiscreteUniformRangeGenerator(int minimumValue, int maximumValue, Random rng) {
         this.rng = rng;

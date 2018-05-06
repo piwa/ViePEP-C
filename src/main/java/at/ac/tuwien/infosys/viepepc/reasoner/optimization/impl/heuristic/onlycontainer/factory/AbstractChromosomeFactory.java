@@ -1,105 +1,45 @@
-package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer;
+package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.factory;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
-import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
-import lombok.Getter;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Value;
 import org.uncommons.watchmaker.framework.factories.AbstractCandidateFactory;
 
-import javax.xml.ws.Service;
 import java.util.*;
 
 @Slf4j
-public class Factory extends AbstractCandidateFactory<Chromosome> {
+public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory<Chromosome> {
 
-    @Getter private final List<List<Chromosome.Gene>> template = new ArrayList<>();
-    private Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
-    private Map<UUID, Chromosome.Gene> stepGeneMap = new HashMap<>();
-    private OrderMaintainer orderMaintainer = new OrderMaintainer();
+    protected Map<UUID, Chromosome.Gene> stepGeneMap = new HashMap<>();
+    protected Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
 
-    private long defaultContainerStartupTime;
-    private long defaultContainerDeployTime;
+    protected long defaultContainerStartupTime;
+    protected long defaultContainerDeployTime;
 
-    public Factory(List<WorkflowElement> workflowElementList, DateTime startTime, long defaultContainerDeployTime, long defaultContainerStartupTime) {
+    protected Chromosome.Gene firstGene;
+    protected Chromosome.Gene lastGene;
 
+    public AbstractChromosomeFactory(long defaultContainerStartupTime, long defaultContainerDeployTime) {
         this.defaultContainerStartupTime = defaultContainerStartupTime;
         this.defaultContainerDeployTime = defaultContainerDeployTime;
-
-        clonedServiceTypes = new HashMap<>();
-        for (WorkflowElement workflowElement : workflowElementList) {
-            stepGeneMap = new HashMap<>();
-            List<Chromosome.Gene> subChromosome = new ArrayList<>();
-            createStartChromosome(workflowElement, new DateTime(startTime.getMillis()), subChromosome);
-
-            subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStep().getInternId(), gene));
-
-
-            fillProcessStepChain(workflowElement, subChromosome);
-
-            template.add(subChromosome);
-        }
-        this.defaultContainerDeployTime = defaultContainerDeployTime;
     }
 
-
-
-    /***
-     * Guarantee that the process step order is preserved and that there are no overlapping steps
-     * @param random
-     * @return
-     */
     @Override
-    public Chromosome generateRandomCandidate(Random random) {
+    public abstract Chromosome generateRandomCandidate(Random random);
 
-        List<List<Chromosome.Gene>> candidate = new ArrayList<>();
-        Random rand = new Random();
+    protected List<Chromosome.Gene> createStartChromosome(Element currentElement, DateTime startTime) {
+        this.firstGene = null;
+        this.lastGene = null;
 
-        Map<Chromosome.Gene, Chromosome.Gene> originalToCloneMap = new HashMap<>();
+        List<Chromosome.Gene> subChromosome = new ArrayList<>();
+        createStartChromosomeRec(currentElement, startTime, subChromosome);
+        return subChromosome;
 
-        for (List<Chromosome.Gene> genes : template) {
-
-            List<Chromosome.Gene> subChromosome = new ArrayList<>();
-            long intervalDelta = 0;
-            for (Chromosome.Gene gene : genes) {
-
-                if (!gene.isFixed()) {
-                    intervalDelta = intervalDelta + rand.nextInt(60000);    // max 10 seconds gap
-                }
-
-                Chromosome.Gene newGene = Chromosome.Gene.clone(gene);
-                originalToCloneMap.put(gene, newGene);
-
-                newGene.moveIntervalPlus(intervalDelta);
-                subChromosome.add(newGene);
-            }
-
-            candidate.add(subChromosome);
-
-        }
-
-        for (List<Chromosome.Gene> subChromosome : template) {
-            for (Chromosome.Gene originalGene : subChromosome) {
-                Chromosome.Gene clonedGene = originalToCloneMap.get(originalGene);
-                Set<Chromosome.Gene> originalNextGenes = originalGene.getNextGenes();
-                Set<Chromosome.Gene> originalPreviousGenes = originalGene.getPreviousGenes();
-
-                originalNextGenes.stream().map(originalToCloneMap::get).forEach(clonedGene::addNextGene);
-
-                originalPreviousGenes.stream().map(originalToCloneMap::get).forEach(clonedGene::addPreviousGene);
-            }
-        }
-
-        Chromosome newChromosome = new Chromosome(candidate);
-        orderMaintainer.checkAndMaintainOrder(newChromosome);
-
-        return newChromosome;
     }
 
-
-    private DateTime createStartChromosome(Element currentElement, DateTime startTime, List<Chromosome.Gene> chromosome) {
+    private DateTime createStartChromosomeRec(Element currentElement, DateTime startTime, List<Chromosome.Gene> chromosome) {
         if (currentElement instanceof ProcessStep) {
             ProcessStep processStep = (ProcessStep) currentElement;
             boolean containerAlreadyDeployed = false;
@@ -127,6 +67,8 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
                 Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep((ProcessStep) currentElement), startTime, false);
                 chromosome.add(gene);
 
+                checkFirstAndLastGene(gene);
+
                 return gene.getExecutionInterval().getEnd();
             } else if (isRunning || containerAlreadyDeployed) {
                 DateTime realStartTime = ((ProcessStep) currentElement).getStartDate();
@@ -138,22 +80,24 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
                 Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep((ProcessStep) currentElement), realStartTime, isFixed);
                 chromosome.add(gene);
 
+                checkFirstAndLastGene(gene);
+
                 return gene.getExecutionInterval().getEnd();
             }
             return startTime;
         } else {
             if (currentElement instanceof WorkflowElement) {
                 for (Element element : currentElement.getElements()) {
-                    startTime = createStartChromosome(element, startTime, chromosome);
+                    startTime = createStartChromosomeRec(element, startTime, chromosome);
                 }
             } else if (currentElement instanceof Sequence) {
                 for (Element element1 : currentElement.getElements()) {
-                    startTime = createStartChromosome(element1, startTime, chromosome);
+                    startTime = createStartChromosomeRec(element1, startTime, chromosome);
                 }
             } else if (currentElement instanceof ANDConstruct || currentElement instanceof XORConstruct) {
                 DateTime latestEndTime = startTime;
                 for (Element element1 : currentElement.getElements()) {
-                    DateTime tmpEndTime = createStartChromosome(element1, startTime, chromosome);
+                    DateTime tmpEndTime = createStartChromosomeRec(element1, startTime, chromosome);
                     if (tmpEndTime.isAfter(latestEndTime)) {
                         latestEndTime = tmpEndTime;
                     }
@@ -163,7 +107,7 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
 
                 if ((currentElement.getNumberOfExecutions() < ((LoopConstruct) currentElement).getNumberOfIterationsToBeExecuted())) {
                     for (Element subElement : currentElement.getElements()) {
-                        startTime = createStartChromosome(subElement, startTime, chromosome);
+                        startTime = createStartChromosomeRec(subElement, startTime, chromosome);
                     }
                 }
 
@@ -173,9 +117,17 @@ public class Factory extends AbstractCandidateFactory<Chromosome> {
         }
     }
 
+    private void checkFirstAndLastGene(Chromosome.Gene gene) {
+        if(firstGene == null || firstGene.getExecutionInterval().getStart().isAfter(gene.getExecutionInterval().getStart())) {
+            firstGene = gene;
+        }
+        if(lastGene == null || lastGene.getExecutionInterval().getEnd().isBefore(gene.getExecutionInterval().getEnd())) {
+            lastGene = gene;
+        }
+    }
 
 
-    private void fillProcessStepChain(Element workflowElement, List<Chromosome.Gene> subChromosome) {
+    protected void fillProcessStepChain(Element workflowElement, List<Chromosome.Gene> subChromosome) {
 
         Map<Chromosome.Gene, List<Chromosome.Gene>> andMembersMap = new HashMap<>();
 

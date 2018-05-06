@@ -139,6 +139,30 @@ public class Chromosome {
             }
             this.previousGenes.add(previousGene);
         }
+
+        public Gene getLatestPreviousGene() {
+            Gene returnGene = null;
+
+            for (Gene previousGene : this.previousGenes) {
+               if(returnGene == null || returnGene.getExecutionInterval().getEnd().isBefore(previousGene.getExecutionInterval().getEnd())) {
+                   returnGene = previousGene;
+               }
+            }
+
+            return returnGene;
+        }
+
+        public Gene getEarliestNextGene() {
+            Gene returnGene = null;
+
+            for (Gene nextGene : this.nextGenes) {
+                if(returnGene == null || returnGene.getExecutionInterval().getStart().isAfter(nextGene.getExecutionInterval().getStart())) {
+                    returnGene = nextGene;
+                }
+            }
+
+            return returnGene;
+        }
     }
 
 

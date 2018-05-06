@@ -1,5 +1,7 @@
-package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer;
+package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.operations;
 
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.OrderMaintainer;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -12,7 +14,7 @@ import java.util.List;
 import java.util.Random;
 
 @Slf4j
-public class MutationWithMoving implements EvolutionaryOperator<Chromosome> {
+public class SingleShiftIfPossibleMutation implements EvolutionaryOperator<Chromosome> {
 
     private final NumberGenerator<Integer> mutationCountVariable;
     private final NumberGenerator<Integer> mutationDeltaTimeVariable;
@@ -22,7 +24,7 @@ public class MutationWithMoving implements EvolutionaryOperator<Chromosome> {
     /**
      * Default is one mutation per candidate.
      */
-    public MutationWithMoving() {
+    public SingleShiftIfPossibleMutation() {
         this(1, 1, DateTime.now());
     }
 
@@ -32,7 +34,7 @@ public class MutationWithMoving implements EvolutionaryOperator<Chromosome> {
      * @param mutationAmount The constant number of positions by
      *                       which a list element will be displaced as a result of mutation.
      */
-    public MutationWithMoving(int mutationCount, int mutationAmount, DateTime optimizationTime) {
+    public SingleShiftIfPossibleMutation(int mutationCount, int mutationAmount, DateTime optimizationTime) {
         this(new ConstantGenerator<>(mutationCount), new ConstantGenerator<>(mutationAmount), optimizationTime);
         if (mutationCount < 1) {
             throw new IllegalArgumentException("Mutation count must be at least 1.");
@@ -49,7 +51,7 @@ public class MutationWithMoving implements EvolutionaryOperator<Chromosome> {
      * @param mutationCount  A random variable that provides a number
      *                       of mutations that will be applied to each row in an individual.
      */
-    public MutationWithMoving(NumberGenerator<Integer> mutationCount, NumberGenerator<Integer> mutationDeltaTimeVariable, DateTime optimizationTime) {
+    public SingleShiftIfPossibleMutation(NumberGenerator<Integer> mutationCount, NumberGenerator<Integer> mutationDeltaTimeVariable, DateTime optimizationTime) {
         this.mutationCountVariable = mutationCount;
         this.mutationDeltaTimeVariable = mutationDeltaTimeVariable;
         this.optimizationTime = optimizationTime;
@@ -90,11 +92,33 @@ public class MutationWithMoving implements EvolutionaryOperator<Chromosome> {
                 Interval oldInterval = gene.getExecutionInterval();
                 Interval newInterval = new Interval(oldInterval.getStartMillis() + deltaTime, oldInterval.getEndMillis() + deltaTime);
 
-                if(geneIndex == 0 && (newInterval.getStart().isAfter(optimizationTime) || newInterval.getStart().isAfterNow())) {
+                boolean overlapWithNextGene = false;
+                for(Chromosome.Gene nextGene : gene.getNextGenes()) {
+                    if (nextGene != null) {
+                        if (newInterval.getEnd().isAfter(nextGene.getExecutionInterval().getStart())) {
+                            overlapWithNextGene = true;
+                            break;
+                        }
+                    }
+                }
+
+                boolean overlapWithPreviousGene = false;
+                for(Chromosome.Gene previousGene : gene.getPreviousGenes()) {
+                    if (previousGene != null) {
+                        if (newInterval.getStart().isBefore(previousGene.getExecutionInterval().getEnd())) {
+                            overlapWithPreviousGene = true;
+                        }
+                    }
+                }
+
+                boolean firstEnactmentIsInTheFuture = true;
+                if(geneIndex == 0 && (newInterval.getStart().isBefore(optimizationTime) || newInterval.getStart().isBeforeNow())) {
+                    firstEnactmentIsInTheFuture = false;
+                }
+
+                if(!overlapWithNextGene && !overlapWithPreviousGene && firstEnactmentIsInTheFuture) {
                     gene.setExecutionInterval(newInterval);
                     mutationCount = mutationCount - 1;
-
-                    orderMaintainer.checkAndMaintainOrder(row);
                 }
 
             }
@@ -103,12 +127,11 @@ public class MutationWithMoving implements EvolutionaryOperator<Chromosome> {
         }
 
         Chromosome newChromosome = new Chromosome(newCandidate);
-
         orderMaintainer.checkAndMaintainOrder(newChromosome);
 
-        if(!orderMaintainer.orderIsOk(newCandidate)) {
-            log.error("Order is not ok: " + newCandidate.toString());
-        }
+//        if(!orderMaintainer.orderIsOk(newCandidate)) {
+//            log.error("Order is not ok: " + newCandidate.toString());
+//        }
 
         return newChromosome;
     }

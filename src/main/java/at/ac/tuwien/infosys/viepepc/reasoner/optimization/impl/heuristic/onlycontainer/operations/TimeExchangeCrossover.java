@@ -1,5 +1,7 @@
-package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer;
+package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.operations;
 
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.OrderMaintainer;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
@@ -91,12 +93,12 @@ public class TimeExchangeCrossover extends AbstractCrossover<Chromosome> {
         orderMaintainer.checkAndMaintainOrder(offspring1Chromosome);
         orderMaintainer.checkAndMaintainOrder(offspring2Chromosome);
 
-        if (!orderMaintainer.orderIsOk(offspring1Chromosome.getGenes())) {
-            log.error("Order is not ok in offspring1: " + offspring1Chromosome.toString());
-        }
-        if (!orderMaintainer.orderIsOk(offspring2Chromosome.getGenes())) {
-            log.error("Order is not ok in offspring2: " + offspring2Chromosome.toString());
-        }
+//        if (!orderMaintainer.orderIsOk(offspring1Chromosome.getGenes())) {
+//            log.error("Order is not ok in offspring1: " + offspring1Chromosome.toString());
+//        }
+//        if (!orderMaintainer.orderIsOk(offspring2Chromosome.getGenes())) {
+//            log.error("Order is not ok in offspring2: " + offspring2Chromosome.toString());
+//        }
 
         List<Chromosome> result = new ArrayList<>(2);
         result.add(offspring1Chromosome);

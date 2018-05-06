@@ -10,7 +10,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResul
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
-import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Factory;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.factory.SimpleFactory;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.ServiceTypeSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.withvm.AbstractHeuristicImpl;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
@@ -49,7 +49,7 @@ public class OnlyContainerBaseline extends AbstractHeuristicImpl implements Proc
             return new OptimizationResultImpl();
         }
 
-        Factory factory = new Factory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime);
+        SimpleFactory factory = new SimpleFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime);
 
         return createOptimizationResult(new Chromosome(factory.getTemplate()), workflowElements);
     }

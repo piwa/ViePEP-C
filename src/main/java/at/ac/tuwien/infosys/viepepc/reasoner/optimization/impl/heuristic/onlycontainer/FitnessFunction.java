@@ -30,8 +30,8 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
 
-    private double leasingCostFactor = 1;
-    private double penaltyTimeFactor = 0.01;
+    private double leasingCostFactor = 10;
+    private double penaltyTimeFactor = 0.0001;
     private double earlyEnactmentTimeFactor = 0.000001;
 
     private double cpuCost = 14; // dollar cost for 1 vCPU for 1 second
@@ -67,7 +67,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
             WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(lastGeneOfProcess.getProcessStep().getWorkflowName());
             if(workflowElement != null) {
                 DateTime deadline = workflowElement.getDeadlineDateTime();
-
+                deadline = deadline.minusSeconds(30);
                 if (lastGeneOfProcess.getExecutionInterval().getEnd().isAfter(deadline)) {
                     Duration duration = new Duration(deadline, lastGeneOfProcess.getExecutionInterval().getEnd());
                     penaltyCost = penaltyCost + workflowElement.getPenalty() * duration.getMillis() * penaltyTimeFactor;
@@ -76,30 +76,30 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         }
 
         // prefer earlier enactments
-        double earlyEnactmentCost = 0;
-        for (Chromosome.Gene lastGeneOfProcess : lastGeneOfProcessList) {
-            WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(lastGeneOfProcess.getProcessStep().getWorkflowName());
-            if(workflowElement != null) {
-                DateTime deadline = workflowElement.getDeadlineDateTime();
-
-                if (lastGeneOfProcess.getExecutionInterval().getEnd().isBefore(deadline)) {
-                    Duration duration = new Duration(lastGeneOfProcess.getExecutionInterval().getEnd(), deadline);
-
-                    double cost = leasingCost / 100 - duration.getMillis() * earlyEnactmentTimeFactor;
-                    if(cost < 0) {
-                        cost = 0;
-                    }
-
-//                    earlyEnactmentCost = earlyEnactmentCost + cost;      // if duration is big its good
-                }
-            }
-        }
+//        double earlyEnactmentCost = 0;
+//        for (Chromosome.Gene lastGeneOfProcess : lastGeneOfProcessList) {
+//            WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(lastGeneOfProcess.getProcessStep().getWorkflowName());
+//            if(workflowElement != null) {
+//                DateTime deadline = workflowElement.getDeadlineDateTime();
+//
+//                if (lastGeneOfProcess.getExecutionInterval().getEnd().isBefore(deadline)) {
+//                    Duration duration = new Duration(lastGeneOfProcess.getExecutionInterval().getEnd(), deadline);
+//
+//                    double cost = leasingCost / 100 - duration.getMillis() * earlyEnactmentTimeFactor;
+//                    if(cost < 0) {
+//                        cost = 0;
+//                    }
+//
+////                    earlyEnactmentCost = earlyEnactmentCost + cost;      // if duration is big its good
+//                }
+//            }
+//        }
 
         this.leasingCost = leasingCost;
         this.penaltyCost = penaltyCost;
-        this.earlyEnactmentCost = earlyEnactmentCost;
+//        this.earlyEnactmentCost = earlyEnactmentCost;
 
-        return leasingCost + penaltyCost + earlyEnactmentCost;
+        return leasingCost + penaltyCost;// + earlyEnactmentCost;
     }
 
 
