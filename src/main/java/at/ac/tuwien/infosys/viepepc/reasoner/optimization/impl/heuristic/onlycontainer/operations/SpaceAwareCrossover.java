@@ -72,14 +72,6 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
                 crossoverStartIndex = random.nextInt(bound);
             }
 
-
-
-
-
-
-
-
-
             for (int j = crossoverStartIndex; j < rowClone1.size(); j++) {
 
                 Chromosome.Gene parent2Gene = rowParent2.get(j);

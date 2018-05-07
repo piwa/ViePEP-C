@@ -98,6 +98,12 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                 if(previousGene != null) {
                     endTimePreviousGene = previousGene.getExecutionInterval().getEnd();
                 }
+                else if(previousGene != null && this.optimizationTime.isAfter(oldInterval.getStart())){
+                    if(!previousGene.isFixed()) {
+                        log.info("problem");
+                    }
+                    endTimePreviousGene = previousGene.getExecutionInterval().getEnd();
+                }
                 else {
                     endTimePreviousGene = this.optimizationTime;
                 }
@@ -112,12 +118,13 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                         startTimeNextGene = maxTimeAfterDeadline.get(gene.getProcessStep().getWorkflowName());
                     }
 
-                    if(gene.getExecutionInterval().getEnd().isAfter(startTimeNextGene)) {
-                        log.error("Problem");
+                    if(gene.getExecutionInterval().getEnd().isAfter(startTimeNextGene)) {       // TODO why?
+//                        log.error("Deadline aware mutation is over deadline: " + candidate.toString(rowIndex) + ", startTimeNextGene=" + startTimeNextGene.toString());
+                        startTimeNextGene = gene.getExecutionInterval().getEnd();
                     }
 
                 }
-                
+
                 Duration previousDuration = new Duration(endTimePreviousGene, oldInterval.getStart());
                 Duration nextDuration = new Duration(oldInterval.getEnd(), startTimeNextGene);
 

@@ -20,15 +20,19 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
     private Map<String, DateTime> workflowDeadlines = new HashMap<>();
     @Getter Map<String, DateTime> maxTimeAfterDeadline = new HashMap<>();
 
-    public DeadlineAwareFactory(List<WorkflowElement> workflowElementList, DateTime startTime, long defaultContainerDeployTime, long defaultContainerStartupTime) {
+    public DeadlineAwareFactory(List<WorkflowElement> workflowElementList, DateTime optimizationStartTime, long defaultContainerDeployTime, long defaultContainerStartupTime, boolean withOptimizationTimeOut) {
 
-        super(defaultContainerStartupTime, defaultContainerDeployTime);
+        super(defaultContainerStartupTime, defaultContainerDeployTime, withOptimizationTimeOut);
 
         clonedServiceTypes = new HashMap<>();
         for (WorkflowElement workflowElement : workflowElementList) {
             stepGeneMap = new HashMap<>();
 
-            List<Chromosome.Gene> subChromosome = createStartChromosome(workflowElement, new DateTime(startTime.getMillis()));
+            List<Chromosome.Gene> subChromosome = createStartChromosome(workflowElement, new DateTime(optimizationStartTime.getMillis()));
+
+            if(subChromosome.size() == 0) {
+                continue;
+            }
 
             subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStep().getInternId(), gene));
 
@@ -45,6 +49,13 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
     }
 
     private void calculateMaxTimeAfterDeadline(WorkflowElement workflowElement, List<Chromosome.Gene> subChromosome) {
+
+        if(firstGene == null) {
+            firstGene = subChromosome.get(0);
+        }
+        if(lastGene == null) {
+            lastGene = subChromosome.get(subChromosome.size() - 1);
+        }
 
         Duration overallDuration = new Duration(firstGene.getExecutionInterval().getStart(), lastGene.getExecutionInterval().getEnd());
 
@@ -66,7 +77,7 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
             additionalSeconds = additionalSeconds + 10;
         }
 
-        maxTimeAfterDeadline.put(workflowElement.getName(), simulatedEnd);
+        maxTimeAfterDeadline.put(workflowElement.getName(), simulatedEnd.plus(2));      // TODO plus 1 is needed (because of jodatime implementation?), plus 2 is better ;)
 
     }
 
@@ -91,13 +102,13 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
                 DateTime deadline = workflowDeadlines.get(genes.get(0).getProcessStep().getWorkflowName());
                 Duration durationToDeadline = new Duration(genes.get(genes.size() - 1).getExecutionInterval().getEnd(), deadline);
 
-                if(genes.size() <= 2) {
-                    bufferBound = (int)durationToDeadline.getMillis();
-                }
-                else if(durationToDeadline.getMillis() < 0) {
+
+                if(durationToDeadline.getMillis() <= 0) {
                     bufferBound = 0;
+                } else if(genes.size() == 1) {
+                    bufferBound = (int)durationToDeadline.getMillis();
                 } else {
-                    bufferBound = Math.round(durationToDeadline.getMillis() / (genes.size() - 1));
+                    bufferBound = Math.round(durationToDeadline.getMillis() / (genes.size()));
                 }
             }
 

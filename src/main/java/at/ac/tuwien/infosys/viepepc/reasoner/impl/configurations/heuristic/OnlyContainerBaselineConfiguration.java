@@ -1,8 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl.configurations.heuristic;
 
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
-import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.baseline.OnlyContainerBaseline;
-import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.OnlyContainerImpl;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.baseline.OnlyContainerBaseline;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

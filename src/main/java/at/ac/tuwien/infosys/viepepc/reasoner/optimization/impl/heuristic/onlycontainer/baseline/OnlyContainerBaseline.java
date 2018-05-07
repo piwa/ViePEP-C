@@ -1,4 +1,4 @@
-package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.baseline;
+package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.baseline;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
@@ -49,7 +49,7 @@ public class OnlyContainerBaseline extends AbstractHeuristicImpl implements Proc
             return new OptimizationResultImpl();
         }
 
-        SimpleFactory factory = new SimpleFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime);
+        SimpleFactory factory = new SimpleFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, false);
 
         return createOptimizationResult(new Chromosome(factory.getTemplate()), workflowElements);
     }

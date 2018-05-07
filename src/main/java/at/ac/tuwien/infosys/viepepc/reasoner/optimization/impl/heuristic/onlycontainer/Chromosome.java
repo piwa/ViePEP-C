@@ -28,27 +28,6 @@ public class Chromosome {
         return genes.get(row);
     }
 
-    @Override
-    public String toString()
-    {
-        StringBuilder buffer = new StringBuilder();
-        for (List<Chromosome.Gene> row : genes)
-        {
-            for (Gene cell : row)
-            {
-                buffer.append("{");
-                buffer.append("processStep=" + cell.getProcessStep().getName() + ", ");
-                buffer.append("start=" + cell.getExecutionInterval().getStart().toString() + ", ");
-                buffer.append("end=" + cell.getExecutionInterval().getEnd().toString() + ", ");
-                buffer.append("fixed=" + cell.isFixed());
-                buffer.append("} ");
-            }
-            buffer.append('\n');
-        }
-        return buffer.toString();
-
-    }
-
     public int getRowAmount() {
         return genes.size();
     }
@@ -93,6 +72,32 @@ public class Chromosome {
                 row.get(i).moveIntervalMinus(deltaTime);
             }
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        for (List<Chromosome.Gene> row : genes)
+        {
+            for (Gene cell : row)
+            {
+                builder.append(cell.toString());
+            }
+            builder.append('\n');
+        }
+        return builder.toString();
+
+    }
+
+    public String toString(int rowIndex) {
+        StringBuilder builder = new StringBuilder();
+        for (Gene cell : getRow(rowIndex))
+        {
+            builder.append(cell.toString());
+        }
+
+        return builder.toString();
     }
 
     @Getter
@@ -162,6 +167,17 @@ public class Chromosome {
             }
 
             return returnGene;
+        }
+
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append("{");
+            builder.append("processStep=" + getProcessStep().getName() + ", ");
+            builder.append("start=" + getExecutionInterval().getStart().toString() + ", ");
+            builder.append("end=" + getExecutionInterval().getEnd().toString() + ", ");
+            builder.append("fixed=" + isFixed());
+            builder.append("} ");
+            return builder.toString();
         }
     }
 

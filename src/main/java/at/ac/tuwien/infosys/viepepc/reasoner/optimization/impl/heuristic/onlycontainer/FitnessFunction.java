@@ -13,6 +13,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.uncommons.watchmaker.framework.FitnessEvaluator;
 
@@ -30,11 +31,16 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
 
+    @Value("${fitness.leasing.cost.factor}")
     private double leasingCostFactor = 10;
-    private double penaltyTimeFactor = 0.0001;
+    @Value("${fitness.penalty.time.factor}")
+    private double penaltyTimeFactor = 0.001;
+
     private double earlyEnactmentTimeFactor = 0.000001;
 
+    @Value("${fitness.cost.cpu}")
     private double cpuCost = 14; // dollar cost for 1 vCPU for 1 second
+    @Value("${fitness.cost.ram}")
     private double ramCost =  3; // dollar cost for 1 GB for 1 second
 
     @Getter private double leasingCost = 0;

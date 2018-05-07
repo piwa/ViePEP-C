@@ -25,6 +25,11 @@ public class ServiceExecutionController {
     private WithVMDeploymentController withVMDeploymentController;
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler;
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    private Map<ProcessStep, ScheduledFuture<OnlyContainerDeploymentController>> processStepScheduledTasksMap = new ConcurrentHashMap<>();
+
 
     @Async//("serviceProcessExecuter")
     public void startInvocationViaVMs(List<ProcessStep> processSteps) {
@@ -85,9 +90,6 @@ public class ServiceExecutionController {
             }
         }
     }
-
-    private Map<ProcessStep, ScheduledFuture<OnlyContainerDeploymentController>> processStepScheduledTasksMap = new ConcurrentHashMap<>();
-    @Autowired private ApplicationContext applicationContext;
 
     @Async
     public void startInvocationViaContainers(List<ProcessStep> processSteps) {

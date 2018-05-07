@@ -25,6 +25,7 @@ import org.uncommons.maths.random.Probability;
 import org.uncommons.watchmaker.framework.*;
 import org.uncommons.watchmaker.framework.operators.EvolutionPipeline;
 import org.uncommons.watchmaker.framework.selection.TournamentSelection;
+import org.uncommons.watchmaker.framework.termination.ElapsedTime;
 import org.uncommons.watchmaker.framework.termination.Stagnation;
 
 import java.util.*;
@@ -37,12 +38,39 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
     @Autowired
     private OptimizationUtility optimizationUtility;
 
+    @Value("${use.deadline.aware.factory}")
     private boolean deadlineAwareFactory = true;
+    @Value("${use.time.exchange.crossover}")
     private boolean timeExchangeCrossover = false;
+    @Value("${use.space.aware.crossover}")
     private boolean spaceAwareCrossover = true;
+    @Value("${use.space.aware.mutation}")
     private boolean spaceAwareMutation = true;
+    @Value("${use.single.shift.with.moving.mutation}")
     private boolean singleShiftWithMovingMutation = false;
+    @Value("${use.single.shift.if.possible.mutation}")
     private boolean singleShiftIfPossibleMutation = false;
+    @Value("${use.with.optimization.timeout}")
+    private boolean withOptimizationTimeout = true;
+
+    @Value("${max.optimization.duration}")
+    private long maxOptimizationDuration = 60000;
+
+    @Value("${population.size}")
+    private int populationSize = 250;
+    @Value("${population.elite.count}")
+    private double eliteCountNumber = 0.05;
+    @Value("${stagnation.generation.limit}")
+    private int stagnationGenerationLimit = 15;
+
+    @Value("${use.single.shift.with.moving.mutation.min.value}")
+    private int singleShiftWithMovingMutationMin = 60000;
+    @Value("${use.single.shift.with.moving.mutation.max.value}")
+    private int singleShiftWithMovingMutationMax = 60000;
+    @Value("${use.single.shift.if.possible.mutation.min.value}")
+    private int singleShiftIfPossibleMutationMin = 60000;
+    @Value("${use.single.shift.if.possible.mutation.max.value}")
+    private int singleShiftIfPossibleMutationMax = 60000;
 
     @Value("${container.default.startup.time}")
     private long defaultContainerStartupTime;
@@ -52,8 +80,6 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
     private CandidateFactory<Chromosome> chromosomeFactory;
 
     private AdjustableNumberGenerator<Probability> numberGenerator = new AdjustableNumberGenerator<>(new Probability(0.85d));
-    private int populationSize = 250;
-    private int eliteCount = (int) Math.round(populationSize * 0.05);
     private DateTime optimizationTime;
     private Map<String, DateTime> maxTimeAfterDeadline = new HashMap<>();
 
@@ -62,20 +88,26 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
     public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
 
         List<WorkflowElement> workflowElements = getRunningWorkflowInstancesSorted();
-        this.optimizationTime = DateTime.now();
 
         if (workflowElements.size() == 0) {
             return new OptimizationResultImpl();
         }
 
+        this.optimizationTime = DateTime.now();
+
+        if(withOptimizationTimeout) {
+            this.optimizationTime = this.optimizationTime.plus(maxOptimizationDuration);
+        }
+
+        int eliteCount = (int) Math.round(populationSize * eliteCountNumber);
         SelectionStrategy<Object> selectionStrategy = new TournamentSelection(numberGenerator);
 
         if(deadlineAwareFactory) {
-            chromosomeFactory = new DeadlineAwareFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime);
+            chromosomeFactory = new DeadlineAwareFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, withOptimizationTimeout);
             maxTimeAfterDeadline = ((DeadlineAwareFactory) chromosomeFactory).getMaxTimeAfterDeadline();
         }
         else {
-            chromosomeFactory = new SimpleFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime);
+            chromosomeFactory = new SimpleFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, withOptimizationTimeout);
         }
 
 
@@ -89,10 +121,10 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
             operators.add(new SpaceAwareCrossover());
         }
         if(singleShiftWithMovingMutation) {
-            operators.add(new SingleShiftWithMovingMutation(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(60000, 60000, rng), optimizationTime));
+            operators.add(new SingleShiftWithMovingMutation(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(singleShiftWithMovingMutationMin, singleShiftWithMovingMutationMax, rng), optimizationTime));
         }
         if(singleShiftIfPossibleMutation) {
-            operators.add(new SingleShiftIfPossibleMutation(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(60000, 60000, rng), optimizationTime));
+            operators.add(new SingleShiftIfPossibleMutation(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(singleShiftIfPossibleMutationMin, singleShiftIfPossibleMutationMax, rng), optimizationTime));
         }
         if(spaceAwareMutation) {
             operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationTime, maxTimeAfterDeadline));
@@ -102,7 +134,13 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
         EvolutionaryOperator<Chromosome> pipeline = new EvolutionPipeline<>(operators);
         EvolutionEngine<Chromosome> engine = new GenerationalEvolutionEngine<>(chromosomeFactory, pipeline, fitnessFunction, selectionStrategy, rng);
 
-        Chromosome winner = engine.evolve(populationSize, eliteCount, new Stagnation(15, false));
+        Chromosome winner = null;
+        if(withOptimizationTimeout) {
+            winner = engine.evolve(populationSize, eliteCount, new ElapsedTime(maxOptimizationDuration), new Stagnation(stagnationGenerationLimit, false));
+        }
+        else {
+            winner = engine.evolve(populationSize, eliteCount, new Stagnation(stagnationGenerationLimit, false));
+        }
 
         return createOptimizationResult(winner, workflowElements);
     }
@@ -142,7 +180,10 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
                     }
                     else {
                         DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
-                        scheduledStartTime = scheduledStartTime.plus(duration);
+
+                        if(withOptimizationTimeout) {
+                            scheduledStartTime = scheduledStartTime.plus(duration);
+                        }
 
                         ProcessStep realProcessStep = null;
 

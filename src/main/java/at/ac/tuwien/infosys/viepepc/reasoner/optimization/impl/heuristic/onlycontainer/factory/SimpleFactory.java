@@ -14,16 +14,12 @@ import java.util.*;
 public class SimpleFactory extends AbstractChromosomeFactory {
 
     @Getter private final List<List<Chromosome.Gene>> template = new ArrayList<>();
-    private Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
     private Map<UUID, Chromosome.Gene> stepGeneMap = new HashMap<>();
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
 
-    private long defaultContainerStartupTime;
-    private long defaultContainerDeployTime;
+    public SimpleFactory(List<WorkflowElement> workflowElementList, DateTime startTime, long defaultContainerDeployTime, long defaultContainerStartupTime, boolean withOptimizationTimeout) {
 
-    public SimpleFactory(List<WorkflowElement> workflowElementList, DateTime startTime, long defaultContainerDeployTime, long defaultContainerStartupTime) {
-
-        super(defaultContainerStartupTime, defaultContainerDeployTime);
+        super(defaultContainerStartupTime, defaultContainerDeployTime, withOptimizationTimeout);
 
         clonedServiceTypes = new HashMap<>();
         for (WorkflowElement workflowElement : workflowElementList) {

@@ -30,6 +30,7 @@ import java.util.concurrent.Executor;
 @PropertySources({
         @PropertySource("classpath:application.properties"),
         @PropertySource("classpath:application-container.properties"),
+        @PropertySource("classpath:application-heuristic.properties"),
         @PropertySource("classpath:container-config/container.properties"),
         @PropertySource("classpath:database-config/mysql.properties"),
         @PropertySource("classpath:cloud-config/viepep4.0.properties"),
