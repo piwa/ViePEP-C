@@ -68,7 +68,7 @@ public class OptimizationUtility {
 
     public List<ServiceTypeSchedulingUnit> getRequiredServiceTypes(Chromosome chromosome) {
         List<ServiceTypeSchedulingUnit> requiredServiceTypeList = new ArrayList<>();
-        getRequiredServiceTypesAndLastElements(chromosome, requiredServiceTypeList, new ArrayList<>());
+        getRequiredServiceTypesAndLastElements(chromosome, requiredServiceTypeList, new HashMap<>());
         return requiredServiceTypeList;
     }
 
@@ -78,7 +78,7 @@ public class OptimizationUtility {
      * @param requiredServiceTypeList
      * @param lastElements
      */
-    public void getRequiredServiceTypesAndLastElements(Chromosome chromosome, List<ServiceTypeSchedulingUnit> requiredServiceTypeList, List<Chromosome.Gene> lastElements) {
+    public void getRequiredServiceTypesAndLastElements(Chromosome chromosome, List<ServiceTypeSchedulingUnit> requiredServiceTypeList, Map<String, Chromosome.Gene> lastElements) {
         Map<ServiceType, List<ServiceTypeSchedulingUnit>> requiredServiceTypeMap = new HashMap<>();
         List<List<Chromosome.Gene>> genes = chromosome.getGenes();
 
@@ -87,7 +87,11 @@ public class OptimizationUtility {
             for (Chromosome.Gene gene : row) {
 
                 if(gene.getProcessStep().isLastElement()) {
-                    lastElements.add(gene);
+                    Chromosome.Gene lastGene = lastElements.get(gene.getProcessStep().getWorkflowName());
+                    if(lastGene == null || gene.getExecutionInterval().getEnd().isAfter(lastGene.getExecutionInterval().getEnd())) {
+                        lastElements.put(gene.getProcessStep().getWorkflowName(), gene);
+                    }
+
                 }
 
                 if (!requiredServiceTypeMap.containsKey(gene.getProcessStep().getServiceType())) {

@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.jdbc.Work;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 
@@ -19,6 +21,9 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
     private Map<String, DateTime> workflowDeadlines = new HashMap<>();
     @Getter Map<String, DateTime> maxTimeAfterDeadline = new HashMap<>();
+
+    @Value("${deadline.aware.factory.allowed.penalty.points}")
+    private int allowedPenaltyPoints;
 
     public DeadlineAwareFactory(List<WorkflowElement> workflowElementList, DateTime optimizationStartTime, long defaultContainerDeployTime, long defaultContainerStartupTime, boolean withOptimizationTimeOut) {
 
@@ -71,7 +76,7 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
                 penalityPoints = Math.ceil((timeDiff.getMillis() / overallDuration.getMillis()) * 10);
             }
 
-            if(penalityPoints > 3) {
+            if(penalityPoints > allowedPenaltyPoints) {
                 break;
             }
             additionalSeconds = additionalSeconds + 10;
@@ -113,7 +118,7 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
             }
 
             List<Chromosome.Gene> subChromosome = new ArrayList<>();
-            long intervalDelta = 0;
+            long intervalDelta = 2;
             for (Chromosome.Gene gene : genes) {
 
                 if (!gene.isFixed() && bufferBound > 0) {

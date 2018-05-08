@@ -5,7 +5,7 @@
       <serviceTypeResources>
          <cpuLoad>25</cpuLoad>
          <memory>270</memory>
-         <makeSpan>2000</makeSpan>
+         <makeSpan>10000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>

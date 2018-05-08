@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContainerConfigurations>
    <Configuration>
+      <name>NANO_CORE</name>
+      <cores>0.25</cores>
+      <ram>512</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
       <name>MICRO_CORE</name>
       <cores>0.5</cores>
       <ram>512</ram>
@@ -28,12 +34,6 @@
       <name>QUAD_CORE</name>
       <cores>4</cores>
       <ram>4096</ram>
-      <disc>30</disc>
-   </Configuration>
-   <Configuration>
-      <name>HEXA_CORE</name>
-      <cores>8</cores>
-      <ram>8192</ram>
       <disc>30</disc>
    </Configuration>
 </ContainerConfigurations>

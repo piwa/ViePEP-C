@@ -57,7 +57,7 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
     private long maxOptimizationDuration = 60000;
 
     @Value("${population.size}")
-    private int populationSize = 250;
+    private int populationSize = 400;
     @Value("${population.elite.count}")
     private double eliteCountNumber = 0.05;
     @Value("${stagnation.generation.limit}")
@@ -136,7 +136,7 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
 
         Chromosome winner = null;
         if(withOptimizationTimeout) {
-            winner = engine.evolve(populationSize, eliteCount, new ElapsedTime(maxOptimizationDuration), new Stagnation(stagnationGenerationLimit, false));
+            winner = engine.evolve(populationSize, eliteCount, new ElapsedTime(maxOptimizationDuration));
         }
         else {
             winner = engine.evolve(populationSize, eliteCount, new Stagnation(stagnationGenerationLimit, false));

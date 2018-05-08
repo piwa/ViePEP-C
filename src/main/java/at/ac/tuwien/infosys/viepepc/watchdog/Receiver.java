@@ -98,7 +98,7 @@ public class Receiver {
                 synchronized (workflowElement) {
                     List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
                     List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
-                    log.info("Try to finish workflow. RunningSteps=" + printProcessSteps(runningSteps) + "; nextSteps=" + printProcessSteps(nextSteps));
+//                    log.info("Try to finish workflow. RunningSteps=" + printProcessSteps(runningSteps) + "; nextSteps=" + printProcessSteps(nextSteps));
                     if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
                         WorkflowElement workflowById = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
                         try {

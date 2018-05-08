@@ -10,6 +10,7 @@ import org.uncommons.watchmaker.framework.operators.AbstractCrossover;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 @Slf4j
 public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
@@ -77,7 +78,8 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
                 Chromosome.Gene parent2Gene = rowParent2.get(j);
                 Chromosome.Gene clone1PreviousGene = rowClone1.get(j).getLatestPreviousGene();
 
-                if(clone1PreviousGene == null || clone1PreviousGene.getExecutionInterval().getEnd().isBefore(parent2Gene.getExecutionInterval().getStart())) {
+                if(clone1PreviousGene == null || checkIfCrossoverPossible(clone1PreviousGene, parent2Gene.getLatestPreviousGene().getNextGenes())) {
+//                if(clone1PreviousGene == null || clone1PreviousGene.getExecutionInterval().getEnd().isBefore(parent2Gene.getExecutionInterval().getStart())) {
                     Interval newInterval = rowParent2.get(j).getExecutionInterval();
                     rowClone1.get(j).setExecutionInterval(new Interval(newInterval.getStart().getMillis(), newInterval.getEnd().getMillis()));
                 }
@@ -85,7 +87,9 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
                 Chromosome.Gene parent1Gene = rowParent1.get(j);
                 Chromosome.Gene clone2PreviousGene = rowClone2.get(j).getLatestPreviousGene();
 
-                if(clone2PreviousGene == null || clone2PreviousGene.getExecutionInterval().getEnd().isBefore(parent1Gene.getExecutionInterval().getStart())) {
+
+                if(clone2PreviousGene == null || checkIfCrossoverPossible(clone2PreviousGene, parent1Gene.getLatestPreviousGene().getNextGenes())) {
+//                if(clone2PreviousGene == null || clone2PreviousGene.getExecutionInterval().getEnd().isBefore(parent1Gene.getExecutionInterval().getStart())) {
                     Interval newInterval = rowParent1.get(j).getExecutionInterval();
                     rowClone2.get(j).setExecutionInterval(new Interval(newInterval.getStart().getMillis(), newInterval.getEnd().getMillis()));
                 }
@@ -93,14 +97,8 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
 
         }
 
-
-
-        if (!orderMaintainer.orderIsOk(offspring1Chromosome.getGenes())) {
-            log.error("Order is not ok in offspring1: " + offspring1Chromosome.toString());
-        }
-        if (!orderMaintainer.orderIsOk(offspring2Chromosome.getGenes())) {
-            log.error("Order is not ok in offspring2: " + offspring2Chromosome.toString());
-        }
+        orderMaintainer.orderIsOk(offspring1Chromosome.getGenes());
+        orderMaintainer.orderIsOk(offspring2Chromosome.getGenes());
 
         List<Chromosome> result = new ArrayList<>(2);
         result.add(offspring1Chromosome);
@@ -108,7 +106,16 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
         return result;
     }
 
+    private boolean checkIfCrossoverPossible(Chromosome.Gene clone1PreviousGene, Set<Chromosome.Gene> parent2Genes) {
 
+        for (Chromosome.Gene parent2Gene : parent2Genes) {
+            if(clone1PreviousGene.getExecutionInterval().getEnd().isAfter(parent2Gene.getExecutionInterval().getStart())) {
+                return false;
+            }
+        }
+        return true;
+
+    }
 
 
 }

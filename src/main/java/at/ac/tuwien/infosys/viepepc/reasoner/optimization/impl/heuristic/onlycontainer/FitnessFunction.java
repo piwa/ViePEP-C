@@ -51,7 +51,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
     public double getFitness(Chromosome chromosome, List<? extends Chromosome> list) {
 
         List<ServiceTypeSchedulingUnit> requiredServiceTypeList = new ArrayList<>();
-        List<Chromosome.Gene> lastGeneOfProcessList = new ArrayList<>();
+        Map<String, Chromosome.Gene> lastGeneOfProcessList = new HashMap<>();
         optimizationUtility.getRequiredServiceTypesAndLastElements(chromosome, requiredServiceTypeList, lastGeneOfProcessList);
 
         // calculate the leasing cost
@@ -68,12 +68,12 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
 
         // calculate penalty cost
         double penaltyCost = 0;
-        for (Chromosome.Gene lastGeneOfProcess : lastGeneOfProcessList) {
+        for (Chromosome.Gene lastGeneOfProcess : lastGeneOfProcessList.values()) {
             // get deadline of workflow
             WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(lastGeneOfProcess.getProcessStep().getWorkflowName());
             if(workflowElement != null) {
                 DateTime deadline = workflowElement.getDeadlineDateTime();
-                deadline = deadline.minusSeconds(30);
+//                deadline = deadline.minusSeconds(30);
                 if (lastGeneOfProcess.getExecutionInterval().getEnd().isAfter(deadline)) {
                     Duration duration = new Duration(deadline, lastGeneOfProcess.getExecutionInterval().getEnd());
                     penaltyCost = penaltyCost + workflowElement.getPenalty() * duration.getMillis() * penaltyTimeFactor;
