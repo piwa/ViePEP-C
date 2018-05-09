@@ -3,14 +3,12 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlyco
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.OrderMaintainer;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.watchmaker.framework.operators.AbstractCrossover;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
@@ -73,6 +71,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
                 crossoverStartIndex = random.nextInt(bound);
             }
 
+
             for (int j = crossoverStartIndex; j < rowClone1.size(); j++) {
 
                 Chromosome.Gene parent2Gene = rowParent2.get(j);
@@ -116,6 +115,4 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
         return true;
 
     }
-
-
 }

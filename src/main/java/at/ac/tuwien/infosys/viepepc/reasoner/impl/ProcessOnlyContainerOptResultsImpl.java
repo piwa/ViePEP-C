@@ -41,6 +41,7 @@ public class ProcessOnlyContainerOptResultsImpl implements ProcessOptimizationRe
     private ServiceExecutionController serviceExecutionController;
 
     private Set<Container> waitingForExecutingContainers = new HashSet<>();
+    private boolean printRunningInformation = false;
 
     @Override
     public Future<Boolean> processResults(OptimizationResult optimize, DateTime tau_t) {
@@ -50,10 +51,12 @@ public class ProcessOnlyContainerOptResultsImpl implements ProcessOptimizationRe
 
         serviceExecutionController.startInvocationViaContainers(optimize.getProcessSteps());
 
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Optimization result:\n");
-        printOptimizationResultInformation(optimize, tau_t, stringBuilder);
-        log.info(stringBuilder.toString());
+        if(printRunningInformation) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("Optimization result:\n");
+            printOptimizationResultInformation(optimize, tau_t, stringBuilder);
+            log.debug(stringBuilder.toString());
+        }
 
         return new AsyncResult<Boolean>(true);
     }

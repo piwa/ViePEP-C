@@ -60,8 +60,8 @@ public class ApplicationContext implements AsyncConfigurer {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setMaxPoolSize(400);
-        executor.setCorePoolSize(200);
+        executor.setMaxPoolSize(500);
+        executor.setCorePoolSize(300);
         executor.setQueueCapacity(5);
         executor.initialize();
         return executor;
@@ -75,7 +75,7 @@ public class ApplicationContext implements AsyncConfigurer {
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler(){
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize(500);
+        threadPoolTaskScheduler.setPoolSize(600);
         threadPoolTaskScheduler.setThreadNamePrefix("ThreadPoolTaskScheduler");
         return threadPoolTaskScheduler;
     }

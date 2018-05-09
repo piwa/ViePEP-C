@@ -66,9 +66,6 @@ public class Receiver {
         log.info("Task-Done: " + processStep);
 
 
-
-
-
         if(processStep.getScheduledAtContainer() != null) {
             synchronized (processStep.getScheduledAtContainer()) {
                 List<ProcessStep> processSteps = new ArrayList<>();
@@ -92,7 +89,7 @@ public class Receiver {
         if (processStep.isLastElement()) {
 
             Random random = new Random();
-            for(int i = 0; i < 10; i++) {           // TODO is maybe not needed anymore, due to the synchronized
+//            for(int i = 0; i < 10; i++) {           // TODO is maybe not needed anymore, due to the synchronized
 
                 WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
                 synchronized (workflowElement) {
@@ -109,14 +106,14 @@ public class Receiver {
 
                         cacheWorkflowService.deleteRunningWorkflowInstance(workflowById);
                         log.info("Workflow done. Workflow: " + workflowById);
-                        break;
+//                        break;
                     }
 
                     try {
                         TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
                     } catch (Exception e) {
                     }
-                }
+//                }
             }
 
         }

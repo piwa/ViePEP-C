@@ -99,9 +99,6 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                     endTimePreviousGene = previousGene.getExecutionInterval().getEnd();
                 }
                 else if(previousGene != null && this.optimizationTime.isAfter(oldInterval.getStart())){
-                    if(!previousGene.isFixed()) {
-                        log.info("problem");
-                    }
                     endTimePreviousGene = previousGene.getExecutionInterval().getEnd();
                 }
                 else {

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.jdbc.Work;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -16,11 +17,13 @@ import java.util.*;
 @Slf4j
 public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
-    @Getter private final List<List<Chromosome.Gene>> template = new ArrayList<>();
+    @Getter
+    private final List<List<Chromosome.Gene>> template = new ArrayList<>();
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
 
     private Map<String, DateTime> workflowDeadlines = new HashMap<>();
-    @Getter Map<String, DateTime> maxTimeAfterDeadline = new HashMap<>();
+    @Getter
+    Map<String, DateTime> maxTimeAfterDeadline = new HashMap<>();
 
     @Value("${deadline.aware.factory.allowed.penalty.points}")
     private int allowedPenaltyPoints;
@@ -35,7 +38,7 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
             List<Chromosome.Gene> subChromosome = createStartChromosome(workflowElement, new DateTime(optimizationStartTime.getMillis()));
 
-            if(subChromosome.size() == 0) {
+            if (subChromosome.size() == 0) {
                 continue;
             }
 
@@ -55,10 +58,10 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
     private void calculateMaxTimeAfterDeadline(WorkflowElement workflowElement, List<Chromosome.Gene> subChromosome) {
 
-        if(firstGene == null) {
+        if (firstGene == null) {
             firstGene = subChromosome.get(0);
         }
-        if(lastGene == null) {
+        if (lastGene == null) {
             lastGene = subChromosome.get(subChromosome.size() - 1);
         }
 
@@ -66,17 +69,17 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
         int additionalSeconds = 0;
         DateTime simulatedEnd = null;
-        while(true) {
+        while (true) {
 
             simulatedEnd = lastGene.getExecutionInterval().getEnd().plusSeconds(additionalSeconds);
             Duration timeDiff = new Duration(workflowElement.getDeadlineDateTime(), simulatedEnd);
 
             double penalityPoints = 0;
-            if(timeDiff.getMillis() > 0) {
+            if (timeDiff.getMillis() > 0) {
                 penalityPoints = Math.ceil((timeDiff.getMillis() / overallDuration.getMillis()) * 10);
             }
 
-            if(penalityPoints > allowedPenaltyPoints) {
+            if (penalityPoints > allowedPenaltyPoints) {
                 break;
             }
             additionalSeconds = additionalSeconds + 10;
@@ -98,55 +101,32 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
         List<List<Chromosome.Gene>> candidate = new ArrayList<>();
         Random rand = new Random();
 
-        Map<Chromosome.Gene, Chromosome.Gene> originalToCloneMap = new HashMap<>();
+        for (List<Chromosome.Gene> row : template) {
 
-        for (List<Chromosome.Gene> genes : template) {
+
+            List<Chromosome.Gene> newRow = createClonedRow(row);
 
             int bufferBound = 0;
-            if(genes.size() > 0) {
-                DateTime deadline = workflowDeadlines.get(genes.get(0).getProcessStep().getWorkflowName());
-                Duration durationToDeadline = new Duration(genes.get(genes.size() - 1).getExecutionInterval().getEnd(), deadline);
+            if (row.size() > 0) {
+                DateTime deadline = workflowDeadlines.get(row.get(0).getProcessStep().getWorkflowName());
+                Duration durationToDeadline = new Duration(row.get(row.size() - 1).getExecutionInterval().getEnd(), deadline);
 
 
-                if(durationToDeadline.getMillis() <= 0) {
+                if (durationToDeadline.getMillis() <= 0) {
                     bufferBound = 0;
-                } else if(genes.size() == 1) {
-                    bufferBound = (int)durationToDeadline.getMillis();
+                } else if (row.size() == 1) {
+                    bufferBound = (int) durationToDeadline.getMillis();
                 } else {
-                    bufferBound = Math.round(durationToDeadline.getMillis() / (genes.size()));
+                    bufferBound = Math.round(durationToDeadline.getMillis() / (row.size()));
                 }
             }
 
-            List<Chromosome.Gene> subChromosome = new ArrayList<>();
-            long intervalDelta = 2;
-            for (Chromosome.Gene gene : genes) {
+            moveNewChromosome(findStartGene(newRow), bufferBound, rand);
 
-                if (!gene.isFixed() && bufferBound > 0) {
-                    intervalDelta = intervalDelta + rand.nextInt(bufferBound);
-                }
-
-                Chromosome.Gene newGene = Chromosome.Gene.clone(gene);
-                originalToCloneMap.put(gene, newGene);
-
-                newGene.moveIntervalPlus(intervalDelta);
-                subChromosome.add(newGene);
-            }
-
-            candidate.add(subChromosome);
+            candidate.add(newRow);
 
         }
 
-        for (List<Chromosome.Gene> subChromosome : template) {
-            for (Chromosome.Gene originalGene : subChromosome) {
-                Chromosome.Gene clonedGene = originalToCloneMap.get(originalGene);
-                Set<Chromosome.Gene> originalNextGenes = originalGene.getNextGenes();
-                Set<Chromosome.Gene> originalPreviousGenes = originalGene.getPreviousGenes();
-
-                originalNextGenes.stream().map(originalToCloneMap::get).forEach(clonedGene::addNextGene);
-
-                originalPreviousGenes.stream().map(originalToCloneMap::get).forEach(clonedGene::addPreviousGene);
-            }
-        }
 
         Chromosome newChromosome = new Chromosome(candidate);
         orderMaintainer.checkAndMaintainOrder(newChromosome);
@@ -154,6 +134,71 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
         return newChromosome;
     }
 
+    private List<Chromosome.Gene> createClonedRow(List<Chromosome.Gene> row) {
+        List<Chromosome.Gene> newRow = new ArrayList<>();
+        Map<Chromosome.Gene, Chromosome.Gene> originalToCloneMap = new HashMap<>();
 
+        for (Chromosome.Gene gene : row) {
+            Chromosome.Gene newGene = Chromosome.Gene.clone(gene);
+            originalToCloneMap.put(gene, newGene);
+            newRow.add(newGene);
+        }
+
+        for (List<Chromosome.Gene> subChromosome : template) {
+            for (Chromosome.Gene originalGene : subChromosome) {
+                Chromosome.Gene clonedGene = originalToCloneMap.get(originalGene);
+                if(clonedGene != null) {
+                    Set<Chromosome.Gene> originalNextGenes = originalGene.getNextGenes();
+                    Set<Chromosome.Gene> originalPreviousGenes = originalGene.getPreviousGenes();
+
+                    originalNextGenes.stream().map(originalToCloneMap::get).forEachOrdered(clonedGene::addNextGene);
+
+                    originalPreviousGenes.stream().map(originalToCloneMap::get).forEachOrdered(clonedGene::addPreviousGene);
+                }
+            }
+        }
+        return newRow;
+    }
+
+    private void moveNewChromosome(Set<Chromosome.Gene> startGenes, int bufferBound, Random rand) {
+
+        for (Chromosome.Gene gene : startGenes) {
+
+            if (!gene.isFixed()) {
+
+                Chromosome.Gene latestPreviousGene = gene.getLatestPreviousGene();
+
+                if (latestPreviousGene != null) {
+                    DateTime newStartTime = new DateTime(latestPreviousGene.getExecutionInterval().getEnd().getMillis() + 1);
+                    DateTime newEndTime = newStartTime.plus(gene.getProcessStep().getExecutionTime());
+                    gene.setExecutionInterval(new Interval(newStartTime, newEndTime));
+                }
+
+                if (bufferBound > 0) {
+                    int intervalDelta = rand.nextInt(bufferBound - 1) + 1;
+                    gene.moveIntervalPlus(intervalDelta);
+                }
+
+
+            }
+        }
+
+        for (Chromosome.Gene gene : startGenes) {
+            moveNewChromosome(gene.getNextGenes(), bufferBound, rand);
+
+        }
+
+    }
+
+    private Set<Chromosome.Gene> findStartGene(List<Chromosome.Gene> rowParent2) {
+        Set<Chromosome.Gene> startGenes = new HashSet<>();
+        for (Chromosome.Gene gene : rowParent2) {
+            if (gene.getPreviousGenes() == null || gene.getPreviousGenes().isEmpty()) {
+                startGenes.add(gene);
+            }
+        }
+
+        return startGenes;
+    }
 
 }

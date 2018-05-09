@@ -44,6 +44,8 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
     private boolean timeExchangeCrossover = false;
     @Value("${use.space.aware.crossover}")
     private boolean spaceAwareCrossover = true;
+    @Value("${use.space.aware.crossover.2}")
+    private boolean spaceAwareCrossover2 = true;
     @Value("${use.space.aware.mutation}")
     private boolean spaceAwareMutation = true;
     @Value("${use.single.shift.with.moving.mutation}")
@@ -120,6 +122,9 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
         if(spaceAwareCrossover) {
             operators.add(new SpaceAwareCrossover());
         }
+        if(spaceAwareCrossover2) {
+            operators.add(new SpaceAwareCrossover2(maxTimeAfterDeadline));
+        }
         if(singleShiftWithMovingMutation) {
             operators.add(new SingleShiftWithMovingMutation(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(singleShiftWithMovingMutationMin, singleShiftWithMovingMutationMax, rng), optimizationTime));
         }
@@ -181,9 +186,9 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
                     else {
                         DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
 
-                        if(withOptimizationTimeout) {
+//                        if(withOptimizationTimeout) {
                             scheduledStartTime = scheduledStartTime.plus(duration);
-                        }
+//                        }
 
                         ProcessStep realProcessStep = null;
 

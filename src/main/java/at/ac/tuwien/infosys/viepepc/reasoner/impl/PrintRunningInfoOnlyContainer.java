@@ -39,7 +39,7 @@ public class PrintRunningInfoOnlyContainer {
 
             printWaitingInformation(stringBuilder);
 
-            log.info(stringBuilder.toString());
+            log.debug(stringBuilder.toString());
         } catch (Exception ex) {
             log.error("Exception while printing running information. But is ignored :D");
         }
@@ -75,9 +75,6 @@ public class PrintRunningInfoOnlyContainer {
             stringBuilder.append(processStep.toString()).append("\n");
         }
     }
-
-
-
 
 
     private void getRunningTasks(StringBuilder stringBuilder) {

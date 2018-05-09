@@ -70,11 +70,13 @@ public class ReasoningImpl implements Reasoning {
     private AtomicLong nextOptimizeTime = new AtomicLong(0);
 
     private static final long POLL_INTERVAL_MILLISECONDS = 1000;
-    private static final long TERMINATE_CHECK_INTERVAL_MILLISECONDS = 10000;
-    private static final long PRINT_STATUS_INTERVAL_MILLISECONDS = 60000;
+    private static final long TERMINATE_CHECK_INTERVAL_MILLISECONDS = 30000;
+    private static final long PRINT_STATUS_INTERVAL_MILLISECONDS = 120000;
 
     @Value("${min.optimization.interval.ms}")
     private int minTauTDifference;
+    private boolean printRunningInformation = false;
+
 	private static final long RETRY_TIMEOUT_MILLIS = 10 * 1000;
 
 
@@ -115,7 +117,9 @@ public class ReasoningImpl implements Reasoning {
 
                     if (now - lastPrintStatusTime.get() > PRINT_STATUS_INTERVAL_MILLISECONDS) {
                         lastPrintStatusTime.set(now);
-                        printRunningInfoOnlyContainer.printRunningInformation();
+                        if(printRunningInformation) {
+                            printRunningInfoOnlyContainer.printRunningInformation();
+                        }
                     }
 
                 	if (now >= nextOptimizeTime.get()) {
