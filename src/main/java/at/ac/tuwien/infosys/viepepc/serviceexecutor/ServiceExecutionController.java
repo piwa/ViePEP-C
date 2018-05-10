@@ -97,7 +97,10 @@ public class ServiceExecutionController {
         for (ProcessStep processStep : processSteps) {
 
             if(processStepScheduledTasksMap.containsKey(processStep)) {
-                processStepScheduledTasksMap.get(processStep).cancel(false);
+                boolean result = processStepScheduledTasksMap.get(processStep).cancel(false);
+                if(!result) {
+                    log.error("problem");
+                }
                 processStepScheduledTasksMap.remove(processStep);
             }
 

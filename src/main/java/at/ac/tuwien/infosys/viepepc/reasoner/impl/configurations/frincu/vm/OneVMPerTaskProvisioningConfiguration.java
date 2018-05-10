@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Profile;
 
 @Slf4j
 @Configuration
-@Profile("OneVMPerTask")
+@Profile({"OneVMPerTask","test"})
 public class OneVMPerTaskProvisioningConfiguration {
 	
 	@Bean

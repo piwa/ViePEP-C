@@ -9,19 +9,19 @@
    <Configuration>
       <name>MICRO_CORE</name>
       <cores>0.5</cores>
-      <ram>512</ram>
+      <ram>1024</ram>
       <disc>30</disc>
    </Configuration>
    <Configuration>
       <name>SINGLE_CORE</name>
       <cores>1</cores>
-      <ram>1024</ram>
+      <ram>2048</ram>
       <disc>30</disc>
    </Configuration>
    <Configuration>
       <name>DUAL_CORE</name>
       <cores>2</cores>
-      <ram>2048</ram>
+      <ram>4096</ram>
       <disc>30</disc>
    </Configuration>
    <Configuration>
