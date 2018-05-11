@@ -11,10 +11,12 @@ import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.maths.random.PoissonGenerator;
 import org.uncommons.watchmaker.framework.EvolutionaryOperator;
 
+import javax.print.CancelablePrintJob;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
@@ -31,7 +33,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
      * @param maxTimeAfterDeadline
      */
     public SpaceAwareMutation(PoissonGenerator poissonGenerator, DateTime optimizationTime, Map<String, DateTime> maxTimeAfterDeadline) {
-        this(1, DateTime.now(), maxTimeAfterDeadline);
+        this(1, optimizationTime, maxTimeAfterDeadline);
     }
 
     /**
@@ -72,8 +74,6 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     }
 
     private Chromosome mutate(Chromosome candidate, Random random) {
-
-
         List<List<Chromosome.Gene>> newCandidate = new ArrayList<>();
         Chromosome.cloneGenes(candidate, newCandidate);
 
@@ -135,18 +135,16 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                 gene.setExecutionInterval(newInterval);
                 mutationCount = mutationCount - 1;
 
-
             }
             counter = counter + 1;
-
         }
 
         Chromosome newChromosome = new Chromosome(newCandidate);
 //        orderMaintainer.checkAndMaintainOrder(newChromosome);
 
-        if(!orderMaintainer.orderIsOk(newCandidate)) {
-            log.error("Order is not ok: " + newCandidate.toString());
-        }
+//        if(!orderMaintainer.orderIsOk(newCandidate)) {
+//            log.error("Order is not ok: " + newCandidate.toString());
+//        }
 
         return newChromosome;
     }

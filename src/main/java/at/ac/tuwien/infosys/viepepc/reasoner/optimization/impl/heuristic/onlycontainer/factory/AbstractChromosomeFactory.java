@@ -3,14 +3,18 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlyco
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.OrderMaintainer;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.uncommons.watchmaker.framework.factories.AbstractCandidateFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory<Chromosome> {
+
+    protected OrderMaintainer orderMaintainer = new OrderMaintainer();
 
     protected Map<UUID, Chromosome.Gene> stepGeneMap = new HashMap<>();
     protected Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
@@ -41,6 +45,7 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
 
         List<Chromosome.Gene> subChromosome = new ArrayList<>();
         createStartChromosomeRec(currentElement, optimizationStartTime, subChromosome);
+
         return subChromosome;
 
     }
@@ -199,12 +204,8 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
     }
 
 
-    protected void fillProcessStepChain(Element workflowElement, List<Chromosome.Gene> subChromosome) {
-
+    protected void fillProcessStepChain(Element workflowElement) {
         fillProcessStepChainRec(workflowElement, new ArrayList<>());
-
-        return;
-
     }
 
     private List<ProcessStep> fillProcessStepChainRec(Element currentElement, List<ProcessStep> previousProcessSteps) {

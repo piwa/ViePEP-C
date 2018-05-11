@@ -57,6 +57,9 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
 
     @Value("${max.optimization.duration}")
     private long maxOptimizationDuration = 60000;
+    @Value("${additional.optimization.time}")
+    private long additionalOptimizationTime = 20000;
+
 
     @Value("${population.size}")
     private int populationSize = 400;
@@ -98,7 +101,7 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
         this.optimizationTime = DateTime.now();
 
         if(withOptimizationTimeout) {
-            this.optimizationTime = this.optimizationTime.plus(maxOptimizationDuration);
+            this.optimizationTime = this.optimizationTime.plus(maxOptimizationDuration).plus(additionalOptimizationTime);
         }
 
         int eliteCount = (int) Math.round(populationSize * eliteCountNumber);
@@ -123,7 +126,7 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
             operators.add(new SpaceAwareCrossover());
         }
         if(spaceAwareCrossover2) {
-            operators.add(new SpaceAwareCrossover2(maxTimeAfterDeadline));
+            operators.add(new SpaceAwareCrossover2(maxTimeAfterDeadline, optimizationTime));
         }
         if(singleShiftWithMovingMutation) {
             operators.add(new SingleShiftWithMovingMutation(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(singleShiftWithMovingMutationMin, singleShiftWithMovingMutationMax, rng), optimizationTime));
@@ -179,35 +182,31 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
                 container.setBareMetal(true);
 
                 for (Chromosome.Gene processStepGene : serviceTypeSchedulingUnit.getProcessSteps()) {
-                    ProcessStep processStep = processStepGene.getProcessStep();
-                    if(processStep.getStartDate() != null && processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isRunning() == true || processStep.getScheduledAtContainer().isDeploying() == true)) {
+                    if(!processStepGene.isFixed()) {
+                        ProcessStep processStep = processStepGene.getProcessStep();
+                        if (processStep.getStartDate() != null && processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isRunning() == true || processStep.getScheduledAtContainer().isDeploying() == true)) {
 
-                    }
-                    else {
-                        DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
+                        } else {
+                            DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
 
 //                        if(withOptimizationTimeout) {
-                            scheduledStartTime = scheduledStartTime.plus(duration);
+//                            scheduledStartTime = scheduledStartTime.plus(duration);
 //                        }
 
-                        ProcessStep realProcessStep = null;
+                            ProcessStep realProcessStep = null;
 
-                        for (Element element : flattenWorkflowList) {
-                            if(element instanceof ProcessStep && ((ProcessStep) element).getInternId().equals(processStep.getInternId())) {
-                                realProcessStep = (ProcessStep) element;
+                            for (Element element : flattenWorkflowList) {
+                                if (element instanceof ProcessStep && ((ProcessStep) element).getInternId().equals(processStep.getInternId())) {
+                                    realProcessStep = (ProcessStep) element;
+                                }
                             }
-                        }
 
-                        if(realProcessStep == null) {
-                            log.error("Big Problem");
-                        }
-                        else {
                             boolean alreadyDeploying = false;
-                            if(realProcessStep.getScheduledAtContainer() != null && (realProcessStep.getScheduledAtContainer().isDeploying() || realProcessStep.getScheduledAtContainer().isRunning())) {
+                            if (realProcessStep.getScheduledAtContainer() != null && (realProcessStep.getScheduledAtContainer().isDeploying() || realProcessStep.getScheduledAtContainer().isRunning())) {
                                 alreadyDeploying = true;
                             }
 
-                            if(realProcessStep.getStartDate() == null && !alreadyDeploying) {
+                            if (realProcessStep.getStartDate() == null && !alreadyDeploying) {
                                 realProcessStep.setScheduledForExecution(true, scheduledStartTime, container);
                                 optimizationResult.addProcessStep(realProcessStep);
                             }

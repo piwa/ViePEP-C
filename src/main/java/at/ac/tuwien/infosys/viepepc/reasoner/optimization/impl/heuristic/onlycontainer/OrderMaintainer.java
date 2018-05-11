@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlyco
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import java.util.List;
@@ -14,6 +15,15 @@ public class OrderMaintainer {
     @Getter
     private Chromosome.Gene secondGene;
     private boolean moveBack = false;
+
+    public boolean checkAllStartTimesBeforeTime(DateTime optimizationStartTime, List<Chromosome.Gene> subChromosome) {
+        for (Chromosome.Gene gene : subChromosome) {
+            if(!gene.isFixed() && gene.getExecutionInterval().getStart().isBefore(optimizationStartTime)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     public void checkAndMaintainOrder(Chromosome chromosome) {
         for (List<Chromosome.Gene> row : chromosome.getGenes()) {

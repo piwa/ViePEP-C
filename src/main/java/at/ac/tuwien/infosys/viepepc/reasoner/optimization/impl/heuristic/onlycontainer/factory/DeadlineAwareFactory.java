@@ -13,17 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
     @Getter
     private final List<List<Chromosome.Gene>> template = new ArrayList<>();
-    private OrderMaintainer orderMaintainer = new OrderMaintainer();
 
     private Map<String, DateTime> workflowDeadlines = new HashMap<>();
-    @Getter
-    Map<String, DateTime> maxTimeAfterDeadline = new HashMap<>();
+    @Getter Map<String, DateTime> maxTimeAfterDeadline = new HashMap<>();
+    private DateTime optimizationStartTime;
 
     @Value("${deadline.aware.factory.allowed.penalty.points}")
     private int allowedPenaltyPoints;
@@ -31,6 +31,8 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
     public DeadlineAwareFactory(List<WorkflowElement> workflowElementList, DateTime optimizationStartTime, long defaultContainerDeployTime, long defaultContainerStartupTime, boolean withOptimizationTimeOut) {
 
         super(defaultContainerStartupTime, defaultContainerDeployTime, withOptimizationTimeOut);
+
+        this.optimizationStartTime = new DateTime(optimizationStartTime);
 
         clonedServiceTypes = new HashMap<>();
         for (WorkflowElement workflowElement : workflowElementList) {
@@ -43,15 +45,10 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
             }
 
             subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStep().getInternId(), gene));
-
-            fillProcessStepChain(workflowElement, subChromosome);
-
+            fillProcessStepChain(workflowElement);
             template.add(subChromosome);
-
             workflowDeadlines.put(workflowElement.getName(), workflowElement.getDeadlineDateTime());
-
             calculateMaxTimeAfterDeadline(workflowElement, subChromosome);
-
         }
         this.defaultContainerDeployTime = defaultContainerDeployTime;
     }

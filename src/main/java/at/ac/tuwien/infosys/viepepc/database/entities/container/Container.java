@@ -44,7 +44,7 @@ public class Container implements Cloneable {
     private boolean running = false;
     private boolean bareMetal = false;
     private boolean deploying = false;
-    private String awsTaskArn = "";
+    private String providerContainerId = "";
 
     public Container() {
         containerID = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id

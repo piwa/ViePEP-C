@@ -1,19 +1,19 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor.impl;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
-import com.amazonaws.services.ecr.AmazonECR;
-import com.amazonaws.services.ecr.AmazonECRClientBuilder;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ecs.AmazonECS;
 import com.amazonaws.services.ecs.AmazonECSClientBuilder;
 import com.amazonaws.services.ecs.model.*;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
-import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by philippwaibel on 03/04/2017.
@@ -22,21 +22,51 @@ import java.util.UUID;
 @Slf4j
 public class ViePEPAWSFargateServiceImpl {
 
-    @Value("${viepep.node.port.available}")
-    private String encodedHostNodeAvailablePorts;
-    @Value("${container.deployment.region}")
-    private String defaultRegion;
+    @Value("${aws.access.key.id}")
+    private String awsAccessKeyId;
+    @Value("${aws.access.key}")
+    private String awsAccessKey;
+    @Value("${aws.default.image.id}")
+    private String awsDefaultImageId;
+    @Value("${aws.default.image.flavor}")
+    private String awsDefaultImageFlavor;
+    @Value("${aws.default.region}")
+    private String awsDefaultRegion;
+    @Value("${aws.default.securitygroup}")
+    private String awsDefaultSecuritygroup;
+    @Value("${aws.keypair.name}")
+    private String awsKeypairName;
 
-    private AmazonECS ecs = AmazonECSClientBuilder.standard().withRegion(defaultRegion).build();
+    private AmazonECS ecs; //= AmazonECSClientBuilder.standard().withRegion(awsDefaultRegion).build();
+
+    private void init() {
+
+    }
+
+    private void setup() {
+
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(awsAccessKeyId, awsAccessKey);
+        ecs = AmazonECSClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                .withRegion(awsDefaultRegion)
+                .build();
+
+        log.debug("Successfully connected to AWS with user " + awsAccessKeyId);
+    }
+
 
     public synchronized Container startContainer(Container container) throws DockerException, InterruptedException {
 
         String taskDefinitionArn = "arn:aws:ecs:us-east-1:766062760046:task-definition/viepep-c-service1:1";
 
+        setup();
+
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
 
         NetworkConfiguration networkConfiguration = new NetworkConfiguration().withAwsvpcConfiguration(
                 new AwsVpcConfiguration()
-                        .withSubnets("subnet-53ce7419")
+                        .withSubnets("subnet-d7d023f9")
                         .withAssignPublicIp(AssignPublicIp.ENABLED) //Crashloops without proper internet NAT set up?
         );
 
@@ -46,15 +76,20 @@ public class ViePEPAWSFargateServiceImpl {
                 .withNetworkConfiguration(networkConfiguration)
         );
 
+
         DescribeTasksRequest describeTasksRequest = new DescribeTasksRequest();
         describeTasksRequest.withTasks(runTaskResult.getTasks().get(0).getTaskArn());
-        for( int i = 0; i <= 20; i++){
+        boolean running = false;
+        while(!running) {
             DescribeTasksResult describeTasksResult = ecs.describeTasks(describeTasksRequest);
-            continue;
+            running = describeTasksResult.getTasks().get(0).getLastStatus().equals("RUNNING");
+            TimeUnit.SECONDS.sleep(5);
         }
-        log.info(runTaskResult.toString());
 
-        container.setAwsTaskArn(runTaskResult.getTasks().get(0).getTaskArn());
+        stopWatch.stop();
+        log.info("Task running. Time=" + stopWatch.getTotalTimeSeconds());
+
+        container.setProviderContainerId(runTaskResult.getTasks().get(0).getTaskArn());
 //        String id = UUID.randomUUID().toString();
 //        String hostPort = "2000";
 //
@@ -69,8 +104,10 @@ public class ViePEPAWSFargateServiceImpl {
 
     public void removeContainer(Container container) {
 
+        setup();
+
         StopTaskRequest stopTaskRequest = new StopTaskRequest();
-        stopTaskRequest.withTask(container.getAwsTaskArn());
+        stopTaskRequest.withTask(container.getProviderContainerId());
         StopTaskResult stopTaskResult = ecs.stopTask(stopTaskRequest);
 
 

@@ -28,7 +28,7 @@ public class SimpleFactory extends AbstractChromosomeFactory {
 
             subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStep().getInternId(), gene));
 
-            fillProcessStepChain(workflowElement, subChromosome);
+            fillProcessStepChain(workflowElement);
 
             template.add(subChromosome);
         }

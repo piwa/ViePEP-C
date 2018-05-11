@@ -103,6 +103,13 @@
             <!--<version>1.11.321</version>-->
         <!--</dependency>-->
 
+		<!--Azure-->
+		<dependency>
+			<groupId>com.microsoft.azure</groupId>
+			<artifactId>azure</artifactId>
+			<version>1.10.0</version>
+		</dependency>
+
 		<!-- Google Cloud -->
 		<dependency>
 			<groupId>com.google.cloud</groupId>
@@ -145,11 +152,16 @@
 			<artifactId>commons-io</artifactId>
 			<version>${apache.commons.io.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>${guava.version}</version>
-		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>commons-net</groupId>-->
+			<!--<artifactId>commons-net</artifactId>-->
+			<!--<version>3.6</version>-->
+		<!--</dependency>-->
+		<!--<dependency>-->
+			<!--<groupId>com.google.guava</groupId>-->
+			<!--<artifactId>guava</artifactId>-->
+			<!--<version>${guava.version}</version>-->
+		<!--</dependency>-->
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>

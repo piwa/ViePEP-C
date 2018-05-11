@@ -71,8 +71,10 @@ public class ViePEPAWSFargateServiceImplTest {
 
     @Test
     public void startAndStopAContainerOnFargate_success() throws Exception {
+        Container container = new Container();
+        container = fargateService.startContainer(container);
 
-        fargateService.startContainer(null);
+        fargateService.removeContainer(container);
 
     }
 

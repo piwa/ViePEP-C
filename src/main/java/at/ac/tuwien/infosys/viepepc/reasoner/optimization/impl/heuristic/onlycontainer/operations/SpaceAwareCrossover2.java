@@ -9,18 +9,20 @@ import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.watchmaker.framework.operators.AbstractCrossover;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
 
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
     private Map<String, DateTime> maxTimeAfterDeadline;
+    private DateTime optimizationTime;
 
     /**
      * Single-point cross-over.
      */
-    public SpaceAwareCrossover2(Map<String, DateTime> maxTimeAfterDeadline) {
-        this(1, maxTimeAfterDeadline);
+    public SpaceAwareCrossover2(Map<String, DateTime> maxTimeAfterDeadline, DateTime optimizationTime) {
+        this(1, maxTimeAfterDeadline, optimizationTime);
     }
 
 
@@ -30,9 +32,10 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
      * @param crossoverPoints The fixed number of cross-overs applied to each
      *                        pair of parents.
      */
-    public SpaceAwareCrossover2(int crossoverPoints, Map<String, DateTime> maxTimeAfterDeadline) {
+    public SpaceAwareCrossover2(int crossoverPoints, Map<String, DateTime> maxTimeAfterDeadline, DateTime optimizationTime) {
         super(crossoverPoints);
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
+        this.optimizationTime = optimizationTime;
     }
 
 
@@ -42,9 +45,10 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
      * @param crossoverPointsVariable Provides the (possibly variable) number of
      *                                cross-overs applied to each pair of parents.
      */
-    public SpaceAwareCrossover2(NumberGenerator<Integer> crossoverPointsVariable, Map<String, DateTime> maxTimeAfterDeadline) {
+    public SpaceAwareCrossover2(NumberGenerator<Integer> crossoverPointsVariable, Map<String, DateTime> maxTimeAfterDeadline, DateTime optimizationTime) {
         super(crossoverPointsVariable);
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
+        this.optimizationTime = optimizationTime;
     }
 
 
@@ -86,49 +90,14 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
             Chromosome.Gene clone1PreviousGene = rowClone1.get(crossoverStartIndex).getLatestPreviousGene();
             DateTime maxDeadlineExtensionClone1 = maxTimeAfterDeadline.get(parent2Gene.getProcessStep().getWorkflowName());
 
-            if(clone1PreviousGene == null || (checkIfCrossoverPossible(clone1PreviousGene, parent2Gene.getLatestPreviousGene().getNextGenes()) && checkIfInDeadline(rowParent2, maxDeadlineExtensionClone1))) {
-
-                Set<Chromosome.Gene> currentParentGenes = null;
-                if(parent2Gene.getLatestPreviousGene() == null) {
-                    currentParentGenes = findStartGene(rowParent2);
-                }
-                else {
-                    currentParentGenes = parent2Gene.getLatestPreviousGene().getNextGenes();
-                }
-                for (Chromosome.Gene currentParentGene : currentParentGenes) {
-                    performCrossover(currentParentGene, processStepNameToCloneMap1.get(currentParentGene.getProcessStep().getName()), processStepNameToCloneMap1);
-                }
-
-                rowClone1Changed = true;
-                if(!orderMaintainer.rowOrderIsOk(rowClone1)) {
-                    log.error("problem");
-                }
-            }
+            rowClone1Changed = performCrossover(rowClone1Changed, processStepNameToCloneMap1, rowParent2, rowParent2, parent2Gene, clone1PreviousGene, maxDeadlineExtensionClone1);
 
             // crossover from rowParent1 to rowClone2 possible
             Chromosome.Gene parent1Gene = rowParent1.get(crossoverStartIndex);
             Chromosome.Gene clone2PreviousGene = rowClone2.get(crossoverStartIndex).getLatestPreviousGene();
             DateTime maxDeadlineExtensionClone2 = maxTimeAfterDeadline.get(parent1Gene.getProcessStep().getWorkflowName());
 
-            if(clone2PreviousGene == null || (checkIfCrossoverPossible(clone2PreviousGene, parent1Gene.getLatestPreviousGene().getNextGenes()) && checkIfInDeadline(rowParent2, maxDeadlineExtensionClone2))) {
-
-                Set<Chromosome.Gene> currentParentGenes = null;
-                if(parent1Gene.getLatestPreviousGene() == null) {
-                    currentParentGenes = findStartGene(rowParent1);
-                }
-                else {
-                    currentParentGenes = parent1Gene.getLatestPreviousGene().getNextGenes();
-                }
-
-                for (Chromosome.Gene currentParentGene : currentParentGenes) {
-                    performCrossover(currentParentGene, processStepNameToCloneMap2.get(currentParentGene.getProcessStep().getName()), processStepNameToCloneMap2);
-                }
-
-                rowClone2Changed = true;
-                if(!orderMaintainer.rowOrderIsOk(rowClone2)) {
-                    log.error("problem");
-                }
-            }
+            rowClone2Changed = performCrossover(rowClone2Changed, processStepNameToCloneMap2, rowParent1, rowParent2, parent1Gene, clone2PreviousGene, maxDeadlineExtensionClone2);
 
             if(rowClone1Changed || rowClone2Changed) {
                 break;
@@ -146,6 +115,29 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
             result.add(offspring2Chromosome);
         }
         return result;
+    }
+
+    private boolean performCrossover(boolean rowClone2Changed, Map<String, Chromosome.Gene> processStepNameToCloneMap2, List<Chromosome.Gene> rowParent1, List<Chromosome.Gene> rowParent2, Chromosome.Gene parent1Gene, Chromosome.Gene clone2PreviousGene, DateTime maxDeadlineExtensionClone2) {
+        if(clone2PreviousGene == null || (checkIfCrossoverPossible(clone2PreviousGene, parent1Gene.getLatestPreviousGene().getNextGenes()) && checkIfInDeadline(rowParent2, maxDeadlineExtensionClone2))) {
+
+            Set<Chromosome.Gene> currentParentGenes = null;
+            if(parent1Gene.getLatestPreviousGene() == null) {
+                currentParentGenes = findStartGene(rowParent1);
+            }
+            else {
+                currentParentGenes = parent1Gene.getLatestPreviousGene().getNextGenes();
+            }
+
+            for (Chromosome.Gene currentParentGene : currentParentGenes) {
+                performCrossoverRec(currentParentGene, processStepNameToCloneMap2.get(currentParentGene.getProcessStep().getName()), processStepNameToCloneMap2);
+            }
+
+            rowClone2Changed = true;
+//                if(!orderMaintainer.rowOrderIsOk(rowClone2)) {
+//                    log.error("problem");
+//                }
+        }
+        return rowClone2Changed;
     }
 
     private Set<Chromosome.Gene> findStartGene(List<Chromosome.Gene> rowParent2) {
@@ -168,13 +160,13 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
         return map;
     }
 
-    private void performCrossover(Chromosome.Gene parent2Gene, Chromosome.Gene currentClone, Map<String, Chromosome.Gene> processStepNameToCloneMap) {
+    private void performCrossoverRec(Chromosome.Gene parent2Gene, Chromosome.Gene currentClone, Map<String, Chromosome.Gene> processStepNameToCloneMap) {
         Interval newInterval = parent2Gene.getExecutionInterval();
         currentClone.setExecutionInterval(new Interval(newInterval.getStart().getMillis(), newInterval.getEnd().getMillis()));
 
         for (Chromosome.Gene nextGene : parent2Gene.getNextGenes()) {
             if(nextGene != null) {
-                performCrossover(nextGene, processStepNameToCloneMap.get(nextGene.getProcessStep().getName()), processStepNameToCloneMap);
+                performCrossoverRec(nextGene, processStepNameToCloneMap.get(nextGene.getProcessStep().getName()), processStepNameToCloneMap);
             }
         }
     }

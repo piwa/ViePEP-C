@@ -29,5 +29,13 @@ gcloud.default.image.path=
 gcloud.credentials=
 gcloud.use.public.ip=
 
+# Azure Cloud
+azure.client.id =
+azure.tenant.id =
+azure.secret =
+azure.repository =
+azure.resource.group =
+azure.username =
+azure.password =
 
 viepep.node.port.available=
