@@ -25,15 +25,14 @@ public class ServiceInvokerHttpClient {
         }
         log.debug("Send " + url);
         stopWatch.start();
-//        RestTemplate restTemplate = new RestTemplateBuilder().setConnectTimeout(500).setReadTimeout(500).build();
-//        AsyncRestTemplate restTemplate = new AsyncRestTemplate();
-        RestTemplate restTemplate = new RestTemplate();
+        AsyncRestTemplate restTemplate = new AsyncRestTemplate();
+//        RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_HTML);
         HttpEntity<String> entity = new HttpEntity<String>(headers);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-//        ListenableFuture<ResponseEntity<String>> responseEntityFuture = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-//        ResponseEntity<String> responseEntity = responseEntityFuture.get();
+//        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        ListenableFuture<ResponseEntity<String>> responseEntityFuture = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        ResponseEntity<String> responseEntity = responseEntityFuture.get();
 
         stopWatch.stop();
 
