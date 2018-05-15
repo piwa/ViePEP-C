@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -103,6 +104,11 @@ public class PIPPImpl extends AbstractHeuristicImpl implements ProcessInstancePl
             log.error("Exception", ex);
             return new OptimizationResultImpl();
         }
+    }
+
+    @Override
+    public Future<OptimizationResult> asyncOptimize(DateTime tau_t) throws ProblemNotSolvedException {
+        return null;
     }
 
     private VirtualMachine getRandomVirtualMachine() {

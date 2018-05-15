@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 
 import java.util.*;
+import java.util.concurrent.Future;
 
 /**
  * Created by philippwaibel on 30/09/2016.
@@ -118,6 +119,11 @@ public class AllParExceedContainerImpl extends AbstractContainerProvisioningImpl
         }
 
         return optimizationResult;
+    }
+
+    @Override
+    public Future<OptimizationResult> asyncOptimize(DateTime tau_t) throws ProblemNotSolvedException {
+        return null;
     }
 
 

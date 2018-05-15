@@ -14,8 +14,10 @@ import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurati
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.scheduling.annotation.AsyncResult;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * Created by philippwaibel on 30/09/2016.
@@ -71,6 +73,11 @@ public class OneVMforAllContainerImpl extends AbstractContainerProvisioningImpl 
         }
 
         return optimizationResult;
+    }
+
+    @Override
+    public Future<OptimizationResult> asyncOptimize(DateTime tau_t) throws ProblemNotSolvedException {
+        return new AsyncResult<>(optimize(tau_t));
     }
 
 

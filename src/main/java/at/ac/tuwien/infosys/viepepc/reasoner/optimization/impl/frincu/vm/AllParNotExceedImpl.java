@@ -16,8 +16,10 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.scheduling.annotation.AsyncResult;
 
 import java.util.*;
+import java.util.concurrent.Future;
 
 /**
  * Created by philippwaibel on 30/09/2016.
@@ -133,6 +135,11 @@ public class AllParNotExceedImpl extends AbstractVMProvisioningImpl implements P
 //        inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimizationResult.getProcessSteps());
 
         return optimizationResult;
+    }
+
+    @Override
+    public Future<OptimizationResult> asyncOptimize(DateTime tau_t) throws ProblemNotSolvedException {
+        return new AsyncResult<>(optimize(tau_t));
     }
 
 

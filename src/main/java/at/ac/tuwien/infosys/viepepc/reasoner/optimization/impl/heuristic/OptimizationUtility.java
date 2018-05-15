@@ -4,21 +4,14 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
-import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.FitnessFunction;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.ServiceTypeSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +30,9 @@ public class OptimizationUtility {
     private ContainerImageRegistryReader containerImageRegistryReader;
     @Autowired
     protected PlacementHelper placementHelper;
+    @Value("${only.container.deploy.time}")
+    private long onlyContainerDeployTime;
+
 
     public ContainerConfiguration getContainerConfiguration(ServiceType serviceType) throws ContainerConfigurationNotFoundException {
         ContainerConfiguration containerConfiguration = null;
@@ -101,14 +97,15 @@ public class OptimizationUtility {
                 boolean overlapFound = false;
                 List<ServiceTypeSchedulingUnit> requiredServiceTypes = requiredServiceTypeMap.get(gene.getProcessStep().getServiceType());
                 for (ServiceTypeSchedulingUnit requiredServiceType : requiredServiceTypes) {
-                    Interval overlap = requiredServiceType.getDeploymentInterval().overlap(gene.getExecutionInterval());
-
-                    if (overlap != null) {
+//                    Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
+//                    if (overlap != null) {
+                    if((requiredServiceType.getServiceAvailableTime().getStart().isBefore(gene.getExecutionInterval().getStart()) && requiredServiceType.getServiceAvailableTime().getEnd().isAfter(gene.getExecutionInterval().getEnd())) ||
+                            (gene.getExecutionInterval().getStart().isBefore(requiredServiceType.getServiceAvailableTime().getEnd()) && gene.getExecutionInterval().getEnd().isAfter(requiredServiceType.getServiceAvailableTime().getEnd()))) {
 
                         DateTime newStartTime;
                         DateTime newEndTime;
 
-                        Interval deploymentInterval = requiredServiceType.getDeploymentInterval();
+                        Interval deploymentInterval = requiredServiceType.getServiceAvailableTime();
                         Interval geneInterval = gene.getExecutionInterval();
                         if(deploymentInterval.getStart().isBefore(geneInterval.getStart())) {
                             newStartTime = deploymentInterval.getStart();
@@ -124,7 +121,7 @@ public class OptimizationUtility {
                             newEndTime = geneInterval.getEnd();
                         }
 
-                        requiredServiceType.setDeploymentInterval(new Interval(newStartTime, newEndTime));
+                        requiredServiceType.setServiceAvailableTime(new Interval(newStartTime, newEndTime));
                         requiredServiceType.getProcessSteps().add(gene);
 
                         overlapFound = true;
@@ -133,8 +130,8 @@ public class OptimizationUtility {
                 }
 
                 if (!overlapFound) {
-                    ServiceTypeSchedulingUnit newServiceTypeSchedulingUnit = new ServiceTypeSchedulingUnit(gene.getProcessStep().getServiceType());
-                    newServiceTypeSchedulingUnit.setDeploymentInterval(gene.getExecutionInterval());
+                    ServiceTypeSchedulingUnit newServiceTypeSchedulingUnit = new ServiceTypeSchedulingUnit(gene.getProcessStep().getServiceType(), this.onlyContainerDeployTime);
+                    newServiceTypeSchedulingUnit.setServiceAvailableTime(gene.getExecutionInterval());
                     newServiceTypeSchedulingUnit.addProcessStep(gene);
 
                     requiredServiceTypeMap.get(gene.getProcessStep().getServiceType()).add(newServiceTypeSchedulingUnit);

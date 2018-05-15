@@ -8,6 +8,7 @@ import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokerSimula
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.*;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
@@ -15,6 +16,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.Executor;
 
@@ -50,6 +52,12 @@ public class ApplicationContext implements AsyncConfigurer {
         }
         return new ServiceInvokerImpl();
     }
+
+//    @Bean
+//    public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder)
+//    {
+//        return restTemplateBuilder.setConnectTimeout(500).setReadTimeout(500).build();
+//    }
 
     @Bean
     @Scope("prototype")

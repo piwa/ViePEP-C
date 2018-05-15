@@ -4,6 +4,7 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.Proble
 import org.joda.time.DateTime;
 
 import java.util.Date;
+import java.util.concurrent.Future;
 
 /**
  * Created by Philipp Hoenisch on 5/5/14. modified by Gerta Sheganaku
@@ -15,6 +16,8 @@ public interface ProcessInstancePlacementProblem {
      * @return the result
      */
     OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException;
+
+    Future<OptimizationResult> asyncOptimize(DateTime tau_t) throws ProblemNotSolvedException;
 
     void initializeParameters();
 

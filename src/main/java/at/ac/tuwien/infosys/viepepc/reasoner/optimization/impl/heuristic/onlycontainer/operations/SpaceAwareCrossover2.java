@@ -1,7 +1,9 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.operations;
 
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.OrderMaintainer;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.ServiceTypeSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -9,7 +11,6 @@ import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.watchmaker.framework.operators.AbstractCrossover;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
@@ -17,12 +18,13 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
     private Map<String, DateTime> maxTimeAfterDeadline;
     private DateTime optimizationTime;
+    private OptimizationUtility optimizationUtility;
 
     /**
      * Single-point cross-over.
      */
-    public SpaceAwareCrossover2(Map<String, DateTime> maxTimeAfterDeadline, DateTime optimizationTime) {
-        this(1, maxTimeAfterDeadline, optimizationTime);
+    public SpaceAwareCrossover2(Map<String, DateTime> maxTimeAfterDeadline, DateTime optimizationTime, OptimizationUtility optimizationUtility) {
+        this(1, maxTimeAfterDeadline, optimizationTime, optimizationUtility);
     }
 
 
@@ -32,10 +34,11 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
      * @param crossoverPoints The fixed number of cross-overs applied to each
      *                        pair of parents.
      */
-    public SpaceAwareCrossover2(int crossoverPoints, Map<String, DateTime> maxTimeAfterDeadline, DateTime optimizationTime) {
+    public SpaceAwareCrossover2(int crossoverPoints, Map<String, DateTime> maxTimeAfterDeadline, DateTime optimizationTime, OptimizationUtility optimizationUtility) {
         super(crossoverPoints);
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
         this.optimizationTime = optimizationTime;
+        this.optimizationUtility = optimizationUtility;
     }
 
 
@@ -45,10 +48,11 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
      * @param crossoverPointsVariable Provides the (possibly variable) number of
      *                                cross-overs applied to each pair of parents.
      */
-    public SpaceAwareCrossover2(NumberGenerator<Integer> crossoverPointsVariable, Map<String, DateTime> maxTimeAfterDeadline, DateTime optimizationTime) {
+    public SpaceAwareCrossover2(NumberGenerator<Integer> crossoverPointsVariable, Map<String, DateTime> maxTimeAfterDeadline, DateTime optimizationTime, OptimizationUtility optimizationUtility) {
         super(crossoverPointsVariable);
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
         this.optimizationTime = optimizationTime;
+        this.optimizationUtility = optimizationUtility;
     }
 
 
@@ -63,6 +67,7 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
         Chromosome.cloneGenes(parent2, clone2);
         Chromosome offspring2Chromosome = new Chromosome(clone2);
 
+        int amountOfRows = clone1.size();
         boolean rowClone1Changed = false;
         boolean rowClone2Changed = false;
 
@@ -70,9 +75,8 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
         Map<String, Chromosome.Gene> processStepNameToCloneMap2 = fillMap(offspring2Chromosome);
 
 //        for (int i = 0; i < numberOfCrossoverPoints; i++)
-        for (int i = 0; i < 100; i++)
-        {
-            int rowIndex = random.nextInt(clone1.size());
+        for (int i = 0; i < 100; i++) {
+            int rowIndex = random.nextInt(amountOfRows);
             List<Chromosome.Gene> rowClone1 = offspring1Chromosome.getRow(rowIndex);
             List<Chromosome.Gene> rowClone2 = offspring2Chromosome.getRow(rowIndex);
 
@@ -91,15 +95,28 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
             DateTime maxDeadlineExtensionClone1 = maxTimeAfterDeadline.get(parent2Gene.getProcessStep().getWorkflowName());
 
             rowClone1Changed = performCrossover(rowClone1Changed, processStepNameToCloneMap1, rowParent2, rowParent2, parent2Gene, clone1PreviousGene, maxDeadlineExtensionClone1);
+//            if(!considerFirstContainerStartTime(offspring1Chromosome)) {
+//                clone1 = new ArrayList<>();
+//                Chromosome.cloneGenes(parent1, clone1);
+//                offspring1Chromosome = new Chromosome(clone1);
+//                rowClone1Changed = false;
+//            }
 
             // crossover from rowParent1 to rowClone2 possible
             Chromosome.Gene parent1Gene = rowParent1.get(crossoverStartIndex);
             Chromosome.Gene clone2PreviousGene = rowClone2.get(crossoverStartIndex).getLatestPreviousGene();
             DateTime maxDeadlineExtensionClone2 = maxTimeAfterDeadline.get(parent1Gene.getProcessStep().getWorkflowName());
 
-            rowClone2Changed = performCrossover(rowClone2Changed, processStepNameToCloneMap2, rowParent1, rowParent2, parent1Gene, clone2PreviousGene, maxDeadlineExtensionClone2);
 
-            if(rowClone1Changed || rowClone2Changed) {
+            rowClone2Changed = performCrossover(rowClone2Changed, processStepNameToCloneMap2, rowParent1, rowParent2, parent1Gene, clone2PreviousGene, maxDeadlineExtensionClone2);
+//            if(!considerFirstContainerStartTime(offspring2Chromosome)) {
+//                clone2 = new ArrayList<>();
+//                Chromosome.cloneGenes(parent2, clone2);
+//                offspring2Chromosome = new Chromosome(clone2);
+//                rowClone2Changed = false;
+//            }
+
+            if (rowClone1Changed || rowClone2Changed) {
                 break;
             }
         }
@@ -108,23 +125,34 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
         orderMaintainer.orderIsOk(offspring2Chromosome.getGenes());
 
         List<Chromosome> result = new ArrayList<>();
-        if(rowClone1Changed) {
+//        if (rowClone1Changed) {
             result.add(offspring1Chromosome);
-        }
-        if(rowClone2Changed) {
+//        }
+//        if (rowClone2Changed) {
             result.add(offspring2Chromosome);
-        }
+//        }
         return result;
     }
 
+    private boolean considerFirstContainerStartTime(Chromosome newChromosome) {
+        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = this.optimizationUtility.getRequiredServiceTypes(newChromosome);
+        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
+            DateTime deploymentStartTime = serviceTypeSchedulingUnit.getDeployStartTime();
+            if (deploymentStartTime.isBefore(this.optimizationTime)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     private boolean performCrossover(boolean rowClone2Changed, Map<String, Chromosome.Gene> processStepNameToCloneMap2, List<Chromosome.Gene> rowParent1, List<Chromosome.Gene> rowParent2, Chromosome.Gene parent1Gene, Chromosome.Gene clone2PreviousGene, DateTime maxDeadlineExtensionClone2) {
-        if(clone2PreviousGene == null || (checkIfCrossoverPossible(clone2PreviousGene, parent1Gene.getLatestPreviousGene().getNextGenes()) && checkIfInDeadline(rowParent2, maxDeadlineExtensionClone2))) {
+        if (clone2PreviousGene == null || (checkIfCrossoverPossible(clone2PreviousGene, parent1Gene.getLatestPreviousGene().getNextGenes()) && checkIfInDeadline(rowParent2, maxDeadlineExtensionClone2))) {
 
             Set<Chromosome.Gene> currentParentGenes = null;
-            if(parent1Gene.getLatestPreviousGene() == null) {
+            if (parent1Gene.getLatestPreviousGene() == null) {
                 currentParentGenes = findStartGene(rowParent1);
-            }
-            else {
+            } else {
                 currentParentGenes = parent1Gene.getLatestPreviousGene().getNextGenes();
             }
 
@@ -143,7 +171,7 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
     private Set<Chromosome.Gene> findStartGene(List<Chromosome.Gene> rowParent2) {
         Set<Chromosome.Gene> startGenes = new HashSet<>();
         for (Chromosome.Gene gene : rowParent2) {
-            if(gene.getPreviousGenes() == null || gene.getPreviousGenes().isEmpty()) {
+            if (gene.getPreviousGenes() == null || gene.getPreviousGenes().isEmpty()) {
                 startGenes.add(gene);
             }
         }
@@ -165,7 +193,7 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
         currentClone.setExecutionInterval(new Interval(newInterval.getStart().getMillis(), newInterval.getEnd().getMillis()));
 
         for (Chromosome.Gene nextGene : parent2Gene.getNextGenes()) {
-            if(nextGene != null) {
+            if (nextGene != null) {
                 performCrossoverRec(nextGene, processStepNameToCloneMap.get(nextGene.getProcessStep().getName()), processStepNameToCloneMap);
             }
         }
@@ -174,7 +202,7 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
     private boolean checkIfCrossoverPossible(Chromosome.Gene clone1PreviousGene, Set<Chromosome.Gene> parent2Genes) {
 
         for (Chromosome.Gene parent2Gene : parent2Genes) {
-            if(clone1PreviousGene.getExecutionInterval().getEnd().isAfter(parent2Gene.getExecutionInterval().getStart())) {
+            if (clone1PreviousGene.getExecutionInterval().getEnd().isAfter(parent2Gene.getExecutionInterval().getStart())) {
                 return false;
             }
         }
@@ -187,7 +215,7 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
         Chromosome.Gene lastGene = null;
 
         for (Chromosome.Gene gene : row) {
-            if(lastGene == null || gene.getExecutionInterval().getEnd().isAfter(lastGene.getExecutionInterval().getEnd())) {
+            if (lastGene == null || gene.getExecutionInterval().getEnd().isAfter(lastGene.getExecutionInterval().getEnd())) {
                 lastGene = gene;
             }
         }

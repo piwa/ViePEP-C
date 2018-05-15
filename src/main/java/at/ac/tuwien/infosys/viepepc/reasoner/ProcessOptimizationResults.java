@@ -11,5 +11,5 @@ import java.util.concurrent.Future;
  */
 public interface ProcessOptimizationResults {
 
-    Future<Boolean> processResults(OptimizationResult optimize, DateTime tau_t);
+    Boolean processResults(OptimizationResult optimize, DateTime tau_t);
 }

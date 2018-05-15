@@ -5,7 +5,9 @@ import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
@@ -27,6 +29,8 @@ public class ServiceExecutionController {
     private ThreadPoolTaskScheduler taskScheduler;
     @Autowired
     private ApplicationContext applicationContext;
+    @Value("${only.container.deploy.time}")
+    private long onlyContainerDeploymentTime = 45000;
 
     private Map<ProcessStep, ScheduledFuture<OnlyContainerDeploymentController>> processStepScheduledTasksMap = new ConcurrentHashMap<>();
 
@@ -91,7 +95,7 @@ public class ServiceExecutionController {
         }
     }
 
-    @Async
+//    @Async
     public void startInvocationViaContainers(List<ProcessStep> processSteps) {
 
         for (ProcessStep processStep : processSteps) {
@@ -104,8 +108,10 @@ public class ServiceExecutionController {
                 processStepScheduledTasksMap.remove(processStep);
             }
 
+            DateTime startTimeWithContainer = processStep.getScheduledStartedAt().minus(onlyContainerDeploymentTime);
+
             OnlyContainerDeploymentController runnable = applicationContext.getOnlyContainerDeploymentController(processStep);
-            ScheduledFuture scheduledFuture = taskScheduler.schedule(runnable, processStep.getScheduledStartedAt().toDate());
+            ScheduledFuture scheduledFuture = taskScheduler.schedule(runnable, startTimeWithContainer.toDate());
             processStepScheduledTasksMap.put(processStep, scheduledFuture);
 
         }

@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * Created by philippwaibel on 30/09/2016.
@@ -64,6 +65,11 @@ public class OneVMforAllImpl extends AbstractVMProvisioningImpl implements Proce
         }
 
         return optimizationResult;
+    }
+
+    @Override
+    public Future<OptimizationResult> asyncOptimize(DateTime tau_t) throws ProblemNotSolvedException {
+        return null;
     }
 
 

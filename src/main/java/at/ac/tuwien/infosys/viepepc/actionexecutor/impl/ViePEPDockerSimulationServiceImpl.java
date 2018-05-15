@@ -81,10 +81,10 @@ public class ViePEPDockerSimulationServiceImpl {
         container.shutdownContainer();
 
         if(container.getVirtualMachine() != null) {
-            log.info("The container: " + container.getContainerID() + " on the host: " + container.getVirtualMachine() + " was removed.");
+            log.debug("The container: " + container.getContainerID() + " on the host: " + container.getVirtualMachine() + " was removed.");
         }
         else {
-            log.info("The container: " + container.getContainerID() + " was removed.");
+            log.debug("The container: " + container.getContainerID() + " was removed.");
         }
 
     }

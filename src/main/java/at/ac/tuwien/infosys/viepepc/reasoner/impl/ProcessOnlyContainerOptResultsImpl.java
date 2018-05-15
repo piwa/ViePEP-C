@@ -44,7 +44,7 @@ public class ProcessOnlyContainerOptResultsImpl implements ProcessOptimizationRe
     private boolean printRunningInformation = false;
 
     @Override
-    public Future<Boolean> processResults(OptimizationResult optimize, DateTime tau_t) {
+    public Boolean processResults(OptimizationResult optimize, DateTime tau_t) {
 
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
         optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).forEach(ps -> waitingForExecutingContainers.add(ps.getScheduledAtContainer()));
@@ -58,7 +58,7 @@ public class ProcessOnlyContainerOptResultsImpl implements ProcessOptimizationRe
             log.debug(stringBuilder.toString());
         }
 
-        return new AsyncResult<Boolean>(true);
+        return true;
     }
 
     private void printOptimizationResultInformation(OptimizationResult optimize, DateTime tau_t, StringBuilder stringBuilder) {

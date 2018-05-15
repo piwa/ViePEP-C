@@ -50,7 +50,7 @@ public class Watchdog {
     @Value("${messagebus.queue.name}")
     private String queueName;
 
-    @Scheduled(initialDelay=60000, fixedDelay=60000)        // fixedRate
+//    @Scheduled(initialDelay=60000, fixedDelay=60000)        // fixedRate
     public void monitor() {
 
         log.info("Start Watchdog Iteration");

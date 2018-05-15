@@ -9,7 +9,9 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlaceme
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.exceptions.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.OptimizationUtility;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.AbstractOnlyContainerOptimization;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.factory.DeadlineAwareFactory;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.factory.SimpleFactory;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.ServiceTypeSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.withvm.AbstractHeuristicImpl;
@@ -23,9 +25,10 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 @Slf4j
-public class OnlyContainerBaseline extends AbstractHeuristicImpl implements ProcessInstancePlacementProblem {
+public class OnlyContainerBaseline extends AbstractOnlyContainerOptimization implements ProcessInstancePlacementProblem {
 
     @Autowired
     private OptimizationUtility optimizationUtility;
@@ -34,6 +37,9 @@ public class OnlyContainerBaseline extends AbstractHeuristicImpl implements Proc
     private long defaultContainerStartupTime;
     @Value("${container.default.deploy.time}")
     private long defaultContainerDeployTime;
+
+    @Value("${only.container.deploy.time}")
+    private long onlyContainerDeploymentTime = 40000;
 
     private DateTime optimizationTime;
 
@@ -49,73 +55,16 @@ public class OnlyContainerBaseline extends AbstractHeuristicImpl implements Proc
             return new OptimizationResultImpl();
         }
 
-        SimpleFactory factory = new SimpleFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, false);
+        DeadlineAwareFactory factory = new DeadlineAwareFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, false, optimizationUtility, onlyContainerDeploymentTime);
 
         return createOptimizationResult(new Chromosome(factory.getTemplate()), workflowElements);
     }
 
-    private OptimizationResult createOptimizationResult(Chromosome winner, List<WorkflowElement> workflowElements) {
-        OptimizationResult optimizationResult = new OptimizationResultImpl() ;
-
-        List<Element> flattenWorkflowList = new ArrayList<>();
-        for (WorkflowElement workflowElement : workflowElements) {
-            placementHelper.getFlattenWorkflow(flattenWorkflowList, workflowElement);
-        }
-
-        System.out.println(winner.toString());
-
-        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnitList = optimizationUtility.getRequiredServiceTypes(winner);
-        Duration duration = new Duration(optimizationTime, DateTime.now());
-
-        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnitList) {
-
-            try {
-
-                Container container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType());
-                container.setBareMetal(true);
-
-                for (Chromosome.Gene processStepGene : serviceTypeSchedulingUnit.getProcessSteps()) {
-                    ProcessStep processStep = processStepGene.getProcessStep();
-                    if(processStep.getStartDate() != null && processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isRunning() == true || processStep.getScheduledAtContainer().isDeploying() == true)) {
-
-                    }
-                    else {
-                        DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
-                        scheduledStartTime = scheduledStartTime.plus(duration);
-
-                        ProcessStep realProcessStep = null;
-
-                        for (Element element : flattenWorkflowList) {
-                            if(element instanceof ProcessStep && ((ProcessStep) element).getInternId().equals(processStep.getInternId())) {
-                                realProcessStep = (ProcessStep) element;
-                            }
-                        }
-
-                        if(realProcessStep == null) {
-                            log.error("Big Problem");
-                        }
-                        else {
-                            boolean alreadyDeploying = false;
-                            if(realProcessStep.getScheduledAtContainer() != null && (realProcessStep.getScheduledAtContainer().isDeploying() || realProcessStep.getScheduledAtContainer().isRunning())) {
-                                alreadyDeploying = true;
-                            }
-
-                            if(realProcessStep.getStartDate() == null && !alreadyDeploying) {
-                                realProcessStep.setScheduledForExecution(true, scheduledStartTime, container);
-                                optimizationResult.addProcessStep(realProcessStep);
-                            }
-                        }
-                    }
-                }
-
-            } catch (ContainerImageNotFoundException | ContainerConfigurationNotFoundException e) {
-                log.error("Exception", e);
-            }
-
-        }
-
-        return optimizationResult;
+    @Override
+    public Future<OptimizationResult> asyncOptimize(DateTime tau_t) throws ProblemNotSolvedException {
+        return null;
     }
+
 
     @Override
     public void initializeParameters() {

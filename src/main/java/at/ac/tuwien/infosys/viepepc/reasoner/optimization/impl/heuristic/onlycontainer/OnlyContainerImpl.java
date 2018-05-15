@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlyco
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.ProcessInstancePlacementProblem;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.OptimizationResultImpl;
@@ -13,11 +14,15 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycon
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.withvm.AbstractHeuristicImpl;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
+import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.util.StopWatch;
 import org.uncommons.maths.number.AdjustableNumberGenerator;
 import org.uncommons.maths.random.MersenneTwisterRNG;
 import org.uncommons.maths.random.PoissonGenerator;
@@ -29,14 +34,11 @@ import org.uncommons.watchmaker.framework.termination.ElapsedTime;
 import org.uncommons.watchmaker.framework.termination.Stagnation;
 
 import java.util.*;
+import java.util.concurrent.Future;
 
 @Slf4j
-public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessInstancePlacementProblem {
+public class OnlyContainerImpl extends AbstractOnlyContainerOptimization implements ProcessInstancePlacementProblem {
 
-    @Autowired
-    private FitnessFunction fitnessFunction;
-    @Autowired
-    private OptimizationUtility optimizationUtility;
 
     @Value("${use.deadline.aware.factory}")
     private boolean deadlineAwareFactory = true;
@@ -58,8 +60,7 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
     @Value("${max.optimization.duration}")
     private long maxOptimizationDuration = 60000;
     @Value("${additional.optimization.time}")
-    private long additionalOptimizationTime = 20000;
-
+    private long additionalOptimizationTime = 5000;
 
     @Value("${population.size}")
     private int populationSize = 400;
@@ -81,13 +82,20 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
     private long defaultContainerStartupTime;
     @Value("${container.default.deploy.time}")
     private long defaultContainerDeployTime;
+    @Value("${only.container.deploy.time}")
+    private long onlyContainerDeploymentTime = 40000;
+
 
     private CandidateFactory<Chromosome> chromosomeFactory;
 
     private AdjustableNumberGenerator<Probability> numberGenerator = new AdjustableNumberGenerator<>(new Probability(0.85d));
-    private DateTime optimizationTime;
+
     private Map<String, DateTime> maxTimeAfterDeadline = new HashMap<>();
 
+    @Async
+    public Future<OptimizationResult> asyncOptimize(DateTime tau_t) throws ProblemNotSolvedException {
+        return new AsyncResult<>(optimize(tau_t));
+    }
 
     @Override
     public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
@@ -97,6 +105,9 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
         if (workflowElements.size() == 0) {
             return new OptimizationResultImpl();
         }
+
+        StopWatch stopwatch = new StopWatch();
+        stopwatch.start("pre optimization tasks");
 
         this.optimizationTime = DateTime.now();
 
@@ -108,7 +119,7 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
         SelectionStrategy<Object> selectionStrategy = new TournamentSelection(numberGenerator);
 
         if(deadlineAwareFactory) {
-            chromosomeFactory = new DeadlineAwareFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, withOptimizationTimeout);
+            chromosomeFactory = new DeadlineAwareFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, withOptimizationTimeout, optimizationUtility, onlyContainerDeploymentTime);
             maxTimeAfterDeadline = ((DeadlineAwareFactory) chromosomeFactory).getMaxTimeAfterDeadline();
         }
         else {
@@ -119,15 +130,6 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
         Random rng = new MersenneTwisterRNG();
         List<EvolutionaryOperator<Chromosome>> operators = new ArrayList<>(2);
 
-        if(timeExchangeCrossover) {
-            operators.add(new TimeExchangeCrossover());
-        }
-        if(spaceAwareCrossover) {
-            operators.add(new SpaceAwareCrossover());
-        }
-        if(spaceAwareCrossover2) {
-            operators.add(new SpaceAwareCrossover2(maxTimeAfterDeadline, optimizationTime));
-        }
         if(singleShiftWithMovingMutation) {
             operators.add(new SingleShiftWithMovingMutation(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(singleShiftWithMovingMutationMin, singleShiftWithMovingMutationMax, rng), optimizationTime));
         }
@@ -135,13 +137,27 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
             operators.add(new SingleShiftIfPossibleMutation(new PoissonGenerator(4, rng), new DiscreteUniformRangeGenerator(singleShiftIfPossibleMutationMin, singleShiftIfPossibleMutationMax, rng), optimizationTime));
         }
         if(spaceAwareMutation) {
-            operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationTime, maxTimeAfterDeadline));
+            operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationTime, maxTimeAfterDeadline, optimizationUtility, onlyContainerDeploymentTime));
+        }
+        if(timeExchangeCrossover) {
+            operators.add(new TimeExchangeCrossover());
+        }
+        if(spaceAwareCrossover) {
+            operators.add(new SpaceAwareCrossover());
+        }
+        if(spaceAwareCrossover2) {
+            operators.add(new SpaceAwareCrossover2(maxTimeAfterDeadline, optimizationTime, optimizationUtility));
         }
 
 
         EvolutionaryOperator<Chromosome> pipeline = new EvolutionPipeline<>(operators);
         EvolutionEngine<Chromosome> engine = new GenerationalEvolutionEngine<>(chromosomeFactory, pipeline, fitnessFunction, selectionStrategy, rng);
 
+        stopwatch.stop();
+        log.info("optimization preparation time=" + stopwatch.getTotalTimeMillis());
+
+        stopwatch = new StopWatch();
+        stopwatch.start("optimization time");
         Chromosome winner = null;
         if(withOptimizationTimeout) {
             winner = engine.evolve(populationSize, eliteCount, new ElapsedTime(maxOptimizationDuration));
@@ -149,79 +165,18 @@ public class OnlyContainerImpl extends AbstractHeuristicImpl implements ProcessI
         else {
             winner = engine.evolve(populationSize, eliteCount, new Stagnation(stagnationGenerationLimit, false));
         }
+        stopwatch.stop();
+        log.info("optimization time=" + stopwatch.getTotalTimeMillis());
 
-        return createOptimizationResult(winner, workflowElements);
-    }
-
-    private OptimizationResult createOptimizationResult(Chromosome winner, List<WorkflowElement> workflowElements) {
-        OptimizationResult optimizationResult = new OptimizationResultImpl() ;
-
-        List<Element> flattenWorkflowList = new ArrayList<>();
-        for (WorkflowElement workflowElement : workflowElements) {
-            placementHelper.getFlattenWorkflow(flattenWorkflowList, workflowElement);
-        }
-
-        fitnessFunction.getFitness(winner, null);
-        StringBuilder builder = new StringBuilder();
-        builder.append("Optimization Result:\n--------------------------- Winner Chromosome ---------------------------- \n").append(winner.toString()).append("\n");
-        builder.append("----------------------------- Winner Fitness -----------------------------\n");
-        builder.append("Leasing=").append(fitnessFunction.getLeasingCost()).append("\n");
-        builder.append("Penalty=").append(fitnessFunction.getPenaltyCost()).append("\n");
-        builder.append("Early Enactment=").append(fitnessFunction.getEarlyEnactmentCost()).append("\n");
-        builder.append("Total Fitness=").append(fitnessFunction.getLeasingCost() + fitnessFunction.getPenaltyCost() + fitnessFunction.getEarlyEnactmentCost()).append("\n");
-        log.info(builder.toString());
-
-        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnitList = optimizationUtility.getRequiredServiceTypes(winner);
-        Duration duration = new Duration(optimizationTime, DateTime.now());
-
-        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnitList) {
-
-            try {
-
-                Container container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType());
-                container.setBareMetal(true);
-
-                for (Chromosome.Gene processStepGene : serviceTypeSchedulingUnit.getProcessSteps()) {
-                    if(!processStepGene.isFixed()) {
-                        ProcessStep processStep = processStepGene.getProcessStep();
-                        if (processStep.getStartDate() != null && processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isRunning() == true || processStep.getScheduledAtContainer().isDeploying() == true)) {
-
-                        } else {
-                            DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
-
-//                        if(withOptimizationTimeout) {
-//                            scheduledStartTime = scheduledStartTime.plus(duration);
-//                        }
-
-                            ProcessStep realProcessStep = null;
-
-                            for (Element element : flattenWorkflowList) {
-                                if (element instanceof ProcessStep && ((ProcessStep) element).getInternId().equals(processStep.getInternId())) {
-                                    realProcessStep = (ProcessStep) element;
-                                }
-                            }
-
-                            boolean alreadyDeploying = false;
-                            if (realProcessStep.getScheduledAtContainer() != null && (realProcessStep.getScheduledAtContainer().isDeploying() || realProcessStep.getScheduledAtContainer().isRunning())) {
-                                alreadyDeploying = true;
-                            }
-
-                            if (realProcessStep.getStartDate() == null && !alreadyDeploying) {
-                                realProcessStep.setScheduledForExecution(true, scheduledStartTime, container);
-                                optimizationResult.addProcessStep(realProcessStep);
-                            }
-                        }
-                    }
-                }
-
-            } catch (ContainerImageNotFoundException | ContainerConfigurationNotFoundException e) {
-                log.error("Exception", e);
-            }
-
-        }
-
+        stopwatch = new StopWatch();
+        stopwatch.start();
+        OptimizationResult optimizationResult =createOptimizationResult(winner, workflowElements);
+        stopwatch.stop();
+        log.info("optimization post time=" + stopwatch.getTotalTimeMillis());
         return optimizationResult;
+
     }
+
 
 
     @Override

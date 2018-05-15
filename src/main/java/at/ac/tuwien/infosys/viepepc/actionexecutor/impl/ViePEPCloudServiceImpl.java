@@ -41,6 +41,8 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
     private ViePEPAWSFargateSimulationServiceImpl viePEPAWSFargateSimulation;
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
+    @Autowired
+    private ViePEPAzureContainerServiceImpl viePEPAzureContainerServiceImpl;
 
     @Value("${simulate}")
     private boolean simulate;
@@ -134,8 +136,11 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
             TimeUnit.MILLISECONDS.sleep(0);
             container = viePEPAWSFargateSimulation.startContainer(container);
 
-        } else {
-//            container = viePEPAwsClientService.startContainer(container);
+        } else if (container.isBareMetal()){
+            container = viePEPAzureContainerServiceImpl.startContainer(container);
+        }
+        else {
+            container = viePEPDockerControllerService.startContainer(container.getVirtualMachine(), container);
         }
         container.setDeploying(false);
         container.setRunning(true);
@@ -162,7 +167,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
                 viePEPAWSFargateSimulation.removeContainer(container);
                 inMemoryCache.getRunningContainers().remove(container);
             } else {
-//                viePEPAwsClientService.removeContainer(container);
+                viePEPAzureContainerServiceImpl.removeContainer(container);
             }
         }
         else {

@@ -1,8 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
-import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.OptimizationUtility;
@@ -11,7 +9,6 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
-import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -58,7 +55,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         double leasingCost = 0;
         for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
             try {
-                Duration deploymentDuration = serviceTypeSchedulingUnit.getDeploymentInterval().toDuration();
+                Duration deploymentDuration = serviceTypeSchedulingUnit.getServiceAvailableTime().toDuration();
                 ContainerConfiguration containerConfiguration = optimizationUtility.getContainerConfiguration(serviceTypeSchedulingUnit.getServiceType());
                 leasingCost = leasingCost + (containerConfiguration.getCores() * cpuCost * deploymentDuration.getStandardSeconds()  + containerConfiguration.getRam() / 1000 * ramCost * deploymentDuration.getStandardSeconds()) * leasingCostFactor;
             } catch (ContainerConfigurationNotFoundException e) {

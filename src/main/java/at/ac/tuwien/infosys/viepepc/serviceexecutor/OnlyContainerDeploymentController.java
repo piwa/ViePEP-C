@@ -12,6 +12,8 @@ import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokeException;
+import at.ac.tuwien.infosys.viepepc.watchdog.Message;
+import at.ac.tuwien.infosys.viepepc.watchdog.ServiceExecutionStatus;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -39,6 +42,13 @@ public class OnlyContainerDeploymentController implements Runnable {
     private InMemoryCacheImpl inMemoryCache;
     @Autowired
     private ViePEPDockerControllerService dockerControllerService;
+    @Autowired
+    private ThreadPoolTaskScheduler taskScheduler;
+
+    @Value("${simulate}")
+    private boolean simulate;
+    @Value("${only.container.deploy.time}")
+    private long onlyContainerDeploymentTime = 40000;
 
     private ProcessStep processStep;
     private Container container;
@@ -51,7 +61,6 @@ public class OnlyContainerDeploymentController implements Runnable {
     @Override
     public void run() {
 
-        log.info("Start Container: " + container);
         StopWatch stopWatch = new StopWatch();
         stopWatch.start("deploy container");
 
@@ -59,14 +68,27 @@ public class OnlyContainerDeploymentController implements Runnable {
 
         if(success) {
             stopWatch.stop();
-            log.info("Container deploy duration: " + container.toString() + ": " + stopWatch.getTotalTimeMillis());
+            log.debug("Container deploy duration: " + container.toString() + ": " + stopWatch.getTotalTimeMillis());
 
-            try {
-                serviceExecution.startExecution(processStep, container);
-            } catch (ServiceInvokeException e) {
-                log.error("Exception while invoking service. Reset.", e);
-                reset("Service");
-            }
+
+//            if(DateTime.now().isBefore(processStep.getScheduledStartedAt().minus(2000))) {
+//                taskScheduler.schedule(() -> {
+//                    try {
+//                        serviceExecution.startExecution(processStep, container);
+//                    } catch (ServiceInvokeException e) {
+//                        log.error("Exception while invoking service. Reset.", e);
+//                        reset("Service");
+//                    }
+//                }, processStep.getScheduledStartedAt().toDate());
+//            }
+//            else {
+                try {
+                    serviceExecution.startExecution(processStep, container);
+                } catch (ServiceInvokeException e) {
+                    log.error("Exception while invoking service. Reset.", e);
+                    reset("Service");
+                }
+//            }
         }
         else {
             reset("Container");
@@ -78,13 +100,20 @@ public class OnlyContainerDeploymentController implements Runnable {
     private boolean deployContainer(Container container) {
         synchronized (container) {
             if (container.isRunning()) {
-                log.info(container + " already running");
+                log.debug("Container already running: " + container);
                 return true;
             }
 
             try {
+                log.info("Deploy new container: " + container);
                 dockerControllerService.startContainer(container);
-                ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(),null, Action.START);
+                ContainerReportingAction report = null;
+                if(simulate) {
+                    report = new ContainerReportingAction(DateTime.now().plus(onlyContainerDeploymentTime), container.getName(), container.getContainerConfiguration().getName(),null, Action.START);
+                }
+                else {
+                    report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), null, Action.START);
+                }
                 reportDaoService.save(report);
                 return true;
 

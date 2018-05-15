@@ -45,7 +45,7 @@ public class Receiver {
     @RabbitListener(queues = "${messagebus.queue.name}")
     public void receiveMessage(@Payload Message message) {
         try {
-            log.debug(message.toString());
+            log.info(message.toString());
             if (message.getStatus().equals(ServiceExecutionStatus.DONE)) {
                 ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
                 if (processStep != null) {
@@ -65,9 +65,8 @@ public class Receiver {
 
         log.info("Task-Done: " + processStep);
 
-
         if(processStep.getScheduledAtContainer() != null) {
-            synchronized (processStep.getScheduledAtContainer()) {
+//            synchronized (processStep.getScheduledAtContainer()) {
                 List<ProcessStep> processSteps = new ArrayList<>();
                 placementHelper.getRunningSteps().stream().filter(ele -> ((ProcessStep) ele) != processStep).forEach(element -> processSteps.add((ProcessStep) element));
                 processSteps.addAll(placementHelper.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).collect(Collectors.toList()));
@@ -83,38 +82,34 @@ public class Receiver {
                 if (!stillNeeded) {
                     actionExecutorUtilities.stopContainer(processStep.getScheduledAtContainer());
                 }
-            }
+//            }
         }
 
         if (processStep.isLastElement()) {
 
-            Random random = new Random();
-//            for(int i = 0; i < 10; i++) {           // TODO is maybe not needed anymore, due to the synchronized
+//            Random random = new Random();
 
                 WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
-                synchronized (workflowElement) {
+//                synchronized (workflowElement) {
                     List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
                     List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
 //                    log.info("Try to finish workflow. RunningSteps=" + printProcessSteps(runningSteps) + "; nextSteps=" + printProcessSteps(nextSteps));
                     if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
-                        WorkflowElement workflowById = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
                         try {
-                            workflowById.setFinishedAt(finishedAt);
+                            workflowElement.setFinishedAt(finishedAt);
                         } catch (Exception e) {
-                            log.error("Exception while try to finish workflow: " + workflowById, e);
+                            log.error("Exception while try to finish workflow: " + workflowElement, e);
                         }
 
-                        cacheWorkflowService.deleteRunningWorkflowInstance(workflowById);
-                        log.info("Workflow done. Workflow: " + workflowById);
-//                        break;
+                        cacheWorkflowService.deleteRunningWorkflowInstance(workflowElement);
+                        log.info("Workflow done. Workflow: " + workflowElement);
                     }
 
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
-                    } catch (Exception e) {
-                    }
-//                }
-            }
+//                    try {
+//                        TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
+//                    } catch (Exception e) {
+//                    }
+//            }
 
         }
         if(optimizationAfterTaskDone) {

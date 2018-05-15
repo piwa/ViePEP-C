@@ -49,6 +49,7 @@ public class ProcessStep extends Element implements Cloneable {
     private DateTime scheduledStartedAt;
     private int numberOfExecutions;
     private boolean hasToBeExecuted = true;
+    private boolean hasToDeployContainer = false;
 
     @ManyToOne
     @JoinColumn(name="serviceTypeId")
@@ -142,6 +143,7 @@ public class ProcessStep extends Element implements Cloneable {
         processStep.setNumberOfExecutions(this.numberOfExecutions);
         processStep.setHasToBeExecuted(this.hasToBeExecuted);
         processStep.setLastElement(this.isLastElement());
+        processStep.setHasToDeployContainer(this.hasToDeployContainer);
 
         processStep.setServiceType(serviceType);
 
@@ -227,6 +229,7 @@ public class ProcessStep extends Element implements Cloneable {
         this.setScheduledAtContainer(null);
         this.setHasBeenExecuted(false);
         this.setScheduledStartedAt(null);
+        this.setHasToDeployContainer(false);
     }
 
     public boolean isScheduled() {

@@ -185,7 +185,7 @@ public class ViePEPDockerControllerServiceImpl {
 
         container.shutdownContainer();
 
-        log.info("The container: " + container.getContainerID() + " on the host: " + virtualMachine + " was removed.");
+        log.debug("The container: " + container.getContainerID() + " on the host: " + virtualMachine + " was removed.");
 
     }
 

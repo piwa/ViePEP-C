@@ -1,23 +1,23 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.factory;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
-import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.OrderMaintainer;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.ServiceTypeSchedulingUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.jdbc.Work;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
+
+    private OptimizationUtility optimizationUtility;
     @Getter
     private final List<List<Chromosome.Gene>> template = new ArrayList<>();
 
@@ -27,11 +27,14 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
     @Value("${deadline.aware.factory.allowed.penalty.points}")
     private int allowedPenaltyPoints;
+    private long onlyContainerDeploymentTime;
 
-    public DeadlineAwareFactory(List<WorkflowElement> workflowElementList, DateTime optimizationStartTime, long defaultContainerDeployTime, long defaultContainerStartupTime, boolean withOptimizationTimeOut) {
+    public DeadlineAwareFactory(List<WorkflowElement> workflowElementList, DateTime optimizationStartTime, long defaultContainerDeployTime, long defaultContainerStartupTime, boolean withOptimizationTimeOut, OptimizationUtility optimizationUtility, long onlyContainerDeploymentTime) {
 
         super(defaultContainerStartupTime, defaultContainerDeployTime, withOptimizationTimeOut);
 
+        this.optimizationUtility = optimizationUtility;
+        this.onlyContainerDeploymentTime = onlyContainerDeploymentTime;
         this.optimizationStartTime = new DateTime(optimizationStartTime);
 
         clonedServiceTypes = new HashMap<>();
@@ -51,6 +54,9 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
             calculateMaxTimeAfterDeadline(workflowElement, subChromosome);
         }
         this.defaultContainerDeployTime = defaultContainerDeployTime;
+
+        considerFirstContainerStartTime(new Chromosome(template), true);
+        return;
     }
 
     private void calculateMaxTimeAfterDeadline(WorkflowElement workflowElement, List<Chromosome.Gene> subChromosome) {
@@ -106,7 +112,8 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
             int bufferBound = 0;
             if (row.size() > 0) {
                 DateTime deadline = workflowDeadlines.get(row.get(0).getProcessStep().getWorkflowName());
-                Duration durationToDeadline = new Duration(row.get(row.size() - 1).getExecutionInterval().getEnd(), deadline);
+                Chromosome.Gene lastProcessStep = getLastProcessStep(row);
+                Duration durationToDeadline = new Duration(lastProcessStep.getExecutionInterval().getEnd(), deadline);
 
 
                 if (durationToDeadline.getMillis() <= 0) {
@@ -126,9 +133,62 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
 
         Chromosome newChromosome = new Chromosome(candidate);
-        orderMaintainer.checkAndMaintainOrder(newChromosome);
 
+
+//        considerFirstContainerStartTime(newChromosome, false);
+
+//        orderMaintainer.checkAndMaintainOrder(newChromosome);
         return newChromosome;
+    }
+
+    private Chromosome.Gene getLastProcessStep(List<Chromosome.Gene> row) {
+
+        Chromosome.Gene lastGene = null;
+        for (Chromosome.Gene gene : row) {
+            if(lastGene == null || lastGene.getExecutionInterval().getEnd().isBefore(gene.getExecutionInterval().getEnd())) {
+                lastGene = gene;
+            }
+        }
+        return lastGene;
+    }
+
+    private void considerFirstContainerStartTime(Chromosome newChromosome, boolean moveNextGeneOnlyIfNeeded) {
+
+        boolean redo = true;
+
+        while(redo) {
+            List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = this.optimizationUtility.getRequiredServiceTypes(newChromosome);
+
+            redo = false;
+            for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
+                DateTime deploymentStartTime = serviceTypeSchedulingUnit.getDeployStartTime();
+
+                if (deploymentStartTime.isBefore(this.optimizationStartTime)) {
+
+                    for (Chromosome.Gene gene : serviceTypeSchedulingUnit.getProcessSteps()) {
+                        DateTime geneStartTime = gene.getExecutionInterval().getStart().minus(this.onlyContainerDeploymentTime);
+                        if (geneStartTime.isBefore(this.optimizationStartTime) && !gene.isFixed()) {
+                            long deltaTime = new Duration(geneStartTime, this.optimizationStartTime).getMillis();
+
+                            gene.moveIntervalPlus(deltaTime);
+                            orderMaintainer.checkAndMaintainOrder(newChromosome);
+
+//                            if(moveNextGeneOnlyIfNeeded) {
+//                                Chromosome.moveGeneAndNextGenesIfNeeded(gene, deltaTime);
+//                            }
+//                            else {
+//                                Chromosome.moveGeneAndNextGenesByFixedTime(gene, deltaTime);
+//                            }
+
+                            redo = true;
+                        }
+                    }
+                    if(redo) {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private List<Chromosome.Gene> createClonedRow(List<Chromosome.Gene> row) {
@@ -170,21 +230,16 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
                     DateTime newEndTime = newStartTime.plus(gene.getProcessStep().getExecutionTime());
                     gene.setExecutionInterval(new Interval(newStartTime, newEndTime));
                 }
-
                 if (bufferBound > 0) {
                     int intervalDelta = rand.nextInt(bufferBound - 1) + 1;
                     gene.moveIntervalPlus(intervalDelta);
                 }
-
-
             }
         }
 
         for (Chromosome.Gene gene : startGenes) {
             moveNewChromosome(gene.getNextGenes(), bufferBound, rand);
-
         }
-
     }
 
     private Set<Chromosome.Gene> findStartGene(List<Chromosome.Gene> rowParent2) {
@@ -194,7 +249,6 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
                 startGenes.add(gene);
             }
         }
-
         return startGenes;
     }
 

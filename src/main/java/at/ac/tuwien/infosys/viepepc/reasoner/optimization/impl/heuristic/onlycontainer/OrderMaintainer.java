@@ -80,20 +80,20 @@ public class OrderMaintainer {
 
                 StringBuilder buffer = new StringBuilder();
 
-                for (Chromosome.Gene cell : row) {
-                    buffer.append("{");
-                    buffer.append("processStep=" + cell.getProcessStep().getName() + ", ");
-                    buffer.append("start=" + cell.getExecutionInterval().getStart().toString() + ", ");
-                    buffer.append("end=" + cell.getExecutionInterval().getEnd().toString() + ", ");
-                    buffer.append("fixed=" + cell.isFixed());
-                    buffer.append("} ");
-                }
-                buffer.append('\n');
-
-                log.error("Order of row is not ok: " + buffer.toString());
+//                for (Chromosome.Gene cell : row) {
+//                    buffer.append("{");
+//                    buffer.append("processStep=" + cell.getProcessStep().getName() + ", ");
+//                    buffer.append("start=" + cell.getExecutionInterval().getStart().toString() + ", ");
+//                    buffer.append("end=" + cell.getExecutionInterval().getEnd().toString() + ", ");
+//                    buffer.append("fixed=" + cell.isFixed());
+//                    buffer.append("} ");
+//                }
+//                buffer.append('\n');
+//
+//                log.error("Order of row is not ok: " + buffer.toString());
 
                 checkAndMaintainOrder(row);
-                rowOrderIsOk(row);
+//                rowOrderIsOk(row);
 
                 return false;
             }

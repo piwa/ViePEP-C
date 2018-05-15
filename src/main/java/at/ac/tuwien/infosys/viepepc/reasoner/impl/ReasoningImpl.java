@@ -202,7 +202,10 @@ public class ReasoningImpl implements Reasoning {
 
         log.info("---------------- tau_t_0 : " + tau_t_0 + " -----------------");
         log.info("-------------- tau_t_0.time : " + tau_t_0.toString() + " --------------");
+//        Future<OptimizationResult> asyncOptimize = resourcePredictionService.asyncOptimize(tau_t_0);
+//        OptimizationResult optimize = asyncOptimize.get();
         OptimizationResult optimize = resourcePredictionService.optimize(tau_t_0);
+
 
         if (optimize == null) {
             throw new ProblemNotSolvedException("Could not solve the Problem");
@@ -213,8 +216,8 @@ public class ReasoningImpl implements Reasoning {
 //        long tau_t_1 = optimize.get("tau_t_1").longValue() * 1000;//VERY IMPORTANT,
         log.info("tau_t_1 was calculted as: "+ new DateTime(tau_t_1) );
         
-        Future<Boolean> processed = processOptimizationResults.processResults(optimize, tau_t_0);
-        processed.get();
+        Boolean processed = processOptimizationResults.processResults(optimize, tau_t_0);
+//        processed.get();
         
         long difference = tau_t_1 - new DateTime().getMillis();
         if (difference < 0 || difference > 60*60*1000) {

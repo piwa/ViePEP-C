@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.joda.time.Interval;
 
 import java.util.*;
@@ -63,16 +64,50 @@ public class Chromosome {
         return;
     }
 
-    public static void moveAllGenesOfARow(List<Chromosome.Gene> row, int startIndex, long deltaTime, boolean toFuture) {
-        for(int i = startIndex; i < row.size(); i++) {
-            if(toFuture) {
-                row.get(i).moveIntervalPlus(deltaTime);
+
+
+    public static void moveGeneAndNextGenesByFixedTime(Chromosome.Gene currentGene, long deltaTime) {
+        currentGene.moveIntervalPlus(deltaTime);
+
+        currentGene.getNextGenes().forEach(gene -> {
+            if(gene != null) {
+                moveNextGenesByFixedTime(gene, deltaTime);
             }
-            else {
-                row.get(i).moveIntervalMinus(deltaTime);
-            }
-        }
+        });
     }
+
+    private static void moveNextGenesByFixedTime(Chromosome.Gene currentGene, long deltaTime) {
+        if(currentGene.getLatestPreviousGene() == null || currentGene.getExecutionInterval().getStart().isBefore(currentGene.getLatestPreviousGene().getExecutionInterval().getStart())) {
+            currentGene.moveIntervalPlus(deltaTime);
+        }
+        currentGene.getNextGenes().forEach(gene -> {
+            if(gene != null) {
+                moveNextGenesByFixedTime(gene, deltaTime);
+            }
+        });
+    }
+
+    //    public static void moveGeneAndNextGenesIfNeeded(Chromosome.Gene currentGene, long deltaTime) {
+//        currentGene.moveIntervalPlus(deltaTime);
+//
+//        currentGene.getNextGenes().forEach(gene -> {
+//            if(gene != null) {
+//                moveNextGenesIfNeeded(gene);
+//            }
+//        });
+//    }
+
+//    private static void moveNextGenesIfNeeded(Chromosome.Gene currentGene) {
+//        if(currentGene.getExecutionInterval().getStart().isBefore(currentGene.getLatestPreviousGene().getExecutionInterval().getStart())) {
+//            long deltaTime = new Duration(currentGene.getExecutionInterval().getStart(), currentGene.getLatestPreviousGene().getExecutionInterval().getStart()).getMillis();
+//            currentGene.moveIntervalPlus(deltaTime);
+//        }
+//        currentGene.getNextGenes().forEach(gene -> {
+//            if(gene != null) {
+//                moveNextGenesIfNeeded(gene);
+//            }
+//        });
+//    }
 
     @Override
     public String toString()
@@ -173,6 +208,7 @@ public class Chromosome {
             StringBuilder builder = new StringBuilder();
             builder.append("{");
             builder.append("processStep=" + getProcessStep().getName() + ", ");
+            builder.append("serviceType=" + getProcessStep().getServiceType().getName() + ", ");
             builder.append("start=" + getExecutionInterval().getStart().toString() + ", ");
             builder.append("end=" + getExecutionInterval().getEnd().toString() + ", ");
             builder.append("fixed=" + isFixed());

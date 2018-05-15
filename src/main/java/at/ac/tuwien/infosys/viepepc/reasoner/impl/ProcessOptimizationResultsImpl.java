@@ -52,7 +52,7 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
 
     @Override
-    public Future<Boolean> processResults(OptimizationResult optimize, DateTime tau_t) {
+    public Boolean processResults(OptimizationResult optimize, DateTime tau_t) {
 
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
         optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
@@ -73,7 +73,7 @@ public class ProcessOptimizationResultsImpl implements ProcessOptimizationResult
 
         log.info(stringBuilder.toString());
 
-        return new AsyncResult<Boolean>(true);
+        return true;
     }
 
     public void printRunningInformation(StringBuilder stringBuilder) {

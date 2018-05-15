@@ -2,11 +2,14 @@ package at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker;
 
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
 @Component
@@ -14,19 +17,23 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class ServiceInvokerHttpClient {
 
-    @Retryable(value = Exception.class, maxAttempts = 20, backoff=@Backoff(delay=1000, maxDelay=3000))
+    @Retryable(value = Exception.class, maxAttempts = 30, backoff=@Backoff(delay=1000, maxDelay=5000))
     public HttpStatus retryHttpGet(String url, Stopwatch stopWatch) throws Exception {
 
         if(stopWatch.isRunning()) {
             stopWatch.reset();
         }
-        log.info("Send " + url);
+        log.debug("Send " + url);
         stopWatch.start();
+//        RestTemplate restTemplate = new RestTemplateBuilder().setConnectTimeout(500).setReadTimeout(500).build();
+//        AsyncRestTemplate restTemplate = new AsyncRestTemplate();
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_HTML);
         HttpEntity<String> entity = new HttpEntity<String>(headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+//        ListenableFuture<ResponseEntity<String>> responseEntityFuture = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+//        ResponseEntity<String> responseEntity = responseEntityFuture.get();
 
         stopWatch.stop();
 

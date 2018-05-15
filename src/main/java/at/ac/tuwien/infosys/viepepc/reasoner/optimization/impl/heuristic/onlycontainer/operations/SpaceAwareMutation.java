@@ -1,7 +1,10 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.operations;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.OrderMaintainer;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.ServiceTypeSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -11,12 +14,7 @@ import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.maths.random.PoissonGenerator;
 import org.uncommons.watchmaker.framework.EvolutionaryOperator;
 
-import javax.print.CancelablePrintJob;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Slf4j
 public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
@@ -25,6 +23,8 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     private final DateTime optimizationTime;
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
     private Map<String, DateTime> maxTimeAfterDeadline;
+    private OptimizationUtility optimizationUtility;
+    private long onlyContinerDeploymentTime;
 
     /**
      * Default is one mutation per candidate.
@@ -32,16 +32,16 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
      * @param optimizationTime
      * @param maxTimeAfterDeadline
      */
-    public SpaceAwareMutation(PoissonGenerator poissonGenerator, DateTime optimizationTime, Map<String, DateTime> maxTimeAfterDeadline) {
-        this(1, optimizationTime, maxTimeAfterDeadline);
+    public SpaceAwareMutation(PoissonGenerator poissonGenerator, DateTime optimizationTime, Map<String, DateTime> maxTimeAfterDeadline, OptimizationUtility optimizationUtility, long onlyContinerDeploymentTime) {
+        this(1, optimizationTime, maxTimeAfterDeadline, optimizationUtility, onlyContinerDeploymentTime);
     }
 
     /**
      * @param mutationCount  The constant number of mutations
      *                       to apply to each row in a Sudoku solution.
      */
-    public SpaceAwareMutation(int mutationCount, DateTime optimizationTime, Map<String, DateTime> maxTimeAfterDeadline) {
-        this(new ConstantGenerator<>(mutationCount), optimizationTime, maxTimeAfterDeadline);
+    public SpaceAwareMutation(int mutationCount, DateTime optimizationTime, Map<String, DateTime> maxTimeAfterDeadline, OptimizationUtility optimizationUtility, long onlyContinerDeploymentTime) {
+        this(new ConstantGenerator<>(mutationCount), optimizationTime, maxTimeAfterDeadline, optimizationUtility, onlyContinerDeploymentTime);
         if (mutationCount < 1) {
             throw new IllegalArgumentException("Mutation count must be at least 1.");
         }
@@ -55,10 +55,12 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
      * @param mutationCount  A random variable that provides a number
      *                       of mutations that will be applied to each row in an individual.
      */
-    public SpaceAwareMutation(NumberGenerator<Integer> mutationCount, DateTime optimizationTime, Map<String, DateTime> maxTimeAfterDeadline) {
+    public SpaceAwareMutation(NumberGenerator<Integer> mutationCount, DateTime optimizationTime, Map<String, DateTime> maxTimeAfterDeadline, OptimizationUtility optimizationUtility, long onlyContinerDeploymentTime) {
         this.mutationCountVariable = mutationCount;
         this.optimizationTime = optimizationTime;
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
+        this.optimizationUtility = optimizationUtility;
+        this.onlyContinerDeploymentTime = onlyContinerDeploymentTime;
     }
 
     @Override
@@ -76,6 +78,19 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     private Chromosome mutate(Chromosome candidate, Random random) {
         List<List<Chromosome.Gene>> newCandidate = new ArrayList<>();
         Chromosome.cloneGenes(candidate, newCandidate);
+//
+//        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = this.optimizationUtility.getRequiredServiceTypes(candidate);
+//
+//        Map<ServiceType, ServiceTypeSchedulingUnit> atTheBeginningRunningServiceTypes = new HashMap<>();
+//        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
+//            DateTime deploymentStartTime = serviceTypeSchedulingUnit.getServiceAvailableTime().getStart();
+//            DateTime deploymentEndTime = serviceTypeSchedulingUnit.getServiceAvailableTime().getEnd();
+//            DateTime deploymentStartTime2 = serviceTypeSchedulingUnit.getDeployStartTime();
+//            if((deploymentStartTime.isBefore(this.optimizationTime) || deploymentStartTime2.isBefore(this.optimizationTime)) && deploymentEndTime.isAfter(this.optimizationTime)) {
+//                atTheBeginningRunningServiceTypes.put(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit);
+//            }
+//        }
+
 
         int mutationCount = Math.abs(mutationCountVariable.nextValue());
         int counter = 0;
@@ -103,13 +118,29 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                 }
                 else {
                     endTimePreviousGene = this.optimizationTime;
+//                    if(atTheBeginningRunningServiceTypes.containsKey(gene.getProcessStep().getServiceType())) {
+//
+//                        ServiceTypeSchedulingUnit currentSchedulingUnit = atTheBeginningRunningServiceTypes.get(gene.getProcessStep().getServiceType());
+//
+//                        if(currentSchedulingUnit.getServiceAvailableTime().getStart().isBefore(this.optimizationTime)) {
+//                            endTimePreviousGene = this.optimizationTime;
+//                        }
+//                        else {
+//                            endTimePreviousGene = currentSchedulingUnit.getServiceAvailableTime().getStart();
+//                        }
+//
+//                    }
+//                    else {
+//                       endTimePreviousGene = this.optimizationTime.plus(onlyContinerDeploymentTime);
+//                    }
                 }
+
                 if(nextGene != null) {
                     startTimeNextGene = nextGene.getExecutionInterval().getStart();
                 }
                 else {
                     if(maxTimeAfterDeadline == null || maxTimeAfterDeadline.size() == 0 || maxTimeAfterDeadline.get(gene.getProcessStep().getWorkflowName()) == null) {
-                        startTimeNextGene = this.optimizationTime.plusMinutes(10);
+                        startTimeNextGene = getLastProcessStep(row).getExecutionInterval().getEnd().plusMinutes(10);
                     }
                     else {
                         startTimeNextGene = maxTimeAfterDeadline.get(gene.getProcessStep().getWorkflowName());
@@ -131,9 +162,16 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
 
                 Interval newInterval = new Interval(oldInterval.getStartMillis() + deltaTime, oldInterval.getEndMillis() + deltaTime);
 
-
                 gene.setExecutionInterval(newInterval);
-                mutationCount = mutationCount - 1;
+//                boolean result = true;
+                boolean result = considerFirstContainerStartTime(new Chromosome(newCandidate), gene);
+
+                if(result) {
+                    mutationCount = mutationCount - 1;
+                }
+                else {
+                    gene.setExecutionInterval(oldInterval);
+                }
 
             }
             counter = counter + 1;
@@ -152,4 +190,32 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     private int getRandomNumber(int minimumValue, int maximumValue, Random random) {
         return random.nextInt(maximumValue + 1 + minimumValue) - minimumValue;
     }
+
+    private Chromosome.Gene getLastProcessStep(List<Chromosome.Gene> row) {
+
+        Chromosome.Gene lastGene = null;
+        for (Chromosome.Gene gene : row) {
+            if(lastGene == null || lastGene.getExecutionInterval().getEnd().isBefore(gene.getExecutionInterval().getEnd())) {
+                lastGene = gene;
+            }
+        }
+        return lastGene;
+    }
+
+    private boolean considerFirstContainerStartTime(Chromosome newChromosome, Chromosome.Gene movedGene) {
+        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = this.optimizationUtility.getRequiredServiceTypes(newChromosome);
+        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
+            if(serviceTypeSchedulingUnit.getProcessSteps().contains(movedGene)) {
+                DateTime deploymentStartTime = serviceTypeSchedulingUnit.getDeployStartTime();;
+                if (deploymentStartTime.isBefore(this.optimizationTime) && serviceTypeSchedulingUnit.getFirstGene() == movedGene) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+        }
+        return true;
+    }
+
 }

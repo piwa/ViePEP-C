@@ -41,7 +41,7 @@ public class ViePEPAWSFargateSimulationServiceImpl {
 
         container.shutdownContainer();
 
-        log.info("The container: " + container.getContainerID() + " was removed.");
+        log.debug("The container: " + container.getContainerID() + " was removed.");
 
 
     }

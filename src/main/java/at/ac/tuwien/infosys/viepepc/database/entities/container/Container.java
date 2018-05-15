@@ -39,6 +39,7 @@ public class Container implements Cloneable {
     private String containerID;
     private String serviceName;
     private String externPort;
+    private String ipAddress;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startedAt;
     private boolean running = false;
@@ -100,7 +101,7 @@ public class Container implements Cloneable {
                     ", running=" + running +
                     ", deploying=" + deploying +
                     ", startedAt=" + startString +
-                    ", externalPort=" + externPort +
+                    ", url=" + ipAddress + ":" + externPort +
                     ", serviceType=" + containerImage.getServiceType().getName() +
                     '}';
         }

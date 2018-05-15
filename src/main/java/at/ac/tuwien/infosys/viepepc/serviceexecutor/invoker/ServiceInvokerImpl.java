@@ -30,7 +30,7 @@ public class ServiceInvokerImpl implements ServiceInvoker {
     @Override
     public void invoke(VirtualMachine virtualMachine, ProcessStep processStep) throws ServiceInvokeException {
         String task = processStep.getServiceType().getName().replace("service", "");
-        String uri = createURI(virtualMachine, "8080", task, processStep.getName());
+        String uri = createURI(virtualMachine.getURI(), "8080", task, processStep.getName());
         invoke(uri);
     }
 
@@ -38,12 +38,18 @@ public class ServiceInvokerImpl implements ServiceInvoker {
     public void invoke(Container container, ProcessStep processStep) throws ServiceInvokeException {
 		String task = processStep.getServiceType().getName().replace("service", "");
         task = task.replace("Service", "");
-        String uri = createURI(container.getVirtualMachine(), container.getExternPort(), task, processStep.getName());
+        String uri ;
+        if(container.getVirtualMachine() != null) {
+            uri = createURI(container.getVirtualMachine().getURI(), container.getExternPort(), task, processStep.getName());
+        }
+        else {
+            uri = createURI(container.getIpAddress(), container.getExternPort(), task, processStep.getName());
+        }
         invoke(uri);
 	}
 
-	private String createURI(VirtualMachine vm, String port, String task, String processStepName) {
-        return vm.getURI().concat(":"+port).concat("/" + task).concat("/" + processStepName).concat("/normal").concat("/nodata");
+    private String createURI(String uri, String port, String task, String processStepName) {
+        return uri.concat(":"+port).concat("/" + task).concat("/" + processStepName).concat("/normal").concat("/nodata");
     }
 
 

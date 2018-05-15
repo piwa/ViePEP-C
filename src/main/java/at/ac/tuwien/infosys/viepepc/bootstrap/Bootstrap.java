@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.bootstrap;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.ViePEPAzureContainerServiceImpl;
 import at.ac.tuwien.infosys.viepepc.bootstrap.containers.ContainerConfigurationsReader;
 import at.ac.tuwien.infosys.viepepc.bootstrap.vmTypes.VmTypesReaderImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +20,15 @@ public class Bootstrap implements ApplicationListener<ContextRefreshedEvent> {
     private ContainerConfigurationsReader containerConfigurationsReader;
     @Autowired
     private VmTypesReaderImpl vmTypesReader;
+    @Autowired
+    private ViePEPAzureContainerServiceImpl viePEPAzureContainerService;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         containerConfigurationsReader.readContainerConfigurations();
         vmTypesReader.readVMTypes();
+
+        viePEPAzureContainerService.setup();
     }
 
 }

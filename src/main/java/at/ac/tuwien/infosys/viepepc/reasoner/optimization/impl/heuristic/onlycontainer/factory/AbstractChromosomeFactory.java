@@ -2,10 +2,12 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlyco
 
 import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
+import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.OrderMaintainer;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.uncommons.watchmaker.framework.factories.AbstractCandidateFactory;
 
 import java.util.*;
@@ -52,12 +54,21 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
 
     private DateTime createStartChromosomeRec(Element currentElement, DateTime startTime, List<Chromosome.Gene> chromosome) {
         if (currentElement instanceof ProcessStep) {
+
+            ProcessStep processStep = (ProcessStep)currentElement;
+            boolean isRunning = processStep.getStartDate() != null && processStep.getFinishedAt() == null;
+            boolean isDone = processStep.getStartDate() != null && processStep.getFinishedAt() != null;
+
             if(this.withOptimizationTimeout) {
-                return getStartTimeForProcessStepWithOptimizationTimeout((ProcessStep) currentElement, startTime, chromosome);
+                if(isRunning == false && processStep.getScheduledStartedAt() != null) {
+                    isRunning = processStep.getScheduledStartedAt().isBefore(this.optimizationStartTime) && processStep.getScheduledStartedAt().plus(processStep.getExecutionTime()).isAfter(this.optimizationStartTime);
+                }
+                if(isDone == false && processStep.getScheduledStartedAt() != null) {
+                    isDone = processStep.getScheduledStartedAt().isBefore(this.optimizationStartTime) && processStep.getScheduledStartedAt().plus(processStep.getExecutionTime()).isBefore(this.optimizationStartTime);
+                }
             }
-            else {
-                return getStartTimeForProcessStep((ProcessStep) currentElement, startTime, chromosome);
-            }
+            return getStartTimeForProcessStep(processStep, startTime, chromosome, isDone, isRunning);
+
         } else {
             if (currentElement instanceof WorkflowElement) {
                 for (Element element : currentElement.getElements()) {
@@ -90,21 +101,10 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
         }
     }
 
-    protected DateTime getStartTimeForProcessStepWithOptimizationTimeout(ProcessStep currentElement, DateTime startTime, List<Chromosome.Gene> chromosome) {
-        ProcessStep processStep = currentElement;
+
+    private DateTime getStartTimeForProcessStep(ProcessStep processStep, DateTime startTime, List<Chromosome.Gene> chromosome, boolean isDone, boolean isRunning) {
+
         boolean containerAlreadyDeployed = false;
-
-        boolean isRunning = processStep.getStartDate() != null && processStep.getFinishedAt() == null;
-        boolean isDone = processStep.getStartDate() != null && processStep.getFinishedAt() != null;
-
-        if(isRunning == false && processStep.getScheduledStartedAt() != null) {
-            isRunning = processStep.getScheduledStartedAt().isBefore(this.optimizationStartTime) && processStep.getScheduledStartedAt().plus(processStep.getExecutionTime()).isAfter(this.optimizationStartTime);
-        }
-
-        if(isDone == false && processStep.getScheduledStartedAt() != null) {
-            isDone = processStep.getScheduledStartedAt().isBefore(this.optimizationStartTime) && processStep.getScheduledStartedAt().plus(processStep.getExecutionTime()).isBefore(this.optimizationStartTime);
-        }
-
 
         if (isDone) {
             return startTime;
@@ -122,69 +122,20 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
                 startTime = startTime.plus(defaultContainerDeployTime + defaultContainerStartupTime);
             }
 
-            //startTime = startTime.plus(gapDuration);     // add a small gap
-
-            Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep(currentElement), startTime, false);
+            Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep(processStep), startTime, false);
             chromosome.add(gene);
 
             checkFirstAndLastGene(gene);
 
             return gene.getExecutionInterval().getEnd();
         } else if (isRunning || containerAlreadyDeployed) {
-            DateTime realStartTime = currentElement.getStartDate();
+            DateTime realStartTime = processStep.getStartDate();
             if (realStartTime == null) {
-                realStartTime = currentElement.getScheduledStartedAt();
+                realStartTime = processStep.getScheduledStartedAt();
             }
 
             boolean isFixed = isRunning || isDone;
-            Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep(currentElement), realStartTime, isFixed);
-            chromosome.add(gene);
-
-            checkFirstAndLastGene(gene);
-
-            return gene.getExecutionInterval().getEnd();
-        }
-        return startTime;
-    }
-
-    private DateTime getStartTimeForProcessStep(ProcessStep currentElement, DateTime startTime, List<Chromosome.Gene> chromosome) {
-        ProcessStep processStep = currentElement;
-        boolean containerAlreadyDeployed = false;
-        boolean isRunning = processStep.getStartDate() != null && processStep.getFinishedAt() == null;
-        boolean isDone = processStep.getStartDate() != null && processStep.getFinishedAt() != null;
-
-        if (isDone) {
-            return startTime;
-        }
-        if (processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isDeploying() || processStep.getScheduledAtContainer().isRunning())) {
-            containerAlreadyDeployed = true;
-        }
-
-        if (processStep.isHasToBeExecuted() && !isRunning && !containerAlreadyDeployed) {
-
-            if(processStep.getScheduledStartedAt() != null) {
-                startTime = processStep.getScheduledStartedAt();
-            }
-            else {
-                startTime = startTime.plus(defaultContainerDeployTime + defaultContainerStartupTime);
-            }
-
-            //startTime = startTime.plus(gapDuration);     // add a small gap
-
-            Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep(currentElement), startTime, false);
-            chromosome.add(gene);
-
-            checkFirstAndLastGene(gene);
-
-            return gene.getExecutionInterval().getEnd();
-        } else if (isRunning || containerAlreadyDeployed) {
-            DateTime realStartTime = currentElement.getStartDate();
-            if (realStartTime == null) {
-                realStartTime = currentElement.getScheduledStartedAt();
-            }
-
-            boolean isFixed = isRunning || isDone;
-            Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep(currentElement), realStartTime, isFixed);
+            Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep(processStep), realStartTime, isFixed);
             chromosome.add(gene);
 
             checkFirstAndLastGene(gene);
@@ -231,17 +182,9 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
 
             return null;
         } else {
-            if (currentElement instanceof WorkflowElement) {
+            if (currentElement instanceof WorkflowElement || currentElement instanceof Sequence) {
                 for (Element element : currentElement.getElements()) {
                     List<ProcessStep> ps = fillProcessStepChainRec(element, previousProcessSteps);
-                    if(ps != null) {
-                        previousProcessSteps = new ArrayList<>();
-                        previousProcessSteps.addAll(ps);
-                    }
-                }
-            } else if (currentElement instanceof Sequence) {
-                for (Element element1 : currentElement.getElements()) {
-                    List<ProcessStep> ps = fillProcessStepChainRec(element1, previousProcessSteps);
                     if(ps != null) {
                         previousProcessSteps = new ArrayList<>();
                         previousProcessSteps.addAll(ps);
@@ -274,114 +217,6 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
             return previousProcessSteps;
         }
     }
-
-//    private ProcessStep fillProcessStepChainRec(Element currentElement, ProcessStep previousProcessStep, Map<Chromosome.Gene, List<Chromosome.Gene>> andMembersMap) {
-//        if (currentElement instanceof ProcessStep) {
-//            ProcessStep processStep = (ProcessStep) currentElement;
-//
-//            if(processStep.isHasToBeExecuted()) {
-//                if (previousProcessStep != null && stepGeneMap.get(previousProcessStep.getInternId()) != null && stepGeneMap.get(processStep.getInternId()) != null) {
-//                    Chromosome.Gene currentGene = stepGeneMap.get(processStep.getInternId());
-//                    Chromosome.Gene previousGene = stepGeneMap.get(previousProcessStep.getInternId());
-//
-//                    previousGene.addNextGene(currentGene);
-//                    currentGene.addPreviousGene(previousGene);
-//                }
-//
-//                return processStep;
-//            }
-//
-//            return previousProcessStep;
-//        } else {
-//            if (currentElement instanceof WorkflowElement) {
-//                for (Element element : currentElement.getElements()) {
-//                    previousProcessStep = fillProcessStepChainRec(element, previousProcessStep, andMembersMap);
-//                }
-//            } else if (currentElement instanceof Sequence) {
-//                for (Element element1 : currentElement.getElements()) {
-//                    previousProcessStep = fillProcessStepChainRec(element1, previousProcessStep, andMembersMap);
-//                }
-//            } else if (currentElement instanceof ANDConstruct || currentElement instanceof XORConstruct) {
-//
-//                ProcessStep tempPreviousProcessStep = null;
-//                List<Chromosome.Gene> geneList = new ArrayList<>();
-//                ProcessStep lastNotNullTempPreviousProcessStep = null;
-//
-//                for (Element element1 : currentElement.getElements()) {
-////                    ProcessStep firstProcessStepOfBranch = getFirstProcessStepOfBranch(element1);
-//                    tempPreviousProcessStep = fillProcessStepChainRec(element1, previousProcessStep, andMembersMap);
-//                    if(tempPreviousProcessStep != null && stepGeneMap.get(tempPreviousProcessStep.getInternId()) != null && tempPreviousProcessStep != previousProcessStep) {
-//                        geneList.add(stepGeneMap.get(tempPreviousProcessStep.getInternId()));
-//                        lastNotNullTempPreviousProcessStep = tempPreviousProcessStep;
-//                    }
-//
-//                }
-//
-//                if(lastNotNullTempPreviousProcessStep != null && stepGeneMap.get(lastNotNullTempPreviousProcessStep.getInternId()) != null) {
-//                    andMembersMap.put(stepGeneMap.get(lastNotNullTempPreviousProcessStep.getInternId()), geneList);
-//                }
-//
-//                previousProcessStep = tempPreviousProcessStep;
-//            } else if (currentElement instanceof LoopConstruct) {
-//
-//                if ((currentElement.getNumberOfExecutions() < ((LoopConstruct) currentElement).getNumberOfIterationsToBeExecuted())) {
-//                    for (Element subElement : currentElement.getElements()) {
-//                        previousProcessStep = fillProcessStepChainRec(subElement, previousProcessStep, andMembersMap);
-//                    }
-//                }
-//            }
-//            return previousProcessStep;
-//        }
-//    }
-
-
-    private ProcessStep getFirstProcessStepOfBranch(Element currentElement) {
-        ProcessStep returnProcessStep = null;
-        if (currentElement instanceof ProcessStep) {
-            ProcessStep processStep = (ProcessStep) currentElement;
-
-            if (processStep.isHasToBeExecuted()) {
-                return processStep;
-            }
-        } else {
-            if (currentElement instanceof WorkflowElement) {
-                for (Element element : currentElement.getElements()) {
-                    returnProcessStep = getFirstProcessStepOfBranch(element);
-                    if(returnProcessStep != null) {
-                        return returnProcessStep;
-                    }
-                }
-            } else if (currentElement instanceof Sequence) {
-                for (Element element1 : currentElement.getElements()) {
-                    returnProcessStep = getFirstProcessStepOfBranch(element1);
-                    if(returnProcessStep != null) {
-                        return returnProcessStep;
-                    }
-                }
-            } else if (currentElement instanceof ANDConstruct || currentElement instanceof XORConstruct) {
-                for (Element element1 : currentElement.getElements()) {
-                    returnProcessStep = getFirstProcessStepOfBranch(element1);
-                    if(returnProcessStep != null) {
-                        return returnProcessStep;
-                    }
-                }
-            } else if (currentElement instanceof LoopConstruct) {
-
-                if ((currentElement.getNumberOfExecutions() < ((LoopConstruct) currentElement).getNumberOfIterationsToBeExecuted())) {
-                    for (Element subElement : currentElement.getElements()) {
-                        returnProcessStep = getFirstProcessStepOfBranch(subElement);
-                        if(returnProcessStep != null) {
-                            return returnProcessStep;
-                        }
-                    }
-                }
-
-
-            }
-        }
-        return returnProcessStep;
-    }
-
 
     private ProcessStep getClonedProcessStep(ProcessStep processStep) {
 

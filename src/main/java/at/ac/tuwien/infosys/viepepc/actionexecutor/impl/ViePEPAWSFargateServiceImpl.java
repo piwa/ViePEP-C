@@ -89,7 +89,7 @@ public class ViePEPAWSFargateServiceImpl {
         stopWatch.stop();
         log.info("Task running. Time=" + stopWatch.getTotalTimeSeconds());
 
-        container.setProviderContainerId(runTaskResult.getTasks().get(0).getTaskArn());
+        container.setContainerID(runTaskResult.getTasks().get(0).getTaskArn());
 //        String id = UUID.randomUUID().toString();
 //        String hostPort = "2000";
 //
@@ -107,13 +107,13 @@ public class ViePEPAWSFargateServiceImpl {
         setup();
 
         StopTaskRequest stopTaskRequest = new StopTaskRequest();
-        stopTaskRequest.withTask(container.getProviderContainerId());
+        stopTaskRequest.withTask(container.getContainerID());
         StopTaskResult stopTaskResult = ecs.stopTask(stopTaskRequest);
 
 
         container.shutdownContainer();
 
-        log.info("The container: " + container.getContainerID() + " was removed.");
+        log.debug("The container: " + container.getContainerID() + " was removed.");
 
 
     }
