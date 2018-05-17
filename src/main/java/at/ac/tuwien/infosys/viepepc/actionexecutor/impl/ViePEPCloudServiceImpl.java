@@ -47,6 +47,8 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
     @Value("${simulate}")
     private boolean simulate;
 
+    @Value("${only.container.deploy.time}")
+    private long onlyContainerDeployTime;
 
     @Value("${container.imageNotAvailable.simulation.deploy.duration.average}")
     private int imageNotAvailableAverage;
@@ -133,7 +135,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         if (simulate) {
 
 //            TimeUnit.MILLISECONDS.sleep(getSleepTime(imageAvailableAverage, imageAvailableStdDev));
-            TimeUnit.MILLISECONDS.sleep(0);
+            TimeUnit.MILLISECONDS.sleep(onlyContainerDeployTime);
             container = viePEPAWSFargateSimulation.startContainer(container);
 
         } else if (container.isBareMetal()){

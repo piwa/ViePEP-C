@@ -41,6 +41,13 @@ public class MessagingConfiguration {//} implements RabbitListenerConfigurer {
 
     @Value("${messagebus.queue.name}")
     private String queueName;
+    @Value("${spring.rabbitmq.host}")
+    private String host;
+
+    @Value("${spring.rabbitmq.username}")
+    private String username;
+    @Value("${spring.rabbitmq.password}")
+    private String password;
 
 //    @Autowired
 //    public ConnectionFactory connectionFactory;
@@ -95,9 +102,9 @@ public class MessagingConfiguration {//} implements RabbitListenerConfigurer {
     @Bean
     @Autowired
     public ConnectionFactory connectionFactory(@RabbitConnectionExecutor TaskExecutor executor) {
-        final CachingConnectionFactory connectionFactory = new CachingConnectionFactory("51.145.129.154", 5672);
-        connectionFactory.setUsername("viepep");
-        connectionFactory.setPassword("viepep");
+        final CachingConnectionFactory connectionFactory = new CachingConnectionFactory(host, 5672);
+        connectionFactory.setUsername(username);
+        connectionFactory.setPassword(password);
         connectionFactory.setExecutor(executor);
         return connectionFactory;
     }
