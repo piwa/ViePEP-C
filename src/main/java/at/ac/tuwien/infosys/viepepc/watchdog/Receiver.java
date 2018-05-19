@@ -65,54 +65,57 @@ public class Receiver {
 
         log.info("Task-Done: " + processStep);
 
-        if(processStep.getScheduledAtContainer() != null) {
+        if (processStep.getScheduledAtContainer() != null) {
 //            synchronized (processStep.getScheduledAtContainer()) {
-                List<ProcessStep> processSteps = new ArrayList<>();
-                placementHelper.getRunningSteps().stream().filter(ele -> ((ProcessStep) ele) != processStep).forEach(element -> processSteps.add((ProcessStep) element));
-                processSteps.addAll(placementHelper.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).collect(Collectors.toList()));
+            List<ProcessStep> processSteps = new ArrayList<>();
+            placementHelper.getRunningSteps().stream().filter(ele -> ((ProcessStep) ele) != processStep).forEach(element -> processSteps.add((ProcessStep) element));
+            processSteps.addAll(placementHelper.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).collect(Collectors.toList()));
 
-                boolean stillNeeded = false;
-                for (ProcessStep tmp : processSteps) {
-                    if (tmp.getScheduledAtContainer() != null && tmp != processStep && tmp.getScheduledAtContainer().getContainerID().equals(processStep.getScheduledAtContainer().getContainerID())) {
-                        stillNeeded = true;
-                        break;
-                    }
+            boolean stillNeeded = false;
+            for (ProcessStep tmp : processSteps) {
+                if (tmp.getScheduledAtContainer() != null && tmp != processStep && tmp.getScheduledAtContainer().getContainerID().equals(processStep.getScheduledAtContainer().getContainerID())) {
+                    stillNeeded = true;
+                    break;
                 }
+            }
 
-                if (!stillNeeded) {
-                    actionExecutorUtilities.stopContainer(processStep.getScheduledAtContainer());
-                }
+            if (!stillNeeded) {
+                actionExecutorUtilities.stopContainer(processStep.getScheduledAtContainer());
+            }
 //            }
         }
 
         if (processStep.isLastElement()) {
 
-//            Random random = new Random();
-
+            Random random = new Random();
+            while (true) {
                 WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
 //                synchronized (workflowElement) {
-                    List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
-                    List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
-//                    log.info("Try to finish workflow. RunningSteps=" + printProcessSteps(runningSteps) + "; nextSteps=" + printProcessSteps(nextSteps));
-                    if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
-                        try {
-                            workflowElement.setFinishedAt(finishedAt);
-                        } catch (Exception e) {
-                            log.error("Exception while try to finish workflow: " + workflowElement, e);
-                        }
+                if (workflowElement == null || workflowElement.getFinishedAt() != null) {
+                    break;
+                }
 
-                        cacheWorkflowService.deleteRunningWorkflowInstance(workflowElement);
-                        log.info("Workflow done. Workflow: " + workflowElement);
+                List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
+                List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
+                if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
+                    try {
+                        workflowElement.setFinishedAt(finishedAt);
+                    } catch (Exception e) {
+                        log.error("Exception while try to finish workflow: " + workflowElement, e);
                     }
 
-//                    try {
-//                        TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
-//                    } catch (Exception e) {
-//                    }
-//            }
+                    cacheWorkflowService.deleteRunningWorkflowInstance(workflowElement);
+                    log.info("Workflow done. Workflow: " + workflowElement);
+                    break;
+                }
 
+                TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
+
+            }
         }
-        if(optimizationAfterTaskDone) {
+
+        if (optimizationAfterTaskDone)
+        {
             reasoning.setNextOptimizeTimeNow();
         }
 
