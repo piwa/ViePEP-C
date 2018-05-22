@@ -71,7 +71,6 @@ public class ViePEPAzureContainerServiceImpl {
                         .withLogLevel(LogLevel.NONE)
                         .authenticate(credentials)
                         .withDefaultSubscription();
-
             } catch (Exception ex) {
                 log.error("Exception", ex);
             }
@@ -91,7 +90,7 @@ public class ViePEPAzureContainerServiceImpl {
             double ram = 1;
             Integer internalPort = container.getContainerImage().getServiceType().getServiceTypeResources().getInternPort();
 
-            String aciName = SdkContext.randomResourceName("viepep-service-", 20);
+            String aciName = SdkContext.randomResourceName("viepep-ser-", 24);
             String rgName = this.resourceGroup;
 
             String containerImageName = container.getContainerImage().getRepoName() + "/" + container.getContainerImage().getImageName() + ":latest";
