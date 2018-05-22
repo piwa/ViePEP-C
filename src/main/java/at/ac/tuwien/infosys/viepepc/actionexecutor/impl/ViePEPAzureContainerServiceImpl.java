@@ -134,7 +134,7 @@ public class ViePEPAzureContainerServiceImpl {
                     .withEnvironmentVariable("spring_rabbitmq_host",rabbitMQHost)
                     .attach()
                     .withRestartPolicy(ContainerGroupRestartPolicy.NEVER)
-                    .withDnsPrefix(aciName)
+//                    .withDnsPrefix(aciName)
                     .createAsync(var1);
 
 
