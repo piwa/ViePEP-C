@@ -65,9 +65,9 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
                 for (WorkflowElement element : workflowElement.getWorkflowElements()) {
                     element.setArrivedAt(date);
                     preProcess(element);
-                    log.info("add new WorkflowElement: " + element.toString());
+                    log.debug("add new WorkflowElement: " + element.toString());
                     cacheWorkflowService.addWorkflowInstance(element);
-                    log.info("Done: Add new WorkflowElement: " + element.toString());
+                    log.debug("Done: Add new WorkflowElement: " + element.toString());
                 }
                 reasoning.setNextOptimizeTimeNow();
             } catch (Exception ex) {

@@ -47,7 +47,7 @@ public class WorkflowDaoService {
 
 //    @Transactional(propagation= Propagation.REQUIRES_NEW)
 	public WorkflowElement finishWorkflow(WorkflowElement workflow) {
-		log.info("-- Update workflowElement: " + workflow.toString());
+		log.debug("-- Update workflowElement: " + workflow.toString());
 
 		List<Element> flattedWorkflow = placementHelperImpl.getFlattenWorkflow(new ArrayList<>(), workflow);
 		DateTime finishedDate = getFinishedDate(flattedWorkflow);
