@@ -86,8 +86,8 @@ public class ViePEPAzureContainerServiceImpl {
 
 //            double cores = container.getContainerConfiguration().getCores();
 //            double ram = container.getContainerConfiguration().getRam() / 1000;
-            double cores = 1;
-            double ram = 1;
+            double cores = 2;
+            double ram = 2;
             Integer internalPort = container.getContainerImage().getServiceType().getServiceTypeResources().getInternPort();
 
             String aciName = SdkContext.randomResourceName("viepep-ser-", 24);

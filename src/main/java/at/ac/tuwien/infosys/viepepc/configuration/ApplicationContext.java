@@ -53,12 +53,6 @@ public class ApplicationContext implements AsyncConfigurer {
         return new ServiceInvokerImpl();
     }
 
-//    @Bean
-//    public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder)
-//    {
-//        return restTemplateBuilder.setConnectTimeout(500).setReadTimeout(500).build();
-//    }
-
     @Bean
     @Scope("prototype")
     public OnlyContainerDeploymentController getOnlyContainerDeploymentController(ProcessStep processStep) {
@@ -68,8 +62,8 @@ public class ApplicationContext implements AsyncConfigurer {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setMaxPoolSize(500);
-        executor.setCorePoolSize(300);
+        executor.setCorePoolSize(100);
+        executor.setMaxPoolSize(200);
         executor.setQueueCapacity(5);
         executor.initialize();
         return executor;
@@ -83,39 +77,9 @@ public class ApplicationContext implements AsyncConfigurer {
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler(){
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize(600);
+        threadPoolTaskScheduler.setPoolSize(100);
         threadPoolTaskScheduler.setThreadNamePrefix("ThreadPoolTaskScheduler");
         return threadPoolTaskScheduler;
     }
 
-//    @Bean
-//    @Primary
-//    public ThreadPoolTaskExecutor serviceProcessExecuter() {
-//        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-//        executor.setMaxPoolSize(200);
-//        executor.setCorePoolSize(200);
-//        executor.setQueueCapacity(100);
-//        executor.initialize();
-//        return executor;
-//    }
-
-//    @Bean
-//    @Primary
-//    public SimpleAsyncTaskExecutor simpleAsyncTaskExecutor() {
-//        SimpleAsyncTaskExecutor executor = new SimpleAsyncTaskExecutor();
-//        executor.setConcurrencyLimit(200);
-//        return executor;
-//    }
-
-/*
-    @Bean(name = "serviceProcessExecuter")
-    public ThreadPoolTaskExecutor serviceProcessExecuter() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setMaxPoolSize(200);
-        executor.setCorePoolSize(200);
-        executor.setQueueCapacity(100);
-        executor.initialize();
-        return executor;
-    }
-*/
 }

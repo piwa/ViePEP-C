@@ -144,6 +144,11 @@
 
 		<!-- 3d Party -->
 		<dependency>
+			<groupId>com.github.maricn</groupId>
+			<artifactId>logback-slack-appender</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<scope>runtime</scope>

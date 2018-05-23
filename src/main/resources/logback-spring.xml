@@ -1,0 +1,22 @@
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <springProperty scope="context" name="slackWebHook" source="slack.webhook" defaultValue=""/>
+
+    <appender name="SLACK" class="com.github.maricn.logback.SlackAppender">
+        <webhookUri>${slackWebHook}</webhookUri>
+    </appender>
+
+    <!-- Currently recommended way of using Slack appender -->
+    <appender name="ASYNC_SLACK" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="SLACK" />
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+    </appender>
+
+    <logger name="at.ac.tuwien.infosys.viepepc" level="ERROR" additivity="false">
+        <appender-ref ref="ASYNC_SLACK" />
+    </logger>
+
+</configuration>
