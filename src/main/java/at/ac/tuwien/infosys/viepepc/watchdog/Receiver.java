@@ -88,7 +88,8 @@ public class Receiver {
         if (processStep.isLastElement()) {
 
             Random random = new Random();
-            while (true) {
+            int counter = 0;
+            while (counter < 10) {
                 WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
 //                synchronized (workflowElement) {
                 if (workflowElement == null || workflowElement.getFinishedAt() != null) {
@@ -112,6 +113,16 @@ public class Receiver {
                 log.debug("Waiting for the end of workflow: " + workflowElement.toStringWithoutElements());
                 TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
 
+            }
+
+            if(counter == 9) {
+                WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
+                if(workflowElement == null) {
+                    log.debug("Had to wait to long for process end; But workflow is now null");
+                }
+                else {
+                    log.debug("Had to wait to long for process end; Workflow: " + workflowElement.toStringWithoutElements());
+                }
             }
         }
 
