@@ -9,6 +9,8 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,8 @@ public class ServiceExecutionController {
     private WithVMDeploymentController withVMDeploymentController;
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler;
+    @Autowired
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
     @Autowired
     private ApplicationContext applicationContext;
     @Value("${only.container.deploy.time}")
@@ -95,28 +99,63 @@ public class ServiceExecutionController {
         }
     }
 
-//    @Async
+    private List<ProcessStep> processStepsToBeStarted = new ArrayList<>();
+
+    //    @Async
     public void startInvocationViaContainers(List<ProcessStep> processSteps) {
+//
+//        for (ProcessStep processStep : processSteps) {
+//
+//            if(processStepScheduledTasksMap.containsKey(processStep)) {
+//                boolean result = processStepScheduledTasksMap.get(processStep).cancel(false);
+//                if(!result) {
+//                    log.error("problem");
+//                }
+//                processStepScheduledTasksMap.remove(processStep);
+//            }
+//
+//            DateTime startTimeWithContainer = processStep.getScheduledStartedAt().minus(onlyContainerDeploymentTime);
+//
+//            OnlyContainerDeploymentController runnable = applicationContext.getOnlyContainerDeploymentController(processStep);
+//            ScheduledFuture scheduledFuture = taskScheduler.schedule(runnable, startTimeWithContainer.toDate());
+//            processStepScheduledTasksMap.put(processStep, scheduledFuture);
+//
+//        }
 
-        for (ProcessStep processStep : processSteps) {
-
-            if(processStepScheduledTasksMap.containsKey(processStep)) {
-                boolean result = processStepScheduledTasksMap.get(processStep).cancel(false);
-                if(!result) {
-                    log.error("problem");
-                }
-                processStepScheduledTasksMap.remove(processStep);
-            }
-
-            DateTime startTimeWithContainer = processStep.getScheduledStartedAt().minus(onlyContainerDeploymentTime);
-
-            OnlyContainerDeploymentController runnable = applicationContext.getOnlyContainerDeploymentController(processStep);
-            ScheduledFuture scheduledFuture = taskScheduler.schedule(runnable, startTimeWithContainer.toDate());
-            processStepScheduledTasksMap.put(processStep, scheduledFuture);
-
+        synchronized (processStepsToBeStarted) {
+            processStepsToBeStarted.clear();
+            processStepsToBeStarted.addAll(processSteps);
+            processStepsToBeStarted.sort(Comparator.comparing(ProcessStep::getScheduledStartedAt));
         }
 
     }
+
+    @Scheduled(initialDelay = 1000, fixedDelay = 3000)        // fixedRate
+    private void scheduledProcessStarter() {
+
+        synchronized (processStepsToBeStarted) {
+//        Set<ProcessStep> list = Collections.synchronizedSet(processStepsToBeStarted);
+//        if (list != null && !list.isEmpty()) {
+
+            for (Iterator<ProcessStep> iterator = processStepsToBeStarted.iterator(); iterator.hasNext(); ) {
+                ProcessStep processStep = iterator.next();
+
+                DateTime startTimeWithContainer = processStep.getScheduledStartedAt().minus(onlyContainerDeploymentTime);
+                if (startTimeWithContainer.minusSeconds(5).isBeforeNow()) {
+                    OnlyContainerDeploymentController runnable = applicationContext.getOnlyContainerDeploymentController(processStep);
+                    threadPoolTaskExecutor.execute(runnable);
+
+                    iterator.remove();
+                }
+                else {
+                    break;
+                }
+            }
+        }
+//        }
+
+    }
+
 
     private Map<Container, List<ProcessStep>> createContainerProcessStepMap(List<ProcessStep> processSteps) {
         final Map<Container, List<ProcessStep>> containerProcessStepsMap = new HashMap<>();

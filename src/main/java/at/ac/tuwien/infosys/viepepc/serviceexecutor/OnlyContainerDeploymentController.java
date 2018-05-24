@@ -17,6 +17,7 @@ import at.ac.tuwien.infosys.viepepc.watchdog.ServiceExecutionStatus;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -27,6 +28,7 @@ import org.springframework.util.StopWatch;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by philippwaibel on 18/05/16.
@@ -66,7 +68,7 @@ public class OnlyContainerDeploymentController implements Runnable {
 
         boolean success = deployContainer(container);
 
-        if(success) {
+        if (success) {
             stopWatch.stop();
             log.debug("Container deploy duration: " + container.toString() + ": " + stopWatch.getTotalTimeMillis());
 
@@ -82,15 +84,25 @@ public class OnlyContainerDeploymentController implements Runnable {
 //                }, processStep.getScheduledStartedAt().toDate());
 //            }
 //            else {
+
+            if (DateTime.now().isBefore(processStep.getScheduledStartedAt().minusSeconds(2))) {
+                Duration duration = new Duration(DateTime.now(), processStep.getScheduledStartedAt().minusSeconds(2));
                 try {
-                    serviceExecution.startExecution(processStep, container);
-                } catch (ServiceInvokeException e) {
+                    TimeUnit.MILLISECONDS.sleep(duration.getMillis());
+                } catch (InterruptedException e) {
                     log.error("Exception while invoking service. Reset.", e);
-                    reset("Service");
                 }
+            }
+
+
+            try {
+                serviceExecution.startExecution(processStep, container);
+            } catch (ServiceInvokeException e) {
+                log.error("Exception while invoking service. Reset.", e);
+                reset("Service");
+            }
 //            }
-        }
-        else {
+        } else {
             reset("Container");
         }
 
@@ -108,10 +120,9 @@ public class OnlyContainerDeploymentController implements Runnable {
                 log.info("Deploy new container: " + container);
                 dockerControllerService.startContainer(container);
                 ContainerReportingAction report = null;
-                if(simulate) {
-                    report = new ContainerReportingAction(DateTime.now().plus(onlyContainerDeploymentTime), container.getName(), container.getContainerConfiguration().getName(),null, Action.START);
-                }
-                else {
+                if (simulate) {
+                    report = new ContainerReportingAction(DateTime.now().plus(onlyContainerDeploymentTime), container.getName(), container.getContainerConfiguration().getName(), null, Action.START);
+                } else {
                     report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), null, Action.START);
                 }
                 reportDaoService.save(report);
@@ -126,8 +137,8 @@ public class OnlyContainerDeploymentController implements Runnable {
 
 
     private void reset(String failureReason) {
-        if(container != null) {
-            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(),null, Action.FAILED, failureReason);
+        if (container != null) {
+            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), null, Action.FAILED, failureReason);
             reportDaoService.save(reportContainer);
             container.shutdownContainer();
         }
