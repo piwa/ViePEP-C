@@ -109,6 +109,7 @@ public class Receiver {
                     break;
                 }
 
+                log.debug("Waiting for the end of workflow: " + workflowElement.toStringWithoutElements());
                 TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
 
             }

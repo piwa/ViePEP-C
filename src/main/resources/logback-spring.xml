@@ -1,11 +1,6 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-    <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
-    </root>
-
     <springProperty scope="context" name="slackWebHook" source="slack.webhook" defaultValue=""/>
 
     <appender name="SLACK" class="com.github.maricn.logback.SlackAppender">
