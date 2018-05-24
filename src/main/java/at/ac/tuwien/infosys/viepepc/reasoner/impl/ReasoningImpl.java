@@ -97,7 +97,10 @@ public class ReasoningImpl implements Reasoning {
                 		lastTerminateCheckTime.set(now);
 
                 		List<WorkflowElement> workflows = cacheWorkflowService.getRunningWorkflowInstances();
-                		log.info("Running workflow instances (" + workflows.size() + " running)");// WAS EMPTY? : " + workflows.isEmpty());
+
+                		StringBuilder builder = new StringBuilder();
+                		workflows.forEach(workflow -> builder.append(workflow.getName()).append(","));
+                		log.info("Running workflow instances (" + workflows.size() + " running): "+ builder.toString());// WAS EMPTY? : " + workflows.isEmpty());
 
                         if(workflows.isEmpty()) {
                             if(emptyTime == null) {
