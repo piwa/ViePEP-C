@@ -125,8 +125,7 @@ public class ServiceExecutionController {
         synchronized (processStepsToBeStarted) {
             Set<ProcessStep> tempSet = new HashSet<>(processStepsToBeStarted);
             tempSet.addAll(processSteps);
-            processStepsToBeStarted.clear();
-            processStepsToBeStarted.addAll(tempSet);
+            processStepsToBeStarted = new ArrayList<>(tempSet);
             processStepsToBeStarted.sort(Comparator.comparing(ProcessStep::getScheduledStartedAt));
         }
 

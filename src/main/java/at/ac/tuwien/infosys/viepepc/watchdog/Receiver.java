@@ -85,56 +85,17 @@ public class Receiver {
 //            }
         }
 
-//        if (processStep.isLastElement()) {
-//
-//            Random random = new Random();
-//            int counter = 0;
-//            while (counter < 10) {
-//                WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
-////                synchronized (workflowElement) {
-//                if (workflowElement == null || workflowElement.getFinishedAt() != null) {
-//                    break;
-//                }
-//
-//                List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
-//                List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
-//                if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
-//                    try {
-//                        workflowElement.setFinishedAt(finishedAt);
-//                    } catch (Exception e) {
-//                        log.error("Exception while try to finish workflow: " + workflowElement, e);
-//                    }
-//
-//                    cacheWorkflowService.deleteRunningWorkflowInstance(workflowElement);
-//                    log.info("Workflow done. Workflow: " + workflowElement);
-//                    break;
-//                }
-//
-//                log.debug("Waiting for the end of workflow: " + workflowElement.toStringWithoutElements());
-//                TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
-//                counter = counter + 1;
-//            }
-//
-//            if(counter >= 9) {
-//                WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
-//                if(workflowElement == null) {
-//                    log.debug("Had to wait to long for process end; But workflow is now null");
-//                }
-//                else {
-//                    log.debug("Had to wait to long for process end; Workflow: " + workflowElement.toStringWithoutElements());
-//                }
-//            }
-//        }
         if (processStep.isLastElement()) {
 
             Random random = new Random();
+            int counter = 0;
+            while (counter < 100) {
+                WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
+                synchronized (workflowElement) {
+                    if (workflowElement == null || workflowElement.getFinishedAt() != null) {
+                        break;
+                    }
 
-            WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
-            synchronized (workflowElement) {
-                if (workflowElement == null || workflowElement.getFinishedAt() != null) {
-
-                }
-                else {
                     List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
                     List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
                     if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
@@ -146,13 +107,52 @@ public class Receiver {
 
                         cacheWorkflowService.deleteRunningWorkflowInstance(workflowElement);
                         log.info("Workflow done. Workflow: " + workflowElement);
+                        break;
                     }
+
+                    log.debug("Waiting for the end of workflow: " + workflowElement.toStringWithoutElements());
+                    TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
+                    counter = counter + 1;
                 }
 
+                if (counter >= 90) {
+                    workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
+                    if (workflowElement == null) {
+                        log.debug("Had to wait to long for process end; But workflow is now null");
+                    } else {
+                        log.debug("Had to wait to long for process end; Workflow: " + workflowElement.toStringWithoutElements());
+                    }
+                }
             }
-
-
         }
+//        if (processStep.isLastElement()) {
+//
+//            Random random = new Random();
+//
+//            WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
+//            synchronized (workflowElement) {
+//                if (workflowElement == null || workflowElement.getFinishedAt() != null) {
+//
+//                }
+//                else {
+//                    List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
+//                    List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
+//                    if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
+//                        try {
+//                            workflowElement.setFinishedAt(finishedAt);
+//                        } catch (Exception e) {
+//                            log.error("Exception while try to finish workflow: " + workflowElement, e);
+//                        }
+//
+//                        cacheWorkflowService.deleteRunningWorkflowInstance(workflowElement);
+//                        log.info("Workflow done. Workflow: " + workflowElement);
+//                    }
+//                }
+//
+//            }
+//
+//
+//        }
 
 
         if (optimizationAfterTaskDone) {
