@@ -91,11 +91,11 @@ public class Receiver {
             int counter = 0;
             while (counter < 100) {
                 WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
-                synchronized (workflowElement) {
-                    if (workflowElement == null || workflowElement.getFinishedAt() != null) {
-                        break;
-                    }
 
+                if (workflowElement == null || workflowElement.getFinishedAt() != null) {
+                    break;
+                }
+                synchronized (workflowElement) {
                     List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
                     List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
                     if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
