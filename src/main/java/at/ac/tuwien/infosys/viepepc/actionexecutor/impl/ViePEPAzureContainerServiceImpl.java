@@ -59,7 +59,7 @@ public class ViePEPAzureContainerServiceImpl {
 
     public void setup() {
 
-        if(azure == null) {
+        if (azure == null) {
             try {
                 ApplicationTokenCredentials credentials = new ApplicationTokenCredentials(
                         this.clientId,
@@ -80,67 +80,75 @@ public class ViePEPAzureContainerServiceImpl {
 
     public Container startContainer(Container container) throws DockerException, InterruptedException {
 
-        try {
+//        try {
 
-            setup();
+        setup();
 
 //            double cores = container.getContainerConfiguration().getCores();
 //            double ram = container.getContainerConfiguration().getRam() / 1000;
-            double cores = 2;
-            double ram = 2;
-            Integer internalPort = container.getContainerImage().getServiceType().getServiceTypeResources().getInternPort();
+        double cores = 2;
+        double ram = 2;
+        Integer internalPort = container.getContainerImage().getServiceType().getServiceTypeResources().getInternPort();
 
-            String aciName = SdkContext.randomResourceName("viepep-ser-", 24);
-            String rgName = this.resourceGroup;
+        String aciName = SdkContext.randomResourceName("viepep-ser-", 24);
+        String rgName = this.resourceGroup;
 
-            String containerImageName = container.getContainerImage().getRepoName() + "/" + container.getContainerImage().getImageName() + ":latest";
+        String containerImageName = container.getContainerImage().getRepoName() + "/" + container.getContainerImage().getImageName() + ":latest";
 
-            Region region;
-            if(lastRegion == Region.EUROPE_WEST) {
-                region = Region.EUROPE_NORTH;
-                rgName = rgName + "-n";
+        Region region;
+        if (lastRegion == Region.EUROPE_WEST) {
+            region = Region.EUROPE_NORTH;
+            rgName = rgName + "-n";
+        } else {
+            region = Region.EUROPE_WEST;
+            rgName = rgName + "-w";
+        }
+        lastRegion = region;
+
+        StopWatch stopwatch = new StopWatch();
+        stopwatch.start();
+
+        ServiceCallback<ContainerGroup> var1 = new ServiceCallback<ContainerGroup>() {
+            @Override
+            public void failure(Throwable throwable) {
+                log.error("Exception", throwable);
             }
-            else {
-                region = Region.EUROPE_WEST;
-                rgName = rgName + "-w";
-            }
-            lastRegion = region;
 
-            StopWatch stopwatch = new StopWatch();
-            stopwatch.start();
-
-            ServiceCallback<ContainerGroup> var1 = new ServiceCallback<ContainerGroup>() {
-                @Override
-                public void failure(Throwable throwable) {
-                    log.error("Exception", throwable);
-                }
-
-                @Override
-                public void success(ContainerGroup containerGroup) {
+            @Override
+            public void success(ContainerGroup containerGroup) {
 //                    log.debug("Container started");
-                }
-            };
+            }
+        };
 
-            azure.containerGroups().define(aciName)
-                    .withRegion(region)
-                    .withExistingResourceGroup(rgName)
-                    .withLinux()
-                    .withPrivateImageRegistry(this.repository, this.username, this.password)
-                    .withoutVolume()
-                    .defineContainerInstance(aciName + "-1").withImage(containerImageName)
-                    .withExternalTcpPort(internalPort)
-                    .withCpuCoreCount(cores)
-                    .withMemorySizeInGB(ram)
-                    .withEnvironmentVariable("spring_rabbitmq_host",rabbitMQHost)
-                    .attach()
-                    .withRestartPolicy(ContainerGroupRestartPolicy.NEVER)
+        while(true) {
+            try {
+                azure.containerGroups().define(aciName)
+                        .withRegion(region)
+                        .withExistingResourceGroup(rgName)
+                        .withLinux()
+                        .withPrivateImageRegistry(this.repository, this.username, this.password)
+                        .withoutVolume()
+                        .defineContainerInstance(aciName + "-1").withImage(containerImageName)
+                        .withExternalTcpPort(internalPort)
+                        .withCpuCoreCount(cores)
+                        .withMemorySizeInGB(ram)
+                        .withEnvironmentVariable("spring_rabbitmq_host", rabbitMQHost)
+                        .attach()
+                        .withRestartPolicy(ContainerGroupRestartPolicy.NEVER)
 //                    .withDnsPrefix(aciName)
-                    .createAsync(var1);
+                        .createAsync(var1);
+                break;
+            } catch (Exception ex) {
+                log.error("Exception in create routine", ex);
+                log.error("I will wait 1 sec and try again", ex);
+                TimeUnit.SECONDS.sleep(1);
+            }
+        }
 
-
-            while(!container.isRunning()) {
+        while (!container.isRunning()) {
+            try {
                 ContainerGroup containerGroup = azure.containerGroups().getByResourceGroup(rgName, aciName);
-                if(containerGroup != null && containerGroup.state()!=null && containerGroup.state().equals("Running")) {
+                if (containerGroup != null && containerGroup.state() != null && containerGroup.state().equals("Running")) {
                     container.setProviderContainerId(containerGroup.id());
                     container.setContainerID(aciName);
                     container.setRunning(true);
@@ -150,18 +158,22 @@ public class ViePEPAzureContainerServiceImpl {
                     }
 
                     container.setIpAddress("http://" + containerGroup.ipAddress());
-                }
-                else {
+                } else {
                     TimeUnit.SECONDS.sleep(1);
                 }
+            } catch (Exception ex) {
+                log.error("Exception in wait routine", ex);
+                log.error("I will wait 1 sec and try again", ex);
+                TimeUnit.SECONDS.sleep(1);
             }
-
-            stopwatch.stop();
-            log.debug("Azure container started: duration=" + stopwatch.getTotalTimeSeconds() + ", container=" + container.toString());
-
-        } catch (Exception ex) {
-            log.error("Exception", ex);
         }
+
+        stopwatch.stop();
+        log.debug("Azure container started: duration=" + stopwatch.getTotalTimeSeconds() + ", container=" + container.toString());
+
+//        } catch (Exception ex) {
+//            log.error("Exception", ex);
+//        }
 
 
         return container;
