@@ -157,20 +157,25 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                 Duration nextDuration = new Duration(oldInterval.getEnd(), startTimeNextGene);
 
 
-                int deltaTime = getRandomNumber((int)previousDuration.getMillis(), (int)nextDuration.getMillis(), random);
+                try {
+                    int deltaTime = getRandomNumber((int)previousDuration.getMillis(), (int)nextDuration.getMillis(), random);
 
 
-                Interval newInterval = new Interval(oldInterval.getStartMillis() + deltaTime, oldInterval.getEndMillis() + deltaTime);
+                    Interval newInterval = new Interval(oldInterval.getStartMillis() + deltaTime, oldInterval.getEndMillis() + deltaTime);
 
-                gene.setExecutionInterval(newInterval);
-//                boolean result = true;
-                boolean result = considerFirstContainerStartTime(new Chromosome(newCandidate), gene);
+                    gene.setExecutionInterval(newInterval);
+    //                boolean result = true;
+                    boolean result = considerFirstContainerStartTime(new Chromosome(newCandidate), gene);
 
-                if(result) {
-                    mutationCount = mutationCount - 1;
-                }
-                else {
-                    gene.setExecutionInterval(oldInterval);
+                    if(result) {
+                        mutationCount = mutationCount - 1;
+                    }
+                    else {
+                        gene.setExecutionInterval(oldInterval);
+                    }
+
+                } catch (Exception ex) {
+                    log.error("Exception try to continue. previousDuration=" + previousDuration.getMillis() + ", nextDuration=" + nextDuration, ex);
                 }
 
             }
@@ -187,8 +192,10 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
         return newChromosome;
     }
 
-    private int getRandomNumber(int minimumValue, int maximumValue, Random random) {
-        return random.nextInt(maximumValue + 1 + minimumValue) - minimumValue;
+    private int getRandomNumber(int minimumValue, int maximumValue, Random random) throws Exception {
+
+            return random.nextInt(maximumValue + 1 + minimumValue) - minimumValue;
+
     }
 
     private Chromosome.Gene getLastProcessStep(List<Chromosome.Gene> row) {
