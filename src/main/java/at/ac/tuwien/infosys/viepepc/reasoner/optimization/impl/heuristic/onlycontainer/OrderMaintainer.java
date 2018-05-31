@@ -78,7 +78,7 @@ public class OrderMaintainer {
         for (List<Chromosome.Gene> row : chromosome) {
             if (!rowOrderIsOk(row)) {
 
-                StringBuilder buffer = new StringBuilder();
+//                StringBuilder buffer = new StringBuilder();
 
 //                for (Chromosome.Gene cell : row) {
 //                    buffer.append("{");
@@ -92,7 +92,7 @@ public class OrderMaintainer {
 //
 //                log.error("Order of row is not ok: " + buffer.toString());
 
-                checkAndMaintainOrder(row);
+//                checkAndMaintainOrder(row);
 //                rowOrderIsOk(row);
 
                 return false;

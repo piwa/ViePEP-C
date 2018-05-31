@@ -104,7 +104,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
 
             if(!gene.isFixed()) {
 
-                Interval oldInterval = gene.getExecutionInterval();
+                Interval oldInterval = new Interval(gene.getExecutionInterval().getStartMillis(),gene.getExecutionInterval().getEndMillis());
                 Chromosome.Gene previousGene = gene.getLatestPreviousGene();
                 Chromosome.Gene nextGene = gene.getEarliestNextGene();
 
@@ -166,6 +166,10 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                     gene.setExecutionInterval(newInterval);
     //                boolean result = true;
                     boolean result = considerFirstContainerStartTime(new Chromosome(newCandidate), gene);
+
+                    if(!orderMaintainer.orderIsOk(newCandidate)) {
+                        result = false;
+                    }
 
                     if(result) {
                         mutationCount = mutationCount - 1;

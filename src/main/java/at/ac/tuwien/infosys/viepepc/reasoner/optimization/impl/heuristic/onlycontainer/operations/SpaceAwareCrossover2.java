@@ -94,7 +94,7 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
             Chromosome.Gene clone1PreviousGene = rowClone1.get(crossoverStartIndex).getLatestPreviousGene();
             DateTime maxDeadlineExtensionClone1 = maxTimeAfterDeadline.get(parent2Gene.getProcessStep().getWorkflowName());
 
-            rowClone1Changed = performCrossover(rowClone1Changed, processStepNameToCloneMap1, rowParent2, rowParent2, parent2Gene, clone1PreviousGene, maxDeadlineExtensionClone1);
+            rowClone1Changed = performCrossover(rowClone1Changed, processStepNameToCloneMap1, rowParent2, rowParent1, parent2Gene, clone1PreviousGene, maxDeadlineExtensionClone1);
 //            if(!considerFirstContainerStartTime(offspring1Chromosome)) {
 //                clone1 = new ArrayList<>();
 //                Chromosome.cloneGenes(parent1, clone1);

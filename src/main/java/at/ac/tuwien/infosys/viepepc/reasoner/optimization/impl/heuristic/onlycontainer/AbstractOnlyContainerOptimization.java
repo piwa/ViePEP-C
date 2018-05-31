@@ -12,9 +12,12 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.Optimiz
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import net.gpedro.integrations.slack.SlackApi;
+import net.gpedro.integrations.slack.SlackMessage;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +35,11 @@ public abstract class AbstractOnlyContainerOptimization {
     protected FitnessFunction fitnessFunction;
     @Autowired
     protected OptimizationUtility optimizationUtility;
+
+    @Value("${slack.webhook}")
+    private String slackWebhook;
+
+    private OrderMaintainer orderMaintainer = new OrderMaintainer();
 
     protected DateTime optimizationTime;
 
@@ -55,6 +63,11 @@ public abstract class AbstractOnlyContainerOptimization {
 
         List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnitList = optimizationUtility.getRequiredServiceTypes(winner);
         Duration duration = new Duration(optimizationTime, DateTime.now());
+
+        if(!orderMaintainer.orderIsOk(winner.getGenes())) {
+            SlackApi api = new SlackApi(slackWebhook);
+            api.call(new SlackMessage("Problem with the order!"));
+        }
 
         for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnitList) {
 
