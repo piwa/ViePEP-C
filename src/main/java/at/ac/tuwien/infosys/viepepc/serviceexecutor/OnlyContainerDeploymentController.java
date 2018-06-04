@@ -85,7 +85,7 @@ public class OnlyContainerDeploymentController implements Runnable {
 //            }
 //            else {
 
-            if (DateTime.now().isBefore(processStep.getScheduledStartedAt().minusSeconds(2))) {
+            if (processStep.getScheduledStartedAt() != null && DateTime.now().isBefore(processStep.getScheduledStartedAt().minusSeconds(2))) {
                 Duration duration = new Duration(DateTime.now(), processStep.getScheduledStartedAt().minusSeconds(2));
                 try {
                     TimeUnit.MILLISECONDS.sleep(duration.getMillis());

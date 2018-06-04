@@ -1,14 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl;
 
 import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
-import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
 import at.ac.tuwien.infosys.viepepc.reasoner.ProcessOptimizationResults;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.ServiceExecutionController;
@@ -17,14 +11,13 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 /**
  * Created by philippwaibel on 19/10/2016.
@@ -39,6 +32,8 @@ public class ProcessOnlyContainerOptResultsImpl implements ProcessOptimizationRe
     private InMemoryCacheImpl inMemoryCache;
     @Autowired
     private ServiceExecutionController serviceExecutionController;
+    @Autowired
+    private Environment env;
 
     private Set<Container> waitingForExecutingContainers = new HashSet<>();
     private boolean printRunningInformation = false;
@@ -49,7 +44,12 @@ public class ProcessOnlyContainerOptResultsImpl implements ProcessOptimizationRe
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
         optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).forEach(ps -> waitingForExecutingContainers.add(ps.getScheduledAtContainer()));
 
-        serviceExecutionController.startInvocationViaContainers(optimize.getProcessSteps());
+//        if(Arrays.asList(env.getActiveProfiles()).contains("OnlyContainerGeneticAlgorithm")) {
+            serviceExecutionController.startTimedInvocationViaContainers(optimize.getProcessSteps());
+//        }
+//        else {
+//            serviceExecutionController.startInvocationViaContainers(optimize.getProcessSteps());
+//        }
 
         if(printRunningInformation) {
             StringBuilder stringBuilder = new StringBuilder();

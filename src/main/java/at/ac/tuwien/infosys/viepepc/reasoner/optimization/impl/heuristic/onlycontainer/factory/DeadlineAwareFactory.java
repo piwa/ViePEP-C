@@ -6,6 +6,8 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycon
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer.ServiceTypeSchedulingUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.gpedro.integrations.slack.SlackApi;
+import net.gpedro.integrations.slack.SlackMessage;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
@@ -134,10 +136,9 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
         Chromosome newChromosome = new Chromosome(candidate);
 
+        orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName());
 
-//        considerFirstContainerStartTime(newChromosome, false);
 
-//        orderMaintainer.checkAndMaintainOrder(newChromosome);
         return newChromosome;
     }
 
@@ -172,13 +173,6 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
                             gene.moveIntervalPlus(deltaTime);
                             orderMaintainer.checkAndMaintainOrder(newChromosome);
-
-//                            if(moveNextGeneOnlyIfNeeded) {
-//                                Chromosome.moveGeneAndNextGenesIfNeeded(gene, deltaTime);
-//                            }
-//                            else {
-//                                Chromosome.moveGeneAndNextGenesByFixedTime(gene, deltaTime);
-//                            }
 
                             redo = true;
                         }

@@ -101,27 +101,15 @@ public class ServiceExecutionController {
 
     private List<ProcessStep> processStepsToBeStarted = new ArrayList<>();
 
-    //    @Async
     public void startInvocationViaContainers(List<ProcessStep> processSteps) {
-//
-//        for (ProcessStep processStep : processSteps) {
-//
-//            if(processStepScheduledTasksMap.containsKey(processStep)) {
-//                boolean result = processStepScheduledTasksMap.get(processStep).cancel(false);
-//                if(!result) {
-//                    log.error("problem");
-//                }
-//                processStepScheduledTasksMap.remove(processStep);
-//            }
-//
-//            DateTime startTimeWithContainer = processStep.getScheduledStartedAt().minus(onlyContainerDeploymentTime);
-//
-//            OnlyContainerDeploymentController runnable = applicationContext.getOnlyContainerDeploymentController(processStep);
-//            ScheduledFuture scheduledFuture = taskScheduler.schedule(runnable, startTimeWithContainer.toDate());
-//            processStepScheduledTasksMap.put(processStep, scheduledFuture);
-//
-//        }
+        for (ProcessStep processStep : processSteps) {
+            OnlyContainerDeploymentController runnable = applicationContext.getOnlyContainerDeploymentController(processStep);
+            threadPoolTaskExecutor.execute(runnable);
+        }
+    }
 
+    //    @Async
+    public void startTimedInvocationViaContainers(List<ProcessStep> processSteps) {
         synchronized (processStepsToBeStarted) {
             Set<ProcessStep> tempSet = new HashSet<>(processStepsToBeStarted);
             tempSet.addAll(processSteps);
@@ -135,8 +123,6 @@ public class ServiceExecutionController {
     private void scheduledProcessStarter() {
 
         synchronized (processStepsToBeStarted) {
-//        Set<ProcessStep> list = Collections.synchronizedSet(processStepsToBeStarted);
-//        if (list != null && !list.isEmpty()) {
 
             for (Iterator<ProcessStep> iterator = processStepsToBeStarted.iterator(); iterator.hasNext(); ) {
                 ProcessStep processStep = iterator.next();
@@ -153,8 +139,6 @@ public class ServiceExecutionController {
                 }
             }
         }
-//        }
-
     }
 
 

@@ -40,7 +40,7 @@ public class OptimizationUtilityTest {
     private OptimizationUtility optimizationUtility;
 
     @Test
-    public void getContainerConfiguration() throws ServiceTypeNotFoundException, ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
+    public void getContainerConfiguration_1_1() throws ServiceTypeNotFoundException, ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
 
         ServiceType serviceType = serviceRegistryReader.findServiceType("Service1");
         List<Container> containerService1List = optimizationUtility.getContainer(serviceType, 4);
@@ -49,18 +49,45 @@ public class OptimizationUtilityTest {
         assertThat(containerService1List.get(0) == containerService1List.get(1)).isTrue();
         assertThat(containerService1List.get(1) == containerService1List.get(2)).isTrue();
         assertThat(containerService1List.get(2) == containerService1List.get(3)).isTrue();
+    }
 
+    @Test
+    public void getContainerConfiguration_1_2() throws ServiceTypeNotFoundException, ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
 
-        serviceType = serviceRegistryReader.findServiceType("Service9");
+        ServiceType serviceType = serviceRegistryReader.findServiceType("Service1");
+        List<Container> containerService1List = optimizationUtility.getContainer(serviceType, 5);
+
+        assertThat(containerService1List.size()).isEqualTo(5);
+        assertThat(containerService1List.get(0) == containerService1List.get(1)).isTrue();
+        assertThat(containerService1List.get(1) == containerService1List.get(2)).isTrue();
+        assertThat(containerService1List.get(2) == containerService1List.get(3)).isTrue();
+    }
+
+    @Test
+    public void getContainerConfiguration_9_1() throws ServiceTypeNotFoundException, ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
+
+        ServiceType serviceType = serviceRegistryReader.findServiceType("Service9");
         List<Container> containerService9List = optimizationUtility.getContainer(serviceType, 4);
 
-        assertThat(containerService9List.size()).isEqualTo(4);
+        assertThat(containerService9List.size()).isEqualTo(3);
         assertThat(containerService9List.get(0) == containerService9List.get(1)).isTrue();
         assertThat(containerService9List.get(1) != containerService9List.get(2)).isTrue();
         assertThat(containerService9List.get(2) == containerService9List.get(3)).isTrue();
+    }
 
+    @Test
+    public void getContainerConfiguration_9_2() throws ServiceTypeNotFoundException, ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
+        ServiceType serviceType = serviceRegistryReader.findServiceType("Service9");
+        List<Container> containerService9List_2 = optimizationUtility.getContainer(serviceType, 3);
 
-        serviceType = serviceRegistryReader.findServiceType("Service10");
+        assertThat(containerService9List_2.size()).isEqualTo(3);
+        assertThat(containerService9List_2.get(0) == containerService9List_2.get(1)).isTrue();
+        assertThat(containerService9List_2.get(1) != containerService9List_2.get(2)).isTrue();
+    }
+
+    @Test
+    public void getContainerConfiguration_10() throws ServiceTypeNotFoundException, ContainerConfigurationNotFoundException, ContainerImageNotFoundException {
+        ServiceType serviceType = serviceRegistryReader.findServiceType("Service10");
         List<Container> containerService10List = optimizationUtility.getContainer(serviceType, 4);
 
         assertThat(containerService10List.size()).isEqualTo(4);

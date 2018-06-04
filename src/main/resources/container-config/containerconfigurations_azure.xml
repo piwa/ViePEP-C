@@ -9,13 +9,13 @@
    <Configuration>
       <name>DUAL_CORE</name>
       <cores>2</cores>
-      <ram>4096</ram>
+      <ram>3072</ram>
       <disc>30</disc>
    </Configuration>
    <Configuration>
       <name>TRIPPLE_CORE</name>
       <cores>3</cores>
-      <ram>3072</ram>
+      <ram>4096</ram>
       <disc>30</disc>
    </Configuration>
    <Configuration>
@@ -25,4 +25,3 @@
       <disc>30</disc>
    </Configuration>
 </ContainerConfigurations>
-

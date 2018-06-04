@@ -74,7 +74,7 @@ public class WorkflowElement extends Element {
                 ", name='" + name + '\'' +
                 ", arrivedAt='" + arrivedAt + '\'' +
                 ", elements=" + elements +
-                ", deadline=" + new DateTime(deadline) +
+                ", deadline=" + (new DateTime(deadline)).toString() +
                 '}';
     }
 

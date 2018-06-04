@@ -1,10 +1,12 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycontainer;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
+import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -56,9 +58,15 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
             try {
                 Duration deploymentDuration = serviceTypeSchedulingUnit.getServiceAvailableTime().toDuration();
-                ContainerConfiguration containerConfiguration = optimizationUtility.getContainerConfiguration(serviceTypeSchedulingUnit.getServiceType());
-                leasingCost = leasingCost + (containerConfiguration.getCores() * cpuCost * deploymentDuration.getStandardSeconds()  + containerConfiguration.getRam() / 1000 * ramCost * deploymentDuration.getStandardSeconds()) * leasingCostFactor;
-            } catch (ContainerConfigurationNotFoundException e) {
+                List<Container> container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
+
+                for (Container container1 : container) {
+                    ContainerConfiguration containerConfiguration = container1.getContainerConfiguration();
+                    leasingCost = leasingCost + (containerConfiguration.getCores() * cpuCost * deploymentDuration.getStandardSeconds()  + containerConfiguration.getRam() / 1000 * ramCost * deploymentDuration.getStandardSeconds()) * leasingCostFactor;
+                }
+
+
+            } catch (ContainerConfigurationNotFoundException | ContainerImageNotFoundException e) {
                 log.error("Exception", e);
             }
         }

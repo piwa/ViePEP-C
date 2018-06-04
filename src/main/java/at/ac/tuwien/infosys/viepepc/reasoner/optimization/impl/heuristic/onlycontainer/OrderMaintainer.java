@@ -2,8 +2,11 @@ package at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlyco
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.gpedro.integrations.slack.SlackApi;
+import net.gpedro.integrations.slack.SlackMessage;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
@@ -15,6 +18,8 @@ public class OrderMaintainer {
     @Getter
     private Chromosome.Gene secondGene;
     private boolean moveBack = false;
+    @Value("${slack.webhook}")
+    private String slackWebhook;
 
     public boolean checkAllStartTimesBeforeTime(DateTime optimizationStartTime, List<Chromosome.Gene> subChromosome) {
         for (Chromosome.Gene gene : subChromosome) {
@@ -103,4 +108,15 @@ public class OrderMaintainer {
 
     }
 
+    public void checkRowAndPrintError(Chromosome newChromosome, String className) {
+        int rowCounter = 0;
+        for (List<Chromosome.Gene> row : newChromosome.getGenes()) {
+            if (!rowOrderIsOk(row)) {
+                SlackApi api = new SlackApi(slackWebhook);
+                api.call(new SlackMessage("Problem with the order! class="+ className +"; process=" + newChromosome.toString(rowCounter)));
+                log.error("Problem with the order! process=" + newChromosome.toString(rowCounter));
+            }
+            rowCounter ++;
+        }
+    }
 }

@@ -36,50 +36,6 @@ public class OptimizationUtility {
     private long onlyContainerDeployTime;
 
 
-    public ContainerConfiguration getContainerConfiguration(ServiceType serviceType) throws ContainerConfigurationNotFoundException {
-        ContainerConfiguration containerConfiguration = null;
-        for (ContainerConfiguration tempContainerConfig : cacheContainerService.getContainerConfigurations(serviceType)) {
-            if (containerConfiguration == null) {
-                containerConfiguration = tempContainerConfig;
-            }
-            else if (containerConfiguration.getCPUPoints() > tempContainerConfig.getCPUPoints() || containerConfiguration.getRam() > tempContainerConfig.getRam()) {
-                containerConfiguration = tempContainerConfig;
-            }
-        }
-        if(containerConfiguration == null) {
-            throw new ContainerConfigurationNotFoundException();
-        }
-        return containerConfiguration;
-    }
-
-    public Container getContainer(ServiceType serviceType) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
-        ContainerConfiguration containerConfiguration = getContainerConfiguration(serviceType);
-
-        ContainerImage containerImage = containerImageRegistryReader.findContainerImage(serviceType);
-
-        Container container = new Container();
-        container.setContainerConfiguration(containerConfiguration);
-        container.setContainerImage(containerImage);
-
-        return container;
-    }
-
-    public ContainerConfiguration getContainerConfiguration(ServiceType serviceType, int amount) throws ContainerConfigurationNotFoundException {
-        ContainerConfiguration containerConfiguration = null;
-        for (ContainerConfiguration tempContainerConfig : cacheContainerService.getContainerConfigurations(serviceType)) {
-            if (containerConfiguration == null) {
-                containerConfiguration = tempContainerConfig;
-            }
-            else if (containerConfiguration.getCPUPoints() > tempContainerConfig.getCPUPoints() || containerConfiguration.getRam() > tempContainerConfig.getRam()) {
-                containerConfiguration = tempContainerConfig;
-            }
-        }
-        if(containerConfiguration == null) {
-            throw new ContainerConfigurationNotFoundException();
-        }
-        return containerConfiguration;
-    }
-
     public List<Container> getContainer(ServiceType serviceType, int amount) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
 
         List<ContainerAndServiceAmount> containerAndServiceAmountList = new ArrayList<>();
@@ -88,7 +44,7 @@ public class OptimizationUtility {
         int tempAmount = amount;
         while(tempAmount > 0) {
             double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad() * multpilier;
-            double ram = serviceType.getServiceTypeResources().getCpuLoad() * multpilier;
+            double ram = serviceType.getServiceTypeResources().getMemory() * multpilier;
 
             try {
                 ContainerConfiguration containerConfiguration = cacheContainerService.getBestContainerConfigurations(cpuLoad, ram);
@@ -171,10 +127,10 @@ public class OptimizationUtility {
                 boolean overlapFound = false;
                 List<ServiceTypeSchedulingUnit> requiredServiceTypes = requiredServiceTypeMap.get(gene.getProcessStep().getServiceType());
                 for (ServiceTypeSchedulingUnit requiredServiceType : requiredServiceTypes) {
-//                    Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
-//                    if (overlap != null) {
-                    if((requiredServiceType.getServiceAvailableTime().getStart().isBefore(gene.getExecutionInterval().getStart()) && requiredServiceType.getServiceAvailableTime().getEnd().isAfter(gene.getExecutionInterval().getEnd())) ||
-                            (gene.getExecutionInterval().getStart().isBefore(requiredServiceType.getServiceAvailableTime().getEnd()) && gene.getExecutionInterval().getEnd().isAfter(requiredServiceType.getServiceAvailableTime().getEnd()))) {
+                    Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
+                    if (overlap != null) {
+//                    if((requiredServiceType.getServiceAvailableTime().getStart().isBefore(gene.getExecutionInterval().getStart()) && requiredServiceType.getServiceAvailableTime().getEnd().isAfter(gene.getExecutionInterval().getEnd())) ||
+//                            (gene.getExecutionInterval().getStart().isBefore(requiredServiceType.getServiceAvailableTime().getEnd()) && gene.getExecutionInterval().getEnd().isAfter(requiredServiceType.getServiceAvailableTime().getEnd()))) {
 
                         DateTime newStartTime;
                         DateTime newEndTime;

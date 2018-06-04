@@ -36,9 +36,6 @@ public abstract class AbstractOnlyContainerOptimization {
     @Autowired
     protected OptimizationUtility optimizationUtility;
 
-    @Value("${slack.webhook}")
-    private String slackWebhook;
-
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
 
     protected DateTime optimizationTime;
@@ -64,10 +61,7 @@ public abstract class AbstractOnlyContainerOptimization {
         List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnitList = optimizationUtility.getRequiredServiceTypes(winner);
         Duration duration = new Duration(optimizationTime, DateTime.now());
 
-        if(!orderMaintainer.orderIsOk(winner.getGenes())) {
-            SlackApi api = new SlackApi(slackWebhook);
-            api.call(new SlackMessage("Problem with the order!"));
-        }
+        orderMaintainer.checkRowAndPrintError(winner, this.getClass().getSimpleName());
 
         for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnitList) {
 

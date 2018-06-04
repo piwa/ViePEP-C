@@ -135,7 +135,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         if (simulate) {
 
 //            TimeUnit.MILLISECONDS.sleep(getSleepTime(imageAvailableAverage, imageAvailableStdDev));
-            TimeUnit.MILLISECONDS.sleep(onlyContainerDeployTime);
+            TimeUnit.MILLISECONDS.sleep(30000);
             container = viePEPAWSFargateSimulation.startContainer(container);
 
         } else if (container.isBareMetal()){
@@ -167,7 +167,6 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         if(container.isBareMetal()) {
             if (simulate) {
                 viePEPAWSFargateSimulation.removeContainer(container);
-                inMemoryCache.getRunningContainers().remove(container);
             } else {
                 viePEPAzureContainerServiceImpl.removeContainer(container);
             }
@@ -179,5 +178,6 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
                 viePEPDockerControllerService.removeContainer(container);
             }
         }
+        inMemoryCache.getRunningContainers().remove(container);
     }
 }

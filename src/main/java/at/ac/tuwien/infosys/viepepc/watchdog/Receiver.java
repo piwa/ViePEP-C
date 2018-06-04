@@ -14,10 +14,12 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.env.Environment;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +40,8 @@ public class Receiver {
     private Reasoning reasoning;
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
+    @Autowired
+    private Environment env;
 
     @Value("${optimization.after.task.done}")
     private boolean optimizationAfterTaskDone = false;
@@ -155,6 +159,7 @@ public class Receiver {
 //        }
 
 
+//        if (Arrays.asList(env.getActiveProfiles()).contains("OnlyContainerBaseline") || optimizationAfterTaskDone) {
         if (optimizationAfterTaskDone) {
             reasoning.setNextOptimizeTimeNow();
         }
