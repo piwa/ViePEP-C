@@ -75,8 +75,8 @@ public abstract class AbstractOnlyContainerOptimization {
 
                 ProcessStep psHasToDeployContainer = serviceTypeSchedulingUnit.getFirstGene().getProcessStep();
 
-                Container container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType());
-                container.setBareMetal(true);
+                List<Container> containers = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
+                containers.forEach(c -> c.setBareMetal(true));
 
                 for (Chromosome.Gene processStepGene : serviceTypeSchedulingUnit.getProcessSteps()) {
                     if(!processStepGene.isFixed()) {
@@ -85,10 +85,6 @@ public abstract class AbstractOnlyContainerOptimization {
 
                         } else {
                             DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
-
-//                        if(withOptimizationTimeout) {
-//                            scheduledStartTime = scheduledStartTime.plus(duration);
-//                        }
 
                             ProcessStep realProcessStep = null;
 
@@ -104,8 +100,8 @@ public abstract class AbstractOnlyContainerOptimization {
                             }
 
                             if (realProcessStep.getStartDate() == null && !alreadyDeploying) {
-                                realProcessStep.setScheduledForExecution(true, scheduledStartTime, container);
-                                if(((ProcessStep) psHasToDeployContainer).getInternId().equals(processStep.getInternId())) {
+                                realProcessStep.setScheduledForExecution(true, scheduledStartTime, containers.remove(0));
+                                if(psHasToDeployContainer.getInternId().equals(processStep.getInternId())) {
                                     realProcessStep.setHasToDeployContainer(true);
                                 }
                                 else {

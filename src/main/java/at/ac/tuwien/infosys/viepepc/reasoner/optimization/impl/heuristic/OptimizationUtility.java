@@ -11,6 +11,8 @@ import at.ac.tuwien.infosys.viepepc.reasoner.optimization.impl.heuristic.onlycon
 import at.ac.tuwien.infosys.viepepc.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerImageNotFoundException;
+import com.spotify.docker.client.messages.ContainerConfig;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -60,6 +62,78 @@ public class OptimizationUtility {
         container.setContainerImage(containerImage);
 
         return container;
+    }
+
+    public ContainerConfiguration getContainerConfiguration(ServiceType serviceType, int amount) throws ContainerConfigurationNotFoundException {
+        ContainerConfiguration containerConfiguration = null;
+        for (ContainerConfiguration tempContainerConfig : cacheContainerService.getContainerConfigurations(serviceType)) {
+            if (containerConfiguration == null) {
+                containerConfiguration = tempContainerConfig;
+            }
+            else if (containerConfiguration.getCPUPoints() > tempContainerConfig.getCPUPoints() || containerConfiguration.getRam() > tempContainerConfig.getRam()) {
+                containerConfiguration = tempContainerConfig;
+            }
+        }
+        if(containerConfiguration == null) {
+            throw new ContainerConfigurationNotFoundException();
+        }
+        return containerConfiguration;
+    }
+
+    public List<Container> getContainer(ServiceType serviceType, int amount) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
+
+        List<ContainerAndServiceAmount> containerAndServiceAmountList = new ArrayList<>();
+
+        int multpilier = amount;
+        int tempAmount = amount;
+        while(tempAmount > 0) {
+            double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad() * multpilier;
+            double ram = serviceType.getServiceTypeResources().getCpuLoad() * multpilier;
+
+            try {
+                ContainerConfiguration containerConfiguration = cacheContainerService.getBestContainerConfigurations(cpuLoad, ram);
+
+                ContainerImage containerImage = containerImageRegistryReader.findContainerImage(serviceType);
+                Container container = new Container();
+                container.setContainerConfiguration(containerConfiguration);
+                container.setContainerImage(containerImage);
+
+                ContainerAndServiceAmount containerConfigurationAmount = new ContainerAndServiceAmount(multpilier, container);
+                containerAndServiceAmountList.add(containerConfigurationAmount);
+
+                tempAmount = tempAmount - multpilier;
+                multpilier = tempAmount;
+
+            } catch (ContainerConfigurationNotFoundException ex) {
+                multpilier = multpilier - 1;
+            }
+        }
+
+
+        List<Container> serviceContainerList = new ArrayList<>();
+        for(int i = 0; i < amount; i++) {
+            ContainerAndServiceAmount containerAndServiceAmount = containerAndServiceAmountList.get(0);
+
+            int maxServiceAmount = containerAndServiceAmount.getAmount();
+            maxServiceAmount = maxServiceAmount - 1;
+            if(maxServiceAmount == 0) {
+                containerAndServiceAmountList.remove(0);
+            }
+            else {
+                containerAndServiceAmount.setAmount(maxServiceAmount);
+            }
+            serviceContainerList.add(containerAndServiceAmount.getContainer());
+
+        }
+
+        return serviceContainerList;
+    }
+
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    private class ContainerAndServiceAmount {
+        private int amount;
+        private final Container container;
     }
 
     public List<ServiceTypeSchedulingUnit> getRequiredServiceTypes(Chromosome chromosome) {

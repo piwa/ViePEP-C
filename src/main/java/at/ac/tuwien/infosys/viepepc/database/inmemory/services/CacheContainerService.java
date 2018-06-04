@@ -46,7 +46,7 @@ public class CacheContainerService {
             }
         }
 
-        returnList.sort((config1, config2) -> (new Double(config1.getCores()).compareTo((new Double(config2.getCores())))));
+        returnList.sort((config1, config2) -> (Double.compare(config1.getCores(), config2.getCores())));
 
         return returnList;
     }
@@ -79,7 +79,7 @@ public class CacheContainerService {
             }
         }
 
-        returnList.sort((config1, config2) -> (new Double(config1.getCores()).compareTo((new Double(config2.getCores())))));
+        returnList.sort((config1, config2) -> (Double.compare(config1.getCores(), config2.getCores())));
 
         return returnList;
     }
