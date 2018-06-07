@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContainerConfigurations>
+   <!--
    <Configuration>
       <name>Container_1</name>
       <cores>0.25</cores>
       <ram>1024</ram>
       <disc>30</disc>
    </Configuration>
+   -->
    <Configuration>
       <name>Container_2</name>
       <cores>0.5</cores>
