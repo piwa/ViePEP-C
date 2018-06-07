@@ -13,18 +13,41 @@
       <disc>30</disc>
    </Configuration>
    <Configuration>
-      <name>Container_3</name>
-      <cores>0.75</cores>
-      <ram>1024</ram>
-      <disc>30</disc>
-   </Configuration>
-   <Configuration>
       <name>Container_4</name>
       <cores>1</cores>
       <ram>2048</ram>
       <disc>30</disc>
    </Configuration>
 
+   <Configuration>
+      <name>Container_8</name>
+      <cores>2</cores>
+      <ram>3048</ram>
+      <disc>30</disc>
+   </Configuration>
+
+   <Configuration>
+      <name>Container_12</name>
+      <cores>3</cores>
+      <ram>4048</ram>
+      <disc>30</disc>
+   </Configuration>
+
+   <Configuration>
+      <name>Container_16</name>
+      <cores>4</cores>
+      <ram>4048</ram>
+      <disc>30</disc>
+   </Configuration>
+
+
+<!--
+   <Configuration>
+      <name>Container_3</name>
+      <cores>0.75</cores>
+      <ram>1024</ram>
+      <disc>30</disc>
+   </Configuration>
    <Configuration>
       <name>Container_5</name>
       <cores>1.25</cores>
@@ -44,14 +67,6 @@
       <disc>30</disc>
    </Configuration>
    <Configuration>
-      <name>Container_8</name>
-      <cores>2</cores>
-      <ram>3048</ram>
-      <disc>30</disc>
-   </Configuration>
-
-
-   <Configuration>
       <name>Container_9</name>
       <cores>2.25</cores>
       <ram>3048</ram>
@@ -70,13 +85,6 @@
       <disc>30</disc>
    </Configuration>
    <Configuration>
-      <name>Container_12</name>
-      <cores>3</cores>
-      <ram>4048</ram>
-      <disc>30</disc>
-   </Configuration>
-
-   <Configuration>
       <name>Container_13</name>
       <cores>3.25</cores>
       <ram>4048</ram>
@@ -94,11 +102,6 @@
       <ram>4048</ram>
       <disc>30</disc>
    </Configuration>
-   <Configuration>
-      <name>Container_16</name>
-      <cores>4</cores>
-      <ram>4048</ram>
-      <disc>30</disc>
-   </Configuration>
+   -->
 
 </ContainerConfigurations>
