@@ -69,6 +69,9 @@ public abstract class AbstractOnlyContainerOptimization {
 
                 ProcessStep psHasToDeployContainer = serviceTypeSchedulingUnit.getFirstGene().getProcessStep();
 
+//                Container container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
+//                container.setBareMetal(true);
+
                 List<Container> containers = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
                 containers.forEach(c -> c.setBareMetal(true));
 

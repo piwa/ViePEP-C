@@ -35,9 +35,54 @@ public class OptimizationUtility {
     @Value("${only.container.deploy.time}")
     private long onlyContainerDeployTime;
 
+/*
+    public Container getContainer(ServiceType serviceType, int amount) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
+        double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad();
+        double ram = serviceType.getServiceTypeResources().getMemory();
+
+        ContainerConfiguration containerConfiguration = cacheContainerService.getBestContainerConfigurations(cpuLoad, ram);
+        ContainerImage containerImage = containerImageRegistryReader.findContainerImage(serviceType);
+        Container container = new Container();
+        container.setContainerConfiguration(containerConfiguration);
+        container.setContainerImage(containerImage);
+
+        return container;
+
+    }
+*/
+
+    /***
+     * Returns a container. The size of the container is calculated by using the maximum capable parallel execution amount of a service
+     */
+/*
+    public Container getContainer(ServiceType serviceType, int amount) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
+
+        double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad();
+        double ram = serviceType.getServiceTypeResources().getMemory();
+
+        int resourceMultiplier = (int) ((serviceType.getServiceTypeResources().getParallelExecutions() + amount - 1) / serviceType.getServiceTypeResources().getParallelExecutions());
+        cpuLoad = cpuLoad * resourceMultiplier;
+        ram = ram * resourceMultiplier;
+
+        ContainerConfiguration bestContainerConfig = new ContainerConfiguration();
+        bestContainerConfig.setId(0L);
+        bestContainerConfig.setName(String.valueOf(cpuLoad) + "_" + String.valueOf(ram));
+        bestContainerConfig.setCores(cpuLoad / 100);
+        bestContainerConfig.setRam(ram);
+        bestContainerConfig.setDisc(100);
+
+        ContainerImage containerImage = containerImageRegistryReader.findContainerImage(serviceType);
+        Container container = new Container();
+        container.setContainerConfiguration(bestContainerConfig);
+        container.setContainerImage(containerImage);
+
+        return container;
+
+    }
+*/
+
 
     public List<Container> getContainer(ServiceType serviceType, int amount) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
-
         List<ContainerAndServiceAmount> containerAndServiceAmountList = new ArrayList<>();
 
         int multpilier = amount;
@@ -84,6 +129,7 @@ public class OptimizationUtility {
 
         return serviceContainerList;
     }
+
 
     @lombok.Data
     @lombok.AllArgsConstructor

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -58,9 +59,10 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
             try {
                 Duration deploymentDuration = serviceTypeSchedulingUnit.getServiceAvailableTime().toDuration();
-                List<Container> container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
+                List<Container> containers = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
 
-                for (Container container1 : container) {
+                List<Container> containers2 = containers.stream().distinct().collect(Collectors.toList());
+                for (Container container1 : containers2) {
                     ContainerConfiguration containerConfiguration = container1.getContainerConfiguration();
                     leasingCost = leasingCost + (containerConfiguration.getCores() * cpuCost * deploymentDuration.getStandardSeconds()  + containerConfiguration.getRam() / 1000 * ramCost * deploymentDuration.getStandardSeconds()) * leasingCostFactor;
                 }

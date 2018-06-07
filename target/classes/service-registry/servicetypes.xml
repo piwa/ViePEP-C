@@ -3,11 +3,12 @@
    <serviceType>
       <name>Service1</name>
       <serviceTypeResources>
-         <cpuLoad>25</cpuLoad>
+         <cpuLoad>15</cpuLoad>
          <memory>10</memory>
          <makeSpan>40000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
+         <parallelExecutions>5</parallelExecutions>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -15,11 +16,12 @@
    <serviceType>
       <name>Service2</name>
       <serviceTypeResources>
-         <cpuLoad>25</cpuLoad>
+         <cpuLoad>20</cpuLoad>
          <memory>10</memory>
          <makeSpan>320000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>4</dataToTransfer>
+         <parallelExecutions>3</parallelExecutions>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -27,11 +29,12 @@
    <serviceType>
       <name>Service3</name>
       <serviceTypeResources>
-         <cpuLoad>50</cpuLoad>
+         <cpuLoad>25</cpuLoad>
          <memory>10</memory>
          <makeSpan>480000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>6</dataToTransfer>
+         <parallelExecutions>7</parallelExecutions>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -39,11 +42,12 @@
    <serviceType>
       <name>Service4</name>
       <serviceTypeResources>
-         <cpuLoad>50</cpuLoad>
+         <cpuLoad>40</cpuLoad>
          <memory>10</memory>
          <makeSpan>80000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
+         <parallelExecutions>10</parallelExecutions>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -51,11 +55,12 @@
    <serviceType>
       <name>Service5</name>
       <serviceTypeResources>
-         <cpuLoad>75</cpuLoad>
+         <cpuLoad>55</cpuLoad>
          <memory>10</memory>
          <makeSpan>400000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>4</dataToTransfer>
+         <parallelExecutions>2</parallelExecutions>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -63,11 +68,12 @@
    <serviceType>
       <name>Service6</name>
       <serviceTypeResources>
-         <cpuLoad>75</cpuLoad>
+         <cpuLoad>65</cpuLoad>
          <memory>10</memory>
          <makeSpan>120000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>6</dataToTransfer>
+         <parallelExecutions>5</parallelExecutions>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -75,11 +81,12 @@
    <serviceType>
       <name>Service7</name>
       <serviceTypeResources>
-         <cpuLoad>100</cpuLoad>
+         <cpuLoad>80</cpuLoad>
          <memory>10</memory>
          <makeSpan>160000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
+         <parallelExecutions>3</parallelExecutions>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -87,11 +94,12 @@
    <serviceType>
       <name>Service8</name>
       <serviceTypeResources>
-         <cpuLoad>100</cpuLoad>
+         <cpuLoad>135</cpuLoad>
          <memory>10</memory>
          <makeSpan>80000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>4</dataToTransfer>
+         <parallelExecutions>6</parallelExecutions>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -99,11 +107,12 @@
    <serviceType>
       <name>Service9</name>
       <serviceTypeResources>
-         <cpuLoad>150</cpuLoad>
+         <cpuLoad>135</cpuLoad>
          <memory>10</memory>
          <makeSpan>240000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>6</dataToTransfer>
+         <parallelExecutions>8</parallelExecutions>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>
@@ -111,11 +120,12 @@
    <serviceType>
       <name>Service10</name>
       <serviceTypeResources>
-         <cpuLoad>150</cpuLoad>
+         <cpuLoad>190</cpuLoad>
          <memory>10</memory>
          <makeSpan>120000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
+         <parallelExecutions>1</parallelExecutions>
          <internPort>8080</internPort>
       </serviceTypeResources>
       <onlyInternal>false</onlyInternal>

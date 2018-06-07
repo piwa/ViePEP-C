@@ -1,27 +1,104 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContainerConfigurations>
    <Configuration>
-      <name>SINGLE_CORE</name>
+      <name>Container_1</name>
+      <cores>0.25</cores>
+      <ram>1024</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
+      <name>Container_2</name>
+      <cores>0.5</cores>
+      <ram>1024</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
+      <name>Container_3</name>
+      <cores>0.75</cores>
+      <ram>1024</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
+      <name>Container_4</name>
       <cores>1</cores>
       <ram>2048</ram>
       <disc>30</disc>
    </Configuration>
+
    <Configuration>
-      <name>DUAL_CORE</name>
+      <name>Container_5</name>
+      <cores>1.25</cores>
+      <ram>2048</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
+      <name>Container_6</name>
+      <cores>1.5</cores>
+      <ram>2048</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
+      <name>Container_7</name>
+      <cores>1.75</cores>
+      <ram>2048</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
+      <name>Container_8</name>
       <cores>2</cores>
-      <ram>3072</ram>
+      <ram>3048</ram>
+      <disc>30</disc>
+   </Configuration>
+
+
+   <Configuration>
+      <name>Container_9</name>
+      <cores>2.25</cores>
+      <ram>3048</ram>
       <disc>30</disc>
    </Configuration>
    <Configuration>
-      <name>TRIPPLE_CORE</name>
+      <name>Container_10</name>
+      <cores>2.5</cores>
+      <ram>3048</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
+      <name>Container_11</name>
+      <cores>2.75</cores>
+      <ram>3048</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
+      <name>Container_12</name>
       <cores>3</cores>
-      <ram>4096</ram>
+      <ram>4048</ram>
+      <disc>30</disc>
+   </Configuration>
+
+   <Configuration>
+      <name>Container_13</name>
+      <cores>3.25</cores>
+      <ram>4048</ram>
       <disc>30</disc>
    </Configuration>
    <Configuration>
-      <name>QUAD_CORE</name>
-      <cores>4</cores>
-      <ram>4096</ram>
+      <name>Container_14</name>
+      <cores>3.5</cores>
+      <ram>4048</ram>
       <disc>30</disc>
    </Configuration>
+   <Configuration>
+      <name>Container_15</name>
+      <cores>3.75</cores>
+      <ram>4048</ram>
+      <disc>30</disc>
+   </Configuration>
+   <Configuration>
+      <name>Container_16</name>
+      <cores>4</cores>
+      <ram>4048</ram>
+      <disc>30</disc>
+   </Configuration>
+
 </ContainerConfigurations>

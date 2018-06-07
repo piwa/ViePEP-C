@@ -66,9 +66,10 @@ public class ViePEPAzureContainerServiceImplTest {
 
     @Test
     public void startAndStopAContainerOnAzure_success() throws Exception {
-        Container container = new Container();
-        container = azureContainerService.startContainer(container);
-        azureContainerService.removeContainer(container);
+        StopWatch stopWatch = new StopWatch();
+        ProcessStep processStep = new ProcessStep();
+        Container container = startAContainer(processStep,stopWatch);
+//        azureContainerService.removeContainer(container);
     }
 
     @Test
@@ -85,22 +86,11 @@ public class ViePEPAzureContainerServiceImplTest {
     }
 
     private void startInvokeAndStopAContainer() throws Exception {
-        ProcessStep processStep = new ProcessStep();
-        processStep.setServiceType(serviceRegistryReader.findServiceType("Service1"));
-        processStep.setName("testprocessstep");
 
         StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-        Container container = new Container();
-        ContainerConfiguration configuration = new ContainerConfiguration();
-        configuration.setCores(2);
-        configuration.setRam(2000);
-        container.setContainerConfiguration(configuration);
 
-        ContainerImage containerImage = containerImageRegistryReader.findContainerImage(processStep.getServiceType());
-        container.setContainerImage(containerImage);
-
-        container = azureContainerService.startContainer(container);
+        ProcessStep processStep = new ProcessStep();
+        Container container = startAContainer(processStep,stopWatch);
 
         stopWatch.stop();
         log.info("Container running. Duration=" +stopWatch.getTotalTimeMillis());
@@ -113,6 +103,24 @@ public class ViePEPAzureContainerServiceImplTest {
         log.info("Service invoked. Duration=" +stopWatch.getTotalTimeMillis());
 
         azureContainerService.removeContainer(container);
+    }
+
+    private Container startAContainer(ProcessStep processStep, StopWatch stopWatch) throws Exception {
+        processStep.setServiceType(serviceRegistryReader.findServiceType("Service1"));
+        processStep.setName("testprocessstep");
+
+        stopWatch.start();
+        Container container = new Container();
+        ContainerConfiguration configuration = new ContainerConfiguration();
+        configuration.setCores(2);
+        configuration.setRam(2000);
+        container.setContainerConfiguration(configuration);
+
+        ContainerImage containerImage = containerImageRegistryReader.findContainerImage(processStep.getServiceType());
+        container.setContainerImage(containerImage);
+
+        container = azureContainerService.startContainer(container);
+        return container;
     }
 
 

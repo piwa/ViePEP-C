@@ -83,7 +83,7 @@ public class ViePEPAWSFargateServiceImpl {
         while(!running) {
             DescribeTasksResult describeTasksResult = ecs.describeTasks(describeTasksRequest);
             running = describeTasksResult.getTasks().get(0).getLastStatus().equals("RUNNING");
-            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(2);
         }
 
         stopWatch.stop();

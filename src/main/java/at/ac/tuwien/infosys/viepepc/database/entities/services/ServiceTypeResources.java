@@ -40,5 +40,7 @@ public class ServiceTypeResources {
     private long bootTime;
     @XmlElement
     private Integer internPort;
+    @XmlElement
+    private Integer parallelExecutions;
 
 }
