@@ -136,9 +136,6 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
 
             boolean isFixed = isRunning || isDone;
             Chromosome.Gene gene = new Chromosome.Gene(getClonedProcessStep(processStep), realStartTime, isFixed);
-            if(gene.isFixed()) {
-                setAllPrecedingFixed(gene);
-            }
             chromosome.add(gene);
 
             checkFirstAndLastGene(gene);
@@ -148,7 +145,7 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
         return startTime;
     }
 
-    private void setAllPrecedingFixed(Chromosome.Gene gene) {
+    protected void setAllPrecedingFixed(Chromosome.Gene gene) {
         gene.getPreviousGenes().forEach(prevGene -> {
             prevGene.setFixed(true);
             setAllPrecedingFixed(prevGene);

@@ -53,6 +53,13 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
             subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStep().getInternId(), gene));
             fillProcessStepChain(workflowElement);
+
+            subChromosome.forEach(gene -> {
+                if(gene.isFixed()) {
+                    setAllPrecedingFixed(gene);
+                }
+            });
+
             template.add(subChromosome);
             workflowDeadlines.put(workflowElement.getName(), workflowElement.getDeadlineDateTime());
             calculateMaxTimeAfterDeadline(workflowElement, subChromosome);
