@@ -16,6 +16,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -134,8 +135,7 @@ public class ViePEPCloudServiceImpl implements ViePEPCloudService, ViePEPDockerC
         container.setDeploying(true);
         if (simulate) {
 
-//            TimeUnit.MILLISECONDS.sleep(getSleepTime(imageAvailableAverage, imageAvailableStdDev));
-            TimeUnit.MILLISECONDS.sleep(30000);
+            TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(14000, 22001));
             container = viePEPAWSFargateSimulation.startContainer(container);
 
         } else if (container.isBareMetal()){

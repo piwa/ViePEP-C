@@ -141,7 +141,7 @@ public class Chromosome {
 
         private Interval executionInterval;
 
-        private final boolean fixed;
+        private boolean fixed;
         private ProcessStep processStep;
         private Set<Chromosome.Gene> previousGenes = new HashSet<>();
         private Set<Gene> nextGenes = new HashSet<>();
