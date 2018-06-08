@@ -60,6 +60,7 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
         this.defaultContainerDeployTime = defaultContainerDeployTime;
 
         considerFirstContainerStartTime(new Chromosome(template), true);
+        orderMaintainer.checkRowAndPrintError(new Chromosome(template), this.getClass().getSimpleName() + "_constructor", slackWebhook);
         return;
     }
 
@@ -108,6 +109,8 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
         List<List<Chromosome.Gene>> candidate = new ArrayList<>();
         Random rand = new Random();
 
+        orderMaintainer.checkRowAndPrintError(new Chromosome(template), this.getClass().getSimpleName() + "_generateRandomCandidate_1", slackWebhook);
+
         for (List<Chromosome.Gene> row : template) {
 
 
@@ -138,7 +141,7 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
         Chromosome newChromosome = new Chromosome(candidate);
 
-        orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName(), slackWebhook);
+        orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_2", slackWebhook);
 
 
         return newChromosome;

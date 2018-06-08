@@ -117,7 +117,7 @@ public class OrderMaintainer {
                 api.call(new SlackMessage("Problem with the order! class="+ className +"; process=" + newChromosome.toString(rowCounter)));
                 log.error("Problem with the order! process=" + newChromosome.toString(rowCounter));
 
-                throw new RuntimeException("Problem with the order! process=" + newChromosome.toString(rowCounter));
+                System.exit(1);
             }
             rowCounter ++;
         }
