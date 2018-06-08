@@ -95,7 +95,11 @@ public abstract class AbstractOnlyContainerOptimization {
 
                             boolean alreadyDeploying = false;
                             if (realProcessStep.getScheduledAtContainer() != null && (realProcessStep.getScheduledAtContainer().isDeploying() || realProcessStep.getScheduledAtContainer().isRunning())) {
-                                alreadyDeploying = true;
+
+                                if(realProcessStep.getScheduledAtContainer().getStartedAt().isAfter(optimizationTime)) {
+                                    alreadyDeploying = true;
+                                }
+
                             }
 
                             if (realProcessStep.getStartDate() == null && !alreadyDeploying) {

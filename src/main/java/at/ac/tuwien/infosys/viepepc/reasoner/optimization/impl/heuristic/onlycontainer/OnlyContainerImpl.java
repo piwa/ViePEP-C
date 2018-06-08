@@ -106,6 +106,7 @@ public class OnlyContainerImpl extends AbstractOnlyContainerOptimization impleme
     @Override
     public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
 
+        this.optimizationTime = DateTime.now();
         List<WorkflowElement> workflowElements = getRunningWorkflowInstancesSorted();
 
         if (workflowElements.size() == 0) {
@@ -115,7 +116,7 @@ public class OnlyContainerImpl extends AbstractOnlyContainerOptimization impleme
         StopWatch stopwatch = new StopWatch();
         stopwatch.start("pre optimization tasks");
 
-        this.optimizationTime = DateTime.now();
+
 
         if(withOptimizationTimeout) {
             this.optimizationTime = this.optimizationTime.plus(maxOptimizationDuration).plus(additionalOptimizationTime);
