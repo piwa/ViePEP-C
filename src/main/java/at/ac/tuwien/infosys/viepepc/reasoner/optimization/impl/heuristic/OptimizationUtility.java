@@ -88,8 +88,8 @@ public class OptimizationUtility {
         int multpilier = amount;
         int tempAmount = amount;
         while(tempAmount > 0) {
-            double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad() * multpilier;
-            double ram = serviceType.getServiceTypeResources().getMemory() * multpilier;
+            double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad() + serviceType.getServiceTypeResources().getCpuLoad() * (multpilier - 1) * 2/3;
+            double ram = serviceType.getServiceTypeResources().getMemory() + serviceType.getServiceTypeResources().getMemory() * (multpilier - 1) * 2/3;
 
             try {
                 ContainerConfiguration containerConfiguration = cacheContainerService.getBestContainerConfigurations(cpuLoad, ram);
