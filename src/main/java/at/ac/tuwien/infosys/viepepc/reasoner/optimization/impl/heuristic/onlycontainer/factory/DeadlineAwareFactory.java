@@ -27,14 +27,16 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
     @Getter Map<String, DateTime> maxTimeAfterDeadline = new HashMap<>();
     private DateTime optimizationStartTime;
 
-    @Value("${deadline.aware.factory.allowed.penalty.points}")
+    private String slackWebhook;
     private int allowedPenaltyPoints;
     private long onlyContainerDeploymentTime;
 
-    public DeadlineAwareFactory(List<WorkflowElement> workflowElementList, DateTime optimizationStartTime, long defaultContainerDeployTime, long defaultContainerStartupTime, boolean withOptimizationTimeOut, OptimizationUtility optimizationUtility, long onlyContainerDeploymentTime) {
+    public DeadlineAwareFactory(List<WorkflowElement> workflowElementList, DateTime optimizationStartTime, long defaultContainerDeployTime, long defaultContainerStartupTime, boolean withOptimizationTimeOut, OptimizationUtility optimizationUtility, long onlyContainerDeploymentTime, int allowedPenaltyPoints, String slackWebhook) {
 
         super(defaultContainerStartupTime, defaultContainerDeployTime, withOptimizationTimeOut);
 
+        this.slackWebhook = slackWebhook;
+        this.allowedPenaltyPoints = allowedPenaltyPoints;
         this.optimizationUtility = optimizationUtility;
         this.onlyContainerDeploymentTime = onlyContainerDeploymentTime;
         this.optimizationStartTime = new DateTime(optimizationStartTime);
@@ -136,7 +138,7 @@ public class DeadlineAwareFactory extends AbstractChromosomeFactory {
 
         Chromosome newChromosome = new Chromosome(candidate);
 
-        orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName());
+        orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName(), slackWebhook);
 
 
         return newChromosome;

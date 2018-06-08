@@ -7,6 +7,7 @@ import net.gpedro.integrations.slack.SlackMessage;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -18,8 +19,8 @@ public class OrderMaintainer {
     @Getter
     private Chromosome.Gene secondGene;
     private boolean moveBack = false;
-    @Value("${slack.webhook}")
-    private String slackWebhook;
+
+
 
     public boolean checkAllStartTimesBeforeTime(DateTime optimizationStartTime, List<Chromosome.Gene> subChromosome) {
         for (Chromosome.Gene gene : subChromosome) {
@@ -108,7 +109,7 @@ public class OrderMaintainer {
 
     }
 
-    public void checkRowAndPrintError(Chromosome newChromosome, String className) {
+    public void checkRowAndPrintError(Chromosome newChromosome, String className, String slackWebhook) {
         int rowCounter = 0;
         for (List<Chromosome.Gene> row : newChromosome.getGenes()) {
             if (!rowOrderIsOk(row)) {

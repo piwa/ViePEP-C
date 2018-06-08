@@ -53,6 +53,11 @@ public class OnlyContainerBaseline extends AbstractOnlyContainerOptimization imp
     @Value("${only.container.deploy.time}")
     private long onlyContainerDeploymentTime = 40000;
 
+    @Value("${deadline.aware.factory.allowed.penalty.points}")
+    private int allowedPenaltyPoints;
+    @Value("${slack.webhook}")
+    private String slackWebhook;
+
     private DateTime optimizationTime;
 
     private Map<Container, List<ProcessStep>> containerProcessMap = new HashMap<>();
@@ -70,7 +75,7 @@ public class OnlyContainerBaseline extends AbstractOnlyContainerOptimization imp
             return new OptimizationResultImpl();
         }
 
-        DeadlineAwareFactory factory = new DeadlineAwareFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, false, optimizationUtility, onlyContainerDeploymentTime);
+        DeadlineAwareFactory factory = new DeadlineAwareFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, false, optimizationUtility, onlyContainerDeploymentTime, allowedPenaltyPoints, slackWebhook);
 
         return createOptimizationResult(new Chromosome(factory.getTemplate()), workflowElements);
 

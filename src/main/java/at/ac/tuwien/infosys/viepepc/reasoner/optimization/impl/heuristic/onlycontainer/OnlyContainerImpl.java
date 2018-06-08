@@ -85,6 +85,12 @@ public class OnlyContainerImpl extends AbstractOnlyContainerOptimization impleme
     @Value("${only.container.deploy.time}")
     private long onlyContainerDeploymentTime = 40000;
 
+    @Value("${deadline.aware.factory.allowed.penalty.points}")
+    private int allowedPenaltyPoints;
+
+    @Value("${slack.webhook}")
+    private String slackWebhook;
+
 
     private CandidateFactory<Chromosome> chromosomeFactory;
 
@@ -119,7 +125,7 @@ public class OnlyContainerImpl extends AbstractOnlyContainerOptimization impleme
         SelectionStrategy<Object> selectionStrategy = new TournamentSelection(numberGenerator);
 
         if(deadlineAwareFactory) {
-            chromosomeFactory = new DeadlineAwareFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, withOptimizationTimeout, optimizationUtility, onlyContainerDeploymentTime);
+            chromosomeFactory = new DeadlineAwareFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, withOptimizationTimeout, optimizationUtility, onlyContainerDeploymentTime, allowedPenaltyPoints, slackWebhook);
             maxTimeAfterDeadline = ((DeadlineAwareFactory) chromosomeFactory).getMaxTimeAfterDeadline();
         }
         else {
