@@ -90,7 +90,8 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
                 XORConstruct element2 = (XORConstruct) element;
                 int size = element2.getElements().size();
                 Random random = new Random();
-                int i = random.nextInt(size);
+//                int i = random.nextInt(size);
+                int i = 0;
                 Element subelement1 = element2.getElements().get(i);
                 setAllOthersToNotExecuted(element2.getElements(), subelement1);
                 element.getParent().setNextXOR(subelement1);
@@ -98,7 +99,8 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
             else if (element instanceof LoopConstruct) {
                 ((LoopConstruct) element).setNumberOfIterationsInWorstCase(3);
                 Random random = new Random();
-                int i = random.nextInt(((LoopConstruct) element).getNumberOfIterationsInWorstCase()) + 1;
+//                int i = random.nextInt(((LoopConstruct) element).getNumberOfIterationsInWorstCase()) + 1;
+                int i = ((LoopConstruct) element).getNumberOfIterationsInWorstCase();
                 ((LoopConstruct) element).setNumberOfIterationsToBeExecuted(i);
                 // ((LoopConstruct) element).setIterations(1);
             }  //TODO: CHECK just ignore loops?
