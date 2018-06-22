@@ -81,7 +81,28 @@ public class OptimizationUtility {
     }
 */
 
+    public Container getContainer(ServiceType serviceType, int amount) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
 
+        double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad() + serviceType.getServiceTypeResources().getCpuLoad() * (amount - 1) * 2/3;
+        double ram = serviceType.getServiceTypeResources().getMemory() + serviceType.getServiceTypeResources().getMemory() * (amount - 1) * 2/3;
+
+        ContainerConfiguration bestContainerConfig = new ContainerConfiguration();
+        bestContainerConfig.setId(0L);
+        bestContainerConfig.setName(String.valueOf(cpuLoad) + "_" + String.valueOf(ram));
+        bestContainerConfig.setCores(cpuLoad / 100);
+        bestContainerConfig.setRam(ram);
+        bestContainerConfig.setDisc(100);
+
+        ContainerImage containerImage = containerImageRegistryReader.findContainerImage(serviceType);
+        Container container = new Container();
+        container.setContainerConfiguration(bestContainerConfig);
+        container.setContainerImage(containerImage);
+
+        return container;
+
+    }
+
+/*
     public List<Container> getContainer(ServiceType serviceType, int amount) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
         List<ContainerAndServiceAmount> containerAndServiceAmountList = new ArrayList<>();
 
@@ -129,7 +150,7 @@ public class OptimizationUtility {
 
         return serviceContainerList;
     }
-
+*/
 
     @lombok.Data
     @lombok.AllArgsConstructor
