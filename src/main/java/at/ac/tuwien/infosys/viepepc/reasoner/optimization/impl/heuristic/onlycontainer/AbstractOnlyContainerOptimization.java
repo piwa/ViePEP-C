@@ -71,11 +71,11 @@ public abstract class AbstractOnlyContainerOptimization {
 
                 ProcessStep psHasToDeployContainer = serviceTypeSchedulingUnit.getFirstGene().getProcessStep();
 
-//                Container container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
-//                container.setBareMetal(true);
+                Container container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
+                container.setBareMetal(true);
 
-                List<Container> containers = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
-                containers.forEach(c -> c.setBareMetal(true));
+//                List<Container> containers = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
+//                containers.forEach(c -> c.setBareMetal(true));
 
                 for (Chromosome.Gene processStepGene : serviceTypeSchedulingUnit.getProcessSteps()) {
                     if(!processStepGene.isFixed()) {
@@ -103,7 +103,8 @@ public abstract class AbstractOnlyContainerOptimization {
                             }
 
                             if (realProcessStep.getStartDate() == null && !alreadyDeploying) {
-                                realProcessStep.setScheduledForExecution(true, scheduledStartTime, containers.remove(0));
+//                                realProcessStep.setScheduledForExecution(true, scheduledStartTime, containers.remove(0));
+                                realProcessStep.setScheduledForExecution(true, scheduledStartTime, container);
                                 if(psHasToDeployContainer.getInternId().equals(processStep.getInternId())) {
                                     realProcessStep.setHasToDeployContainer(true);
                                 }

@@ -59,13 +59,14 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
             try {
                 Duration deploymentDuration = serviceTypeSchedulingUnit.getServiceAvailableTime().toDuration();
-                List<Container> containers = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
+//                List<Container> containers = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
+                Container container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
 
-                List<Container> containers2 = containers.stream().distinct().collect(Collectors.toList());
-                for (Container container1 : containers2) {
-                    ContainerConfiguration containerConfiguration = container1.getContainerConfiguration();
+//                List<Container> containers2 = containers.stream().distinct().collect(Collectors.toList());
+//                for (Container container1 : containers2) {
+                    ContainerConfiguration containerConfiguration = container.getContainerConfiguration();
                     leasingCost = leasingCost + (containerConfiguration.getCores() * cpuCost * deploymentDuration.getStandardSeconds()  + containerConfiguration.getRam() / 1000 * ramCost * deploymentDuration.getStandardSeconds()) * leasingCostFactor;
-                }
+//                }
 
 
             } catch (ContainerConfigurationNotFoundException | ContainerImageNotFoundException e) {
