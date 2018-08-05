@@ -14,7 +14,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -55,23 +59,64 @@ public class Receiver {
 
         log.info("Task-Done: " + processStep);
 
-        if(processStep.getScheduledAtContainer() != null) {
-            placementHelper.stopContainer(processStep.getScheduledAtContainer());
+        if (processStep.getScheduledAtContainer() != null) {
+//            synchronized (processStep.getScheduledAtContainer()) {
+            List<ProcessStep> processSteps = new ArrayList<>();
+            placementHelper.getRunningSteps().stream().filter(ele -> ((ProcessStep) ele) != processStep).forEach(element -> processSteps.add((ProcessStep) element));
+            processSteps.addAll(placementHelper.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).collect(Collectors.toList()));
+
+            boolean stillNeeded = false;
+            for (ProcessStep tmp : processSteps) {
+                if (tmp.getScheduledAtContainer() != null && tmp != processStep && tmp.getScheduledAtContainer().getContainerID().equals(processStep.getScheduledAtContainer().getContainerID())) {
+                    stillNeeded = true;
+                    break;
+                }
+            }
+
+            if (!stillNeeded) {
+                placementHelper.stopContainer(processStep.getScheduledAtContainer());
+            }
+//            }
         }
 
         if (processStep.isLastElement()) {
 
-            List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
-            List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
-            if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
-                WorkflowElement workflowById = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
-                try {
-                    workflowById.setFinishedAt(finishedAt);
-                } catch (Exception e) {
+            Random random = new Random();
+            int counter = 0;
+            while (counter < 100) {
+                WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
+
+                if (workflowElement == null || workflowElement.getFinishedAt() != null) {
+                    break;
+                }
+                synchronized (workflowElement) {
+                    List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
+                    List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
+                    if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
+                        try {
+                            workflowElement.setFinishedAt(finishedAt);
+                        } catch (Exception e) {
+                            log.error("Exception while try to finish workflow: " + workflowElement, e);
+                        }
+
+                        cacheWorkflowService.deleteRunningWorkflowInstance(workflowElement);
+                        log.info("Workflow done. Workflow: " + workflowElement);
+                        break;
+                    }
+
+                    log.debug("Waiting for the end of workflow: " + workflowElement.toStringWithoutElements());
+                    TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
+                    counter = counter + 1;
                 }
 
-                cacheWorkflowService.deleteRunningWorkflowInstance(workflowById);
-                log.info("Workflow done. Workflow: " + workflowById);
+                if (counter >= 90) {
+                    workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
+                    if (workflowElement == null) {
+                        log.debug("Had to wait to long for process end; But workflow is now null");
+                    } else {
+                        log.debug("Had to wait to long for process end; Workflow: " + workflowElement.toStringWithoutElements());
+                    }
+                }
             }
         }
         reasoning.setNextOptimizeTimeNow();

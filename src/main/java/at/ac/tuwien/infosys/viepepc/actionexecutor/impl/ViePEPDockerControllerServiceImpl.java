@@ -36,16 +36,17 @@ public class ViePEPDockerControllerServiceImpl {
     private DockerPullHelper dockerPullHelper;
 
     public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
-        /* Connect to docker server of the host */
-        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).build();
-
-        String containerImage = container.getContainerImage().getRepoName() + "/" + container.getContainerImage().getImageName();
 
         boolean result = checkAvailabilityOfDockerhostWithRetry(virtualMachine);
 
         if(result == false) {
-            return null;
+            throw new DockerException("Dockerhost not available " + virtualMachine.toString());
         }
+
+        /* Connect to docker server of the host */
+        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).build();
+
+        String containerImage = container.getContainerImage().getRepoName() + "/" + container.getContainerImage().getImageName();
 
         dockerPullHelper.pullContainer(docker, containerImage);
 //        docker.pull(containerImage);

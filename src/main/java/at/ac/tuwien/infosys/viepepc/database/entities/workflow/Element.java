@@ -96,6 +96,19 @@ public abstract class Element implements Serializable {
                 '}';
     }
 
+    public String toStringWithoutElements() {
+        return "Element{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", deadline=" + deadline +
+                '}';
+    }
+
+
+    public DateTime getDeadlineDateTime() {
+        return new DateTime(deadline);
+    }
+
 //    @Override
 //    public boolean equals(Object o) {
 //        if (this == o) return true;
