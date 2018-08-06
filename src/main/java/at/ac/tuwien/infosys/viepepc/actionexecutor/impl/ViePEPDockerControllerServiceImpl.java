@@ -39,7 +39,7 @@ public class ViePEPDockerControllerServiceImpl {
 
         boolean result = checkAvailabilityOfDockerhostWithRetry(virtualMachine);
 
-        if(result == false) {
+        if (result == false) {
             throw new DockerException("Dockerhost not available " + virtualMachine.toString());
         }
 
@@ -54,7 +54,7 @@ public class ViePEPDockerControllerServiceImpl {
         String internalPort = String.valueOf(container.getContainerImage().getServiceType().getServiceTypeResources().getInternPort());
 
         /* Configure docker container */
-        Double vmCores = (double)virtualMachine.getVmType().getCores();
+        Double vmCores = (double) virtualMachine.getVmType().getCores();
         Double containerCores = container.getContainerConfiguration().getCores();
 
         long containerMemory = (long) container.getContainerConfiguration().getRam() * 1024 * 1024;
@@ -127,8 +127,8 @@ public class ViePEPDockerControllerServiceImpl {
 
     private boolean checkAvailabilityOfDockerhostWithRetry(VirtualMachine virtualMachine) {
 
-        for(int i = 0; i < 30; i++) {
-            if(viePEPCloudService.checkAvailabilityOfDockerhost(virtualMachine)) {
+        for (int i = 0; i < 30; i++) {
+            if (viePEPCloudService.checkAvailabilityOfDockerhost(virtualMachine)) {
                 return true;
             }
             try {
@@ -150,32 +150,33 @@ public class ViePEPDockerControllerServiceImpl {
         try {
             int count = 0;
             int maxTries = 5;
-            while(true) {
+            while (true) {
                 try {
                     docker.killContainer(container.getContainerID());
                     break;
                 } catch (InterruptedException | DockerException e) {
-                    log.warn("Could not kill a docker container - trying again.", e);
+                    log.warn("Could not kill a docker container - trying again. " + container.toString());
                     if (++count == maxTries) throw e;
                 }
-            }        } catch (DockerException | InterruptedException e) {
-            log.error("Could not kill the container", e);
+            }
+        } catch (DockerException | InterruptedException e) {
+            log.error("Could not kill the container " + container.toString());
         }
 
         try {
             int count = 0;
             int maxTries = 5;
-            while(true) {
+            while (true) {
                 try {
                     docker.removeContainer(container.getContainerID());
                     break;
                 } catch (InterruptedException | DockerException e) {
-                    log.warn("Could not remove a docker container - trying again.", e);
+                    log.warn("Could not remove a docker container - trying again. " + container.toString());
                     if (++count == maxTries) throw e;
                 }
             }
         } catch (DockerException | InterruptedException e) {
-            log.error("Could not remove the container", e);
+            log.error("Could not remove the container " + container.toString());
         }
 
         // Free monitoring port previously used by the docker container

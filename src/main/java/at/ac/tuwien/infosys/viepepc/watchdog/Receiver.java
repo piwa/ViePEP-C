@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +34,8 @@ public class Receiver {
     private Reasoning reasoning;
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
+    @Autowired
+    private TaskExecutor workflowDoneTaskExecutor;
 
     @RabbitListener(queues = "${messagebus.queue.name}")
     public void receiveMessage(@Payload Message message) {
@@ -79,46 +82,54 @@ public class Receiver {
 //            }
         }
 
-        if (processStep.isLastElement()) {
+        workflowDoneTaskExecutor.execute(() -> {
+            if (processStep.isLastElement()) {
 
-            Random random = new Random();
-            int counter = 0;
-            while (counter < 100) {
-                WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
+                Random random = new Random();
+                int counter = 0;
+                while (counter < 100) {
+                    WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
 
-                if (workflowElement == null || workflowElement.getFinishedAt() != null) {
-                    break;
-                }
-                synchronized (workflowElement) {
-                    List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
-                    List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
-                    if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
-                        try {
-                            workflowElement.setFinishedAt(finishedAt);
-                        } catch (Exception e) {
-                            log.error("Exception while try to finish workflow: " + workflowElement, e);
-                        }
-
-                        cacheWorkflowService.deleteRunningWorkflowInstance(workflowElement);
-                        log.info("Workflow done. Workflow: " + workflowElement);
+                    if (workflowElement == null || workflowElement.getFinishedAt() != null) {
                         break;
                     }
+                    synchronized (workflowElement) {
+                        List<ProcessStep> runningSteps = placementHelper.getRunningProcessSteps(processStep.getWorkflowName());
+                        List<ProcessStep> nextSteps = placementHelper.getNextSteps(processStep.getWorkflowName());
+                        if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
+                            try {
+                                workflowElement.setFinishedAt(finishedAt);
+                            } catch (Exception e) {
+                                log.error("Exception while try to finish workflow: " + workflowElement, e);
+                            }
 
-                    log.debug("Waiting for the end of workflow: " + workflowElement.toStringWithoutElements());
-                    TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
-                    counter = counter + 1;
-                }
+                            cacheWorkflowService.deleteRunningWorkflowInstance(workflowElement);
+                            log.info("Workflow done. Workflow: " + workflowElement);
+                            break;
+                        }
 
-                if (counter >= 90) {
-                    workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
-                    if (workflowElement == null) {
-                        log.debug("Had to wait to long for process end; But workflow is now null");
-                    } else {
-                        log.debug("Had to wait to long for process end; Workflow: " + workflowElement.toStringWithoutElements());
+                        log.debug("Waiting for the end of workflow: " + workflowElement.toStringWithoutElements());
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(random.nextInt(10000));
+                        } catch (InterruptedException e) {
+                        }
+                        counter = counter + 1;
+                    }
+
+                    if (counter >= 90) {
+                        workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
+                        if (workflowElement == null) {
+                            log.debug("Had to wait to long for process end; But workflow is now null");
+                        } else {
+                            log.debug("Had to wait to long for process end; Workflow: " + workflowElement.toStringWithoutElements());
+                        }
                     }
                 }
             }
-        }
+        });
+
+
+
         reasoning.setNextOptimizeTimeNow();
 
     }

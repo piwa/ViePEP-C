@@ -52,6 +52,17 @@ public class ApplicationContext implements AsyncConfigurer {
         return new CustomAsyncExceptionHandler();
     }
 
+    @Bean(name = "workflowDoneTaskExecutor")
+    public ThreadPoolTaskExecutor taskExecutor() {
+
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(4);
+        executor.setThreadNamePrefix("default_task_executor_thread");
+        executor.initialize();
+        return executor;
+    }
+
 //    @Bean
 //    @Primary
 //    public ThreadPoolTaskExecutor serviceProcessExecuter() {
