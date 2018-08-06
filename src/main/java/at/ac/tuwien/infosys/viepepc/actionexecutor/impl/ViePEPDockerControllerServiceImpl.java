@@ -44,7 +44,7 @@ public class ViePEPDockerControllerServiceImpl {
         }
 
         /* Connect to docker server of the host */
-        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).build();
+        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).connectionPoolSize(20).build();
 
         String containerImage = container.getContainerImage().getRepoName() + "/" + container.getContainerImage().getImageName();
 
@@ -127,12 +127,12 @@ public class ViePEPDockerControllerServiceImpl {
 
     private boolean checkAvailabilityOfDockerhostWithRetry(VirtualMachine virtualMachine) {
 
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 10; i++) {
             if (viePEPCloudService.checkAvailabilityOfDockerhost(virtualMachine)) {
                 return true;
             }
             try {
-                TimeUnit.SECONDS.sleep(2);
+                TimeUnit.SECONDS.sleep(5);
             } catch (InterruptedException e) {
                 log.error("Exception", e);
             }

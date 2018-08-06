@@ -24,7 +24,7 @@ public abstract class AbstractViePEPCloudService {
             try {
                 counter = counter + 1;
                 TimeUnit.SECONDS.sleep(1);
-                final DockerClient docker = DefaultDockerClient.builder().uri(URI.create("http://" + virtualMachine.getIpAddress() + ":2375")).connectTimeoutMillis(100000).build();
+                final DockerClient docker = DefaultDockerClient.builder().uri(URI.create("http://" + virtualMachine.getIpAddress() + ":2375")).connectTimeoutMillis(100000).connectionPoolSize(20).build();
                 docker.ping();
                 connection = true;
             } catch (InterruptedException | DockerException e) {
@@ -37,7 +37,7 @@ public abstract class AbstractViePEPCloudService {
     }
 
     public boolean checkAvailabilityOfDockerhost(VirtualMachine vm) {
-        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + vm.getIpAddress() + ":2375").connectTimeoutMillis(5000).build();
+        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + vm.getIpAddress() + ":2375").connectTimeoutMillis(10000).connectionPoolSize(20).build();
         try {
             return docker.ping().equals("OK");
         } catch (DockerException | InterruptedException e) {
