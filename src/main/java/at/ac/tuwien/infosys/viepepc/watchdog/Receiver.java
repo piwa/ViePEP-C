@@ -55,7 +55,7 @@ public class Receiver {
                 }
             }
             else {
-                log.warn("Service throw an exception: " + message.getBody());
+                log.warn("Service throw an exception: ProcessStep=" + message.getProcessStepName() + ",Exception=" + message.getBody());
                 ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
                 resetContainerAndProcessStep(processStep.getScheduledAtContainer().getVirtualMachine(), processStep, "Service");
             }
