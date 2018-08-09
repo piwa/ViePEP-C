@@ -1,7 +1,11 @@
 package at.ac.tuwien.infosys.viepepc.watchdog;
 
+import at.ac.tuwien.infosys.viepepc.database.entities.Action;
+import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
+import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.reasoner.PlacementHelper;
@@ -36,12 +40,12 @@ public class Receiver {
     private InMemoryCacheImpl inMemoryCache;
     @Autowired
     private TaskExecutor workflowDoneTaskExecutor;
+    @Autowired
+    private ReportDaoService reportDaoService;
 
     @RabbitListener(queues = "${messagebus.queue.name}")
     public void receiveMessage(@Payload Message message) {
         try {
-
-
             log.debug(message.toString());
             if (message.getStatus().equals(ServiceExecutionStatus.DONE)) {
                 ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
@@ -50,39 +54,53 @@ public class Receiver {
                     inMemoryCache.getProcessStepsWaitingForServiceDone().remove(message.getProcessStepName());
                 }
             }
+            else {
+                log.warn("Service throw an exception: " + message.getBody());
+                ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
+                resetContainerAndProcessStep(processStep.getScheduledAtContainer().getVirtualMachine(), processStep, "Service");
+            }
         } catch (Exception ex) {
             log.error("Exception in receive message method", ex);
         }
     }
 
+    private void resetContainerAndProcessStep(VirtualMachine vm, ProcessStep processStep, String reason) {
+        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), vm.getInstanceId(), Action.FAILED, reason);
+        reportDaoService.save(reportContainer);
+
+        inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+        inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
+        processStep.getScheduledAtContainer().shutdownContainer();
+        processStep.reset();
+    }
 
     private void finaliseSuccessfullExecution(ProcessStep processStep) throws Exception {
         DateTime finishedAt = new DateTime();
         processStep.setFinishedAt(finishedAt);
 
         log.info("Task-Done: " + processStep);
-
-        if (processStep.getScheduledAtContainer() != null) {
-//            synchronized (processStep.getScheduledAtContainer()) {
-            List<ProcessStep> processSteps = new ArrayList<>();
-            placementHelper.getRunningSteps().stream().filter(ele -> ((ProcessStep) ele) != processStep).forEach(element -> processSteps.add((ProcessStep) element));
-            processSteps.addAll(placementHelper.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).collect(Collectors.toList()));
-
-            boolean stillNeeded = false;
-            for (ProcessStep tmp : processSteps) {
-                if (tmp.getScheduledAtContainer() != null && tmp != processStep && tmp.getScheduledAtContainer().getContainerID().equals(processStep.getScheduledAtContainer().getContainerID())) {
-                    stillNeeded = true;
-                    break;
-                }
-            }
-
-            if (!stillNeeded) {
-                placementHelper.stopContainer(processStep.getScheduledAtContainer());
-            }
-//            }
-        }
-
         workflowDoneTaskExecutor.execute(() -> {
+            if (processStep.getScheduledAtContainer() != null) {
+//            synchronized (processStep.getScheduledAtContainer()) {
+                List<ProcessStep> processSteps = new ArrayList<>();
+                placementHelper.getRunningSteps().stream().filter(ele -> ((ProcessStep) ele) != processStep).forEach(element -> processSteps.add((ProcessStep) element));
+                processSteps.addAll(placementHelper.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).collect(Collectors.toList()));
+
+                boolean stillNeeded = false;
+                for (ProcessStep tmp : processSteps) {
+                    if (tmp.getScheduledAtContainer() != null && tmp != processStep && tmp.getScheduledAtContainer().getContainerID().equals(processStep.getScheduledAtContainer().getContainerID())) {
+                        stillNeeded = true;
+                        break;
+                    }
+                }
+
+                if (!stillNeeded) {
+                    placementHelper.stopContainer(processStep.getScheduledAtContainer());
+                }
+//            }
+            }
+
+
             if (processStep.isLastElement()) {
 
                 Random random = new Random();
@@ -127,7 +145,6 @@ public class Receiver {
                 }
             }
         });
-
 
 
         reasoning.setNextOptimizeTimeNow();
