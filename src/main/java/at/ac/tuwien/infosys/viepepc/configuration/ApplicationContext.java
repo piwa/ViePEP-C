@@ -56,8 +56,8 @@ public class ApplicationContext implements AsyncConfigurer {
     public ThreadPoolTaskExecutor taskExecutor() {
 
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(4);
-        executor.setMaxPoolSize(4);
+        executor.setCorePoolSize(6);
+        executor.setMaxPoolSize(15);
         executor.setThreadNamePrefix("default_task_executor_thread");
         executor.initialize();
         return executor;
