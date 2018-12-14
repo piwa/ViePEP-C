@@ -1,14 +1,14 @@
 package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPCloudService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ViePEPDockerControllerService;
-import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.exceptions.VmCouldNotBeStartedException;
-import at.ac.tuwien.infosys.viepepc.database.entities.Action;
-import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachineReportingAction;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.cloudcontroller.CloudControllerService;
+import at.ac.tuwien.infosys.viepepc.cloudcontroller.DockerControllerService;
+import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
+import at.ac.tuwien.infosys.viepepc.library.entities.Action;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerReportingAction;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineReportingAction;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokeException;

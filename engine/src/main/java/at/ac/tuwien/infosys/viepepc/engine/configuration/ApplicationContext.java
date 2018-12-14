@@ -22,11 +22,6 @@ import java.util.concurrent.Executor;
 @EnableAsync
 @PropertySources({
         @PropertySource("classpath:application.properties"),
-        @PropertySource("classpath:application-container.properties"),
-        @PropertySource("classpath:application-heuristic.properties"),
-        @PropertySource("classpath:container-config/container.properties"),
-        @PropertySource("classpath:database-config/mysql.properties"),
-        @PropertySource("classpath:cloud-config/viepep4.0.properties"),
         @PropertySource("classpath:messagebus-config/messagebus.properties"),
         @PropertySource("classpath:slack-config/slack.properties"),
         @PropertySource("classpath:simulation.properties")

@@ -1,9 +1,9 @@
 package at.ac.tuwien.infosys.viepepc.engine.manager.rest;
 
 
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElements;
-import at.ac.tuwien.infosys.viepepc.registry.impl.service.ServiceTypeNotFoundException;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElements;
+import at.ac.tuwien.infosys.viepepc.library.registry.impl.service.ServiceTypeNotFoundException;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;

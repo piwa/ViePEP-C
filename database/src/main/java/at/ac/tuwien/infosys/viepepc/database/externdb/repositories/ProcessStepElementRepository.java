@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.repositories;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 

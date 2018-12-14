@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.repositories;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import org.springframework.data.repository.CrudRepository;
 
 /**

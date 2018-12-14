@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.configuration;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
-import at.ac.tuwien.infosys.viepepc.serviceexecutor.OnlyContainerDeploymentController;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.actionexecutor.OnlyContainerDeploymentController;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvoker;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokerImpl;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokerSimulation;

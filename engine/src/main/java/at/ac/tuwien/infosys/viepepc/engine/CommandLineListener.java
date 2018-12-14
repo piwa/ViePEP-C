@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.engine;
 
-import at.ac.tuwien.infosys.viepepc.reasoner.frincu.ReasoningActivator;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import lombok.extern.slf4j.Slf4j;
 import net.gpedro.integrations.slack.SlackApi;
 import net.gpedro.integrations.slack.SlackMessage;
@@ -21,6 +22,10 @@ import java.util.concurrent.Future;
 @Profile("!test")
 public class CommandLineListener implements CommandLineRunner {
 
+    @Autowired
+    private CacheVirtualMachineService cacheVirtualMachineService;
+    @Autowired
+    private CacheContainerService cacheDockerService;
     @Autowired
     private ReasoningActivator reasoningActivator;
 
@@ -51,7 +56,8 @@ public class CommandLineListener implements CommandLineRunner {
 //                viePEPAwsClientService.initialize();
             }
 
-            reasoningActivator.initialize();
+            cacheDockerService.initializeDockerContainers();
+            cacheVirtualMachineService.initializeVMs();
 
             if(autostart) {
                 startReasoning();

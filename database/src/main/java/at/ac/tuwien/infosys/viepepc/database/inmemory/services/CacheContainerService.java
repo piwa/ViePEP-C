@@ -1,10 +1,10 @@
 package at.ac.tuwien.infosys.viepepc.database.inmemory.services;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
-import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerConfiguration;
+import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
-import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
-import at.ac.tuwien.infosys.viepepc.registry.impl.container.ContainerConfigurationNotFoundException;
+import at.ac.tuwien.infosys.viepepc.library.registry.ServiceRegistryReader;
+import at.ac.tuwien.infosys.viepepc.library.registry.impl.container.ContainerConfigurationNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

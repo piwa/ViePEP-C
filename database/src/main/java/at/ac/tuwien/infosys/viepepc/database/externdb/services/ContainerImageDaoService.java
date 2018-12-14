@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.services;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.ContainerImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.services;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.ElementRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

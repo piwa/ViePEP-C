@@ -1,8 +1,8 @@
-package at.ac.tuwien.infosys.viepepc.bootstrap;
+package at.ac.tuwien.infosys.viepepc.engine.bootstrap;
 
-import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.AzureContainerServiceImpl;
-import at.ac.tuwien.infosys.viepepc.bootstrap.containers.ContainerConfigurationsReader;
-import at.ac.tuwien.infosys.viepepc.bootstrap.vmTypes.VmTypesReaderImpl;
+import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.AzureContainerServiceImpl;
+import at.ac.tuwien.infosys.viepepc.engine.bootstrap.containers.ContainerConfigurationsReader;
+import at.ac.tuwien.infosys.viepepc.engine.bootstrap.vmTypes.VmTypesReaderImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;

@@ -1,6 +1,6 @@
-package at.ac.tuwien.infosys.viepepc.bootstrap.vmTypes;
+package at.ac.tuwien.infosys.viepepc.engine.bootstrap.vmTypes;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

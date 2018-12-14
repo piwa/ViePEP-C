@@ -25,12 +25,12 @@
 
 	<modules>
         <module>engine</module>
-        <module>registry</module>
         <module>library</module>
         <module>cloud-controller</module>
         <module>service-executor</module>
+        <module>action-executor</module>
         <module>database</module>        
-        <module>reasoner/frincu</module>
+        <module>scheduler</module>
     </modules>
 
     <dependencies>

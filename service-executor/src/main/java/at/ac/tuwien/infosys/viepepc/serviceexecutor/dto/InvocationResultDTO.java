@@ -1,9 +1,5 @@
 package at.ac.tuwien.infosys.viepepc.serviceexecutor.dto;
 
-/**
- * User: Philipp Hoenisch
- * Date: 2/10/14
- */
 
 import lombok.Getter;
 import lombok.Setter;

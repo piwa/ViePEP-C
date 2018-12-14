@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.repositories;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachineReportingAction;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineReportingAction;
 import org.springframework.data.repository.CrudRepository;
 
 /**

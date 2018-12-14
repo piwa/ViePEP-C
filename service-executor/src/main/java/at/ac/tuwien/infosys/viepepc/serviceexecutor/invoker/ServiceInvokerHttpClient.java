@@ -2,13 +2,6 @@ package at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker;
 
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.HttpHostConnectException;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
@@ -16,17 +9,16 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.client.AsyncRestTemplate;
-import org.springframework.web.client.RestTemplate;
 
 @Component
 @Scope("prototype")
 @Slf4j
 public class ServiceInvokerHttpClient {
 
-    @Retryable(value = Exception.class, maxAttempts = 30, backoff=@Backoff(delay=1000, maxDelay=5000))
+    @Retryable(value = Exception.class, maxAttempts = 30, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public HttpStatus retryHttpGet(String url, Stopwatch stopWatch) throws Exception {
 
-        if(stopWatch.isRunning()) {
+        if (stopWatch.isRunning()) {
             stopWatch.reset();
         }
         log.debug("Send " + url);
@@ -42,7 +34,7 @@ public class ServiceInvokerHttpClient {
 
         stopWatch.stop();
 
-        if(!responseEntity.getStatusCode().is2xxSuccessful()) {
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new Exception("Exception while sending GET: " + url + "; Status Code: " + responseEntity.getStatusCodeValue());
         }
 

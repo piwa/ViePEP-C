@@ -1,8 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.services;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.ProcessStepElementRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

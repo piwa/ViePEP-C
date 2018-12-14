@@ -1,11 +1,11 @@
 package at.ac.tuwien.infosys.viepepc.engine.manager.rest.impl;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.*;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.engine.manager.rest.WorkflowRestService;
-import at.ac.tuwien.infosys.viepepc.reasoner.frincu.Reasoning;
-import at.ac.tuwien.infosys.viepepc.registry.ServiceRegistryReader;
-import at.ac.tuwien.infosys.viepepc.registry.impl.service.ServiceTypeNotFoundException;
+import at.ac.tuwien.infosys.viepepc.library.registry.ServiceRegistryReader;
+import at.ac.tuwien.infosys.viepepc.library.registry.impl.service.ServiceTypeNotFoundException;
+import at.ac.tuwien.infosys.viepepc.scheduler.Reasoning;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,11 +1,11 @@
 package at.ac.tuwien.infosys.viepepc.database.inmemory.database;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerConfiguration;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 

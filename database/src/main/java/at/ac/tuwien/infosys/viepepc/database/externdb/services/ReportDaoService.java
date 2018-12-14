@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.services;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerReportingAction;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachineReportingAction;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerReportingAction;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineReportingAction;
 import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.ContainerReportRepository;
 import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.VirtualMachineReportRepository;
 import lombok.extern.slf4j.Slf4j;

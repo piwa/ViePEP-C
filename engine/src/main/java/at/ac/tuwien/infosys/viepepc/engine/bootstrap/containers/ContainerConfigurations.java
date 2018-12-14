@@ -1,6 +1,6 @@
-package at.ac.tuwien.infosys.viepepc.bootstrap.containers;
+package at.ac.tuwien.infosys.viepepc.engine.bootstrap.containers;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerConfiguration;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database.inmemory.services;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VMType;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

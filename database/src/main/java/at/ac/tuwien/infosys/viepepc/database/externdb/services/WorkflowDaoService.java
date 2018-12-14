@@ -1,13 +1,13 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.services;
 
-import at.ac.tuwien.infosys.viepepc.database.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerConfiguration;
-import at.ac.tuwien.infosys.viepepc.database.entities.container.ContainerImage;
-import at.ac.tuwien.infosys.viepepc.database.entities.services.ServiceType;
-import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.Element;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
-import at.ac.tuwien.infosys.viepepc.database.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerConfiguration;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerImage;
+import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.WorkflowElementRepository;
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
 import lombok.extern.slf4j.Slf4j;
