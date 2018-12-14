@@ -1,0 +1,21 @@
+package at.ac.tuwien.infosys.viepepc.reasoner.frincu.impl.configurations.heuristic;
+
+import at.ac.tuwien.infosys.viepepc.reasoner.frincu.optimization.ProcessInstancePlacementProblem;
+import at.ac.tuwien.infosys.viepepc.reasoner.frincu.optimization.impl.heuristic.onlycontainer.OnlyContainerImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+
+@Slf4j
+@Configuration
+@Profile("OnlyContainerGeneticAlgorithm")
+public class OnlyContainerGeneticAlgorithmConfiguration {
+	
+	@Bean
+	public ProcessInstancePlacementProblem initializeParameters() {
+		log.info("Profile OnlyContainerGeneticAlgorithm");
+		return new OnlyContainerImpl();
+	}
+
+}
