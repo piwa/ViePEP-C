@@ -20,6 +20,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -96,6 +97,7 @@ public class Watchdog {
 
                         inMemoryCache.getWaitingForExecutingProcessSteps().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
 
+                        processSteps.forEach(processStep -> log.warn("reset process step: " + processStep.toString()));
                         processSteps.forEach(processStep -> resetContainerAndProcessStep(vm, processStep, "VM"));
                         resetVM(vm, "VM");
 
@@ -109,10 +111,11 @@ public class Watchdog {
 
                 for (ProcessStep processStep : processSteps) {
                     if (processStep.getStartDate() != null && processStep.getServiceType() != null && processStep.getScheduledAtContainer() != null && processStep.getScheduledAtContainer().getVirtualMachine() != null) {
-                        long maxDuration = processStep.getServiceType().getServiceTypeResources().getMakeSpan() * 2;
+                        long maxDuration = processStep.getServiceType().getServiceTypeResources().getMakeSpan() * 5;
                         if (processStep.getStartDate().plus(maxDuration).isBeforeNow()) {
+                            log.warn("Reset process step due to unexpected long execution: " + processStep.toString());
                             resetContainerAndProcessStep(processStep.getScheduledAtContainer().getVirtualMachine(), processStep, "Service");
-                            resetVM(processStep.getScheduledAtContainer().getVirtualMachine(), "Service");
+//                            resetVM(processStep.getScheduledAtContainer().getVirtualMachine(), "Service");
                         }
                     }
                 }

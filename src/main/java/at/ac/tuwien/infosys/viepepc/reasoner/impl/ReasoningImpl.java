@@ -1,6 +1,5 @@
 package at.ac.tuwien.infosys.viepepc.reasoner.impl;
 
-import at.ac.tuwien.infosys.viepepc.actionexecutor.ActionExecutorUtilities;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.impl.Watchdog;
 import at.ac.tuwien.infosys.viepepc.database.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.entities.workflow.ProcessStep;
@@ -53,10 +52,6 @@ public class ReasoningImpl implements Reasoning {
     private WorkflowDaoService workflowDaoService;
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
-    @Autowired
-    private ActionExecutorUtilities actionExecutorUtilities;
-    @Autowired
-    private PrintRunningInfoOnlyContainer printRunningInfoOnlyContainer;
 
     @Value("${reasoner.autoTerminate.wait.time}")
     private int autoTerminateWait;
@@ -66,17 +61,13 @@ public class ReasoningImpl implements Reasoning {
     private boolean run = true;
 
     private AtomicLong lastTerminateCheckTime = new AtomicLong(0);
-    private AtomicLong lastPrintStatusTime = new AtomicLong(0);
     private AtomicLong nextOptimizeTime = new AtomicLong(0);
 
     private static final long POLL_INTERVAL_MILLISECONDS = 1000;
-    private static final long TERMINATE_CHECK_INTERVAL_MILLISECONDS = 30000;
-    private static final long PRINT_STATUS_INTERVAL_MILLISECONDS = 120000;
+    private static final long TERMINATE_CHECK_INTERVAL_MILLISECONDS = 10000;
 
     @Value("${min.optimization.interval.ms}")
     private int minTauTDifference;
-    private boolean printRunningInformation = false;
-
 	private static final long RETRY_TIMEOUT_MILLIS = 10 * 1000;
 
 
@@ -97,10 +88,9 @@ public class ReasoningImpl implements Reasoning {
                 		lastTerminateCheckTime.set(now);
 
                 		List<WorkflowElement> workflows = cacheWorkflowService.getRunningWorkflowInstances();
-
-                		StringBuilder builder = new StringBuilder();
-                		workflows.forEach(workflow -> builder.append(workflow.getName()).append(","));
-                		log.info("Running workflow instances (" + workflows.size() + " running): "+ builder.toString());// WAS EMPTY? : " + workflows.isEmpty());
+                        StringBuilder builder = new StringBuilder();
+                        workflows.forEach(workflow -> builder.append(workflow.getName()).append(","));
+                        log.info("Running workflow instances (" + workflows.size() + " running): "+ builder.toString());
 
                         if(workflows.isEmpty()) {
                             if(emptyTime == null) {
@@ -118,16 +108,9 @@ public class ReasoningImpl implements Reasoning {
                         }
                 	}
 
-                    if (now - lastPrintStatusTime.get() > PRINT_STATUS_INTERVAL_MILLISECONDS) {
-                        lastPrintStatusTime.set(now);
-                        if(printRunningInformation) {
-                            printRunningInfoOnlyContainer.printRunningInformation();
-                        }
-                    }
-
                 	if (now >= nextOptimizeTime.get()) {
                 		 long difference = performOptimisation();
-                		 nextOptimizeTime.set(DateTime.now().getMillis() + difference);
+                		 nextOptimizeTime.set(now + difference);
                 	}
                    
                 	Thread.sleep(POLL_INTERVAL_MILLISECONDS);
@@ -205,10 +188,7 @@ public class ReasoningImpl implements Reasoning {
 
         log.info("---------------- tau_t_0 : " + tau_t_0 + " -----------------");
         log.info("-------------- tau_t_0.time : " + tau_t_0.toString() + " --------------");
-//        Future<OptimizationResult> asyncOptimize = resourcePredictionService.asyncOptimize(tau_t_0);
-//        OptimizationResult optimize = asyncOptimize.get();
         OptimizationResult optimize = resourcePredictionService.optimize(tau_t_0);
-
 
         if (optimize == null) {
             throw new ProblemNotSolvedException("Could not solve the Problem");
@@ -219,8 +199,8 @@ public class ReasoningImpl implements Reasoning {
 //        long tau_t_1 = optimize.get("tau_t_1").longValue() * 1000;//VERY IMPORTANT,
         log.info("tau_t_1 was calculted as: "+ new DateTime(tau_t_1) );
         
-        Boolean processed = processOptimizationResults.processResults(optimize, tau_t_0);
-//        processed.get();
+        Future<Boolean> processed = processOptimizationResults.processResults(optimize, tau_t_0);
+        processed.get();
         
         long difference = tau_t_1 - new DateTime().getMillis();
         if (difference < 0 || difference > 60*60*1000) {
@@ -246,10 +226,10 @@ public class ReasoningImpl implements Reasoning {
                             vm.setToBeTerminatedAt(new DateTime(vm.getToBeTerminatedAt().getMillis() + vm.getVmType().getLeasingDuration()));
                         } else {
                             if (containerWaitingForVm) {
-                                log.error("VM will be terminated but container waiting for starting");
+                                log.info("VM will be terminated but container waiting for starting");
                             }
                             log.info("terminateVms method terminate vm: " + vm);
-                            actionExecutorUtilities.terminateVM(vm);
+                            placementHelper.terminateVM(vm);
                         }
                     } catch (NullPointerException ex) {
                         log.error("Exception", ex);
