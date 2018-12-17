@@ -4,8 +4,8 @@ import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerConfigur
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.OptimizationResult;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.exceptions.NoVmFoundException;
+import at.ac.tuwien.infosys.viepepc.scheduler.main.impl.OptimizationResult;
+import at.ac.tuwien.infosys.viepepc.scheduler.main.impl.exceptions.NoVmFoundException;
 
 import java.util.List;
 import java.util.Set;

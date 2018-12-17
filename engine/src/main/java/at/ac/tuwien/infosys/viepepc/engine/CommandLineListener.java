@@ -51,7 +51,7 @@ public class CommandLineListener implements CommandLineRunner {
 
             started = true;
 
-            if(!simulate) {
+            if (!simulate) {
 //                viePEPOpenstackClientService.initialize();
 //                viePEPAwsClientService.initialize();
             }
@@ -59,10 +59,9 @@ public class CommandLineListener implements CommandLineRunner {
             cacheDockerService.initializeDockerContainers();
             cacheVirtualMachineService.initializeVMs();
 
-            if(autostart) {
+            if (autostart) {
                 startReasoning();
-            }
-            else {
+            } else {
                 while (running) {
                     log.info("----------- Enter 'start' to begin or 'stop' to end -------------");
                     input = scanner.nextLine();
@@ -101,14 +100,13 @@ public class CommandLineListener implements CommandLineRunner {
     private void startReasoning() {
         try {
 
-            if(autostart) {
+            if (autostart) {
                 Future<Boolean> reasoningDone = reasoningActivator.start();
                 reasoningDone.get();                 // waits for result
 //                while(!reasoningDone.isDone()) {
 //                    Thread.sleep(10000);
 //                }
-            }
-            else {
+            } else {
                 reasoningActivator.start();
             }
 

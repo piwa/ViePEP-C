@@ -78,7 +78,7 @@ public class ActionExecutor {
     }
 
     @Scheduled(initialDelay = 1000, fixedDelay = 3000)        // fixedRate
-    private void scheduledProcessStarter() {
+    public void scheduledProcessStarter() {
 
         synchronized (processStepsToBeStarted) {
 

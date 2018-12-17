@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.engine;
 
-import at.ac.tuwien.infosys.viepepc.scheduler.Reasoning;
+import at.ac.tuwien.infosys.viepepc.scheduler.core.Reasoning;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

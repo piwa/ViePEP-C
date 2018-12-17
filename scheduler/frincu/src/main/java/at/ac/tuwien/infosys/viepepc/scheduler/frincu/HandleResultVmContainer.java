@@ -5,9 +5,9 @@ import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.HandleOptimizationResult;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.OptimizationResult;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.PrintRunningInfoVmContainer;
+import at.ac.tuwien.infosys.viepepc.scheduler.main.impl.HandleOptimizationResult;
+import at.ac.tuwien.infosys.viepepc.scheduler.main.impl.OptimizationResult;
+import at.ac.tuwien.infosys.viepepc.scheduler.main.impl.PrintRunningInfoVmContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;

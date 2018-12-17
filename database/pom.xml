@@ -16,6 +16,10 @@
     <description>ViePEP-C Database Connection</description>
     <packaging>jar</packaging>
 
+    <properties>
+        <joda.time.persist.version>6.0.1.GA</joda.time.persist.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -40,6 +44,18 @@
             <groupId>at.ac.tuwien.infosys.viepep-c</groupId>
             <artifactId>library</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <!-- 3rd party -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jadira.usertype</groupId>
+            <artifactId>usertype.core</artifactId>
+            <version>${joda.time.persist.version}</version>
         </dependency>
 
     </dependencies>

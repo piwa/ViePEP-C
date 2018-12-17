@@ -1,8 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.database.inmemory.services;
 
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,41 +14,31 @@ import java.util.stream.Collectors;
 /**
  * Created by philippwaibel on 10/06/16. modified by Gerta Sheganaku
  */
-@Component
 @Slf4j
+@Component
 public class CacheVirtualMachineService {
+
+    @Value("${default.vm.location}")
+    private String defaultVMLocation;
+    @Value("${default.vm.cores}")
+    private int defaultVMCores;
+    @Value("${vm.amount.per.type}")
+    private int vmAmountPerType = 10;
 
     @Autowired
     private InMemoryCacheImpl inMemoryCache;
 
-    @Value("${optimization.values.k}")
-    private int kConfig = -1;
-
-
-    @Value("${default.vm.cores}")
-    private int defaultVMCores;
-    @Value("${default.vm.location}")
-    private String defaultVMLocation;
-
     public void initializeVMs() {
-        int V = getVMTypes().size();
-        int K = 0;
-        if(kConfig == -1) {
-            K = getVMTypes().size();
-        }
-        else {
-            K = kConfig;
-        }
         try {
-            for (int v = 1; v <= V; v++) {
+            for (int v = 1; v <= getVMTypes().size(); v++) {
                 VMType vmType = getVmTypeFromIdentifier(v);
 
-                for (int k = 1; k <= K; k++) {
+                for (int k = 1; k <= vmAmountPerType; k++) {
                     inMemoryCache.addVirtualMachine(new VirtualMachine(v + "_" + k, vmType));
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Exception", e);
         }
     }
 
@@ -99,8 +89,8 @@ public class CacheVirtualMachineService {
     }
 
     public VMType getVmTypeFromIdentifier(int identifier) throws Exception {
-        for(VMType vmType : getVMTypes()) {
-            if(vmType.getIdentifier() == identifier) {
+        for (VMType vmType : getVMTypes()) {
+            if (vmType.getIdentifier() == identifier) {
                 return vmType;
             }
         }
@@ -108,8 +98,8 @@ public class CacheVirtualMachineService {
     }
 
     public VMType getVmTypeFromCore(int cores, String location) throws Exception {
-        for(VMType vmType : getVMTypes()) {
-            if(vmType.getCores() == cores && vmType.getLocation().equals(location)) {
+        for (VMType vmType : getVMTypes()) {
+            if (vmType.getCores() == cores && vmType.getLocation().equals(location)) {
                 return vmType;
             }
         }

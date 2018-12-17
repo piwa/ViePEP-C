@@ -13,12 +13,9 @@
     <artifactId>frincu</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>frincu</name>
-    <description>ViePEP-C Frincu Schedulers</description>
+    <description>ViePEP-C scheduler frincu</description>
     <packaging>jar</packaging>
 
-    <properties>
-        <java.version>1.8</java.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -30,13 +27,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <!-- ViePEP-C -->
-        <dependency>
-            <groupId>at.ac.tuwien.infosys.viepep-c</groupId>
-            <artifactId>scheduler</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

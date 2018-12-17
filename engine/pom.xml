@@ -15,19 +15,6 @@
     <description>ViePEP-C engine</description>
     <packaging>jar</packaging>
 
-    <properties>
-        <skipTests>true</skipTests>
-
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
-        <joda.time.persist.version>5.0.0.GA</joda.time.persist.version>
-        <google.cloud.api>1.22.0</google.cloud.api>
-        <project.http.version>1.22.0</project.http.version>
-        <project.oauth.version>1.22.0</project.oauth.version>
-        <google.cloud.service.compute>v1-rev155-1.22.0</google.cloud.service.compute>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -37,6 +24,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit</artifactId>
+        </dependency>
+
 
         <!-- ViePEP-C -->
         <dependency>
@@ -50,8 +42,8 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>at.ac.tuwien.infosys.viepep-c</groupId>
-            <artifactId>scheduler</artifactId>
+            <groupId>at.ac.tuwien.infosys.viepep-c.scheduler</groupId>
+            <artifactId>core</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -61,22 +53,11 @@
         </dependency>
 
 
-        <!-- RabbitMQ -->
-        <dependency>
-            <groupId>org.springframework.amqp</groupId>
-            <artifactId>spring-rabbit</artifactId>
-        </dependency>
-
         <!-- 3d Party -->
         <dependency>
             <groupId>com.github.maricn</groupId>
             <artifactId>logback-slack-appender</artifactId>
             <version>1.4.0</version>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -87,12 +68,6 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${apache.commons.io.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jadira.usertype</groupId>
-            <artifactId>usertype.core</artifactId>
-            <version>${joda.time.persist.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -111,6 +86,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>at.ac.tuwien.infosys.viepepc.engine.EngineApplication</mainClass>
+                </configuration>
             </plugin>
         </plugins>
     </build>

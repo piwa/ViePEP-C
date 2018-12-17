@@ -9,6 +9,6 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Slf4j
 @Configuration
-@PropertySource(value = "classpath:application.properties")
+@PropertySource(value = "classpath:application_library.properties")
 public class ServiceRegistryConfiguration {
 }

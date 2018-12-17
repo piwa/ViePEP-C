@@ -1,11 +1,11 @@
 package at.ac.tuwien.infosys.viepepc.engine.manager.rest.impl;
 
-import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.engine.manager.rest.WorkflowRestService;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.library.registry.ServiceRegistryReader;
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.service.ServiceTypeNotFoundException;
-import at.ac.tuwien.infosys.viepepc.scheduler.Reasoning;
+import at.ac.tuwien.infosys.viepepc.scheduler.core.Reasoning;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,8 +94,7 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
                 Element subelement1 = element2.getElements().get(i);
                 setAllOthersToNotExecuted(element2.getElements(), subelement1);
                 element.getParent().setNextXOR(subelement1);
-            }
-            else if (element instanceof LoopConstruct) {
+            } else if (element instanceof LoopConstruct) {
                 ((LoopConstruct) element).setNumberOfIterationsInWorstCase(3);
                 Random random = new Random();
 //                int i = random.nextInt(((LoopConstruct) element).getNumberOfIterationsInWorstCase()) + 1;
@@ -105,7 +104,7 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
             }  //TODO: CHECK just ignore loops?
             else if (element instanceof ProcessStep) {
                 ProcessStep processStep = (ProcessStep) element;
-                if(processStep.getServiceType().getServiceTypeResources() == null) {
+                if (processStep.getServiceType().getServiceTypeResources() == null) {
                     processStep.setServiceType(serviceRegistryReader.findServiceType(processStep.getServiceType().getName()));
                 }
             }
@@ -121,8 +120,7 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
             if (!element.getName().equals(ignore.getName())) {
                 if (element instanceof ProcessStep) {
                     ((ProcessStep) element).setHasToBeExecuted(false);
-                }
-                else {
+                } else {
                     setAllOthersToNotExecuted(element.getElements(), ignore);
                 }
             }

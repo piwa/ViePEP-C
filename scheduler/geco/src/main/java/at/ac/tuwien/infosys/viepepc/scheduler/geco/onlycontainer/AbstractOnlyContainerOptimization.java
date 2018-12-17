@@ -8,7 +8,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.container.ContainerImageNotFoundException;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco.OptimizationUtility;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.OptimizationResult;
+import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;

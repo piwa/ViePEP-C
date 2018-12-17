@@ -11,10 +11,10 @@ import at.ac.tuwien.infosys.viepepc.library.registry.ContainerImageRegistryReade
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.container.ContainerConfigurationNotFoundException;
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.container.ContainerImageNotFoundException;
 import at.ac.tuwien.infosys.viepepc.scheduler.frincu.AbstractContainerProvisioningImpl;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.OptimizationResult;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.SchedulerAlgorithm;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.exceptions.NoVmFoundException;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.exceptions.ProblemNotSolvedException;
+import at.ac.tuwien.infosys.viepepc.scheduler.main.impl.OptimizationResult;
+import at.ac.tuwien.infosys.viepepc.scheduler.main.impl.SchedulerAlgorithm;
+import at.ac.tuwien.infosys.viepepc.scheduler.main.impl.exceptions.NoVmFoundException;
+import at.ac.tuwien.infosys.viepepc.scheduler.main.impl.exceptions.ProblemNotSolvedException;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;

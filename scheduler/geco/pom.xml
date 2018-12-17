@@ -13,12 +13,8 @@
     <artifactId>geco</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>geco</name>
-    <description>ViePEP-C GECO Optimization</description>
+    <description>ViePEP-C GeCo</description>
     <packaging>jar</packaging>
-
-    <properties>
-        <java.version>1.8</java.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -33,8 +29,8 @@
 
         <!-- ViePEP-C -->
         <dependency>
-            <groupId>at.ac.tuwien.infosys.viepep-c</groupId>
-            <artifactId>scheduler</artifactId>
+            <groupId>at.ac.tuwien.infosys.viepep-c.scheduler</groupId>
+            <artifactId>scheduler_library</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
@@ -44,9 +40,6 @@
             <artifactId>watchmaker-framework</artifactId>
             <version>0.7.1</version>
         </dependency>
-
-
-        <!-- 3d Party -->
         <dependency>
             <groupId>com.github.maricn</groupId>
             <artifactId>logback-slack-appender</artifactId>
@@ -57,11 +50,8 @@
             <artifactId>slack-webhook</artifactId>
             <version>1.3.0</version>
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${apache.commons.io.version}</version>
-        </dependency>
+
+
     </dependencies>
-    
+
 </project>

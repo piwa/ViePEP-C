@@ -4,9 +4,9 @@ import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco.onlycontainer.factory.DeadlineAwareFactory;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco.onlycontainer.factory.SimpleFactory;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco.onlycontainer.operations.*;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.OptimizationResult;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.SchedulerAlgorithm;
-import at.ac.tuwien.infosys.viepepc.scheduler.impl.exceptions.ProblemNotSolvedException;
+import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
+import at.ac.tuwien.infosys.viepepc.scheduler.library.ProblemNotSolvedException;
+import at.ac.tuwien.infosys.viepepc.scheduler.library.SchedulerAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,12 +48,12 @@ public class OnlyContainerImpl extends AbstractOnlyContainerOptimization impleme
     private boolean singleShiftWithMovingMutation = false;
     @Value("${use.single.shift.if.possible.mutation}")
     private boolean singleShiftIfPossibleMutation = false;
-    @Value("${use.with.frincu.timeout}")
+    @Value("${use.with.optimization.timeout}")
     private boolean withOptimizationTimeout = true;
 
-    @Value("${max.frincu.duration}")
+    @Value("${max.optimization.duration}")
     private long maxOptimizationDuration = 60000;
-    @Value("${additional.frincu.time}")
+    @Value("${additional.optimization.time}")
     private long additionalOptimizationTime = 5000;
 
     @Value("${population.size}")

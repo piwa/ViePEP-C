@@ -13,20 +13,13 @@
     <artifactId>scheduler</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>scheduler</name>
-    <description>ViePEP-C Reasoner</description>
-    <packaging>jar</packaging>
-
+    <description>ViePEP-C Scheduler</description>
+    <packaging>pom</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- ViePEP-C -->
@@ -54,9 +47,27 @@
     </dependencies>
 
 
-    <modules>
-        <!-- <module>frincu</module> -->
-        <module>geco</module>
-    </modules>
+    <profiles>
+        <profile>
+            <id>frincu</id>
+            <modules>
+                <module>core</module>
+                <module>scheduler_library</module>
+                <module>frincu</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>geco</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>core</module>
+                <module>scheduler_library</module>
+                <module>geco</module>
+            </modules>
+        </profile>
+    </profiles>
+
 
 </project>
