@@ -72,7 +72,7 @@ public class ReasoningImpl implements Reasoning {
 
     @Value("${min.optimization.interval.ms}")
     private int minTauTDifference;
-    private boolean printRunningInformation = false;
+    private boolean printRunningInformation = true;
 
     private static final long RETRY_TIMEOUT_MILLIS = 10 * 1000;
 

@@ -1,10 +1,10 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-    <springProperty scope="context" name="slackWebHook" source="slack.webhook" defaultValue=""/>
+    <property resource="slack-config/slack.properties" />
 
     <appender name="SLACK" class="com.github.maricn.logback.SlackAppender">
-        <webhookUri>${slackWebHook}</webhookUri>
+        <webhookUri>${slack.webhook}</webhookUri>
     </appender>
 
     <appender name="ASYNC_SLACK" class="ch.qos.logback.classic.AsyncAppender">
@@ -14,13 +14,18 @@
         </filter>
     </appender>
 
-    <root level="INFO">
+
+    <root>
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
+        <appender-ref ref="ASYNC_SLACK" />
     </root>
 
-    <logger name="at.ac.tuwien.infosys.viepepc" level="ERROR" additivity="true">
+    <logger name="at.ac.tuwien.infosys.viepepc" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
         <appender-ref ref="ASYNC_SLACK" />
     </logger>
+
 
 </configuration>

@@ -108,7 +108,7 @@ public class OnlyContainerImpl extends AbstractOnlyContainerOptimization impleme
         }
 
         StopWatch stopwatch = new StopWatch();
-        stopwatch.start("pre frincu tasks");
+        stopwatch.start("pre optimization tasks");
 
 
         if (withOptimizationTimeout) {
@@ -153,10 +153,10 @@ public class OnlyContainerImpl extends AbstractOnlyContainerOptimization impleme
         EvolutionEngine<Chromosome> engine = new GenerationalEvolutionEngine<>(chromosomeFactory, pipeline, fitnessFunction, selectionStrategy, rng);
 
         stopwatch.stop();
-        log.info("frincu preparation time=" + stopwatch.getTotalTimeMillis());
+        log.debug("optimization preparation time=" + stopwatch.getTotalTimeMillis());
 
         stopwatch = new StopWatch();
-        stopwatch.start("frincu time");
+        stopwatch.start("optimization time");
         Chromosome winner = null;
         if (withOptimizationTimeout) {
             winner = engine.evolve(populationSize, eliteCount, new ElapsedTime(maxOptimizationDuration));
@@ -164,13 +164,13 @@ public class OnlyContainerImpl extends AbstractOnlyContainerOptimization impleme
             winner = engine.evolve(populationSize, eliteCount, new Stagnation(stagnationGenerationLimit, false));
         }
         stopwatch.stop();
-        log.info("frincu time=" + stopwatch.getTotalTimeMillis());
+        log.debug("optimization time=" + stopwatch.getTotalTimeMillis());
 
         stopwatch = new StopWatch();
         stopwatch.start();
         OptimizationResult optimizationResult = createOptimizationResult(winner, workflowElements);
         stopwatch.stop();
-        log.info("frincu post time=" + stopwatch.getTotalTimeMillis());
+        log.debug("optimization post time=" + stopwatch.getTotalTimeMillis());
         return optimizationResult;
 
     }

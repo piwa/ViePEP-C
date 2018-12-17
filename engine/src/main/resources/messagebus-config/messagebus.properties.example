@@ -1,3 +1,8 @@
+spring.rabbitmq.listener.max-concurrency=20
+spring.rabbitmq.listener.concurrency=10
+spring.rabbitmq.listener.simple.prefetch=100
+spring.rabbitmq.listener.simple.transaction-size=100
+
 messagebus.queue.name=
 
 spring.rabbitmq.host=
