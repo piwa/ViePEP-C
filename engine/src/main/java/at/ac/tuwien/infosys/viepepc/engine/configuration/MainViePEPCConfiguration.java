@@ -21,7 +21,7 @@ import java.util.concurrent.Executor;
 @EnableScheduling
 @EnableAsync
 @PropertySources({
-        @PropertySource("classpath:application_engine.properties"),
+        @PropertySource("classpath:application.properties"),
         @PropertySource("classpath:messagebus-config/messagebus.properties"),
         @PropertySource("classpath:slack-config/slack.properties"),
         @PropertySource("classpath:simulation.properties")

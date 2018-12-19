@@ -13,8 +13,7 @@
             <level>ERROR</level>
         </filter>
     </appender>
-
-
+    
     <root>
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
@@ -26,6 +25,5 @@
         <appender-ref ref="FILE" />
         <appender-ref ref="ASYNC_SLACK" />
     </logger>
-
 
 </configuration>

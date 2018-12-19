@@ -40,7 +40,7 @@ public class CommandLineListener implements CommandLineRunner {
     private boolean autostart;
 
     public void run(String... args) {
-        log.info("Starting ViePEP 4.0...");
+        log.info("Starting ViePEP-C...");
 
         try {
             Scanner scanner = new Scanner(System.in);
