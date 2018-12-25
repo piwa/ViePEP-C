@@ -108,21 +108,5 @@ public abstract class Element implements Serializable {
         return new DateTime(deadline);
     }
 
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (!(o instanceof ProcessStep)) return false;
-//
-//        ProcessStep that = (ProcessStep) o;
-//
-//        boolean nameEquals = this.name.equals(that.name);
-//        return (nameEquals);
-//    }
-
-//    @Override
-//    public int hashCode() {
-//        return name.hashCode();
-//    }
-
 
 }

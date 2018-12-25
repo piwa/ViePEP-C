@@ -58,11 +58,11 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
             boolean isDone = processStep.getStartDate() != null && processStep.getFinishedAt() != null;
 
             if (this.withOptimizationTimeout) {
-                if (isRunning == false && processStep.getScheduledStartedAt() != null) {
-                    isRunning = processStep.getScheduledStartedAt().isBefore(this.optimizationStartTime) && processStep.getScheduledStartedAt().plus(processStep.getExecutionTime()).isAfter(this.optimizationStartTime);
+                if (isRunning == false && processStep.getScheduledStartDate() != null) {
+                    isRunning = processStep.getScheduledStartDate().isBefore(this.optimizationStartTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isAfter(this.optimizationStartTime);
                 }
-                if (isDone == false && processStep.getScheduledStartedAt() != null) {
-                    isDone = processStep.getScheduledStartedAt().isBefore(this.optimizationStartTime) && processStep.getScheduledStartedAt().plus(processStep.getExecutionTime()).isBefore(this.optimizationStartTime);
+                if (isDone == false && processStep.getScheduledStartDate() != null) {
+                    isDone = processStep.getScheduledStartDate().isBefore(this.optimizationStartTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationStartTime);
                 }
             }
             return getStartTimeForProcessStep(processStep, startTime, chromosome, isDone, isRunning);
@@ -107,14 +107,14 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
         if (isDone) {
             return startTime;
         }
-        if (processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isDeploying() || processStep.getScheduledAtContainer().isRunning())) {
+        if (processStep.getContainer() != null && (processStep.getContainer().isDeploying() || processStep.getContainer().isRunning())) {
             containerAlreadyDeployed = true;
         }
 
         if (processStep.isHasToBeExecuted() && !isRunning && !containerAlreadyDeployed) {
 
-            if (processStep.getScheduledStartedAt() != null) {
-                startTime = processStep.getScheduledStartedAt();
+            if (processStep.getScheduledStartDate() != null) {
+                startTime = processStep.getScheduledStartDate();
             } else {
                 startTime = startTime.plus(defaultContainerDeployTime + defaultContainerStartupTime);
             }
@@ -128,7 +128,7 @@ public abstract class AbstractChromosomeFactory extends AbstractCandidateFactory
         } else if (isRunning || containerAlreadyDeployed) {
             DateTime realStartTime = processStep.getStartDate();
             if (realStartTime == null) {
-                realStartTime = processStep.getScheduledStartedAt();
+                realStartTime = processStep.getScheduledStartDate();
             }
 
             boolean isFixed = isRunning || isDone;

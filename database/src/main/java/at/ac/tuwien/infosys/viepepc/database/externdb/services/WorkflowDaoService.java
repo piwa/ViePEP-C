@@ -4,7 +4,6 @@ import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
@@ -58,21 +57,9 @@ public class WorkflowDaoService {
 			}
 			if (element instanceof ProcessStep) {
 				ServiceType serviceType = null;
-				VirtualMachine vm = ((ProcessStep) element).getScheduledAtVM();
-				if (vm != null) { // if the process step is after an XOR the process steps on one side of the XOR are not executed
-					if (vm.getId() != null) {
-						vm = virtualMachineDaoService.getVm(vm);
-						((ProcessStep) element).setScheduledAtVM(vm);
-						virtualMachineDaoService.update(vm);
-					} else {
-						vm = virtualMachineDaoService.update(vm);
-						((ProcessStep) element).setScheduledAtVM(vm);
-					}
-					serviceType = vm.getServiceType();
-				}
 				
 				if (useContainer) {
-					Container container = ((ProcessStep) element).getScheduledAtContainer();
+					Container container = ((ProcessStep) element).getContainer();
 					if (container != null) { // if the process step is after an XOR the process steps on one side of the XOR are not executed
 						// make sure we save the DockerImage first, to avoid org.hibernate.TransientPropertyValueException:
 						ContainerImage img = container.getContainerImage();
@@ -99,11 +86,11 @@ public class WorkflowDaoService {
 
 						if (container.getId() != null) {
 							container = containerDaoService.getContainer(container);
-							((ProcessStep) element).setScheduledAtContainer(container);
+							((ProcessStep) element).setContainer(container);
 							containerDaoService.update(container);
 						} else {
 							container = containerDaoService.update(container);
-							((ProcessStep) element).setScheduledAtContainer(container);
+							((ProcessStep) element).setContainer(container);
 						}
                         serviceType = container.getContainerImage().getServiceType();
 					}

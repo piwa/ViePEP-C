@@ -32,7 +32,4 @@ public interface WorkflowUtilities {
 
     void resetChildren(List<Element> elementList);
 
-	long getRemainingLeasingDuration(DateTime tau_t, VirtualMachine vm);
-
-    long getRemainingSetupTime(Container scheduledAtContainer, DateTime tau_t);
 }

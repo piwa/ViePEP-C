@@ -43,7 +43,7 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
 
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
 //        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
-//        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtContainer().getVirtualMachine()));
+//        optimize.getProcessSteps().stream().filter(ps -> ps.getContainer().getVirtualMachine() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getContainer().getVirtualMachine()));
 
         actionExecutor.startInvocationViaContainersOnVms(optimize.getProcessSteps());
 
@@ -84,12 +84,12 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
             if (processStep.getScheduledAtVM() != null) {
                 vmsToStart.add(processStep.getScheduledAtVM());
             }
-            if (processStep.getScheduledAtContainer().getVirtualMachine() != null) {
-                vmsToStart.add(processStep.getScheduledAtContainer().getVirtualMachine());
+            if (processStep.getContainer().getVirtualMachine() != null) {
+                vmsToStart.add(processStep.getContainer().getVirtualMachine());
             }
-            containersToDeploy.add(processStep.getScheduledAtContainer());
-            if (processStep.getScheduledAtContainer() != null) {
-                processStep.setScheduledForExecution(true, tau_t, processStep.getScheduledAtContainer());
+            containersToDeploy.add(processStep.getContainer());
+            if (processStep.getContainer() != null) {
+                processStep.setScheduledForExecution(true, tau_t, processStep.getContainer());
             } else if (processStep.getScheduledAtVM() != null) {
                 processStep.setScheduledForExecution(true, tau_t, processStep.getScheduledAtVM());
             } else {

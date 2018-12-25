@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.AbstractViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import com.google.api.gax.paging.Page;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.WaitForOption;
@@ -55,14 +56,12 @@ public class GCloudClientService extends AbstractViePEPCloudService {
                 virtualMachine.setIpAddress(instance.getNetworkInterfaces().get(0).getNetworkIp());
             }
 
-            virtualMachine.setLeased(true);
-
             log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + virtualMachine.getIpAddress() + " was started. Waiting for connection...");
 
             waitUntilVmIsBooted(virtualMachine);
 
-            virtualMachine.setStarted(true);
-            virtualMachine.setStartedAt(DateTime.now());
+            virtualMachine.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
+            virtualMachine.setStartDate(DateTime.now());
 
             log.info("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + virtualMachine.getIpAddress() + " established.");
 

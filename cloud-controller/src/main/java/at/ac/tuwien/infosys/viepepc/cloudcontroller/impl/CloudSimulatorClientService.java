@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.AbstractViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,9 +51,8 @@ public class CloudSimulatorClientService extends AbstractViePEPCloudService {
         virtualMachine.setResourcepool("simulation");
         virtualMachine.setInstanceId("simulation" + UUID.randomUUID().toString());
         virtualMachine.setIpAddress(uri);
-        virtualMachine.setStarted(true);
-        virtualMachine.setLeased(true);
-        virtualMachine.setStartedAt(DateTime.now());
+        virtualMachine.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
+        virtualMachine.setStartDate(DateTime.now());
 
         log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
 

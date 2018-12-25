@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.AbstractViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2;
@@ -92,9 +93,8 @@ public class AwsClientService extends AbstractViePEPCloudService {
             virtualMachine.setResourcepool("aws");
             virtualMachine.setInstanceId(instance.getInstanceId());
             virtualMachine.setIpAddress(instance.getPublicIpAddress());
-            virtualMachine.setStarted(true);
-            virtualMachine.setLeased(true);
-            virtualMachine.setStartedAt(DateTime.now());
+            virtualMachine.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
+            virtualMachine.setStartDate(DateTime.now());
             //size in GB
 
             log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + instance.getPublicIpAddress() + " was started. Waiting for connection...");

@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -27,25 +28,30 @@ public class Container implements Cloneable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String containerID;
+
     @ManyToOne//(cascade = CascadeType.ALL)
     @JoinColumn(name="containerConfigurationId")
     private ContainerConfiguration containerConfiguration;
     @ManyToOne
     @JoinColumn(name="containerImageId")
     private ContainerImage containerImage;
-    @ManyToOne(cascade = CascadeType.ALL)
-    private VirtualMachine virtualMachine;
-    private long deployCost = 3;
-    private String containerID;
-    private String serviceName;
+
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    private DateTime startDate;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    private Interval scheduledDeployedInterval;
+
+    private ContainerStatus containerStatus;
+
+    private boolean bareMetal = false;
     private String externPort;
     private String ipAddress;
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    private DateTime startedAt;
-    private boolean running = false;
-    private boolean bareMetal = false;
-    private boolean deploying = false;
     private String providerContainerId = "";
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private VirtualMachine virtualMachine;
 
     public Container() {
         containerID = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
@@ -60,25 +66,8 @@ public class Container implements Cloneable {
             virtualMachine.undeployContainer(this);
             virtualMachine = null;
         }
-        setRunning(false);
+        containerStatus = ContainerStatus.TERMINATED;
         bareMetal = false;
-        setDeploying(false);
-    }
-
-    public synchronized boolean isRunning() {
-        return running;
-    }
-
-    public synchronized void setRunning(boolean running) {
-        this.running = running;
-    }
-
-    public synchronized boolean isDeploying() {
-        return deploying;
-    }
-
-    public synchronized void setDeploying(boolean deploying) {
-        this.deploying = deploying;
     }
 
     public Container clone(ServiceType serviceType) throws CloneNotSupportedException {
@@ -92,14 +81,13 @@ public class Container implements Cloneable {
     public String toString() {
         DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-        String startString = startedAt == null ? "NULL" : startedAt.toString();
+        String startString = startDate == null ? "NULL" : startDate.toString();
         String vmString = virtualMachine == null ? "NULL" : virtualMachine.getInstanceId();
 
         if(isBareMetal()) {
             return "Container{" +
                     "name='" + getName() + '\'' +
-                    ", running=" + running +
-                    ", deploying=" + deploying +
+                    ", status=" + containerStatus +
                     ", startedAt=" + startString +
                     ", url=" + ipAddress + ":" + externPort +
                     ", serviceType=" + containerImage.getServiceType().getName() +
@@ -108,7 +96,6 @@ public class Container implements Cloneable {
         else {
             return "Container{" +
                     "name='" + getName() + '\'' +
-                    ", running=" + running +
                     ", startedAt=" + startString +
                     ", runningOnVM=" + vmString +
                     ", externalPort=" + externPort +

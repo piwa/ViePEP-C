@@ -11,16 +11,16 @@ import java.util.List;
  */
 public interface ProcessStepElementRepository extends CrudRepository<ProcessStep, Long> {
 
-    @Query("select p from process_step p where p.scheduledAtVM.id = ?1")
-    List<ProcessStep> findByVM(Long virtualMachineId) ;
+//    @Query("select p from process_step p where p.scheduledAtVM.id = ?1")
+//    List<ProcessStep> findByVM(Long virtualMachineId) ;
     
-    @Query("select p from process_step p where p.scheduledAtContainer.id = ?1")
+    @Query("select p from process_step p where p.container.id = ?1")
     List<ProcessStep> findByContainer(Long containerId) ;
 
-    @Query("select p from process_step p where p.scheduledAtContainer.id = ?1 and p.finishedAt is null")
-    ProcessStep findByContainerAndRunning(Long containerId);
+//    @Query("select p from process_step p where p.container.id = ?1 and p.finishedAt is null")
+//    ProcessStep findByContainerAndRunning(Long containerId);
 
-    @Query("select p from process_step p where p.scheduledAtVM.id = ?1 and p.finishedAt is null")
-    List<ProcessStep> findByVMAndRunning(Long virtualMachineId) ;
+//    @Query("select p from process_step p where p.scheduledAtVM.id = ?1 and p.finishedAt is null")
+//    List<ProcessStep> findByVMAndRunning(Long virtualMachineId) ;
 
 }

@@ -7,8 +7,13 @@ import net.gpedro.integrations.slack.SlackApi;
 import net.gpedro.integrations.slack.SlackMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Scanner;
@@ -20,7 +25,7 @@ import java.util.concurrent.Future;
 @Component
 @Slf4j
 @Profile("!test")
-public class CommandLineListener implements CommandLineRunner {
+public class StartListener {
 
     @Autowired
     private CacheVirtualMachineService cacheVirtualMachineService;
@@ -39,7 +44,9 @@ public class CommandLineListener implements CommandLineRunner {
     @Value("${autostart}")
     private boolean autostart;
 
-    public void run(String... args) {
+
+    @EventListener
+    public void afterApplicationReady(ApplicationReadyEvent event) {
         log.info("Starting ViePEP-C...");
 
         try {
@@ -103,9 +110,7 @@ public class CommandLineListener implements CommandLineRunner {
             if (autostart) {
                 Future<Boolean> reasoningDone = reasoningActivator.start();
                 reasoningDone.get();                 // waits for result
-//                while(!reasoningDone.isDone()) {
-//                    Thread.sleep(10000);
-//                }
+
             } else {
                 reasoningActivator.start();
             }

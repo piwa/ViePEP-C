@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.actionexecutor;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -55,7 +56,7 @@ public class ActionExecutor {
         for (final VirtualMachine virtualMachine : vmContainerProcessStepMap.keySet()) {
             final Map<Container, List<ProcessStep>> containerProcessSteps = vmContainerProcessStepMap.get(virtualMachine);
             try {
-                if (!virtualMachine.isLeased()) {
+                if (!virtualMachine.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
                     withVMDeploymentController.leaseVMAndStartExecutionOnContainer(virtualMachine, containerProcessSteps);
 
                 } else {
@@ -72,7 +73,7 @@ public class ActionExecutor {
             Set<ProcessStep> tempSet = new HashSet<>(processStepsToBeStarted);
             tempSet.addAll(processSteps);
             processStepsToBeStarted = new ArrayList<>(tempSet);
-            processStepsToBeStarted.sort(Comparator.comparing(ProcessStep::getScheduledStartedAt));
+            processStepsToBeStarted.sort(Comparator.comparing(ProcessStep::getScheduledStartDate));
         }
 
     }
@@ -85,7 +86,7 @@ public class ActionExecutor {
             for (Iterator<ProcessStep> iterator = processStepsToBeStarted.iterator(); iterator.hasNext(); ) {
                 ProcessStep processStep = iterator.next();
 
-                DateTime startTimeWithContainer = processStep.getScheduledStartedAt().minus(onlyContainerDeploymentTime);
+                DateTime startTimeWithContainer = processStep.getScheduledStartDate().minus(onlyContainerDeploymentTime);
                 if (startTimeWithContainer.minusSeconds(5).isBeforeNow()) {
                     OnlyContainerDeploymentController runnable = applicationContext.getOnlyContainerDeploymentController(processStep);
                     threadPoolTaskExecutor.execute(runnable);
@@ -103,7 +104,7 @@ public class ActionExecutor {
         final Map<Container, List<ProcessStep>> containerProcessStepsMap = new HashMap<>();
 
         for (final ProcessStep processStep : processSteps) {
-            Container scheduledAt = processStep.getScheduledAtContainer();
+            Container scheduledAt = processStep.getContainer();
             if (!containerProcessStepsMap.containsKey(scheduledAt)) {
                 containerProcessStepsMap.put(scheduledAt, new ArrayList<>());
             }

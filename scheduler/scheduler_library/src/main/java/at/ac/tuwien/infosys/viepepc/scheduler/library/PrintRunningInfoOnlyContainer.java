@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.library;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
@@ -51,7 +52,7 @@ public class PrintRunningInfoOnlyContainer implements PrintRunningInfo {
 
         stringBuilder.append("--------------------------- Containers running ---------------------------\n");
         for (Container container : inMemoryCache.getRunningContainers()) {
-            if (container!= null && container.isRunning()) {
+            if (container!= null && container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
                 stringBuilder.append(container.toString()).append("\n");
             }
         }
@@ -63,9 +64,9 @@ public class PrintRunningInfoOnlyContainer implements PrintRunningInfo {
 
     private void printWaitingInformation(StringBuilder stringBuilder) {
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
-        Set<Container> containers = inMemoryCache.getWaitingForExecutingProcessSteps().stream().map(ProcessStep::getScheduledAtContainer).collect(Collectors.toSet());
+        Set<Container> containers = inMemoryCache.getWaitingForExecutingProcessSteps().stream().map(ProcessStep::getContainer).collect(Collectors.toSet());
         for (Container container : containers) {
-            if (!container.isRunning()) {
+            if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED) || container.getContainerStatus().equals(ContainerStatus.DEPLOYING)) {
                 stringBuilder.append(container.toString()).append("\n");
             }
         }
@@ -82,7 +83,7 @@ public class PrintRunningInfoOnlyContainer implements PrintRunningInfo {
         for (Element workflow : allWorkflowInstances) {
             List<ProcessStep> runningSteps = workflowUtilities.getRunningProcessSteps(workflow.getName());
             for (ProcessStep runningStep : runningSteps) {
-                if (runningStep.getScheduledAtContainer() != null && runningStep.getScheduledAtContainer().isRunning() && runningStep.getStartDate() != null) {
+                if (runningStep.getContainer() != null && runningStep.getContainer().getContainerStatus().equals(ContainerStatus.DEPLOYED) && runningStep.getStartDate() != null) {
                     stringBuilder.append(runningStep).append("\n");
                 }
             }

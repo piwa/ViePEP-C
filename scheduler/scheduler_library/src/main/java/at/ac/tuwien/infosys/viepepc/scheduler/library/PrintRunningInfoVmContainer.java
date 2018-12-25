@@ -5,7 +5,9 @@ import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
@@ -53,7 +55,7 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
         stringBuilder.append("\n------------------------------ VMs running -------------------------------\n");
         List<VirtualMachine> vMs = cacheVirtualMachineService.getAllVMs();
         for (VirtualMachine vm : vMs) {
-            if (vm.isLeased() && vm.isStarted()) {
+            if (vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
                 stringBuilder.append(vm.toString()).append("\n");
             }
         }
@@ -61,7 +63,7 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
         stringBuilder.append("--------------------------- Containers running ---------------------------\n");
         for (VirtualMachine vm : vMs) {
             for (Container container : vm.getDeployedContainers()) {
-                if (container.isRunning()) {
+                if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
                     stringBuilder.append(container.toString()).append("\n");
                 }
             }
@@ -73,17 +75,18 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
 
 
     private void printWaitingInformation(StringBuilder stringBuilder) {
+        Set<Container> containers = inMemoryCache.getWaitingForExecutingProcessSteps().stream().map(ProcessStep::getContainer).collect(Collectors.toSet());
+
         stringBuilder.append("------------------------ VMs waiting for starting ------------------------\n");
-        Set<VirtualMachine> vms = inMemoryCache.getWaitingForExecutingProcessSteps().stream().map(ProcessStep::getScheduledAtVM).collect(Collectors.toSet());
+        Set<VirtualMachine> vms = containers.stream().map(Container::getVirtualMachine).collect(Collectors.toSet());
         for (VirtualMachine vm : vms) {
-            if (!vm.isStarted()) {
+            if (vm.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED) || vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYING)) {
                 stringBuilder.append(vm.toString()).append("\n");
             }
         }
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
-        Set<Container> containers = inMemoryCache.getWaitingForExecutingProcessSteps().stream().map(ProcessStep::getScheduledAtContainer).collect(Collectors.toSet());
         for (Container container : containers) {
-            if (!container.isRunning()) {
+            if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED) || container.getContainerStatus().equals(ContainerStatus.DEPLOYING)) {
                 stringBuilder.append(container.toString()).append("\n");
             }
         }
@@ -99,8 +102,7 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
         for (Element workflow : allWorkflowInstances) {
             List<ProcessStep> runningSteps = workflowUtilities.getRunningProcessSteps(workflow.getName());
             for (ProcessStep runningStep : runningSteps) {
-                if (((runningStep.getScheduledAtVM() != null && runningStep.getScheduledAtVM().isStarted()) || (runningStep.getScheduledAtContainer() != null && runningStep.getScheduledAtContainer().isRunning())) &&
-                        runningStep.getStartDate() != null) {
+                if ((runningStep.getContainer() != null && runningStep.getContainer().getContainerStatus().equals(ContainerStatus.DEPLOYED)) && runningStep.getStartDate() != null) {
                     stringBuilder.append(runningStep).append("\n");
                 }
             }

@@ -46,28 +46,36 @@
 
     </dependencies>
 
+    <modules>
+        <module>core</module>
+        <module>scheduler_library</module>
+        <module>geco_vm</module>
+    </modules>
 
+    <!--
     <profiles>
         <profile>
             <id>frincu</id>
             <modules>
-                <module>core</module>
-                <module>scheduler_library</module>
                 <module>frincu</module>
             </modules>
         </profile>
         <profile>
             <id>geco</id>
+            <modules>
+                <module>geco</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>geco_vm</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
-                <module>core</module>
-                <module>scheduler_library</module>
-                <module>geco</module>
+                <module>geco_vm</module>
             </modules>
         </profile>
     </profiles>
-
+-->
 
 </project>

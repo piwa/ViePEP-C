@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * Created by philippwaibel on 17/05/16. edited by Gerta Sheganaku
  */
 @Component
-@Scope("singleton")
 @Slf4j
 public class ReasoningImpl implements Reasoning {
 
@@ -45,13 +44,7 @@ public class ReasoningImpl implements Reasoning {
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
     @Autowired
-    private CacheVirtualMachineService cacheVirtualMachineService;
-    @Autowired
     private WorkflowDaoService workflowDaoService;
-    @Autowired
-    private InMemoryCacheImpl inMemoryCache;
-    @Autowired
-    private ActionExecutorUtilities actionExecutorUtilities;
     @Autowired
     private PrintRunningInfo printRunningInfo;
 
@@ -197,8 +190,6 @@ public class ReasoningImpl implements Reasoning {
 
         DateTime tau_t_0 = new DateTime();
 
-        terminateVms(tau_t_0);
-
         log.info("---------------- tau_t_0 : " + tau_t_0 + " -----------------");
         log.info("-------------- tau_t_0.time : " + tau_t_0.toString() + " --------------");
 //        Future<OptimizationResult> asyncOptimize = resourcePredictionService.asyncOptimize(tau_t_0);
@@ -229,31 +220,6 @@ public class ReasoningImpl implements Reasoning {
         return difference;
     }
 
-
-    private void terminateVms(DateTime tau_t_0) {
-        synchronized (Watchdog.SYNC_OBJECT) {
-            for (VirtualMachine vm : cacheVirtualMachineService.getStartedVMs()) {
-                long timeUntilTermination = workflowUtilities.getRemainingLeasingDuration(tau_t_0, vm);
-                if (timeUntilTermination < minTauTDifference) {
-                    try {
-                        boolean containerWaitingForVm = inMemoryCache.getWaitingForExecutingProcessSteps().stream().anyMatch(processStep -> processStep.getScheduledAtContainer().getVirtualMachine() == vm);
-                        if (vm.getDeployedContainers().size() > 0 || containerWaitingForVm) {
-                            log.info("Extend leasing of VM: " + vm.toString());
-                            vm.setToBeTerminatedAt(new DateTime(vm.getToBeTerminatedAt().getMillis() + vm.getVmType().getLeasingDuration()));
-                        } else {
-                            if (containerWaitingForVm) {
-                                log.error("VM will be terminated but container waiting for starting");
-                            }
-                            log.info("terminateVms method terminate vm: " + vm);
-                            actionExecutorUtilities.terminateVM(vm);
-                        }
-                    } catch (NullPointerException ex) {
-                        log.error("Exception", ex);
-                    }
-                }
-            }
-        }
-    }
 
     public void stop() {
         this.run = false;

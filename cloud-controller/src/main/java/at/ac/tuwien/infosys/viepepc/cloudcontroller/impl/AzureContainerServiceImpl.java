@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.credentials.ApplicationTokenCredentials;
 import com.microsoft.azure.management.Azure;
@@ -142,14 +143,14 @@ public class AzureContainerServiceImpl {
             }
         }
 
-        while (!container.isRunning()) {
+        while (!container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
             try {
                 ContainerGroup containerGroup = azure.containerGroups().getByResourceGroup(rgName, aciName);
                 if (containerGroup != null && containerGroup.state() != null && containerGroup.state().equals("Running")) {
                     container.setProviderContainerId(containerGroup.id());
                     container.setContainerID(aciName);
-                    container.setRunning(true);
-                    container.setStartedAt(new DateTime());
+                    container.setContainerStatus(ContainerStatus.DEPLOYED);
+                    container.setStartDate(new DateTime());
                     for (Port port : containerGroup.externalPorts()) {
                         container.setExternPort(String.valueOf(port.port()));
                     }

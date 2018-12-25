@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.database.inmemory.services;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,11 +75,11 @@ public class CacheVirtualMachineService {
     }
 
     public Set<VirtualMachine> getStartedVMs() {
-        return getAllVMs().stream().filter(VirtualMachine::isStarted).collect(Collectors.toSet());
+        return getAllVMs().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)).collect(Collectors.toSet());
     }
 
     public Set<VirtualMachine> getScheduledForStartVMs() {
-        return getAllVMs().stream().filter(vm -> vm.getToBeTerminatedAt() != null).collect(Collectors.toSet());
+        return getAllVMs().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED)).collect(Collectors.toSet());
     }
 
     public Set<VirtualMachine> getStartedAndScheduledForStartVMs() {

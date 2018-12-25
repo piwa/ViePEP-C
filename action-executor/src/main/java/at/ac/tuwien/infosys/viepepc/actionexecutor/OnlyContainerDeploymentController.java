@@ -6,6 +6,7 @@ import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl
 import at.ac.tuwien.infosys.viepepc.library.entities.Action;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerReportingAction;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.ServiceExecution;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokeException;
@@ -44,7 +45,7 @@ public class OnlyContainerDeploymentController implements Runnable {
 
     public OnlyContainerDeploymentController(ProcessStep processStep) {
         this.processStep = processStep;
-        this.container = processStep.getScheduledAtContainer();
+        this.container = processStep.getContainer();
     }
 
     @Override
@@ -60,8 +61,8 @@ public class OnlyContainerDeploymentController implements Runnable {
             log.debug("Container deploy duration: " + container.toString() + ": " + stopWatch.getTotalTimeMillis());
 
 
-            if (processStep.getScheduledStartedAt() != null && DateTime.now().isBefore(processStep.getScheduledStartedAt().minusSeconds(2))) {
-                Duration duration = new Duration(DateTime.now(), processStep.getScheduledStartedAt().minusSeconds(2));
+            if (processStep.getScheduledStartDate() != null && DateTime.now().isBefore(processStep.getScheduledStartDate().minusSeconds(2))) {
+                Duration duration = new Duration(DateTime.now(), processStep.getScheduledStartDate().minusSeconds(2));
                 try {
                     TimeUnit.MILLISECONDS.sleep(duration.getMillis());
                 } catch (InterruptedException e) {
@@ -86,7 +87,7 @@ public class OnlyContainerDeploymentController implements Runnable {
 
     private boolean deployContainer(Container container) {
         synchronized (container) {
-            if (container.isRunning()) {
+            if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
                 log.debug("Container already running: " + container);
                 return true;
             }

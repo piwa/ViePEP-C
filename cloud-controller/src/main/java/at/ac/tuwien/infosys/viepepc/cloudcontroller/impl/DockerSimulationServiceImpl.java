@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +34,8 @@ public class DockerSimulationServiceImpl {
         virtualMachine.getAvailableContainerImages().add(container.getContainerImage());
         container.setContainerID(id);
         container.setVirtualMachine(virtualMachine);
-        container.setRunning(true);
-        container.setStartedAt(new DateTime());
+        container.setContainerStatus(ContainerStatus.DEPLOYED);
+        container.setStartDate(new DateTime());
         container.setExternPort(hostPort);
 //        stopWatch.stop();
 

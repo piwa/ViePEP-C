@@ -56,7 +56,7 @@ public class Receiver {
             } else {
                 log.warn("Service throw an exception: ProcessStep=" + message.getProcessStepName() + ",Exception=" + message.getBody());
                 ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
-                resetContainerAndProcessStep(processStep.getScheduledAtContainer().getVirtualMachine(), processStep, "Service");
+                resetContainerAndProcessStep(processStep.getContainer().getVirtualMachine(), processStep, "Service");
             }
         } catch (Exception ex) {
             log.error("Exception in receive message method", ex);
@@ -64,12 +64,12 @@ public class Receiver {
     }
 
     private void resetContainerAndProcessStep(VirtualMachine vm, ProcessStep processStep, String reason) {
-        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getScheduledAtContainer().getName(), processStep.getScheduledAtContainer().getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, reason);
+        ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getContainer().getName(), processStep.getContainer().getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, reason);
         reportDaoService.save(reportContainer);
 
         inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
         inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
-        processStep.getScheduledAtContainer().shutdownContainer();
+        processStep.getContainer().shutdownContainer();
         processStep.reset();
     }
 
@@ -79,22 +79,22 @@ public class Receiver {
 
         log.info("Task-Done: " + processStep);
         workflowDoneTaskExecutor.execute(() -> {
-            if (processStep.getScheduledAtContainer() != null) {
-//            synchronized (processStep.getScheduledAtContainer()) {
+            if (processStep.getContainer() != null) {
+//            synchronized (processStep.getContainer()) {
                 List<ProcessStep> processSteps = new ArrayList<>();
                 workflowUtilities.getRunningSteps().stream().filter(ele -> ((ProcessStep) ele) != processStep).forEach(element -> processSteps.add((ProcessStep) element));
-                processSteps.addAll(workflowUtilities.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).collect(Collectors.toList()));
+                processSteps.addAll(workflowUtilities.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.getContainer() != null).collect(Collectors.toList()));
 
                 boolean stillNeeded = false;
                 for (ProcessStep tmp : processSteps) {
-                    if (tmp.getScheduledAtContainer() != null && tmp != processStep && tmp.getScheduledAtContainer().getContainerID().equals(processStep.getScheduledAtContainer().getContainerID())) {
+                    if (tmp.getContainer() != null && tmp != processStep && tmp.getContainer().getContainerID().equals(processStep.getContainer().getContainerID())) {
                         stillNeeded = true;
                         break;
                     }
                 }
 
                 if (!stillNeeded) {
-                    actionExecutorUtilities.stopContainer(processStep.getScheduledAtContainer());
+                    actionExecutorUtilities.stopContainer(processStep.getContainer());
                 }
 //            }
             }

@@ -1,16 +1,15 @@
 package at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerImage;
-import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -29,32 +28,27 @@ import java.util.*;
 @Setter
 public class VirtualMachine implements Serializable {
 
-//    @Autowired
-//    @Transient
-//    private CacheVirtualMachineService cacheVirtualMachineService;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name="serviceTypeId")
-    private ServiceType serviceType;
 
     private String name;
     private String googleName;
     private String instanceId;
     private String location;
-    private boolean leased = false;         // TODO check when it is set
+
     private String ipAddress;
-    private long startupTime;
+
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    private DateTime startedAt;
-    private boolean started;
+    private Map<UUID, Interval> scheduledDeployTime;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    private DateTime toBeTerminatedAt;
+    private DateTime startDate;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    private DateTime terminationDate;
+
     private String resourcepool;
-    private boolean terminating = false;
+
+    private VirtualMachineStatus virtualMachineStatus;
 
     @ManyToOne(cascade = CascadeType.ALL)
     private VMType vmType;
@@ -69,38 +63,16 @@ public class VirtualMachine implements Serializable {
     private Set<ContainerImage> availableContainerImages = new HashSet<>();
 
 
-//    public VirtualMachine(String name, Integer numberCores, ServiceType serviceType, String location) {
-//        this.name = name;
-//        this.serviceType = serviceType;
-//        this.location = location;
-//        try {
-//            this.vmType = cacheVirtualMachineService.getVmTypeFromCore(numberCores, location);
-//        } catch (Exception e) {
-//        }
-//        this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
-//    }
-
-
-    public VirtualMachine(String name, VMType vmType, ServiceType serviceType) {
-        this.name = name;
-        this.location = vmType.getLocation();
-        this.serviceType = serviceType;
-        this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
-    }
-
     public VirtualMachine(String name, VMType vmType) {
+        this();
         this.name = name;
         this.location = vmType.getLocation();
         this.vmType = vmType;
-        this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
     }
 
     public VirtualMachine() {
         this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
-    }
-    
-    public boolean isContainerDeployed(Container container) {
-        return deployedContainers.contains(container);
+        this.virtualMachineStatus = VirtualMachineStatus.UNUSED;
     }
 
 
@@ -121,16 +93,14 @@ public class VirtualMachine implements Serializable {
 
     @Override
     public String toString() {
-        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+//        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-        String startString = startedAt == null ? "NOT_YET" : dtfOut.print(startedAt);
-        String toBeTerminatedAtString = toBeTerminatedAt == null ? "NOT_YET" : dtfOut.print(toBeTerminatedAt);
+        String startString = startDate == null ? "NOT_YET" : startDate.toString();
+        String toBeTerminatedAtString = terminationDate == null ? "NOT_YET" : terminationDate.toString();
         return "VirtualMachine{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", instanceId='" + instanceId + '\'' +
-                ", serviceType=" + serviceType +
-                ", leased=" + leased +
                 ", startedAt=" + startString +
                 ", terminateAt=" + toBeTerminatedAtString +
                 ", location=" + location +
@@ -144,13 +114,9 @@ public class VirtualMachine implements Serializable {
     }
 
     public void terminate() {
-        this.setLeased(false);
-        this.setStarted(false);
-        this.setStartedAt(null);
-        this.setToBeTerminatedAt(null);
-        this.serviceType = null;
+        this.setVirtualMachineStatus(VirtualMachineStatus.TERMINATED);
+        this.setTerminationDate(DateTime.now());
         this.setGoogleName(null);
-        this.setTerminating(false);
         this.setIpAddress(null);
         this.availableContainerImages = new HashSet<>();
     }

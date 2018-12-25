@@ -30,7 +30,7 @@
         <!-- ViePEP-C -->
         <dependency>
             <groupId>at.ac.tuwien.infosys.viepep-c.scheduler</groupId>
-            <artifactId>geco</artifactId>
+            <artifactId>geco_vm</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>

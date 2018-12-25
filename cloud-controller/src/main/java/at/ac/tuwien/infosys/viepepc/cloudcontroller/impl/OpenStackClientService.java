@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.AbstractViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.internal.util.Base64;
@@ -175,9 +176,8 @@ public class OpenStackClientService extends AbstractViePEPCloudService {
             virtualMachine.setInstanceId(server.getId());
             virtualMachine.getVmType().setCores(flavor.getVcpus());
             virtualMachine.getVmType().setRamPoints(flavor.getRam());
-            virtualMachine.setStarted(true);
-            virtualMachine.setLeased(true);
-            virtualMachine.setStartedAt(DateTime.now());
+            virtualMachine.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
+            virtualMachine.setStartDate(DateTime.now());
             //size in GB
 
             virtualMachine.getVmType().setStorage(flavor.getDisk() * 1024 + 0F);

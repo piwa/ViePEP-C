@@ -8,8 +8,10 @@ import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl
 import at.ac.tuwien.infosys.viepepc.library.entities.Action;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerReportingAction;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineReportingAction;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.ServiceExecution;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokeException;
@@ -69,7 +71,6 @@ public class WithVMDeploymentController {
                 for (Container container : containerProcessSteps.keySet()) {
                     for (ProcessStep processStep : containerProcessSteps.get(container)) {
                         processStep.setStartDate(null);
-                        processStep.setScheduledAtVM(null);
                     }
                     container.shutdownContainer();
                 }
@@ -77,12 +78,11 @@ public class WithVMDeploymentController {
             } else {
 
                 stopWatch.stop();
-                virtualMachine.setStartupTime(stopWatch2.getTotalTimeMillis());
-                if (virtualMachine.getStartedAt() == null) {
+
+                if (virtualMachine.getStartDate() == null) {
                     log.error("StartedAt is null");
-                    virtualMachine.setStartedAt(DateTime.now());
+                    virtualMachine.setStartDate(DateTime.now());
                 }
-                virtualMachine.setToBeTerminatedAt(new DateTime(virtualMachine.getStartedAt().getMillis() + virtualMachine.getVmType().getLeasingDuration()));
                 startExecutionsOnContainer(containerProcessSteps, virtualMachine);
 
             }
@@ -143,7 +143,7 @@ public class WithVMDeploymentController {
             }
 
             log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
-            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachine.getStartedAt(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);
+            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachine.getStartDate(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);
             reportDaoService.save(report);
 
             synchronized (waitObject) {
@@ -158,7 +158,7 @@ public class WithVMDeploymentController {
             } catch (InterruptedException e) {
                 log.error("Exception", e);
             }
-            if (!virtualMachine.isStarted()) {
+            if (!virtualMachine.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
                 throw new VmCouldNotBeStartedException("VM could not be started");
             }
         }
@@ -167,7 +167,7 @@ public class WithVMDeploymentController {
     }
 
     private boolean deployContainer(VirtualMachine vm, Container container) {
-        if (container.isRunning()) {
+        if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
             log.info(container + " already running on vm " + container.getVirtualMachine());
             return true;
         }
@@ -214,7 +214,6 @@ public class WithVMDeploymentController {
 
         log.info("Terminate: " + virtualMachine);
 
-        virtualMachine.setTerminating(true);
         cloudControllerService.stopVirtualMachine(virtualMachine);
         virtualMachine.terminate();
     }

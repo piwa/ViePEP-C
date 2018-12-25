@@ -19,7 +19,7 @@ public class CacheProcessStepService {
 
     public List<ProcessStep> findByContainerAndRunning(Container container) {
         return inMemoryCache.getProcessStepsWaitingForServiceDone().values()
-                .stream().filter(processStep -> processStep.getScheduledAtContainer() == container && processStep.getFinishedAt() == null)
+                .stream().filter(processStep -> processStep.getContainer() == container && processStep.getFinishedAt() == null)
                 .collect(Collectors.toList());
 
 

@@ -3,7 +3,6 @@ package at.ac.tuwien.infosys.viepepc.library.entities.workflow;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.library.entities.services.adapter.ServiceTypeAdapter;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,11 +39,12 @@ public class ProcessStep extends Element implements Cloneable {
 
     private UUID internId;
 
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    private DateTime startDate;
     private String workflowName;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    private DateTime scheduledStartedAt;
+    private DateTime scheduledStartDate;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    private DateTime startDate;
+
     private int numberOfExecutions;
     private boolean hasToBeExecuted = true;
     private boolean hasToDeployContainer = false;
@@ -55,17 +55,8 @@ public class ProcessStep extends Element implements Cloneable {
     private ServiceType serviceType;
 
     @ManyToOne
-    @JoinColumn(name="scheduleAtVmId")
-    private VirtualMachine scheduledAtVM;
-    
-    @ManyToOne
-    @JoinColumn(name="scheduleAtContainerId")
-    private Container scheduledAtContainer;
-
-    @XmlElementWrapper(name="restrictedVMs")
-    @XmlElement(name="restricted" )
-    @ElementCollection(fetch=FetchType.EAGER)
-    private List<Integer> restrictedVMs = new ArrayList<>();
+    @JoinColumn(name="containerId")
+    private Container container;
 
     @XmlTransient
     @Override
@@ -75,6 +66,12 @@ public class ProcessStep extends Element implements Cloneable {
 
     public ProcessStep() {
         internId = UUID.randomUUID();
+    }
+
+    public ProcessStep(String name, ServiceType serviceType, String workflowName) {
+        this.name = name;
+        this.serviceType = serviceType;
+        this.workflowName = workflowName;
     }
 
     public long calculateQoS() {
@@ -100,21 +97,17 @@ public class ProcessStep extends Element implements Cloneable {
         return remaining > 0 ? remaining : serviceType.getServiceTypeResources().getMakeSpan() ;
     }
 
-    public void setScheduledForExecution(boolean isScheduled, DateTime tau_t, VirtualMachine vm) {
-        this.scheduledStartedAt = tau_t;
-        this.scheduledAtVM = vm;
-    }
 
-    public void setScheduledForExecution(boolean isScheduled, DateTime tau_t, Container container) {
-        this.scheduledStartedAt = tau_t;
-        this.scheduledAtContainer = container;
+    public void setScheduledForExecution(DateTime scheduledStartDate, Container container) {
+        this.scheduledStartDate = scheduledStartDate;
+        this.container = container;
     }
 
     @Override
     public ProcessStep getLastExecutedElement() {
         return this;
     }
-    
+
     public void setStartDate(DateTime date){
     	this.startDate = date;
     	if(date != null) {
@@ -137,7 +130,7 @@ public class ProcessStep extends Element implements Cloneable {
         processStep.setStartDate(new DateTime(this.startDate));
         processStep.setFinishedAt(new DateTime(this.finishedAt));
         processStep.setWorkflowName(this.workflowName);
-        processStep.setScheduledStartedAt(new DateTime(this.scheduledStartedAt));
+        processStep.setScheduledStartDate(new DateTime(this.scheduledStartDate));
         processStep.setNumberOfExecutions(this.numberOfExecutions);
         processStep.setHasToBeExecuted(this.hasToBeExecuted);
         processStep.setLastElement(this.isLastElement());
@@ -148,14 +141,12 @@ public class ProcessStep extends Element implements Cloneable {
         //VirtualMachine cloneVM = new VirtualMachine();
         //processStep.setScheduledAtVM(this.scheduledAtVM);
 
-        if(scheduledAtContainer != null) {
-            processStep.setScheduledAtContainer(this.scheduledAtContainer.clone(serviceType));
+        if(container != null) {
+            processStep.setContainer(this.container.clone(serviceType));
         }
         else {
-            processStep.setScheduledAtContainer(null);
+            processStep.setContainer(null);
         }
-
-        processStep.setRestrictedVMs(this.restrictedVMs);
         processStep.setInternId(this.internId);
 
         return processStep;
@@ -169,12 +160,11 @@ public class ProcessStep extends Element implements Cloneable {
         DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
         String startDateformat = startDate != null ? startDate.toString() : null;
-        String scheduledStart = scheduledStartedAt != null ? scheduledStartedAt.toString() : null;
+        String scheduledStart = scheduledStartDate != null ? scheduledStartDate.toString() : null;
         String finishedAtformat = finishedAt != null ? finishedAt.toString() : null;
-        String vmName = scheduledAtVM != null ? scheduledAtVM.getInstanceId() : null;
-        String containerName = scheduledAtContainer != null ? scheduledAtContainer.getName() : null;
+        String containerName = container != null ? container.getName() : null;
 
-        if(scheduledAtContainer == null && scheduledAtVM == null) {
+        if(container == null) {
             return "ProcessStep{" +
                     "name='" + name + '\'' +
                     ", serviceType=" + serviceType.getName() +
@@ -184,14 +174,14 @@ public class ProcessStep extends Element implements Cloneable {
                     ", lastElement=" + isLastElement() +
                     '}';
         }
-        else if(scheduledAtContainer.isBareMetal()) {
+        else if(container.isBareMetal()) {
             return "ProcessStep{" +
                     "name='" + name + '\'' +
                     ", serviceType=" + serviceType.getName() +
                     ", scheduledStart=" + scheduledStart +
                     ", startDate=" + startDateformat +
                     ", finishedAt=" + finishedAtformat +
-                    ", scheduledAtContainer=" + containerName +
+                    ", container=" + containerName +
                     ", lastElement=" + isLastElement() +
                     '}';
         }
@@ -201,8 +191,7 @@ public class ProcessStep extends Element implements Cloneable {
                     ", serviceType=" + serviceType.getName() +
                     ", startDate=" + startDateformat +
                     ", finishedAt=" + finishedAtformat +
-                    ", scheduledAtVM=" + vmName +
-                    ", scheduledAtContainer=" + containerName +
+                    ", container=" + containerName +
                     ", lastElement=" + isLastElement() +
                     '}';
         }
@@ -214,23 +203,16 @@ public class ProcessStep extends Element implements Cloneable {
         } else finishedAt = null;
     }
 
-    public List<Integer> getRestrictedVMs() {
-        List<Integer> objects = new ArrayList<>();
-        objects.addAll(restrictedVMs);
-        return objects;
-    }
-
     public void reset() {
         this.setFinishedAt(null);
         this.setStartDate(null);
-        this.setScheduledAtVM(null);
-        this.setScheduledAtContainer(null);
+        this.setContainer(null);
         this.setHasBeenExecuted(false);
-        this.setScheduledStartedAt(null);
+        this.setScheduledStartDate(null);
         this.setHasToDeployContainer(false);
     }
 
     public boolean isScheduled() {
-        return this.getScheduledAtContainer() != null && this.getScheduledAtContainer().getVirtualMachine() != null;
+        return this.getContainer() != null && this.getContainer().getVirtualMachine() != null;
     }
 }

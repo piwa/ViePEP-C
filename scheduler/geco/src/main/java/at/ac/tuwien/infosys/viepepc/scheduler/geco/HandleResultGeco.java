@@ -37,7 +37,7 @@ public class HandleResultGeco implements HandleOptimizationResult {
     public Boolean processResults(OptimizationResult optimize, DateTime tau_t) {
 
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
-//        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtContainer() != null).forEach(ps -> waitingForExecutingContainers.add(ps.getScheduledAtContainer()));
+//        optimize.getProcessSteps().stream().filter(ps -> ps.getContainer() != null).forEach(ps -> waitingForExecutingContainers.add(ps.getContainer()));
 
         actionExecutor.startTimedInvocationViaContainers(optimize.getProcessSteps());
 
@@ -54,7 +54,7 @@ public class HandleResultGeco implements HandleOptimizationResult {
     private void printOptimizationResultInformation(OptimizationResult optimize, DateTime tau_t, StringBuilder stringBuilder) {
         Set<Container> containersToDeploy = new HashSet<>();
         for (ProcessStep processStep : optimize.getProcessSteps()) {
-            containersToDeploy.add(processStep.getScheduledAtContainer());
+            containersToDeploy.add(processStep.getContainer());
         }
 
         stringBuilder.append("-------- Container should be used (running or has to be started): --------\n");

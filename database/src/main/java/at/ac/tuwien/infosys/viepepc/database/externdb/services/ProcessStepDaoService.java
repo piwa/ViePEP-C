@@ -20,9 +20,9 @@ public class ProcessStepDaoService {
     @Autowired
     private ProcessStepElementRepository processStepElementRepository;
 
-    public List<ProcessStep> findByVM(VirtualMachine virtualMachine) {
-        return processStepElementRepository.findByVM(virtualMachine.getId());
-    }
+//    public List<ProcessStep> findByVM(VirtualMachine virtualMachine) {
+//        return processStepElementRepository.findByVM(virtualMachine.getId());
+//    }
     
     public List<ProcessStep> findByContainer(Container container) {
         return processStepElementRepository.findByContainer(container.getId());

@@ -76,7 +76,7 @@ public abstract class AbstractOnlyContainerOptimization {
                 for (Chromosome.Gene processStepGene : serviceTypeSchedulingUnit.getProcessSteps()) {
                     if (!processStepGene.isFixed()) {
                         ProcessStep processStep = processStepGene.getProcessStep();
-                        if (processStep.getStartDate() != null && processStep.getScheduledAtContainer() != null && (processStep.getScheduledAtContainer().isRunning() == true || processStep.getScheduledAtContainer().isDeploying() == true)) {
+                        if (processStep.getStartDate() != null && processStep.getContainer() != null && (processStep.getContainer().isRunning() == true || processStep.getContainer().isDeploying() == true)) {
 
                         } else {
                             DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
@@ -90,9 +90,9 @@ public abstract class AbstractOnlyContainerOptimization {
                             }
 
                             boolean alreadyDeploying = false;
-                            if (realProcessStep.getScheduledAtContainer() != null && (realProcessStep.getScheduledAtContainer().isDeploying() || realProcessStep.getScheduledAtContainer().isRunning())) {
+                            if (realProcessStep.getContainer() != null && (realProcessStep.getContainer().isDeploying() || realProcessStep.getContainer().isRunning())) {
 
-                                if (realProcessStep.getScheduledAtContainer().getStartedAt().isAfter(optimizationTime)) {
+                                if (realProcessStep.getContainer().getStartedAt().isAfter(optimizationTime)) {
                                     alreadyDeploying = true;
                                 }
 

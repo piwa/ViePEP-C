@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -25,8 +26,8 @@ public class AWSFargateSimulationServiceImpl {
         String hostPort = "2000";
 
         container.setContainerID(id);
-        container.setRunning(true);
-        container.setStartedAt(new DateTime());
+        container.setContainerStatus(ContainerStatus.DEPLOYED);
+        container.setStartDate(new DateTime());
         container.setExternPort(hostPort);
 
         return container;

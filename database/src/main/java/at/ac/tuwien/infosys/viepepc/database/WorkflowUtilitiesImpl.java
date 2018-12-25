@@ -24,9 +24,6 @@ public class WorkflowUtilitiesImpl implements WorkflowUtilities {
 
     private Map<Element, Boolean> andParentHasRunningChild = new HashMap<>();
 
-    @Value("${simulate}")
-    private boolean simulate;
-
     @Override
     public void setFinishedWorkflows() {
         List<WorkflowElement> nextWorkflows = cacheWorkflowService.getRunningWorkflowInstances();
@@ -75,7 +72,7 @@ public class WorkflowUtilitiesImpl implements WorkflowUtilities {
             List<Element> flattenWorkflowList = getFlattenWorkflow(new ArrayList<Element>(), workflowElement);
             for (Element element : flattenWorkflowList) {
                 if (element instanceof ProcessStep && element.getFinishedAt() == null) {
-                    if (((ProcessStep) element).getStartDate() == null && ((ProcessStep) element).getScheduledStartedAt() == null) {
+                    if (((ProcessStep) element).getStartDate() == null && ((ProcessStep) element).getScheduledStartDate() == null) {
                         processSteps.add((ProcessStep) element);
                     }
                 }
@@ -139,7 +136,7 @@ public class WorkflowUtilitiesImpl implements WorkflowUtilities {
         List<ProcessStep> steps = new ArrayList<>();
         for (Element element : elements) {
             if (element instanceof ProcessStep) {
-                if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartedAt() != null) && ((ProcessStep) element).getFinishedAt() == null) {
+                if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartDate() != null) && ((ProcessStep) element).getFinishedAt() == null) {
                     if (!steps.contains(element)) {
                         steps.add((ProcessStep) element);
                     }
@@ -157,10 +154,10 @@ public class WorkflowUtilitiesImpl implements WorkflowUtilities {
     public List<ProcessStep> getNextSteps(Element workflow, Element andParent) {
         List<ProcessStep> nextSteps = new ArrayList<>();
         if (workflow instanceof ProcessStep) {
-            if (!((ProcessStep) workflow).hasBeenExecuted() && ((ProcessStep) workflow).getStartDate() == null && ((ProcessStep) workflow).getScheduledStartedAt() == null) {
+            if (!((ProcessStep) workflow).hasBeenExecuted() && ((ProcessStep) workflow).getStartDate() == null && ((ProcessStep) workflow).getScheduledStartDate() == null) {
                 nextSteps.add((ProcessStep) workflow);
                 return nextSteps;
-            } else if ((((ProcessStep) workflow).getStartDate() != null || ((ProcessStep) workflow).getScheduledStartedAt() != null) && ((ProcessStep) workflow).getFinishedAt() == null) {
+            } else if ((((ProcessStep) workflow).getStartDate() != null || ((ProcessStep) workflow).getScheduledStartDate() != null) && ((ProcessStep) workflow).getFinishedAt() == null) {
                 //Step is still running, ignore next step
                 if (andParent != null) {
                     andParentHasRunningChild.put(andParent, true);
@@ -173,10 +170,10 @@ public class WorkflowUtilitiesImpl implements WorkflowUtilities {
         }
         for (Element element : workflow.getElements()) {
             if (element instanceof ProcessStep) {
-                if (!((ProcessStep) element).hasBeenExecuted() && ((ProcessStep) element).getStartDate() == null && ((ProcessStep) element).getScheduledStartedAt() == null) {
+                if (!((ProcessStep) element).hasBeenExecuted() && ((ProcessStep) element).getStartDate() == null && ((ProcessStep) element).getScheduledStartDate() == null) {
                     nextSteps.add((ProcessStep) element);
                     return nextSteps;
-                } else if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartedAt() != null) && ((ProcessStep) element).getFinishedAt() == null) {
+                } else if ((((ProcessStep) element).getStartDate() != null || ((ProcessStep) element).getScheduledStartDate() != null) && ((ProcessStep) element).getFinishedAt() == null) {
                     //Step is still running, ignore next step
                     if (andParent != null) {
                         andParentHasRunningChild.put(andParent, true);
@@ -228,77 +225,6 @@ public class WorkflowUtilitiesImpl implements WorkflowUtilities {
                 }
             }
         }
-    }
-
-
-    /**
-     * @return the remaining leasing duration for a particular vm (v,k) starting from tau_t
-     */
-    @Override
-    public long getRemainingLeasingDuration(DateTime tau_t, VirtualMachine vm) {
-        DateTime startedAt = vm.getStartedAt();
-        if (startedAt == null) {
-            return 0;
-        }
-        DateTime toBeTerminatedAt = vm.getToBeTerminatedAt();
-        if (toBeTerminatedAt == null) {
-            toBeTerminatedAt = startedAt.plus(vm.getVmType().getLeasingDuration());
-        }
-        long remainingLeasingDuration = toBeTerminatedAt.getMillis() - tau_t.getMillis();
-        if (remainingLeasingDuration < 0) {
-            remainingLeasingDuration = 0;
-        }
-        return remainingLeasingDuration;
-
-    }
-
-    @Override
-    public long getRemainingSetupTime(Container container, DateTime now) {
-        VirtualMachine vm = container.getVirtualMachine();
-        if(vm==null){
-            log.error("VM not set for scheduled service on container: " + container);
-            return 0;
-        } else if(!vm.isLeased()) {
-//			log.error("VM " + vm + " not leased for scheduled service on container: " + container);
-            return vm.getStartupTime() + container.getContainerImage().getDeployTime() + container.getContainerImage().getStartupTime();
-        }
-
-        DateTime vmStartedAt = vm.getStartedAt();
-        if (vm.isLeased() && vmStartedAt != null && !vm.isStarted()) {
-            long vmStartupTime = vm.getStartupTime();
-            long containerDeployTime = container.getContainerImage().getDeployTime();
-            long containerStartupTime = container.getContainerImage().getStartupTime();
-            long nowTime = now.getMillis();
-            long startedAtTime = vmStartedAt.getMillis();
-
-            long remaining = (startedAtTime + vmStartupTime + containerDeployTime + containerStartupTime) - nowTime;
-
-            if (remaining > 0) { // should never be < 0
-                return remaining;
-            } else {
-                return startedAtTime;
-            }
-        }
-        if (vm.isStarted()) {
-            DateTime containerStartedAt = container.getStartedAt();
-            if (containerStartedAt != null && !container.isRunning()) {
-                long containerDeployTime = container.getContainerImage().getDeployTime();
-                long containerStartupTime = container.getContainerImage().getStartupTime();
-                long nowTime = now.getMillis();
-                long startedAtTime = containerStartedAt.getMillis();
-                long remaining = (startedAtTime + containerDeployTime + containerStartupTime) - nowTime;
-
-                if (remaining > 0) { // should never be < 0
-                    return remaining;
-                } else {
-                    return 0;//startedAtTime;
-                }
-            }
-            if (container.isRunning()) {
-                return 0;
-            }		}
-
-        return 0;
     }
 
 

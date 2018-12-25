@@ -52,8 +52,8 @@ public abstract class AbstractProvisioningImpl {
         Set<ProcessStep> scheduledProcessSteps = new HashSet(optimizationResult.getProcessSteps());
         scheduledProcessSteps.addAll(inMemoryCache.getWaitingForExecutingProcessSteps());
 
-        double scheduledCPUUsage = scheduledProcessSteps.stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine().equals(vm)).mapToDouble(ps -> ps.getScheduledAtContainer().getContainerConfiguration().getCPUPoints()).sum();
-        double scheduledRAMUsage = scheduledProcessSteps.stream().filter(ps -> ps.getScheduledAtContainer().getVirtualMachine().equals(vm)).mapToDouble(ps -> ps.getScheduledAtContainer().getContainerConfiguration().getRam()).sum();
+        double scheduledCPUUsage = scheduledProcessSteps.stream().filter(ps -> ps.getContainer().getVirtualMachine().equals(vm)).mapToDouble(ps -> ps.getContainer().getContainerConfiguration().getCPUPoints()).sum();
+        double scheduledRAMUsage = scheduledProcessSteps.stream().filter(ps -> ps.getContainer().getVirtualMachine().equals(vm)).mapToDouble(ps -> ps.getContainer().getContainerConfiguration().getRam()).sum();
         double alreadyUsedCPU = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
         double alreadyUsedRAM = vm.getDeployedContainers().stream().mapToDouble(c -> c.getContainerConfiguration().getRam()).sum();
         double remainingCPUOnVm = vm.getVmType().getCpuPoints() - alreadyUsedCPU - scheduledCPUUsage;
@@ -65,7 +65,7 @@ public abstract class AbstractProvisioningImpl {
 
     protected void deployContainerAssignProcessStep(ProcessStep nextProcessStep, Container container, VirtualMachine vm, OptimizationResult optimizationResult) throws ContainerImageNotFoundException, ContainerConfigurationNotFoundException {
         container.setVirtualMachine(vm);
-        nextProcessStep.setScheduledAtContainer(container);
+        nextProcessStep.setContainer(container);
         optimizationResult.addProcessStep(nextProcessStep);
     }
 
@@ -180,8 +180,8 @@ public abstract class AbstractProvisioningImpl {
 
     protected void removeAllBusyVms(List<VirtualMachine> availableVms, List<WorkflowElement> runningWorkflowInstances) {
         Set<VirtualMachine> alreadyUsedVMs = new HashSet<>();
-        runningWorkflowInstances.forEach(workflow -> getRunningSteps(workflow).forEach(ps -> alreadyUsedVMs.add(ps.getScheduledAtContainer().getVirtualMachine())));
-        inMemoryCache.getWaitingForExecutingProcessSteps().forEach(ps -> alreadyUsedVMs.add(ps.getScheduledAtContainer().getVirtualMachine()));
+        runningWorkflowInstances.forEach(workflow -> getRunningSteps(workflow).forEach(ps -> alreadyUsedVMs.add(ps.getContainer().getVirtualMachine())));
+        inMemoryCache.getWaitingForExecutingProcessSteps().forEach(ps -> alreadyUsedVMs.add(ps.getContainer().getVirtualMachine()));
 
         Set<VirtualMachine> forOutput = new HashSet<>();
         StringBuilder builder = new StringBuilder();
@@ -214,8 +214,8 @@ public abstract class AbstractProvisioningImpl {
 
         processSteps.addAll(inMemoryCache.getWaitingForExecutingProcessSteps());
         for (ProcessStep processStep : processSteps) {
-            if (processStep.getScheduledAtVM() == vm || (processStep.getScheduledAtContainer() != null && processStep.getScheduledAtContainer().getVirtualMachine() == vm)) {
-                remainingLeasingDuration = remainingLeasingDuration - processStep.getScheduledAtContainer().getContainerImage().getDeployTime() - processStep.getExecutionTime();
+            if (processStep.getScheduledAtVM() == vm || (processStep.getContainer() != null && processStep.getContainer().getVirtualMachine() == vm)) {
+                remainingLeasingDuration = remainingLeasingDuration - processStep.getContainer().getContainerImage().getDeployTime() - processStep.getExecutionTime();
             }
         }
 

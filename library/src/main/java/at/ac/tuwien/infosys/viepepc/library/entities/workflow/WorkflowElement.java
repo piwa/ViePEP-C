@@ -24,11 +24,17 @@ public class WorkflowElement extends Element {
     private DateTime arrivedAt;
     private double penalty = 200;
 
-    public WorkflowElement(String name, long date, double penalty) {
+    public WorkflowElement(String name, long deadline, double penalty) {
         this.name = name;
         this.elements = new ArrayList<>();
-        this.deadline = date;
+        this.deadline = deadline;
         this.penalty=penalty;
+    }
+
+    public WorkflowElement(String name, long deadline) {
+        this.name = name;
+        this.elements = new ArrayList<>();
+        this.deadline = deadline;
     }
 
     public WorkflowElement() {

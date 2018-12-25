@@ -4,6 +4,7 @@ import at.ac.tuwien.infosys.viepepc.cloudcontroller.CloudControllerService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.DockerControllerService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -108,6 +109,7 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
     @Override
     public Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
 
+        container.setContainerStatus(ContainerStatus.DEPLOYING);
         if (simulate) {
             if (!virtualMachine.getAvailableContainerImages().contains(container.getContainerImage())) {
                 TimeUnit.MILLISECONDS.sleep(getSleepTime(imageNotAvailableAverage, imageNotAvailableStdDev));
@@ -120,8 +122,8 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
             container = viePEPDockerControllerService.startContainer(virtualMachine, container);
         }
 
-        container.setRunning(true);
-        container.setStartedAt(new DateTime());
+        container.setContainerStatus(ContainerStatus.DEPLOYED);
+        container.setStartDate(new DateTime());
 
         return container;
     }
@@ -129,7 +131,7 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
     @Override
     public Container startContainer(Container container) throws DockerException, InterruptedException {
 
-        container.setDeploying(true);
+        container.setContainerStatus(ContainerStatus.DEPLOYING);
         if (simulate) {
 
             TimeUnit.MILLISECONDS.sleep(ThreadLocalRandom.current().nextInt(14000, 22001));
@@ -140,9 +142,8 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
         } else {
             container = viePEPDockerControllerService.startContainer(container.getVirtualMachine(), container);
         }
-        container.setDeploying(false);
-        container.setRunning(true);
-        container.setStartedAt(new DateTime());
+        container.setContainerStatus(ContainerStatus.DEPLOYED);
+        container.setStartDate(new DateTime());
         inMemoryCache.addRunningContainer(container);
 
         return container;
