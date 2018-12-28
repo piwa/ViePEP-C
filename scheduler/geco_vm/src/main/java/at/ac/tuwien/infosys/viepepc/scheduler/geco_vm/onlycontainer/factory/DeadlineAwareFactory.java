@@ -5,15 +5,14 @@ import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
-import at.ac.tuwien.infosys.viepepc.library.registry.impl.container.ContainerImageNotFoundException;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.OrderMaintainer;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ProcessStepSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.VirtualMachineSchedulingUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.math.RandomUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Component;
 import org.uncommons.watchmaker.framework.factories.AbstractCandidateFactory;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
@@ -59,6 +57,8 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     private DateTime optimizationEndTime;
 
     private DeadlineAwareFactoryInitializer deadlineAwareFactoryInitializer;
+
+    private Random random;
 
 
     public void initialize(List<WorkflowElement> workflowElementList, DateTime optimizationEndTime) {
@@ -101,7 +101,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
      */
     @Override
     public Chromosome generateRandomCandidate(Random random) {
-
+        this.random = random;
         List<List<Chromosome.Gene>> candidate = new ArrayList<>();
 
 //        orderMaintainer.checkRowAndPrintError(new Chromosome(template), this.getClass().getSimpleName() + "_generateRandomCandidate_1", slackWebhook);
@@ -134,8 +134,6 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         scheduleContainerAndVM(newChromosome);
         considerFirstVMAndContainerStartTime(newChromosome);
 
-        // for debugging the circular dependency has to be flattened
-//        newChromosome.getGenes().stream().flatMap(List::stream).forEach(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().setScheduledContainers(new ArrayList<>()));
         orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_2", slackWebhook);
         return newChromosome;
     }
@@ -187,7 +185,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
                 VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
                 do {
 
-                    VirtualMachine randomVM = virtualMachineList.get(RandomUtils.nextInt(virtualMachineList.size()));
+                    VirtualMachine randomVM = virtualMachineList.get(random.nextInt(virtualMachineList.size()));
                     virtualMachineSchedulingUnit = this.deadlineAwareFactoryInitializer.getVirtualMachineSchedulingUnitMap().get(randomVM);
 
                     if (virtualMachineSchedulingUnit == null) {
@@ -206,7 +204,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
                 containerSchedulingUnit.setScheduledOnVm(virtualMachineSchedulingUnit);
                 virtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
-                if(!this.deadlineAwareFactoryInitializer.getVirtualMachineSchedulingUnitMap().containsKey(virtualMachineSchedulingUnit.getVirtualMachine())) {
+                if (!this.deadlineAwareFactoryInitializer.getVirtualMachineSchedulingUnitMap().containsKey(virtualMachineSchedulingUnit.getVirtualMachine())) {
                     this.deadlineAwareFactoryInitializer.getVirtualMachineSchedulingUnitMap().put(virtualMachineSchedulingUnit.getVirtualMachine(), virtualMachineSchedulingUnit);
                 }
             }
@@ -216,12 +214,12 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     private boolean enoughResourcesLeftOnVM(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, ContainerSchedulingUnit containerSchedulingUnit) {
 
         VirtualMachine vm = virtualMachineSchedulingUnit.getVirtualMachine();
-        List<ContainerConfiguration> containerOnVm = new ArrayList<>();
-        containerOnVm.add(containerSchedulingUnit.getContainerConfiguration());
-        containerOnVm.addAll(virtualMachineSchedulingUnit.getScheduledContainers().stream().map(ContainerSchedulingUnit::getContainerConfiguration).collect(Collectors.toList()));
+        List<Container> containerOnVm = new ArrayList<>();
+        containerOnVm.add(containerSchedulingUnit.getContainer());
+        containerOnVm.addAll(virtualMachineSchedulingUnit.getScheduledContainers().stream().map(ContainerSchedulingUnit::getContainer).collect(Collectors.toList()));
 
-        double scheduledCPUUsage = containerOnVm.stream().mapToDouble(c -> c.getCPUPoints()).sum();
-        double scheduledRAMUsage = containerOnVm.stream().mapToDouble(c -> c.getRam()).sum();
+        double scheduledCPUUsage = containerOnVm.stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
+        double scheduledRAMUsage = containerOnVm.stream().mapToDouble(c -> c.getContainerConfiguration().getRam()).sum();
 
         if (vm.getVmType().getCpuPoints() < scheduledCPUUsage || vm.getVmType().getRamPoints() < scheduledRAMUsage) {
             return false;
@@ -248,29 +246,55 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
         while (redo) {
             List<ContainerSchedulingUnit> containerSchedulingUnits = newChromosome.getGenes().stream().flatMap(List::stream).map(gene -> gene.getProcessStep().getContainerSchedulingUnit()).collect(Collectors.toList());
-//                    .forEach(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().setScheduledContainers(new ArrayList<>()));
-//            List<ContainerSchedulingUnit> containerSchedulingUnits = this.optimizationUtility.getContainerSchedulingUnit(newChromosome);
 
             redo = false;
             for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
-                DateTime deploymentStartTime = containerSchedulingUnit.getDeployStartTime();
+                try {
+                    DateTime containerDeploymentStartTime = containerSchedulingUnit.getDeployStartTime();
+                    VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = containerSchedulingUnit.getScheduledOnVm();
 
-                if (deploymentStartTime.isBefore(this.optimizationEndTime)) {
+                    Interval vmInterval = virtualMachineSchedulingUnit.getVmAvailableTimes().stream().filter(interval -> interval.contains(containerSchedulingUnit.getServiceAvailableTime())).findFirst().orElseThrow(Exception::new);
 
-                    for (Chromosome.Gene gene : containerSchedulingUnit.getProcessStepGenes()) {
-                        DateTime geneStartTime = gene.getExecutionInterval().getStart().minus(this.onlyContainerDeploymentTime);
-                        if (geneStartTime.isBefore(this.optimizationEndTime) && !gene.isFixed()) {
-                            long deltaTime = new Duration(geneStartTime, this.optimizationEndTime).getMillis();
+                    DateTime vmDeploymentStartTime = virtualMachineSchedulingUnit.getDeploymentTimes(vmInterval);
 
-                            gene.moveIntervalPlus(deltaTime);
-                            orderMaintainer.checkAndMaintainOrder(newChromosome);
+                    if (vmDeploymentStartTime.isBefore(this.optimizationEndTime)) {
+                        for (Chromosome.Gene gene : containerSchedulingUnit.getProcessStepGenes()) {
+                            if (!gene.isFixed()) {
+                                long deltaTime = new Duration(vmDeploymentStartTime, this.optimizationEndTime).getMillis();
 
-                            redo = true;
+                                gene.moveIntervalPlus(deltaTime);
+                                orderMaintainer.checkAndMaintainOrder(newChromosome);
+
+                                redo = true;
+                            }
+                        }
+                    }
+                    else if(containerDeploymentStartTime.isBefore(this.optimizationEndTime)) {
+                        for (Chromosome.Gene gene : containerSchedulingUnit.getProcessStepGenes()) {
+                            if (containerDeploymentStartTime.isBefore(this.optimizationEndTime) && !gene.isFixed()) {
+                                long deltaTime = new Duration(containerDeploymentStartTime, this.optimizationEndTime).getMillis();
+
+                                gene.moveIntervalPlus(deltaTime);
+                                orderMaintainer.checkAndMaintainOrder(newChromosome);
+
+                                redo = true;
+                            }
                         }
                     }
                     if (redo) {
+
+                        List<VirtualMachineSchedulingUnit> vmSchedulingUnits = containerSchedulingUnits.stream().map(ContainerSchedulingUnit::getScheduledOnVm).collect(Collectors.toList());
+                        Collection<ContainerSchedulingUnit> fixedContainerSchedulingUnits = this.deadlineAwareFactoryInitializer.getFixedContainerSchedulingUnitMap().values();
+                        vmSchedulingUnits.forEach(vmSchedulingUnit ->
+                                vmSchedulingUnit.getScheduledContainers().removeIf(containerSchedulingUnit1 ->  !fixedContainerSchedulingUnits.contains(containerSchedulingUnit1))
+                        );
+
+                        scheduleContainerAndVM(newChromosome);
+
                         break;
                     }
+                } catch (Exception e) {
+                    log.error("No matching interval found", e);
                 }
             }
         }
@@ -299,6 +323,26 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
                 }
             }
         }
+
+        Map<UUID, List<Chromosome.Gene>> map = new HashMap<>();
+        for (ContainerSchedulingUnit containerSchedulingUnit : this.deadlineAwareFactoryInitializer.getFixedContainerSchedulingUnitMap().values()) {
+            for (Chromosome.Gene processStepGene : containerSchedulingUnit.getProcessStepGenes()) {
+                if (originalToCloneMap.containsKey(processStepGene)) {
+                    if(!map.containsKey(containerSchedulingUnit.getUid())) {
+                        map.put(containerSchedulingUnit.getUid(), new ArrayList<>());
+                    }
+                    map.get(containerSchedulingUnit.getUid()).add(originalToCloneMap.get(processStepGene));
+                }
+            }
+            containerSchedulingUnit.getProcessStepGenes().removeAll(originalToCloneMap.keySet());
+        }
+
+        for (ContainerSchedulingUnit containerSchedulingUnit : this.deadlineAwareFactoryInitializer.getFixedContainerSchedulingUnitMap().values()) {
+            if(map.containsKey(containerSchedulingUnit.getUid())) {
+                containerSchedulingUnit.getProcessStepGenes().addAll(map.get(containerSchedulingUnit.getUid()));
+            }
+        }
+
         return newRow;
     }
 
@@ -317,7 +361,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
                 }
                 if (bufferBound > 0) {
 
-                    int intervalDelta = RandomUtils.nextInt(bufferBound - 1) + 1;
+                    int intervalDelta = random.nextInt(bufferBound - 1) + 1;
                     gene.moveIntervalPlus(intervalDelta);
                 }
             }

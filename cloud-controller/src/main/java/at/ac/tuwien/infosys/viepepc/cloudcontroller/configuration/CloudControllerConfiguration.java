@@ -10,7 +10,8 @@ import org.springframework.context.annotation.PropertySources;
 @PropertySources({
         @PropertySource("classpath:cloud-config/viepep4.0.properties"),
         @PropertySource("classpath:application_cloud_controller.properties"),
-        @PropertySource("classpath:container-config/container.properties")
+        @PropertySource("classpath:container-config/container.properties"),
+        @PropertySource("classpath:messagebus-config/messagebus.properties")
 })
 public class CloudControllerConfiguration {
 }

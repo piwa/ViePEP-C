@@ -1,6 +1,6 @@
-package at.ac.tuwien.infosys.viepepc.engine.bootstrap.containers;
+package at.ac.tuwien.infosys.viepepc.database.bootstrap.vmTypes;
 
-import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerConfiguration;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,11 +20,11 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@XmlRootElement(name="ContainerConfigurations")
+@XmlRootElement(name="VirtualMachineTypes")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ContainerConfigurations {
+public class VirtualMachineTypes {
 
-    @XmlElement(name = "Configuration")
-    private List<ContainerConfiguration> configuration = new ArrayList<>();
+    @XmlElement(name = "VMType")
+    private List<VMType> vmTypes = new ArrayList<>();
 
 }

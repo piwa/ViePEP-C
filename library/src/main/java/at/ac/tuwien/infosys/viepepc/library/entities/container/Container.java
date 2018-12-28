@@ -41,7 +41,7 @@ public class Container implements Cloneable {
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startDate;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    private Interval scheduledDeployedInterval;
+    private Interval scheduledAvailableInterval;
 
     private ContainerStatus containerStatus;
 

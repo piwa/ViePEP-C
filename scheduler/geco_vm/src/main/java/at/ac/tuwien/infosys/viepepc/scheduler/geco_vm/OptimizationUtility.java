@@ -11,16 +11,12 @@ import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ProcessStepSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -63,16 +59,18 @@ public class OptimizationUtility {
     public List<ContainerSchedulingUnit> getContainerSchedulingUnit(Chromosome chromosome, Map<ProcessStepSchedulingUnit, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap) {
         List<ContainerSchedulingUnit> containerSchedulingUnits = new ArrayList<>();
         getRequiredServiceTypesAndLastElements(chromosome, containerSchedulingUnits, new HashMap<>(), fixedContainerSchedulingUnitMap);
+        Collection<ContainerSchedulingUnit> fixedContainerSchedulingUnits = fixedContainerSchedulingUnitMap.values();
 
         containerSchedulingUnits.forEach(schedulingUnit -> {
-            try {
-                Container container = getContainer(schedulingUnit.getProcessStepGenes().get(0).getProcessStep().getServiceType(), schedulingUnit.getProcessStepGenes().size());
-                schedulingUnit.setContainerConfiguration(container.getContainerConfiguration());
-                schedulingUnit.getProcessStepGenes().forEach(gene -> gene.getProcessStep().setContainerSchedulingUnit(schedulingUnit));
-            } catch (ContainerImageNotFoundException e) {
-                log.error("Exception", e);
+            if(!fixedContainerSchedulingUnits.contains(schedulingUnit)) {
+                try {
+                    Container container = getContainer(schedulingUnit.getProcessStepGenes().get(0).getProcessStep().getServiceType(), schedulingUnit.getProcessStepGenes().size());
+                    schedulingUnit.setContainer(container);
+                    schedulingUnit.getProcessStepGenes().forEach(gene -> gene.getProcessStep().setContainerSchedulingUnit(schedulingUnit));
+                } catch (ContainerImageNotFoundException e) {
+                    log.error("Exception", e);
+                }
             }
-
         });
         return containerSchedulingUnits;
     }
@@ -88,15 +86,15 @@ public class OptimizationUtility {
      * @param requiredServiceTypeList
      */
     public void getRequiredServiceTypesAndLastElements(Chromosome chromosome, List<ContainerSchedulingUnit> requiredServiceTypeList, Map<String, Chromosome.Gene> lastElements, Map<ProcessStepSchedulingUnit, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap) {
-        Map<ServiceType, List<ContainerSchedulingUnit>> requiredServiceTypeMap = new HashMap<>();
+        Map<ServiceType, List<ContainerSchedulingUnit>> requiredContainerSchedulingMap = new HashMap<>();
 
-        if(fixedContainerSchedulingUnitMap != null) {
+        if (fixedContainerSchedulingUnitMap != null) {
             fixedContainerSchedulingUnitMap.forEach((processStepSchedulingUnit, containerSchedulingUnit) -> {
                 ServiceType serviceType = processStepSchedulingUnit.getServiceType();
-                if (!requiredServiceTypeMap.containsKey(serviceType)) {
-                    requiredServiceTypeMap.put(serviceType, new ArrayList<>());
+                if (!requiredContainerSchedulingMap.containsKey(serviceType)) {
+                    requiredContainerSchedulingMap.put(serviceType, new ArrayList<>());
                 }
-                requiredServiceTypeMap.get(serviceType).add(containerSchedulingUnit);
+                requiredContainerSchedulingMap.get(serviceType).add(containerSchedulingUnit);
             });
         }
 
@@ -111,24 +109,20 @@ public class OptimizationUtility {
                     }
                 }
 
-                if (!requiredServiceTypeMap.containsKey(gene.getProcessStep().getServiceType())) {
-                    requiredServiceTypeMap.put(gene.getProcessStep().getServiceType(), new ArrayList<>());
+                if (!requiredContainerSchedulingMap.containsKey(gene.getProcessStep().getServiceType())) {
+                    requiredContainerSchedulingMap.put(gene.getProcessStep().getServiceType(), new ArrayList<>());
                 }
 
                 boolean overlapFound = false;
-                List<ContainerSchedulingUnit> requiredServiceTypes = requiredServiceTypeMap.get(gene.getProcessStep().getServiceType());
-                for (ContainerSchedulingUnit requiredServiceType : requiredServiceTypes) {
-                    Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
+                List<ContainerSchedulingUnit> requiredServiceTypes = requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType());
+                for (ContainerSchedulingUnit containerSchedulingUnit : requiredServiceTypes) {
+                    Interval overlap = containerSchedulingUnit.getServiceAvailableTime().overlap(gene.getExecutionInterval());
                     if (overlap != null) {
 
-                        Interval deploymentInterval = requiredServiceType.getServiceAvailableTime();
-                        Interval geneInterval = gene.getExecutionInterval();
-                        DateTime newStartTime = new DateTime(Math.min(deploymentInterval.getStartMillis(), geneInterval.getStartMillis()));
-                        DateTime newEndTime = new DateTime(Math.max(deploymentInterval.getEndMillis(), geneInterval.getEndMillis()));
-
-                        requiredServiceType.setServiceAvailableTime(new Interval(newStartTime, newEndTime));
-                        requiredServiceType.getProcessStepGenes().add(gene);
-
+                        // TODO something is wrong here. the fixedContainerSchedulingUnitMap gets the processStepGene twice
+                        if(!containerSchedulingUnit.getProcessStepGenes().contains(gene)) {
+                            containerSchedulingUnit.getProcessStepGenes().add(gene);
+                        }
                         overlapFound = true;
                         break;
                     }
@@ -136,48 +130,47 @@ public class OptimizationUtility {
 
                 if (!overlapFound) {
                     ContainerSchedulingUnit newContainerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime);
-                    newContainerSchedulingUnit.setServiceAvailableTime(gene.getExecutionInterval());
-                    newContainerSchedulingUnit.addProcessStep(gene);
+                    newContainerSchedulingUnit.getProcessStepGenes().add(gene);
 
-                    requiredServiceTypeMap.get(gene.getProcessStep().getServiceType()).add(newContainerSchedulingUnit);
+                    requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType()).add(newContainerSchedulingUnit);
                 }
             }
         }
 
-        requiredServiceTypeMap.forEach((k, v) -> requiredServiceTypeList.addAll(v));
+        requiredContainerSchedulingMap.forEach((k, v) -> requiredServiceTypeList.addAll(v));
 
     }
 
-    public void addContainerToOverlappingMap(Map<Interval, List<Container>> overlappingContainer, ContainerSchedulingUnit filteredSchedulingUnit, Container container) {
-        boolean overlapFound = false;
-        if (!overlappingContainer.isEmpty()) {
-            Interval interval = null;
-            List<Container> containers = new ArrayList<>();
-            Interval newInterval = null;
-            for (Map.Entry<Interval, List<Container>> entry : overlappingContainer.entrySet()) {
-                interval = entry.getKey();
-                containers = entry.getValue();
-
-                if (filteredSchedulingUnit.getServiceAvailableTime().overlap(interval) != null) {
-                    containers.add(container);
-                    newInterval = new Interval(interval);
-                    newInterval = newInterval.withStartMillis(Math.min(interval.getStartMillis(), filteredSchedulingUnit.getServiceAvailableTime().getStartMillis()));
-                    newInterval = newInterval.withEndMillis(Math.max(interval.getEndMillis(), filteredSchedulingUnit.getServiceAvailableTime().getEndMillis()));
-
-                    overlapFound = true;
-                    break;
-                }
-            }
-            if(overlapFound) {
-                overlappingContainer.put(newInterval, containers);
-                overlappingContainer.remove(interval);
-            }
-        }
-
-        if (!overlapFound) {
-            overlappingContainer.put(filteredSchedulingUnit.getServiceAvailableTime(), new ArrayList<>());
-            overlappingContainer.get(filteredSchedulingUnit.getServiceAvailableTime()).add(container);
-        }
-    }
+//    public void addContainerToOverlappingMap(Map<Interval, List<Container>> overlappingContainer, ContainerSchedulingUnit filteredSchedulingUnit, Container container) {
+//        boolean overlapFound = false;
+//        if (!overlappingContainer.isEmpty()) {
+//            Interval interval = null;
+//            List<Container> containers = new ArrayList<>();
+//            Interval newInterval = null;
+//            for (Map.Entry<Interval, List<Container>> entry : overlappingContainer.entrySet()) {
+//                interval = entry.getKey();
+//                containers = entry.getValue();
+//
+//                if (filteredSchedulingUnit.getServiceAvailableTime().overlap(interval) != null) {
+//                    containers.add(container);
+//                    newInterval = new Interval(interval);
+//                    newInterval = newInterval.withStartMillis(Math.min(interval.getStartMillis(), filteredSchedulingUnit.getServiceAvailableTime().getStartMillis()));
+//                    newInterval = newInterval.withEndMillis(Math.max(interval.getEndMillis(), filteredSchedulingUnit.getServiceAvailableTime().getEndMillis()));
+//
+//                    overlapFound = true;
+//                    break;
+//                }
+//            }
+//            if(overlapFound) {
+//                overlappingContainer.put(newInterval, containers);
+//                overlappingContainer.remove(interval);
+//            }
+//        }
+//
+//        if (!overlapFound) {
+//            overlappingContainer.put(filteredSchedulingUnit.getServiceAvailableTime(), new ArrayList<>());
+//            overlappingContainer.get(filteredSchedulingUnit.getServiceAvailableTime()).add(container);
+//        }
+//    }
 
 }

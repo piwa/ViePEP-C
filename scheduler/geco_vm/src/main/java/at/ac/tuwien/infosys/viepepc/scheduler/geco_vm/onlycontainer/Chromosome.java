@@ -4,6 +4,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ProcessStepSchedulingUnit;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -175,16 +176,15 @@ public class Chromosome {
             return returnGene;
         }
 
+        @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("{");
-            builder.append("processStep=" + getProcessStep().getName() + ", ");
-            builder.append("serviceType=" + getProcessStep().getServiceType().getName() + ", ");
-            builder.append("start=" + getExecutionInterval().getStart().toString() + ", ");
-            builder.append("end=" + getExecutionInterval().getEnd().toString() + ", ");
-            builder.append("fixed=" + isFixed());
-            builder.append("} ");
-            return builder.toString();
+            return "Gene{" +
+                    "executionInterval=" + executionInterval +
+                    ", fixed=" + fixed +
+                    ", processStep=" + processStep +
+//                    ", previousGenes=" + previousGenes +
+//                    ", nextGenes=" + nextGenes +
+                    "}, ";
         }
     }
 

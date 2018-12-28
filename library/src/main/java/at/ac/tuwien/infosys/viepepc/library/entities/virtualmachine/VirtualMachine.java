@@ -40,7 +40,7 @@ public class VirtualMachine implements Serializable {
     private String ipAddress;
 
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    private Map<UUID, Interval> scheduledDeployTime;
+    private Map<UUID, Interval> scheduledAvailableIntervals;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startDate;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
@@ -93,21 +93,42 @@ public class VirtualMachine implements Serializable {
 
     @Override
     public String toString() {
-//        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-
-        String startString = startDate == null ? "NOT_YET" : startDate.toString();
-        String toBeTerminatedAtString = terminationDate == null ? "NOT_YET" : terminationDate.toString();
         return "VirtualMachine{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", googleName='" + googleName + '\'' +
                 ", instanceId='" + instanceId + '\'' +
-                ", startedAt=" + startString +
-                ", terminateAt=" + toBeTerminatedAtString +
-                ", location=" + location +
-                ", googleName=" + getGoogleName() +
-                ", ip adress=" + ipAddress +
+                ", location='" + location + '\'' +
+                ", ipAddress='" + ipAddress + '\'' +
+                ", scheduledAvailableIntervals=" + scheduledAvailableIntervals +
+                ", startDate=" + startDate +
+                ", terminationDate=" + terminationDate +
+                ", resourcepool='" + resourcepool + '\'' +
+                ", virtualMachineStatus=" + virtualMachineStatus +
+                ", vmType=" + vmType +
+                ", usedPorts=" + usedPorts +
+                ", deployedContainers=" + deployedContainers +
+                ", availableContainerImages=" + availableContainerImages +
                 '}';
     }
+
+    //    @Override
+//    public String toString() {
+////        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+//
+//        String startString = startDate == null ? "NOT_YET" : startDate.toString();
+//        String toBeTerminatedAtString = terminationDate == null ? "NOT_YET" : terminationDate.toString();
+//        return "VirtualMachine{" +
+//                "id=" + id +
+//                ", name='" + name + '\'' +
+//                ", instanceId='" + instanceId + '\'' +
+//                ", startedAt=" + startString +
+//                ", terminateAt=" + toBeTerminatedAtString +
+//                ", location=" + location +
+//                ", googleName=" + getGoogleName() +
+//                ", ip adress=" + ipAddress +
+//                '}';
+//    }
 
     public String getURI() {
         return "http://" + this.ipAddress;

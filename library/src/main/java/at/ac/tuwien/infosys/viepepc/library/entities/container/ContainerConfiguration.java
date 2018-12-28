@@ -36,12 +36,7 @@ public class ContainerConfiguration implements Cloneable {
     @XmlElement
     private double disc; //amount of needed disc space in mb
 
-    /*
-        public String getId() {
-            return "c" + String.valueOf(cores);
-        }
 
-      */
     public double getCPUPoints() {
         return cores * 100;
     }

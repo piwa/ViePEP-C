@@ -98,6 +98,10 @@ public class CacheVirtualMachineService {
         throw new Exception("TYPE not found");
     }
 
+    public VMType getVmTypeFromCore(int cores) throws Exception {
+        return getVmTypeFromCore(cores, defaultVMLocation);
+    }
+
     public VMType getVmTypeFromCore(int cores, String location) throws Exception {
         for (VMType vmType : getVMTypes()) {
             if (vmType.getCores() == cores && vmType.getLocation().equals(location)) {

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@XmlRootElement(name = "WorkflowElement")
+@XmlRootElement(name = "workflowElement")
 @Entity(name = "WorkflowElement")
 //@PrimaryKeyJoinColumn(name="identifier")
 @Table(name="WorkflowElement")

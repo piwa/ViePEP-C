@@ -22,7 +22,6 @@ import java.util.concurrent.Executor;
 @EnableAsync
 @PropertySources({
         @PropertySource("classpath:application.properties"),
-        @PropertySource("classpath:messagebus-config/messagebus.properties"),
         @PropertySource("classpath:slack-config/slack.properties"),
         @PropertySource("classpath:simulation.properties")
 })
@@ -63,16 +62,5 @@ public class MainViePEPCConfiguration implements AsyncConfigurer {
         executor.initialize();
         return executor;
     }
-
-//    @Bean
-//    @Primary
-//    public ThreadPoolTaskExecutor serviceProcessExecuter() {
-//        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-//        executor.setMaxPoolSize(200);
-//        executor.setCorePoolSize(200);
-//        executor.setQueueCapacity(100);
-//        executor.initialize();
-//        return executor;
-//    }
 
 }

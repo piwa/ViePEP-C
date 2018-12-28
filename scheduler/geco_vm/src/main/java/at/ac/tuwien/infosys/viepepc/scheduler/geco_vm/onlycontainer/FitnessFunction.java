@@ -57,6 +57,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
 
         Map<VirtualMachine, List<Interval>> virtualMachineIntervals = createVirtualMachineIntervalsMap(requiredServiceTypeList);
 
+        // TODO prefer running VMs
         // calculate the leasing cost
         double leasingCost = 0;
         for (Map.Entry<VirtualMachine, List<Interval>> virtualMachineInterval : virtualMachineIntervals.entrySet()) {

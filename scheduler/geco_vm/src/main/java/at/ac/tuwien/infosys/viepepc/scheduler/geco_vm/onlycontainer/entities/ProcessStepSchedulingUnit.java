@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities;
 import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.UUID;
 
@@ -14,7 +15,6 @@ public class ProcessStepSchedulingUnit {
     private UUID internId;
     private String workflowName;
     private boolean lastElement;
-
     private ContainerSchedulingUnit containerSchedulingUnit;
 
     public ProcessStepSchedulingUnit(ProcessStep processStep, ServiceType clonedServiceType) {
@@ -26,4 +26,15 @@ public class ProcessStepSchedulingUnit {
 
     }
 
+    @Override
+    public String toString() {
+        return "ProcessStepSchedulingUnit{" +
+                "serviceType=" + serviceType +
+                ", name='" + name + '\'' +
+                ", internId=" + internId +
+                ", workflowName='" + workflowName + '\'' +
+                ", lastElement=" + lastElement +
+                ", containerSchedulingUnit=" + containerSchedulingUnit +
+                '}';
+    }
 }

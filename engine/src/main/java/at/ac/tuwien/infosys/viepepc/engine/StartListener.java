@@ -63,8 +63,8 @@ public class StartListener {
 //                viePEPAwsClientService.initialize();
             }
 
-            cacheDockerService.initializeDockerContainers();
-            cacheVirtualMachineService.initializeVMs();
+//            cacheDockerService.initializeDockerContainers();
+//            cacheVirtualMachineService.initializeVMs();
 
             if (autostart) {
                 startReasoning();

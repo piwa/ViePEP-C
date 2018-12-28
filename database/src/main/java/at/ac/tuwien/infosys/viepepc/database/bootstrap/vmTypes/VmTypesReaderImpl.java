@@ -1,4 +1,4 @@
-package at.ac.tuwien.infosys.viepepc.engine.bootstrap.vmTypes;
+package at.ac.tuwien.infosys.viepepc.database.bootstrap.vmTypes;
 
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import org.springframework.beans.factory.annotation.Autowired;
