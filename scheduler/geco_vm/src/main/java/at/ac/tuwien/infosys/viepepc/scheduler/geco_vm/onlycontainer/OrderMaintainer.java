@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.gpedro.integrations.slack.SlackApi;
 import net.gpedro.integrations.slack.SlackMessage;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
@@ -91,8 +92,10 @@ public class OrderMaintainer {
         int rowCounter = 0;
         for (List<Chromosome.Gene> row : newChromosome.getGenes()) {
             if (!rowOrderIsOk(row)) {
-                SlackApi api = new SlackApi(slackWebhook);
-                api.call(new SlackMessage("Problem with the order! class=" + className + "; process=" + newChromosome.toString(rowCounter)));
+                if(StringUtils.isNotEmpty(slackWebhook)) {
+                    SlackApi api = new SlackApi(slackWebhook);
+                    api.call(new SlackMessage("Problem with the order! class=" + className + "; process=" + newChromosome.toString(rowCounter)));
+                }
                 log.error("Problem with the order! process=" + newChromosome.toString(rowCounter));
 
                 System.exit(1);

@@ -35,14 +35,16 @@ public class DeadlineAwareFactoryInitializer {
         this.optimizationEndTime = optimizationEndTime;
         this.containerDeploymentTime = containerDeploymentTime;
         this.virtualMachineDeploymentTime = virtualMachineDeploymentTime;
-    }
 
-    public List<Chromosome.Gene> createStartChromosome(Element currentElement) {
         this.firstGene = null;
         this.lastGene = null;
         this.clonedServiceTypes = new HashMap<>();
         this.virtualMachineSchedulingUnitMap = new HashMap<>();
         this.fixedContainerSchedulingUnitMap = new HashMap<>();
+    }
+
+    public List<Chromosome.Gene> createStartChromosome(Element currentElement) {
+
 
         List<Chromosome.Gene> subChromosome = new ArrayList<>();
         createStartChromosomeRec(currentElement, optimizationEndTime, subChromosome);

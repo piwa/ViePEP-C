@@ -1,11 +1,20 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory;
 
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.library.registry.ServiceRegistryReader;
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.service.ServiceTypeNotFoundException;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -13,9 +22,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Component
 @Profile("test")
@@ -24,6 +31,17 @@ public class WorkflowGenerationHelper {
 
     @Autowired
     private ServiceRegistryReader serviceRegistryReader;
+
+    @Autowired
+    private OptimizationUtility optimizationUtility;
+    @Autowired
+    private CacheVirtualMachineService cacheVirtualMachineService;
+
+
+    @Value("${container.default.deploy.time}")
+    private long containerDeploymentTime;
+    @Value("${virtual.machine.default.deploy.time}")
+    private long virtualMachineDeploymentTime;
 
     private double factor = 2.5;
 
@@ -84,6 +102,81 @@ public class WorkflowGenerationHelper {
         preProcess(processObject);
         processObject.setDeadline((long) (DateTime.now().getMillis() + getExecDuration(processObject) * factor));
         return processObject;
+    }
+
+    public void set_vmDeploying_containerScheduled(ProcessStep processStep) throws Exception {
+        DateTime serviceExecutionStartTime = DateTime.now().plus(this.virtualMachineDeploymentTime).plus(this.containerDeploymentTime);
+        Interval containerScheduledAvailableInterval = new Interval(serviceExecutionStartTime, serviceExecutionStartTime.plus(processStep.getServiceType().getServiceTypeResources().getMakeSpan()));
+        Interval vmScheduledAvailableInterval = new Interval(containerScheduledAvailableInterval.getStart().minus(this.containerDeploymentTime), serviceExecutionStartTime.plus(processStep.getServiceType().getServiceTypeResources().getMakeSpan()));
+
+        processStep.setStartDate(serviceExecutionStartTime);
+        processStep.setScheduledStartDate(serviceExecutionStartTime);
+
+        Container container = optimizationUtility.getContainer(processStep.getServiceType(), 1);
+        container.setScheduledAvailableInterval(containerScheduledAvailableInterval);
+        container.setStartDate(containerScheduledAvailableInterval.getStart());
+        container.setContainerStatus(ContainerStatus.SCHEDULED);
+
+        VMType vmType = cacheVirtualMachineService.getVmTypeFromCore(2);
+        VirtualMachine vm = cacheVirtualMachineService.getVMs(vmType).get(0);
+        Map<UUID, Interval> vmIntervals = new HashMap<>();
+        vmIntervals.put(UUID.randomUUID(), vmScheduledAvailableInterval);
+        vm.setScheduledAvailableIntervals(vmIntervals);
+        vm.setStartDate(vmScheduledAvailableInterval.getStart());
+        vm.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYING);
+
+        container.setVirtualMachine(vm);
+        processStep.setContainer(container);
+    }
+
+    public void set_vmDeployed_containerDeployed(ProcessStep processStep) throws Exception {
+        DateTime serviceExecutionStartTime = DateTime.now();
+        Interval containerScheduledAvailableInterval = new Interval(serviceExecutionStartTime, serviceExecutionStartTime.plus(processStep.getServiceType().getServiceTypeResources().getMakeSpan()));
+        Interval vmScheduledAvailableInterval = new Interval(containerScheduledAvailableInterval.getStart().minus(this.containerDeploymentTime), serviceExecutionStartTime.plus(processStep.getServiceType().getServiceTypeResources().getMakeSpan()));
+
+        processStep.setStartDate(serviceExecutionStartTime);
+        processStep.setScheduledStartDate(serviceExecutionStartTime);
+
+        Container container = optimizationUtility.getContainer(processStep.getServiceType(), 1);
+        container.setScheduledAvailableInterval(containerScheduledAvailableInterval);
+        container.setStartDate(containerScheduledAvailableInterval.getStart());
+        container.setContainerStatus(ContainerStatus.DEPLOYED);
+
+        VMType vmType = cacheVirtualMachineService.getVmTypeFromCore(2);
+        VirtualMachine vm = cacheVirtualMachineService.getVMs(vmType).get(0);
+        Map<UUID, Interval> vmIntervals = new HashMap<>();
+        vmIntervals.put(UUID.randomUUID(), vmScheduledAvailableInterval);
+        vm.setScheduledAvailableIntervals(vmIntervals);
+        vm.setStartDate(vmScheduledAvailableInterval.getStart());
+        vm.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
+
+        container.setVirtualMachine(vm);
+        processStep.setContainer(container);
+    }
+
+    public void set_vmDeployed_containerDeploying(ProcessStep processStep) throws Exception {
+        DateTime serviceExecutionStartTime = DateTime.now().plus(this.containerDeploymentTime);
+        Interval containerScheduledAvailableInterval = new Interval(serviceExecutionStartTime, serviceExecutionStartTime.plus(processStep.getServiceType().getServiceTypeResources().getMakeSpan()));
+        Interval vmScheduledAvailableInterval = new Interval(containerScheduledAvailableInterval.getStart().minus(this.containerDeploymentTime), serviceExecutionStartTime.plus(processStep.getServiceType().getServiceTypeResources().getMakeSpan()));
+
+        processStep.setStartDate(serviceExecutionStartTime);
+        processStep.setScheduledStartDate(serviceExecutionStartTime);
+
+        Container container = optimizationUtility.getContainer(processStep.getServiceType(), 1);
+        container.setScheduledAvailableInterval(containerScheduledAvailableInterval);
+        container.setStartDate(containerScheduledAvailableInterval.getStart());
+        container.setContainerStatus(ContainerStatus.DEPLOYING);
+
+        VMType vmType = cacheVirtualMachineService.getVmTypeFromCore(2);
+        VirtualMachine vm = cacheVirtualMachineService.getVMs(vmType).get(0);
+        Map<UUID, Interval> vmIntervals = new HashMap<>();
+        vmIntervals.put(UUID.randomUUID(), vmScheduledAvailableInterval);
+        vm.setScheduledAvailableIntervals(vmIntervals);
+        vm.setStartDate(vmScheduledAvailableInterval.getStart());
+        vm.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
+
+        container.setVirtualMachine(vm);
+        processStep.setContainer(container);
     }
 
     private void preProcess(Element parent) throws ServiceTypeNotFoundException {
