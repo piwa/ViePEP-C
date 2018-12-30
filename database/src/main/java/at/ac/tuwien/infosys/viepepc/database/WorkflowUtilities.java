@@ -1,10 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database;
 
-import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
-import org.joda.time.DateTime;
 
 import java.util.List;
 

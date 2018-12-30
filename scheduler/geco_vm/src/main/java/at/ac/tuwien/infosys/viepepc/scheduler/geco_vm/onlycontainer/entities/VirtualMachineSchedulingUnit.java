@@ -1,11 +1,14 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities;
 
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import lombok.Data;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Data
@@ -13,7 +16,7 @@ public class VirtualMachineSchedulingUnit {
 
     private final UUID uid;
     private final long virtualMachineDeploymentDuration;
-    private VirtualMachine virtualMachine;
+    private VirtualMachineInstance virtualMachineInstance;
     private List<ContainerSchedulingUnit> scheduledContainers = new ArrayList<>();
 
     public VirtualMachineSchedulingUnit(long virtualMachineDeploymentDuration) {
@@ -21,16 +24,18 @@ public class VirtualMachineSchedulingUnit {
         this.uid = UUID.randomUUID();
     }
 
-    public List<Interval> getVmAvailableTimes() {
+    public Interval getVmAvailableInterval() {
         List<Interval> containerIntervals = scheduledContainers.stream().map(ContainerSchedulingUnit::getResourceRequirementDuration).collect(Collectors.toList());
-        return mergeAndConsiderVMDeploymentDuration(containerIntervals);
+        return IntervalMergeHelper.mergeAndConsiderVMDeploymentDuration(containerIntervals);
     }
 
-    public List<DateTime> getListOfDeploymentTimes() {
-        List<Interval> mergedIntervals = getVmAvailableTimes();
-        List<DateTime> listOfDeploymentTimes = new ArrayList<>();
-        mergedIntervals.forEach(interval -> listOfDeploymentTimes.add(interval.getStart().minus(virtualMachineDeploymentDuration)));
-        return listOfDeploymentTimes;
+    public Interval getCloudResourceUsageInterval() {
+        Interval mergedInterval = getVmAvailableInterval();
+        return mergedInterval.withStart(mergedInterval.getStart().minus(virtualMachineDeploymentDuration));
+    }
+
+    public DateTime getListOfDeploymentStartTime() {
+        return getCloudResourceUsageInterval().getStart();
     }
 
     public DateTime getDeploymentTimes(Interval interval) {
@@ -40,9 +45,9 @@ public class VirtualMachineSchedulingUnit {
     @Override
     public String toString() {
         return "VirtualMachineSchedulingUnit{" +
-                "virtualMachine=" + virtualMachine +
-                ", availableTimes=" + getVmAvailableTimes() +
-                ", listOfDeploymentTimes=" + getListOfDeploymentTimes() +
+                "virtualMachineInstance=" + virtualMachineInstance +
+                ", availableTimes=" + getVmAvailableInterval() +
+                ", listOfDeploymentTimes=" + getListOfDeploymentStartTime() +
                 '}';
     }
 
@@ -53,41 +58,13 @@ public class VirtualMachineSchedulingUnit {
         VirtualMachineSchedulingUnit that = (VirtualMachineSchedulingUnit) o;
         return getVirtualMachineDeploymentDuration() == that.getVirtualMachineDeploymentDuration() &&
                 getUid().equals(that.getUid()) &&
-                getVirtualMachine().equals(that.getVirtualMachine());
+                this.getVirtualMachineInstance().equals(that.getVirtualMachineInstance());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUid(), getVirtualMachineDeploymentDuration(), getVirtualMachine());
+        return Objects.hash(getUid(), getVirtualMachineDeploymentDuration(), this.getVirtualMachineInstance());
     }
 
-    private List<Interval> mergeAndConsiderVMDeploymentDuration(List<Interval> intervals) {
-
-        if(intervals.size() == 0 || intervals.size() == 1) {
-            return intervals;
-        }
-
-        Collections.sort(intervals, new IntervalStartComparator());
-
-        Interval first = intervals.get(0);
-        long start = first.getStartMillis();
-        long end = first.getEndMillis();
-
-        List<Interval> result = new ArrayList<>();
-
-        for(int i = 1; i < intervals.size(); i++){
-            Interval current = intervals.get(i);
-            if(current.getStartMillis() <= end || current.getStartMillis() - virtualMachineDeploymentDuration <= end){
-                end = Math.max(current.getEndMillis(), end);
-            }
-            else{
-                result.add(new Interval(start, end));
-                start = current.getStartMillis();
-                end = current.getEndMillis();
-            }
-        }
-        result.add(new Interval(start, end));
-        return result;
-    }
 }
 

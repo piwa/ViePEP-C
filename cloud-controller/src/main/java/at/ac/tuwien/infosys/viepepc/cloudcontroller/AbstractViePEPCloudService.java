@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.cloudcontroller;
 
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -17,26 +17,26 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractViePEPCloudService {
 
 
-    protected void waitUntilVmIsBooted(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
+    protected void waitUntilVmIsBooted(VirtualMachineInstance virtualMachineInstance) throws VmCouldNotBeStartedException {
         int counter = 0;
         Boolean connection = false;
         do {
             try {
                 counter = counter + 1;
                 TimeUnit.SECONDS.sleep(1);
-                final DockerClient docker = DefaultDockerClient.builder().uri(URI.create("http://" + virtualMachine.getIpAddress() + ":2375")).connectTimeoutMillis(100000).connectionPoolSize(20).build();
+                final DockerClient docker = DefaultDockerClient.builder().uri(URI.create("http://" + virtualMachineInstance.getIpAddress() + ":2375")).connectTimeoutMillis(100000).connectionPoolSize(20).build();
                 docker.ping();
                 connection = true;
             } catch (InterruptedException | DockerException e) {
-                log.debug("VM " + virtualMachine + " is not available yet.");
+                log.debug("VM " + virtualMachineInstance + " is not available yet.");
             }
         } while (!connection && counter <= 5);
         if (!connection) {
-            throw new VmCouldNotBeStartedException("VM " + virtualMachine + " is not available.");
+            throw new VmCouldNotBeStartedException("VM " + virtualMachineInstance + " is not available.");
         }
     }
 
-    public boolean checkAvailabilityOfDockerhost(VirtualMachine vm) {
+    public boolean checkAvailabilityOfDockerhost(VirtualMachineInstance vm) {
         final DockerClient docker = DefaultDockerClient.builder().uri("http://" + vm.getIpAddress() + ":2375").connectTimeoutMillis(10000).connectionPoolSize(20).build();
         try {
             return docker.ping().equals("OK");

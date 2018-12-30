@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.AbstractViePEPCloudService;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -27,7 +27,7 @@ public class CloudSimulatorClientService extends AbstractViePEPCloudService {
     @Value("${vm.simulation.deploy.duration.stddev}")
     private int durationStdDev;
 
-    public VirtualMachine startVM(VirtualMachine virtualMachine) {
+    public VirtualMachineInstance startVM(VirtualMachineInstance virtualMachineInstance) {
 
 
         try {
@@ -48,31 +48,31 @@ public class CloudSimulatorClientService extends AbstractViePEPCloudService {
 
         String uri = "128.130.172.211";
 
-        virtualMachine.setResourcepool("simulation");
-        virtualMachine.setInstanceId("simulation" + UUID.randomUUID().toString());
-        virtualMachine.setIpAddress(uri);
-        virtualMachine.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
-        virtualMachine.setStartDate(DateTime.now());
+        virtualMachineInstance.setResourcepool("simulation");
+        virtualMachineInstance.setInstanceId("simulation" + UUID.randomUUID().toString());
+        virtualMachineInstance.setIpAddress(uri);
+        virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
+        virtualMachineInstance.setStartTime(DateTime.now());
 
-        log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
-
-
-        log.debug("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " established.");
+        log.info("VM with id: " + virtualMachineInstance.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
 
 
-        return virtualMachine;
+        log.debug("VM connection with id: " + virtualMachineInstance.getInstanceId() + " and IP " + uri + " established.");
+
+
+        return virtualMachineInstance;
     }
 
 
-    public final boolean stopVirtualMachine(VirtualMachine virtualMachine) {
-        log.info("VM with id: " + virtualMachine.getInstanceId() + " terminated");
-        virtualMachine.setIpAddress(null);
+    public final boolean stopVirtualMachine(VirtualMachineInstance virtualMachineInstance) {
+        log.info("VM with id: " + virtualMachineInstance.getInstanceId() + " terminated");
+        virtualMachineInstance.setIpAddress(null);
         return true;
     }
 
 
     @Override
-    public boolean checkAvailabilityOfDockerhost(VirtualMachine vm) {
+    public boolean checkAvailabilityOfDockerhost(VirtualMachineInstance vm) {
         return true;
 
     }

@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.library;
 
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +23,7 @@ public class OptimizationResult {
     private int minTauTDifference;
     private long tauT1;
     private List<ProcessStep> processSteps = new ArrayList<>();
-    private List<VirtualMachine> vms = new ArrayList<>();
+    private List<VirtualMachineInstance> vms = new ArrayList<>();
 
     public OptimizationResult() {
         tauT1 = DateTime.now().plus(minTauTDifference).getMillis();
@@ -37,7 +37,7 @@ public class OptimizationResult {
         processSteps.add(processStep);
     }
 
-    public void addVirtualMachine(VirtualMachine virtualMachine) {
-        vms.add(virtualMachine);
+    public void addVirtualMachine(VirtualMachineInstance virtualMachineInstance) {
+        vms.add(virtualMachineInstance);
     }
 }

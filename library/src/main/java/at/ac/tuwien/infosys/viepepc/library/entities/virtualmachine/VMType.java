@@ -34,15 +34,11 @@ public class VMType implements Serializable {
     @XmlElement
     private int cores;
     @XmlElement
-    private String flavor;
+    private String flavorName;
     @XmlElement(name = "ram")
     private double ramPoints;
     @XmlElement
     private String location;
-    @XmlElement
-    private long leasingDuration;
-    @XmlElement
-    private long deployTime;
 
     private double storage;
 

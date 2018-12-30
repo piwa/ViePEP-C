@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import lombok.extern.slf4j.Slf4j;
@@ -38,12 +38,12 @@ public class ActionExecutor {
     @Async
     public void startInvocationViaContainersOnVms(List<ProcessStep> processSteps) {
 
-        final Map<VirtualMachine, Map<Container, List<ProcessStep>>> vmContainerProcessStepMap = new HashMap<>();
+        final Map<VirtualMachineInstance, Map<Container, List<ProcessStep>>> vmContainerProcessStepMap = new HashMap<>();
         final Map<Container, List<ProcessStep>> containerProcessStepsMap = createContainerProcessStepMap(processSteps);
 
         for (final Container container : containerProcessStepsMap.keySet()) {
 
-            VirtualMachine scheduledAt = container.getVirtualMachine();
+            VirtualMachineInstance scheduledAt = container.getVirtualMachineInstance();
             if (scheduledAt == null) {
                 log.error("No VM set for Container " + container);
             }
@@ -53,14 +53,14 @@ public class ActionExecutor {
             vmContainerProcessStepMap.get(scheduledAt).put(container, containerProcessStepsMap.get(container));
         }
 
-        for (final VirtualMachine virtualMachine : vmContainerProcessStepMap.keySet()) {
-            final Map<Container, List<ProcessStep>> containerProcessSteps = vmContainerProcessStepMap.get(virtualMachine);
+        for (final VirtualMachineInstance virtualMachineInstance : vmContainerProcessStepMap.keySet()) {
+            final Map<Container, List<ProcessStep>> containerProcessSteps = vmContainerProcessStepMap.get(virtualMachineInstance);
             try {
-                if (!virtualMachine.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
-                    withVMDeploymentController.leaseVMAndStartExecutionOnContainer(virtualMachine, containerProcessSteps);
+                if (!virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
+                    withVMDeploymentController.leaseVMAndStartExecutionOnContainer(virtualMachineInstance, containerProcessSteps);
 
                 } else {
-                    withVMDeploymentController.startExecutionsOnContainer(vmContainerProcessStepMap.get(virtualMachine), virtualMachine);
+                    withVMDeploymentController.startExecutionsOnContainer(vmContainerProcessStepMap.get(virtualMachineInstance), virtualMachineInstance);
                 }
             } catch (Exception e) {
                 log.error("Unable start invocation: " + e);

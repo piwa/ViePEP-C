@@ -2,7 +2,8 @@ package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.AbstractViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.internal.util.Base64;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class AwsClientService extends AbstractViePEPCloudService {
 
+    @Autowired
+    private CacheVirtualMachineService cacheVirtualMachineService;
 
     @Value("${aws.access.key.id}")
     private String awsAccessKeyId;
@@ -56,15 +60,15 @@ public class AwsClientService extends AbstractViePEPCloudService {
     }
 
 
-    public VirtualMachine startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
+    public VirtualMachineInstance startVM(VirtualMachineInstance virtualMachineInstance) throws VmCouldNotBeStartedException {
 
         try {
 
             setup();
 
-            if (virtualMachine == null) {
-                virtualMachine = new VirtualMachine();
-                virtualMachine.getVmType().setFlavor("m1.large");
+            if (virtualMachineInstance == null) {
+                virtualMachineInstance = new VirtualMachineInstance(cacheVirtualMachineService.getDefaultVMType());
+                virtualMachineInstance.getVmType().setFlavorName("m1.large");
             }
 
             String cloudInit = "";
@@ -77,7 +81,7 @@ public class AwsClientService extends AbstractViePEPCloudService {
             RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
 
             runInstancesRequest.withImageId(awsDefaultImageId)
-                    .withInstanceType(virtualMachine.getVmType().getFlavor())
+                    .withInstanceType(virtualMachineInstance.getVmType().getFlavorName())
                     .withMinCount(1)
                     .withMaxCount(1)
                     .withUserData(Base64.encodeAsString(cloudInit))
@@ -90,27 +94,27 @@ public class AwsClientService extends AbstractViePEPCloudService {
 
             Instance instance = getAwsInstance(instanceId);
 
-            virtualMachine.setResourcepool("aws");
-            virtualMachine.setInstanceId(instance.getInstanceId());
-            virtualMachine.setIpAddress(instance.getPublicIpAddress());
-            virtualMachine.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
-            virtualMachine.setStartDate(DateTime.now());
+            virtualMachineInstance.setResourcepool("aws");
+            virtualMachineInstance.setInstanceId(instance.getInstanceId());
+            virtualMachineInstance.setIpAddress(instance.getPublicIpAddress());
+            virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
+            virtualMachineInstance.setStartTime(DateTime.now());
             //size in GB
 
-            log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + instance.getPublicIpAddress() + " was started. Waiting for connection...");
+            log.info("VM with id: " + virtualMachineInstance.getInstanceId() + " and IP " + instance.getPublicIpAddress() + " was started. Waiting for connection...");
 
 
-            waitUntilVmIsBooted(virtualMachine);
+            waitUntilVmIsBooted(virtualMachineInstance);
 
 
-            log.info("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + instance.getPublicIpAddress() + " established.");
+            log.info("VM connection with id: " + virtualMachineInstance.getInstanceId() + " and IP " + instance.getPublicIpAddress() + " established.");
 
         } catch (Exception e) {
             log.error("Exception while booting VM", e);
             throw new VmCouldNotBeStartedException(e);
         }
 
-        return virtualMachine;
+        return virtualMachineInstance;
     }
 
     private Instance getAwsInstance(String instanceId) {
@@ -146,10 +150,10 @@ public class AwsClientService extends AbstractViePEPCloudService {
     }
 
 
-    public final boolean stopVirtualMachine(VirtualMachine virtualMachine) {
-        boolean success = stopVirtualMachine(virtualMachine.getInstanceId());
+    public final boolean stopVirtualMachine(VirtualMachineInstance virtualMachineInstance) {
+        boolean success = stopVirtualMachine(virtualMachineInstance.getInstanceId());
         if (success) {
-            virtualMachine.setIpAddress(null);
+            virtualMachineInstance.setIpAddress(null);
         }
 
         return success;

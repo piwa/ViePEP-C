@@ -2,11 +2,13 @@ package at.ac.tuwien.infosys.viepepc.scheduler.library;
 
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheProcessStepService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
@@ -30,9 +32,11 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
     @Autowired
     private CacheVirtualMachineService cacheVirtualMachineService;
     @Autowired
+    private CacheContainerService cacheContainerService;
+    @Autowired
     private CacheWorkflowService cacheWorkflowService;
     @Autowired
-    private InMemoryCacheImpl inMemoryCache;
+    private CacheProcessStepService cacheProcessStepService;
 
     @Override
     public void printRunningInformation() {
@@ -53,45 +57,39 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
 
 
         stringBuilder.append("\n------------------------------ VMs running -------------------------------\n");
-        List<VirtualMachine> vMs = cacheVirtualMachineService.getAllVMs();
-        for (VirtualMachine vm : vMs) {
-            if (vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
-                stringBuilder.append(vm.toString()).append("\n");
-            }
+        List<VirtualMachineInstance> deployedVMInstances = cacheVirtualMachineService.getDeployedVMInstances();
+        for (VirtualMachineInstance vm : deployedVMInstances) {
+            stringBuilder.append(vm.toString()).append("\n");
         }
 
         stringBuilder.append("--------------------------- Containers running ---------------------------\n");
-        for (VirtualMachine vm : vMs) {
-            for (Container container : vm.getDeployedContainers()) {
-                if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
-                    stringBuilder.append(container.toString()).append("\n");
-                }
-            }
-        }
+        for (Container container : cacheContainerService.getDeployedContainers()) {
+            stringBuilder.append(container.toString()).append("\n");
 
+        }
         stringBuilder.append("----------------------------- Tasks running ------------------------------\n");
         getRunningTasks(stringBuilder);
     }
 
 
     private void printWaitingInformation(StringBuilder stringBuilder) {
-        Set<Container> containers = inMemoryCache.getWaitingForExecutingProcessSteps().stream().map(ProcessStep::getContainer).collect(Collectors.toSet());
 
         stringBuilder.append("------------------------ VMs waiting for starting ------------------------\n");
-        Set<VirtualMachine> vms = containers.stream().map(Container::getVirtualMachine).collect(Collectors.toSet());
-        for (VirtualMachine vm : vms) {
+        List<VirtualMachineInstance> vms = cacheVirtualMachineService.getDeployedVMInstances();
+        for (VirtualMachineInstance vm : vms) {
             if (vm.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED) || vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYING)) {
                 stringBuilder.append(vm.toString()).append("\n");
             }
         }
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
+        List<Container> containers = cacheContainerService.getAllContainerInstances();
         for (Container container : containers) {
             if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED) || container.getContainerStatus().equals(ContainerStatus.DEPLOYING)) {
                 stringBuilder.append(container.toString()).append("\n");
             }
         }
         stringBuilder.append("----------------------- Tasks waiting for starting -----------------------\n");
-        for (ProcessStep processStep : inMemoryCache.getWaitingForExecutingProcessSteps()) {
+        for (ProcessStep processStep : cacheProcessStepService.getWaitingForExecutingProcessSteps()) {
             stringBuilder.append(processStep.toString()).append("\n");
         }
     }

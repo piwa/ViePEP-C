@@ -1,19 +1,13 @@
 package at.ac.tuwien.infosys.viepepc.engine;
 
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import lombok.extern.slf4j.Slf4j;
 import net.gpedro.integrations.slack.SlackApi;
 import net.gpedro.integrations.slack.SlackMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Scanner;
@@ -27,10 +21,6 @@ import java.util.concurrent.Future;
 @Profile("!test")
 public class StartListener {
 
-    @Autowired
-    private CacheVirtualMachineService cacheVirtualMachineService;
-    @Autowired
-    private CacheContainerService cacheDockerService;
     @Autowired
     private ReasoningActivator reasoningActivator;
 

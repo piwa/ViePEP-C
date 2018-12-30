@@ -4,7 +4,7 @@ import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachi
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.library.registry.ServiceRegistryReader;
@@ -114,18 +114,17 @@ public class WorkflowGenerationHelper {
 
         Container container = optimizationUtility.getContainer(processStep.getServiceType(), 1);
         container.setScheduledAvailableInterval(containerScheduledAvailableInterval);
+        container.setScheduledCloudResourceUsage(containerScheduledAvailableInterval.withStart(containerScheduledAvailableInterval.getStart().minus(containerDeploymentTime)));
         container.setStartDate(containerScheduledAvailableInterval.getStart());
         container.setContainerStatus(ContainerStatus.SCHEDULED);
 
-        VMType vmType = cacheVirtualMachineService.getVmTypeFromCore(2);
-        VirtualMachine vm = cacheVirtualMachineService.getVMs(vmType).get(0);
-        Map<UUID, Interval> vmIntervals = new HashMap<>();
-        vmIntervals.put(UUID.randomUUID(), vmScheduledAvailableInterval);
-        vm.setScheduledAvailableIntervals(vmIntervals);
-        vm.setStartDate(vmScheduledAvailableInterval.getStart());
+        VirtualMachineInstance vm = cacheVirtualMachineService.getNewVirtualMachineInstance(2);
+        vm.setScheduledAvailableInterval(vmScheduledAvailableInterval);
+        vm.setScheduledCloudResourceUsage(vmScheduledAvailableInterval.withStart(vmScheduledAvailableInterval.getStart().minus(virtualMachineDeploymentTime)));
+        vm.setStartTime(vmScheduledAvailableInterval.getStart());
         vm.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYING);
 
-        container.setVirtualMachine(vm);
+        container.setVirtualMachineInstance(vm);
         processStep.setContainer(container);
     }
 
@@ -139,18 +138,17 @@ public class WorkflowGenerationHelper {
 
         Container container = optimizationUtility.getContainer(processStep.getServiceType(), 1);
         container.setScheduledAvailableInterval(containerScheduledAvailableInterval);
+        container.setScheduledCloudResourceUsage(containerScheduledAvailableInterval.withStart(containerScheduledAvailableInterval.getStart().minus(containerDeploymentTime)));
         container.setStartDate(containerScheduledAvailableInterval.getStart());
         container.setContainerStatus(ContainerStatus.DEPLOYED);
 
-        VMType vmType = cacheVirtualMachineService.getVmTypeFromCore(2);
-        VirtualMachine vm = cacheVirtualMachineService.getVMs(vmType).get(0);
-        Map<UUID, Interval> vmIntervals = new HashMap<>();
-        vmIntervals.put(UUID.randomUUID(), vmScheduledAvailableInterval);
-        vm.setScheduledAvailableIntervals(vmIntervals);
-        vm.setStartDate(vmScheduledAvailableInterval.getStart());
+        VirtualMachineInstance vm = cacheVirtualMachineService.getNewVirtualMachineInstance(2);
+        vm.setScheduledAvailableInterval(vmScheduledAvailableInterval);
+        vm.setScheduledCloudResourceUsage(vmScheduledAvailableInterval.withStart(vmScheduledAvailableInterval.getStart().minus(virtualMachineDeploymentTime)));
+        vm.setStartTime(vmScheduledAvailableInterval.getStart());
         vm.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
 
-        container.setVirtualMachine(vm);
+        container.setVirtualMachineInstance(vm);
         processStep.setContainer(container);
     }
 
@@ -164,18 +162,17 @@ public class WorkflowGenerationHelper {
 
         Container container = optimizationUtility.getContainer(processStep.getServiceType(), 1);
         container.setScheduledAvailableInterval(containerScheduledAvailableInterval);
+        container.setScheduledCloudResourceUsage(containerScheduledAvailableInterval.withStart(containerScheduledAvailableInterval.getStart().minus(containerDeploymentTime)));
         container.setStartDate(containerScheduledAvailableInterval.getStart());
         container.setContainerStatus(ContainerStatus.DEPLOYING);
 
-        VMType vmType = cacheVirtualMachineService.getVmTypeFromCore(2);
-        VirtualMachine vm = cacheVirtualMachineService.getVMs(vmType).get(0);
-        Map<UUID, Interval> vmIntervals = new HashMap<>();
-        vmIntervals.put(UUID.randomUUID(), vmScheduledAvailableInterval);
-        vm.setScheduledAvailableIntervals(vmIntervals);
-        vm.setStartDate(vmScheduledAvailableInterval.getStart());
+        VirtualMachineInstance vm = cacheVirtualMachineService.getNewVirtualMachineInstance(2);
+        vm.setScheduledAvailableInterval(vmScheduledAvailableInterval);
+        vm.setScheduledCloudResourceUsage(vmScheduledAvailableInterval.withStart(vmScheduledAvailableInterval.getStart().minus(virtualMachineDeploymentTime)));
+        vm.setStartTime(vmScheduledAvailableInterval.getStart());
         vm.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
 
-        container.setVirtualMachine(vm);
+        container.setVirtualMachineInstance(vm);
         processStep.setContainer(container);
     }
 

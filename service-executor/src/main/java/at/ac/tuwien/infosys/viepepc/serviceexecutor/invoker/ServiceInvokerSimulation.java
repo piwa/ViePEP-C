@@ -1,7 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.Message;
 import at.ac.tuwien.infosys.viepepc.library.ServiceExecutionStatus;

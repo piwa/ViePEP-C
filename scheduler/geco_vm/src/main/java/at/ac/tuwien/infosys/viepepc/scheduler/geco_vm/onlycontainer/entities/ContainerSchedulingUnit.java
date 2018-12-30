@@ -26,10 +26,6 @@ public class ContainerSchedulingUnit {
         this.uid = UUID.randomUUID();
     }
 
-    //    public void addProcessStep(Chromosome.Gene processStep) {
-//        processStepGenes.add(processStep);
-//    }
-
     public Chromosome.Gene getFirstGene() {
         Chromosome.Gene firstGene = null;
         for (Chromosome.Gene gene : processStepGenes) {
@@ -42,18 +38,7 @@ public class ContainerSchedulingUnit {
 
     public Interval getServiceAvailableTime() {
         List<Interval> intervals = processStepGenes.stream().map(Chromosome.Gene::getExecutionInterval).collect(Collectors.toList());
-
-        if(intervals.size() == 0) {
-            return null;
-        } else if(intervals.size() == 1) {
-            return intervals.get(0);
-        }
-        Collections.sort(intervals, new IntervalStartComparator());
-
-        DateTime start = intervals.get(0).getStart();
-        DateTime end = intervals.get(intervals.size()-1).getEnd();
-
-        return new Interval(start, end);
+        return IntervalMergeHelper.mergeAndConsiderVMDeploymentDuration(intervals);
     }
 
     public DateTime getDeployStartTime() {

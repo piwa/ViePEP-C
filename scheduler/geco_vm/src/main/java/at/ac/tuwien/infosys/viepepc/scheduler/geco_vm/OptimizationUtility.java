@@ -17,12 +17,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @SuppressWarnings("Duplicates")
 public class OptimizationUtility {
-
 
     @Autowired
     private ContainerImageRegistryReader containerImageRegistryReader;
@@ -52,17 +52,16 @@ public class OptimizationUtility {
 
     }
 
-    public List<ContainerSchedulingUnit> getContainerSchedulingUnit(Chromosome chromosome) {
-        return getContainerSchedulingUnit(chromosome, null);
-    }
+//    public List<ContainerSchedulingUnit> createRequiredContainerSchedulingUnits(Chromosome chromosome) {
+//        return createRequiredContainerSchedulingUnits(chromosome, null);
+//    }
 
-    public List<ContainerSchedulingUnit> getContainerSchedulingUnit(Chromosome chromosome, Map<ProcessStepSchedulingUnit, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap) {
-        List<ContainerSchedulingUnit> containerSchedulingUnits = new ArrayList<>();
-        getRequiredServiceTypesAndLastElements(chromosome, containerSchedulingUnits, new HashMap<>(), fixedContainerSchedulingUnitMap);
+    public List<ContainerSchedulingUnit> createRequiredContainerSchedulingUnits(Chromosome chromosome, Map<ProcessStepSchedulingUnit, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap) {
+        List<ContainerSchedulingUnit> containerSchedulingUnits = createRequiredContainerSchedulingUnits(chromosome);
         Collection<ContainerSchedulingUnit> fixedContainerSchedulingUnits = fixedContainerSchedulingUnitMap.values();
 
         containerSchedulingUnits.forEach(schedulingUnit -> {
-            if(!fixedContainerSchedulingUnits.contains(schedulingUnit)) {
+            if (!fixedContainerSchedulingUnits.contains(schedulingUnit)) {
                 try {
                     Container container = getContainer(schedulingUnit.getProcessStepGenes().get(0).getProcessStep().getServiceType(), schedulingUnit.getProcessStepGenes().size());
                     schedulingUnit.setContainer(container);
@@ -75,106 +74,90 @@ public class OptimizationUtility {
         return containerSchedulingUnits;
     }
 
-    public void getRequiredServiceTypesAndLastElements(Chromosome chromosome, List<ContainerSchedulingUnit> requiredServiceTypeList, Map<String, Chromosome.Gene> lastElements) {
-        getRequiredServiceTypesAndLastElements(chromosome, requiredServiceTypeList, lastElements, null);
-    }
-
     /**
      * returns a list of service types (can be mapped to containers) that have to be deployed to execute a list of process steps.
      *
      * @param chromosome
-     * @param requiredServiceTypeList
      */
-    public void getRequiredServiceTypesAndLastElements(Chromosome chromosome, List<ContainerSchedulingUnit> requiredServiceTypeList, Map<String, Chromosome.Gene> lastElements, Map<ProcessStepSchedulingUnit, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap) {
+    public List<ContainerSchedulingUnit> createRequiredContainerSchedulingUnits(Chromosome chromosome) {
         Map<ServiceType, List<ContainerSchedulingUnit>> requiredContainerSchedulingMap = new HashMap<>();
 
-//        if (fixedContainerSchedulingUnitMap != null) {
-//            fixedContainerSchedulingUnitMap.forEach((processStepSchedulingUnit, containerSchedulingUnit) -> {
-//                ServiceType serviceType = processStepSchedulingUnit.getServiceType();
-//                if (!requiredContainerSchedulingMap.containsKey(serviceType)) {
-//                    requiredContainerSchedulingMap.put(serviceType, new ArrayList<>());
-//                }
-//                requiredContainerSchedulingMap.get(serviceType).add(containerSchedulingUnit);
-//            });
-//        }
+        chromosome.getGenes().stream().flatMap(Collection::stream).filter(gene -> !gene.isFixed()).forEach(gene -> {
+            if (!requiredContainerSchedulingMap.containsKey(gene.getProcessStep().getServiceType())) {
+                requiredContainerSchedulingMap.put(gene.getProcessStep().getServiceType(), new ArrayList<>());
+            }
 
-        for (List<Chromosome.Gene> row : chromosome.getGenes()) {           // one process
+            boolean overlapFound = false;
+            List<ContainerSchedulingUnit> requiredServiceTypes = requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType());
+            for (ContainerSchedulingUnit containerSchedulingUnit : requiredServiceTypes) {
+                Interval overlap = containerSchedulingUnit.getServiceAvailableTime().overlap(gene.getExecutionInterval());
+                if (overlap != null) {
 
-            for (Chromosome.Gene gene : row) {
-
-                if (gene.getProcessStep().isLastElement()) {
-                    Chromosome.Gene lastGene = lastElements.get(gene.getProcessStep().getWorkflowName());
-                    if (lastGene == null || gene.getExecutionInterval().getEnd().isAfter(lastGene.getExecutionInterval().getEnd())) {
-                        lastElements.put(gene.getProcessStep().getWorkflowName(), gene);
+                    // TODO something is wrong here. the fixedContainerSchedulingUnitMap gets the processStepGene twice
+                    if (!containerSchedulingUnit.getProcessStepGenes().contains(gene)) {
+                        containerSchedulingUnit.getProcessStepGenes().add(gene);
                     }
-                }
-
-                if(!gene.isFixed()) {
-
-
-                    if (!requiredContainerSchedulingMap.containsKey(gene.getProcessStep().getServiceType())) {
-                        requiredContainerSchedulingMap.put(gene.getProcessStep().getServiceType(), new ArrayList<>());
-                    }
-
-                    boolean overlapFound = false;
-                    List<ContainerSchedulingUnit> requiredServiceTypes = requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType());
-                    for (ContainerSchedulingUnit containerSchedulingUnit : requiredServiceTypes) {
-                        Interval overlap = containerSchedulingUnit.getServiceAvailableTime().overlap(gene.getExecutionInterval());
-                        if (overlap != null) {
-
-                            // TODO something is wrong here. the fixedContainerSchedulingUnitMap gets the processStepGene twice
-                            if (!containerSchedulingUnit.getProcessStepGenes().contains(gene)) {
-                                containerSchedulingUnit.getProcessStepGenes().add(gene);
-                            }
-                            overlapFound = true;
-                            break;
-                        }
-                    }
-
-                    if (!overlapFound) {
-                        ContainerSchedulingUnit newContainerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime);
-                        newContainerSchedulingUnit.getProcessStepGenes().add(gene);
-
-                        requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType()).add(newContainerSchedulingUnit);
-                    }
+                    overlapFound = true;
+                    break;
                 }
             }
-        }
 
-        requiredContainerSchedulingMap.forEach((k, v) -> requiredServiceTypeList.addAll(v));
+            if (!overlapFound) {
+                ContainerSchedulingUnit newContainerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime);
+                newContainerSchedulingUnit.getProcessStepGenes().add(gene);
 
-    }
+                requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType()).add(newContainerSchedulingUnit);
+            }
+        });
 
-//    public void addContainerToOverlappingMap(Map<Interval, List<Container>> overlappingContainer, ContainerSchedulingUnit filteredSchedulingUnit, Container container) {
-//        boolean overlapFound = false;
-//        if (!overlappingContainer.isEmpty()) {
-//            Interval interval = null;
-//            List<Container> containers = new ArrayList<>();
-//            Interval newInterval = null;
-//            for (Map.Entry<Interval, List<Container>> entry : overlappingContainer.entrySet()) {
-//                interval = entry.getKey();
-//                containers = entry.getValue();
+//        for (List<Chromosome.Gene> row : chromosome.getGenes()) {
+//            for (Chromosome.Gene gene : row) {
+//                if(!gene.isFixed()) {
+//           if (!requiredContainerSchedulingMap.containsKey(gene.getProcessStep().getServiceType())) {
+//                        requiredContainerSchedulingMap.put(gene.getProcessStep().getServiceType(), new ArrayList<>());
+//                    }
 //
-//                if (filteredSchedulingUnit.getServiceAvailableTime().overlap(interval) != null) {
-//                    containers.add(container);
-//                    newInterval = new Interval(interval);
-//                    newInterval = newInterval.withStartMillis(Math.min(interval.getStartMillis(), filteredSchedulingUnit.getServiceAvailableTime().getStartMillis()));
-//                    newInterval = newInterval.withEndMillis(Math.max(interval.getEndMillis(), filteredSchedulingUnit.getServiceAvailableTime().getEndMillis()));
+//                    boolean overlapFound = false;
+//                    List<ContainerSchedulingUnit> requiredServiceTypes = requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType());
+//                    for (ContainerSchedulingUnit containerSchedulingUnit : requiredServiceTypes) {
+//                        Interval overlap = containerSchedulingUnit.getServiceAvailableTime().overlap(gene.getExecutionInterval());
+//                        if (overlap != null) {
 //
-//                    overlapFound = true;
-//                    break;
+//                            // TODO something is wrong here. the fixedContainerSchedulingUnitMap gets the processStepGene twice
+//                            if (!containerSchedulingUnit.getProcessStepGenes().contains(gene)) {
+//                                containerSchedulingUnit.getProcessStepGenes().add(gene);
+//                            }
+//                            overlapFound = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (!overlapFound) {
+//                        ContainerSchedulingUnit newContainerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime);
+//                        newContainerSchedulingUnit.getProcessStepGenes().add(gene);
+//
+//                        requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType()).add(newContainerSchedulingUnit);
+//                    }
 //                }
 //            }
-//            if(overlapFound) {
-//                overlappingContainer.put(newInterval, containers);
-//                overlappingContainer.remove(interval);
-//            }
 //        }
-//
-//        if (!overlapFound) {
-//            overlappingContainer.put(filteredSchedulingUnit.getServiceAvailableTime(), new ArrayList<>());
-//            overlappingContainer.get(filteredSchedulingUnit.getServiceAvailableTime()).add(container);
-//        }
-//    }
+
+//        List<ContainerSchedulingUnit> requiredServiceTypeList = new ArrayList<>();
+//        requiredContainerSchedulingMap.forEach((k, v) -> requiredServiceTypeList.addAll(v));
+        return requiredContainerSchedulingMap.values().stream().flatMap(List::stream).collect(Collectors.toList());
+    }
+
+    public Map<String, Chromosome.Gene> getLastElements(Chromosome chromosome) {
+        Map<String, Chromosome.Gene> lastElements = new HashMap<>();
+
+        chromosome.getGenes().stream().flatMap(Collection::stream).filter(gene -> gene.getProcessStep().isLastElement()).forEach(gene -> {
+            Chromosome.Gene lastGene = lastElements.get(gene.getProcessStep().getWorkflowName());
+            if (lastGene == null || gene.getExecutionInterval().getEnd().isAfter(lastGene.getExecutionInterval().getEnd())) {
+                lastElements.put(gene.getProcessStep().getWorkflowName(), gene);
+            }
+        });
+
+        return lastElements;
+    }
 
 }

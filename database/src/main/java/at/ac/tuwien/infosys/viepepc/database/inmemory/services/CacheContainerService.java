@@ -1,8 +1,12 @@
 package at.ac.tuwien.infosys.viepepc.database.inmemory.services;
 
+import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerConfiguration;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.registry.ServiceRegistryReader;
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.container.ContainerConfigurationNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by philippwaibel on 13/06/16. edited by Gerta Sheganaku
@@ -36,52 +42,74 @@ public class CacheContainerService {
         serviceTypeAmount = serviceRegistryReader.getServiceTypeAmount();
         containerConfigurationAmount = inMemoryCache.getContainerConfigurations().size();
     }
-    
-    public List<ContainerConfiguration> getContainerConfigurations(ServiceType serviceType) {
-        List<ContainerConfiguration> returnList = new ArrayList<>();
 
-        for(ContainerConfiguration containerConfiguration : inMemoryCache.getContainerConfigurations()) {
-            if (serviceType.getServiceTypeResources().getCpuLoad() <= containerConfiguration.getCPUPoints() && serviceType.getServiceTypeResources().getMemory() <= containerConfiguration.getRam()) {
-                returnList.add(containerConfiguration);
-            }
-        }
-
-        returnList.sort((config1, config2) -> (Double.compare(config1.getCores(), config2.getCores())));
-
-        return returnList;
+    public List<Container> getDeployedContainers() {
+        return inMemoryCache.getContainerInstances().stream().filter(container -> container.getContainerStatus().equals(ContainerStatus.DEPLOYED)).collect(Collectors.toList());
     }
 
-    public ContainerConfiguration getBestContainerConfigurations(double requiredCpuLoad, double requiredRamLoad) throws ContainerConfigurationNotFoundException {
-        List<ContainerConfiguration> allPossibleConfigs = getAllPossibleContainerConfigurations(requiredCpuLoad, requiredRamLoad);
-        ContainerConfiguration containerConfiguration = null;
-        for (ContainerConfiguration tempContainerConfig : allPossibleConfigs) {
-            if (containerConfiguration == null) {
-                containerConfiguration = tempContainerConfig;
-            }
-            else if (containerConfiguration.getCPUPoints() > tempContainerConfig.getCPUPoints() || containerConfiguration.getRam() > tempContainerConfig.getRam()) {
-                containerConfiguration = tempContainerConfig;
-            }
-        }
-
-        if(containerConfiguration == null) {
-            throw new ContainerConfigurationNotFoundException();
-        }
-
-        return containerConfiguration;
+    public List<Container> getDeployingContainers() {
+        return inMemoryCache.getContainerInstances().stream().filter(container -> container.getContainerStatus().equals(VirtualMachineStatus.DEPLOYING)).collect(Collectors.toList());
     }
 
-    public List<ContainerConfiguration> getAllPossibleContainerConfigurations(double requiredCpuLoad, double requiredRamLoad) {
-        List<ContainerConfiguration> returnList = new ArrayList<>();
-
-        for(ContainerConfiguration containerConfiguration : inMemoryCache.getContainerConfigurations()) {
-            if (requiredCpuLoad <= containerConfiguration.getCPUPoints() && requiredRamLoad <= containerConfiguration.getRam()) {
-                returnList.add(containerConfiguration);
-            }
-        }
-
-        returnList.sort((config1, config2) -> (Double.compare(config1.getCores(), config2.getCores())));
-
-        return returnList;
+    public List<Container> getDeployingAndDeployedContainers() {
+        List<Container> returnSet = getDeployedContainers();
+        returnSet.addAll(getDeployingContainers());
+        return returnSet;
     }
+
+    public void addRunningContainer(Container container) {
+        inMemoryCache.getContainerInstances().add(container);
+    }
+
+    public List<Container> getAllContainerInstances() {
+        return inMemoryCache.getContainerInstances();
+    }
+
+//    public List<ContainerConfiguration> getContainerConfigurations(ServiceType serviceType) {
+//        List<ContainerConfiguration> returnList = new ArrayList<>();
+//
+//        for(ContainerConfiguration containerConfiguration : inMemoryCache.getContainerConfigurations()) {
+//            if (serviceType.getServiceTypeResources().getCpuLoad() <= containerConfiguration.getCPUPoints() && serviceType.getServiceTypeResources().getMemory() <= containerConfiguration.getRam()) {
+//                returnList.add(containerConfiguration);
+//            }
+//        }
+//
+//        returnList.sort((config1, config2) -> (Double.compare(config1.getCores(), config2.getCores())));
+//
+//        return returnList;
+//    }
+//
+//    public ContainerConfiguration getBestContainerConfigurations(double requiredCpuLoad, double requiredRamLoad) throws ContainerConfigurationNotFoundException {
+//        List<ContainerConfiguration> allPossibleConfigs = getAllPossibleContainerConfigurations(requiredCpuLoad, requiredRamLoad);
+//        ContainerConfiguration containerConfiguration = null;
+//        for (ContainerConfiguration tempContainerConfig : allPossibleConfigs) {
+//            if (containerConfiguration == null) {
+//                containerConfiguration = tempContainerConfig;
+//            }
+//            else if (containerConfiguration.getCPUPoints() > tempContainerConfig.getCPUPoints() || containerConfiguration.getRam() > tempContainerConfig.getRam()) {
+//                containerConfiguration = tempContainerConfig;
+//            }
+//        }
+//
+//        if(containerConfiguration == null) {
+//            throw new ContainerConfigurationNotFoundException();
+//        }
+//
+//        return containerConfiguration;
+//    }
+//
+//    public List<ContainerConfiguration> getAllPossibleContainerConfigurations(double requiredCpuLoad, double requiredRamLoad) {
+//        List<ContainerConfiguration> returnList = new ArrayList<>();
+//
+//        for(ContainerConfiguration containerConfiguration : inMemoryCache.getContainerConfigurations()) {
+//            if (requiredCpuLoad <= containerConfiguration.getCPUPoints() && requiredRamLoad <= containerConfiguration.getRam()) {
+//                returnList.add(containerConfiguration);
+//            }
+//        }
+//
+//        returnList.sort((config1, config2) -> (Double.compare(config1.getCores(), config2.getCores())));
+//
+//        return returnList;
+//    }
 
 }

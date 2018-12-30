@@ -32,7 +32,7 @@ public class BootstrapDatabase implements ApplicationListener<ContextRefreshedEv
         vmTypesReader.readVMTypes();
 
         cacheDockerService.initializeDockerContainers();
-        cacheVirtualMachineService.initializeVMs();
+//        cacheVirtualMachineService.initializeVMs();
     }
 
 }

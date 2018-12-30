@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -21,8 +24,13 @@ public class CacheProcessStepService {
         return inMemoryCache.getProcessStepsWaitingForServiceDone().values()
                 .stream().filter(processStep -> processStep.getContainer() == container && processStep.getFinishedAt() == null)
                 .collect(Collectors.toList());
-
-
     }
 
+    public ConcurrentMap<String, ProcessStep> getProcessStepsWaitingForServiceDone() {
+        return inMemoryCache.getProcessStepsWaitingForServiceDone();
+    }
+
+    public Set<ProcessStep> getWaitingForExecutingProcessSteps() {
+        return inMemoryCache.getWaitingForExecutingProcessSteps();
+    }
 }

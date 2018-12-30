@@ -3,8 +3,7 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
@@ -14,22 +13,32 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class DeadlineAwareFactoryInitializer {
 
-    @Getter @Setter private Chromosome.Gene firstGene;
-    @Getter @Setter private Chromosome.Gene lastGene;
+    @Getter
+    @Setter
+    private Chromosome.Gene firstGene;
+    @Getter
+    @Setter
+    private Chromosome.Gene lastGene;
     private DateTime optimizationEndTime;
-    @Setter private final long containerDeploymentTime;
-    @Setter private final long virtualMachineDeploymentTime;
+    @Setter
+    private final long containerDeploymentTime;
+    @Setter
+    private final long virtualMachineDeploymentTime;
 
     private Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
-    @Getter private Map<VirtualMachine, VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitMap = new HashMap<>();
-    @Getter private Map<ProcessStepSchedulingUnit, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap = new HashMap<>();
+    @Getter
+    private Map<VirtualMachineInstance, VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitMap = new HashMap<>();
+    @Getter
+    private Map<ProcessStepSchedulingUnit, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap = new HashMap<>();
 
     public DeadlineAwareFactoryInitializer(DateTime optimizationEndTime, long containerDeploymentTime, long virtualMachineDeploymentTime) {
         this.optimizationEndTime = optimizationEndTime;
@@ -45,33 +54,21 @@ public class DeadlineAwareFactoryInitializer {
 
     public List<Chromosome.Gene> createStartChromosome(Element currentElement) {
 
-
         List<Chromosome.Gene> subChromosome = new ArrayList<>();
         createStartChromosomeRec(currentElement, optimizationEndTime, subChromosome);
 
         return subChromosome;
-
     }
 
     private DateTime createStartChromosomeRec(Element currentElement, DateTime startTime, List<Chromosome.Gene> chromosome) {
         if (currentElement instanceof ProcessStep) {
 
             ProcessStep processStep = (ProcessStep) currentElement;
-//            boolean isRunning = processStep.getStartDate() != null && processStep.getFinishedAt() == null;
-//            boolean isDone = processStep.getStartDate() != null && processStep.getFinishedAt() != null;
-//
-//
-//            if (isRunning == false && processStep.getScheduledStartDate() != null) {
-//                isRunning = processStep.getScheduledStartDate().isBefore(this.optimizationEndTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isAfter(this.optimizationEndTime);
-//            }
-//            if (isDone == false && processStep.getScheduledStartDate() != null) {
-//                isDone = processStep.getScheduledStartDate().isBefore(this.optimizationEndTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationEndTime);
-//            }
 
             boolean isRunning = false;
             boolean isDone = false;
 
-            if(processStep.getScheduledStartDate() != null) {
+            if (processStep.getScheduledStartDate() != null) {
                 if (processStep.getStartDate() != null && processStep.getFinishedAt() == null &&
                         processStep.getScheduledStartDate().isBefore(this.optimizationEndTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isAfter(this.optimizationEndTime)) {
                     isRunning = true;
@@ -123,25 +120,18 @@ public class DeadlineAwareFactoryInitializer {
             return startTime;
         }
 
-        if(processStep.getContainer() != null) {
+        if (processStep.getContainer() != null) {
             DateTime containerDeployStartTime = processStep.getContainer().getScheduledAvailableInterval().getStart().minus(containerDeploymentTime);
+            Container container = processStep.getContainer();
             ContainerStatus containerStatus = processStep.getContainer().getContainerStatus();
-//            VirtualMachineStatus virtualMachineStatus = processStep.getContainer().getVirtualMachine().getVirtualMachineStatus();
-//            Collection<Interval> virtualMachineDeployStartTime = processStep.getContainer().getVirtualMachine().getScheduledAvailableIntervals().values();
-            // TODO at the moment we do not fix a processStep when the VM is booting since a VM can be booted for a lot of containers (e.g. 10). This would mean that
-            //  we fix all process steps -> maybe fix only if the VM is booted for this process step. Or maybe if the process step is under the 3 earliest process steps that will be executed on this VM
+            VirtualMachineInstance virtualMachineInstance = container.getVirtualMachineInstance();
 
-            if(containerStatus.equals(ContainerStatus.DEPLOYING) || containerStatus.equals(ContainerStatus.DEPLOYED) || containerDeployStartTime.isBefore(this.optimizationEndTime)
-//                    || virtualMachineStatus.equals(VirtualMachineStatus.DEPLOYING) || virtualMachineStatus.equals(VirtualMachineStatus.DEPLOYED)
-                    ) {
+            if (containerStatus.equals(ContainerStatus.DEPLOYING) || containerStatus.equals(ContainerStatus.DEPLOYED) || containerDeployStartTime.isBefore(this.optimizationEndTime)) {
+                inProcessStepExecutionPrepartation = true;
+            } else if (virtualMachineInstance.getScheduledAvailableInterval().getStart().plus(10000).isAfter(container.getScheduledCloudResourceUsage().getStart())) {
                 inProcessStepExecutionPrepartation = true;
             }
         }
-
-
-//        if (processStep.getContainer() != null && (processStep.getContainer().getContainerStatus().equals(ContainerStatus.DEPLOYING) || processStep.getContainer().getContainerStatus().equals(ContainerStatus.DEPLOYED))) {
-//            inProcessStepExecutionPrepartation = true;
-//        }
 
         if (processStep.isHasToBeExecuted() && !isRunning && !inProcessStepExecutionPrepartation) {
 
@@ -195,7 +185,7 @@ public class DeadlineAwareFactoryInitializer {
 
             ProcessStepSchedulingUnit processStepSchedulingUnit = new ProcessStepSchedulingUnit(processStep, clonedServiceType);
 
-            if(isFixed) {
+            if (isFixed) {
                 Container container = processStep.getContainer();
                 ContainerSchedulingUnit containerSchedulingUnit = fixedContainerSchedulingUnitMap.get(container);
                 if (containerSchedulingUnit == null) {
@@ -205,11 +195,11 @@ public class DeadlineAwareFactoryInitializer {
                 }
                 processStepSchedulingUnit.setContainerSchedulingUnit(containerSchedulingUnit);
 
-                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachine());
+                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());
                 if (virtualMachineSchedulingUnit == null) {
                     virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(virtualMachineDeploymentTime);
-                    virtualMachineSchedulingUnit.setVirtualMachine(container.getVirtualMachine());
-                    virtualMachineSchedulingUnitMap.put(container.getVirtualMachine(), virtualMachineSchedulingUnit);
+                    virtualMachineSchedulingUnit.setVirtualMachineInstance(container.getVirtualMachineInstance());
+                    virtualMachineSchedulingUnitMap.put(container.getVirtualMachineInstance(), virtualMachineSchedulingUnit);
                 }
                 virtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
                 containerSchedulingUnit.setScheduledOnVm(virtualMachineSchedulingUnit);

@@ -1,7 +1,5 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations;
 
-import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.OrderMaintainer;
@@ -165,7 +163,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
 //
 //        overlappingContainer.forEach( (interval, containers) -> {
 //
-//            Map<VirtualMachine, List<Container>> virtualMachineContainerMap = new HashMap<>();
+//            Map<VirtualMachineInstance, List<Container>> virtualMachineContainerMap = new HashMap<>();
 //
 //
 //
@@ -193,11 +191,11 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     }
 
     private boolean considerFirstContainerStartTime(Chromosome newChromosome, Chromosome.Gene movedGene) {
-        List<ContainerSchedulingUnit> containerSchedulingUnits = this.optimizationUtility.getContainerSchedulingUnit(newChromosome);
+        List<ContainerSchedulingUnit> containerSchedulingUnits = this.optimizationUtility.createRequiredContainerSchedulingUnits(newChromosome);
         for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
             if (containerSchedulingUnit.getProcessStepGenes().contains(movedGene)) {
                 DateTime deploymentStartTime = containerSchedulingUnit.getDeployStartTime();
-                ;
+
                 if (deploymentStartTime.isBefore(this.optimizationTime) && containerSchedulingUnit.getFirstGene() == movedGene) {
                     return false;
                 } else {

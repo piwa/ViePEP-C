@@ -2,7 +2,8 @@ package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.AbstractViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import com.google.api.gax.paging.Page;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -11,6 +12,7 @@ import com.google.cloud.compute.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +23,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class GCloudClientService extends AbstractViePEPCloudService {
+
+    @Autowired
+    private CacheVirtualMachineService cacheVirtualMachineService;
 
     @Value("${gcloud.default.project.id}")
     private String gcloudProjectId;
@@ -37,36 +42,36 @@ public class GCloudClientService extends AbstractViePEPCloudService {
     @Value("${gcloud.use.public.ip}")
     private boolean gcloudUsePublicIp;
 
-    public VirtualMachine startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
+    public VirtualMachineInstance startVM(VirtualMachineInstance virtualMachineInstance) throws VmCouldNotBeStartedException {
         try {
             Compute compute = setup();
 
-            if (virtualMachine == null) {
-                virtualMachine = new VirtualMachine();
-                virtualMachine.getVmType().setFlavor(gcloudMachineType);
+            if (virtualMachineInstance == null) {
+                virtualMachineInstance = new VirtualMachineInstance(cacheVirtualMachineService.getDefaultVMType());
+                virtualMachineInstance.getVmType().setFlavorName(gcloudMachineType);
             }
 
-            Instance instance = startInstance(compute, virtualMachine);
+            Instance instance = startInstance(compute, virtualMachineInstance);
 
-            virtualMachine.setResourcepool("gcloud");
-            virtualMachine.setInstanceId(instance.getGeneratedId());
+            virtualMachineInstance.setResourcepool("gcloud");
+            virtualMachineInstance.setInstanceId(instance.getGeneratedId());
             if (gcloudUsePublicIp) {
-                virtualMachine.setIpAddress(instance.getNetworkInterfaces().get(0).getAccessConfigurations().get(0).getNatIp());
+                virtualMachineInstance.setIpAddress(instance.getNetworkInterfaces().get(0).getAccessConfigurations().get(0).getNatIp());
             } else {
-                virtualMachine.setIpAddress(instance.getNetworkInterfaces().get(0).getNetworkIp());
+                virtualMachineInstance.setIpAddress(instance.getNetworkInterfaces().get(0).getNetworkIp());
             }
 
-            log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + virtualMachine.getIpAddress() + " was started. Waiting for connection...");
+            log.info("VM with id: " + virtualMachineInstance.getInstanceId() + " and IP " + virtualMachineInstance.getIpAddress() + " was started. Waiting for connection...");
 
-            waitUntilVmIsBooted(virtualMachine);
+            waitUntilVmIsBooted(virtualMachineInstance);
 
-            virtualMachine.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
-            virtualMachine.setStartDate(DateTime.now());
+            virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
+            virtualMachineInstance.setStartTime(DateTime.now());
 
-            log.info("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + virtualMachine.getIpAddress() + " established.");
+            log.info("VM connection with id: " + virtualMachineInstance.getInstanceId() + " and IP " + virtualMachineInstance.getIpAddress() + " established.");
 
 
-            return virtualMachine;
+            return virtualMachineInstance;
 
 
         } catch (Exception e) {
@@ -77,10 +82,10 @@ public class GCloudClientService extends AbstractViePEPCloudService {
 
     }
 
-    public final boolean stopVirtualMachine(VirtualMachine virtualMachine) {
+    public final boolean stopVirtualMachine(VirtualMachineInstance virtualMachineInstance) {
         try {
             Compute compute = setup();
-            deleteInstance(compute, virtualMachine.getGoogleName());
+            deleteInstance(compute, virtualMachineInstance.getGoogleName());
         } catch (Exception e) {
             log.error("Exception while stopping VM", e);
             return false;
@@ -105,7 +110,7 @@ public class GCloudClientService extends AbstractViePEPCloudService {
         return instances;
     }
 
-    private Instance startInstance(Compute compute, VirtualMachine virtualMachine) throws Exception {
+    private Instance startInstance(Compute compute, VirtualMachineInstance virtualMachineInstance) throws Exception {
 
         ImageId imageId = ImageId.of(gcloudImageProject, gcloudImageId);
         NetworkId networkId = NetworkId.of("default");
@@ -117,8 +122,8 @@ public class GCloudClientService extends AbstractViePEPCloudService {
         } else {
             networkInterface = NetworkInterface.newBuilder(networkId).build();
         }
-        InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, virtualMachine.getGoogleName());
-        MachineTypeId machineTypeId = MachineTypeId.of(gcloudDefaultRegion, virtualMachine.getVmType().getFlavor());
+        InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, virtualMachineInstance.getGoogleName());
+        MachineTypeId machineTypeId = MachineTypeId.of(gcloudDefaultRegion, virtualMachineInstance.getVmType().getFlavorName());
 
         String cloudInit = "";
         try {

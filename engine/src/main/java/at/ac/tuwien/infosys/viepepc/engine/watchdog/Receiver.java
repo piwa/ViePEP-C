@@ -3,7 +3,7 @@ package at.ac.tuwien.infosys.viepepc.engine.watchdog;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.ActionExecutorUtilities;
 import at.ac.tuwien.infosys.viepepc.library.entities.Action;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerReportingAction;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
@@ -56,14 +56,14 @@ public class Receiver {
             } else {
                 log.warn("Service throw an exception: ProcessStep=" + message.getProcessStepName() + ",Exception=" + message.getBody());
                 ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
-                resetContainerAndProcessStep(processStep.getContainer().getVirtualMachine(), processStep, "Service");
+                resetContainerAndProcessStep(processStep.getContainer().getVirtualMachineInstance(), processStep, "Service");
             }
         } catch (Exception ex) {
             log.error("Exception in receive message method", ex);
         }
     }
 
-    private void resetContainerAndProcessStep(VirtualMachine vm, ProcessStep processStep, String reason) {
+    private void resetContainerAndProcessStep(VirtualMachineInstance vm, ProcessStep processStep, String reason) {
         ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getContainer().getName(), processStep.getContainer().getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, reason);
         reportDaoService.save(reportContainer);
 

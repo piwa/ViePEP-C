@@ -31,8 +31,8 @@ public class ServiceInvokerImpl implements ServiceInvoker {
         String task = processStep.getServiceType().getName().replace("service", "");
         task = task.replace("Service", "");
         String uri;
-        if (container.getVirtualMachine() != null) {
-            uri = createURI(container.getVirtualMachine().getURI(), container.getExternPort(), task, processStep.getName());
+        if (container.getVirtualMachineInstance() != null) {
+            uri = createURI(container.getVirtualMachineInstance().getURI(), container.getExternPort(), task, processStep.getName());
         } else {
             uri = createURI(container.getIpAddress(), container.getExternPort(), task, processStep.getName());
         }

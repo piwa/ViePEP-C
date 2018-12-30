@@ -4,7 +4,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.Action;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerReportingAction;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineReportingAction;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
@@ -24,21 +24,21 @@ public class ActionExecutorUtilities {
     @Autowired
     private DockerControllerService containerControllerService;
 
-    public void terminateVM(VirtualMachine virtualMachine) {
+    public void terminateVM(VirtualMachineInstance virtualMachineInstance) {
 
-        log.info("Terminate: " + virtualMachine);
+        log.info("Terminate: " + virtualMachineInstance);
 
-        virtualMachine.setVirtualMachineStatus(VirtualMachineStatus.TERMINATED);
+        virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.TERMINATED);
 
-        if (virtualMachine.getDeployedContainers().size() > 0) {
-            virtualMachine.getDeployedContainers().forEach(container -> stopContainer(container));
+        if (virtualMachineInstance.getDeployedContainers().size() > 0) {
+            virtualMachineInstance.getDeployedContainers().forEach(container -> stopContainer(container));
         }
 
-        cloudControllerService.stopVirtualMachine(virtualMachine);
+        cloudControllerService.stopVirtualMachine(virtualMachineInstance);
 
-        virtualMachine.terminate();
+        virtualMachineInstance.terminate();
 
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.STOPPED);
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.STOPPED);
         reportDaoService.save(report);
     }
 
@@ -48,8 +48,8 @@ public class ActionExecutorUtilities {
 
             if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
 
-                if (container.getVirtualMachine() != null) {
-                    VirtualMachine vm = container.getVirtualMachine();
+                if (container.getVirtualMachineInstance() != null) {
+                    VirtualMachineInstance vm = container.getVirtualMachineInstance();
                     log.info("Stop Container: " + container + " on VM: " + vm);
 
                     ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.STOPPED);

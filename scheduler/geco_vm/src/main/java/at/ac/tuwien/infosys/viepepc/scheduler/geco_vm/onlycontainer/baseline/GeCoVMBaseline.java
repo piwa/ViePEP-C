@@ -1,12 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.baseline;
 
-import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.AbstractOnlyContainerOptimization;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory.DeadlineAwareFactory;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.SchedulerAlgorithm;
@@ -54,7 +50,7 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
             return new OptimizationResult();
         }
 
-//        DeadlineAwareFactory factory = new DeadlineAwareFactory(workflowElements, this.optimizationTime, defaultContainerDeployTime, defaultContainerStartupTime, false, optimizationUtility, onlyContainerDeploymentTime, allowedPenaltyPoints, slackWebhook);
+//        DeadlineAwareFactory factory = new DeadlineAwareFactory(workflowElements, this.optimizationEndTime, defaultContainerDeployTime, defaultContainerStartupTime, false, optimizationUtility, onlyContainerDeploymentTime, allowedPenaltyPoints, slackWebhook);
 //
 //        return createOptimizationResult(new Chromosome(factory.getTemplate()), workflowElements);
         return null;

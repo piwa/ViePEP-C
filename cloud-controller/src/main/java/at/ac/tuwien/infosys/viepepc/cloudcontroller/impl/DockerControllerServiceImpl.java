@@ -2,7 +2,7 @@ package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.CloudControllerService;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import com.google.common.collect.Lists;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
@@ -38,16 +38,16 @@ public class DockerControllerServiceImpl {
     @Autowired
     private DockerPullHelper dockerPullHelper;
 
-    public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
+    public synchronized Container startContainer(VirtualMachineInstance virtualMachineInstance, Container container) throws DockerException, InterruptedException {
 
-        boolean result = checkAvailabilityOfDockerhostWithRetry(virtualMachine);
+        boolean result = checkAvailabilityOfDockerhostWithRetry(virtualMachineInstance);
 
         if (result == false) {
-            throw new DockerException("Dockerhost not available " + virtualMachine.toString());
+            throw new DockerException("Dockerhost not available " + virtualMachineInstance.toString());
         }
 
         /* Connect to docker server of the host */
-        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).connectionPoolSize(20).build();
+        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachineInstance.getIpAddress() + ":2375").connectTimeoutMillis(60000).connectionPoolSize(20).build();
 
         String containerImage = container.getContainerImage().getRepoName() + "/" + container.getContainerImage().getImageName();
 
@@ -57,16 +57,16 @@ public class DockerControllerServiceImpl {
         String internalPort = String.valueOf(container.getContainerImage().getServiceType().getServiceTypeResources().getInternPort());
 
         /* Configure docker container */
-        Double vmCores = (double) virtualMachine.getVmType().getCores();
+        Double vmCores = (double) virtualMachineInstance.getVmType().getCores();
         Double containerCores = container.getContainerConfiguration().getCores();
 
         long containerMemory = (long) container.getContainerConfiguration().getRam() * 1024 * 1024;
         long cpuShares = 1024 / (long) Math.ceil(vmCores / containerCores);
 
         /* Bind container port (processingNodeServerPort) to an available host port */
-        String hostPort = getAvailablePortOnHost(virtualMachine);
+        String hostPort = getAvailablePortOnHost(virtualMachineInstance);
         if (hostPort == null) {
-            throw new DockerException("Not available port on host " + virtualMachine.getInstanceId() + " to bind a new container");
+            throw new DockerException("Not available port on host " + virtualMachineInstance.getInstanceId() + " to bind a new container");
         }
 
         final Map<String, List<PortBinding>> portBindings = new HashMap<>();
@@ -93,18 +93,18 @@ public class DockerControllerServiceImpl {
 
         /* Save docker container information on repository */
 
-        virtualMachine.getDeployedContainers().add(container);
-        virtualMachine.getAvailableContainerImages().add(container.getContainerImage());
+        virtualMachineInstance.getDeployedContainers().add(container);
+        virtualMachineInstance.getAvailableContainerImages().add(container.getContainerImage());
         container.setContainerID(id);
-        container.setVirtualMachine(virtualMachine);
+        container.setVirtualMachineInstance(virtualMachineInstance);
         container.setExternPort(hostPort);
 
 
 
         /* Update the set of used port on docker host */
-        List<String> usedPorts = virtualMachine.getUsedPorts();
+        List<String> usedPorts = virtualMachineInstance.getUsedPorts();
         usedPorts.add(hostPort);
-        virtualMachine.setUsedPorts(usedPorts);
+        virtualMachineInstance.setUsedPorts(usedPorts);
 
 /*
         for(int i = 0; i < 10; i++) {
@@ -124,15 +124,15 @@ public class DockerControllerServiceImpl {
         }
 */
 
-        log.info("A new container with the ID: " + id + " on the host: " + virtualMachine.getInstanceId() + " has been started.");
+        log.info("A new container with the ID: " + id + " on the host: " + virtualMachineInstance.getInstanceId() + " has been started.");
 
         return container;
     }
 
-    private boolean checkAvailabilityOfDockerhostWithRetry(VirtualMachine virtualMachine) {
+    private boolean checkAvailabilityOfDockerhostWithRetry(VirtualMachineInstance virtualMachineInstance) {
 
         for (int i = 0; i < 10; i++) {
-            if (cloudControllerService.checkAvailabilityOfDockerhost(virtualMachine)) {
+            if (cloudControllerService.checkAvailabilityOfDockerhost(virtualMachineInstance)) {
                 return true;
             }
             try {
@@ -147,8 +147,8 @@ public class DockerControllerServiceImpl {
 
 
     public void removeContainer(Container container) {
-        VirtualMachine virtualMachine = container.getVirtualMachine();
-        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachine.getIpAddress() + ":2375").connectTimeoutMillis(60000).build();
+        VirtualMachineInstance virtualMachineInstance = container.getVirtualMachineInstance();
+        final DockerClient docker = DefaultDockerClient.builder().uri("http://" + virtualMachineInstance.getIpAddress() + ":2375").connectTimeoutMillis(60000).build();
 
 
         try {
@@ -184,18 +184,18 @@ public class DockerControllerServiceImpl {
         }
 
         // Free monitoring port previously used by the docker container
-        List<String> usedPorts = virtualMachine.getUsedPorts();
+        List<String> usedPorts = virtualMachineInstance.getUsedPorts();
         usedPorts.remove(container.getExternPort());
-        virtualMachine.setUsedPorts(usedPorts);
+        virtualMachineInstance.setUsedPorts(usedPorts);
 
         container.shutdownContainer();
 
-        log.debug("The container: " + container.getContainerID() + " on the host: " + virtualMachine + " was removed.");
+        log.debug("The container: " + container.getContainerID() + " on the host: " + virtualMachineInstance + " was removed.");
 
     }
 
 
-    private String getAvailablePortOnHost(VirtualMachine host) {
+    private String getAvailablePortOnHost(VirtualMachineInstance host) {
 
         String[] range = encodedHostNodeAvailablePorts.replaceAll("[a-zA-Z\']", "").split("-");
         int poolStart = Integer.valueOf(range[0]);

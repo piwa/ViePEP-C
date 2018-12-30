@@ -3,7 +3,7 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ActionExecutor;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.HandleOptimizationResult;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -33,7 +32,7 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
     @Autowired
     private PrintRunningInfoVmContainer printRunningInformationVmContainer;
 
-//    private Set<VirtualMachine> waitingForExecutingVirtualMachines = new HashSet<>();
+//    private Set<VirtualMachineInstance> waitingForExecutingVirtualMachines = new HashSet<>();
 
     private boolean printRunningInformation = true;
 
@@ -42,7 +41,7 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
 
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
 //        optimize.getProcessStepGenes().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
-//        optimize.getProcessStepGenes().stream().filter(ps -> ps.getContainer().getVirtualMachine() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getContainer().getVirtualMachine()));
+//        optimize.getProcessStepGenes().stream().filter(ps -> ps.getContainer().getVirtualMachineInstance() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getContainer().getVirtualMachineInstance()));
 
         actionExecutor.startInvocationViaContainersOnVms(optimize.getProcessSteps());
 
@@ -59,12 +58,12 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
     }
 
     private void printOptimizationResultInformation(OptimizationResult optimize, DateTime tau_t, StringBuilder stringBuilder) {
-        Set<VirtualMachine> vmsToStart = new HashSet<>();
+        Set<VirtualMachineInstance> vmsToStart = new HashSet<>();
         Set<Container> containersToDeploy = new HashSet<>();
         processProcessSteps(optimize, vmsToStart, containersToDeploy, tau_t);
         stringBuilder.append("----------- VM should be used (running or has to be started): ------------\n");
-        for (VirtualMachine virtualMachine : vmsToStart) {
-            stringBuilder.append(virtualMachine).append("\n");
+        for (VirtualMachineInstance virtualMachineInstance : vmsToStart) {
+            stringBuilder.append(virtualMachineInstance).append("\n");
         }
 
         stringBuilder.append("-------- Container should be used (running or has to be started): --------\n");
@@ -78,10 +77,10 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
         }
     }
 
-    private void processProcessSteps(OptimizationResult optimize, Set<VirtualMachine> vmsToStart, Set<Container> containersToDeploy, DateTime tau_t) {
+    private void processProcessSteps(OptimizationResult optimize, Set<VirtualMachineInstance> vmsToStart, Set<Container> containersToDeploy, DateTime tau_t) {
         for (ProcessStep processStep : optimize.getProcessSteps()) {
-            if (processStep.getContainer().getVirtualMachine() != null) {
-                vmsToStart.add(processStep.getContainer().getVirtualMachine());
+            if (processStep.getContainer().getVirtualMachineInstance() != null) {
+                vmsToStart.add(processStep.getContainer().getVirtualMachineInstance());
             }
             containersToDeploy.add(processStep.getContainer());
 

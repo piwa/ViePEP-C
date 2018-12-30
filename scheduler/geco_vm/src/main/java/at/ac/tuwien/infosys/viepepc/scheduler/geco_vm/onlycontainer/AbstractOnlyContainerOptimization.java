@@ -2,12 +2,11 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer;
 
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
-import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
-import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations.FitnessFunction;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -36,7 +35,7 @@ public abstract class AbstractOnlyContainerOptimization {
 
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
 
-    protected DateTime optimizationTime;
+    protected DateTime optimizationEndTime;
 
     // TODO
     protected OptimizationResult createOptimizationResult(Chromosome winner, List<WorkflowElement> workflowElements) {
@@ -57,7 +56,7 @@ public abstract class AbstractOnlyContainerOptimization {
         builder.append("Total Fitness=").append(fitnessFunction.getLeasingCost() + fitnessFunction.getPenaltyCost() + fitnessFunction.getEarlyEnactmentCost()).append("\n");
         log.info(builder.toString());
 
-        List<ContainerSchedulingUnit> containerSchedulingUnitList = optimizationUtility.getContainerSchedulingUnit(winner);
+        List<ContainerSchedulingUnit> containerSchedulingUnitList = optimizationUtility.createRequiredContainerSchedulingUnits(winner);
 
         orderMaintainer.checkRowAndPrintError(winner, this.getClass().getSimpleName(), slackWebhook);
 
@@ -72,7 +71,7 @@ public abstract class AbstractOnlyContainerOptimization {
 //            for (Chromosome.Gene processStepGene : containerSchedulingUnit.getProcessStepGenes()) {
 //                if (!processStepGene.isFixed()) {
 //                    ProcessStep processStep = processStepGene.getProcessStep();
-//                    if (processStep.getStartDate() != null && (processStep.getContainer().isRunning() == true || processStep.getContainer().isDeploying() == true)) {
+//                    if (processStep.getStartTime() != null && (processStep.getContainer().isRunning() == true || processStep.getContainer().isDeploying() == true)) {
 //
 //                    } else {
 //                        DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
@@ -88,13 +87,13 @@ public abstract class AbstractOnlyContainerOptimization {
 //                        boolean alreadyDeploying = false;
 //                        if (realProcessStep.getContainer() != null && (realProcessStep.getContainer().isDeploying() || realProcessStep.getContainer().isRunning())) {
 //
-//                            if (realProcessStep.getContainer().getStartedAt().isAfter(optimizationTime)) {
+//                            if (realProcessStep.getContainer().getStartedAt().isAfter(optimizationEndTime)) {
 //                                alreadyDeploying = true;
 //                            }
 //
 //                        }
 //
-//                        if (realProcessStep.getStartDate() == null && !alreadyDeploying) {
+//                        if (realProcessStep.getStartTime() == null && !alreadyDeploying) {
 //                            realProcessStep.setScheduledForExecution(true, scheduledStartTime, container);
 //                            if (psHasToDeployContainer.getInternId().equals(processStep.getInternId())) {
 //                                realProcessStep.setHasToDeployContainer(true);

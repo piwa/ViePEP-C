@@ -1,6 +1,5 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer;
 
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory.DeadlineAwareFactory;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations.SpaceAwareCrossover2;
@@ -74,7 +73,7 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
     @Override
     public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
 
-        this.optimizationTime = DateTime.now();
+        this.optimizationEndTime = DateTime.now();
         List<WorkflowElement> workflowElements = getRunningWorkflowInstancesSorted();
 
         if (workflowElements.size() == 0) {
@@ -85,14 +84,14 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         stopwatch.start("pre optimization tasks");
 
 
-        this.optimizationTime = this.optimizationTime.plus(maxOptimizationDuration).plus(additionalOptimizationTime);
+        this.optimizationEndTime = this.optimizationEndTime.plus(maxOptimizationDuration).plus(additionalOptimizationTime);
 
 
         int eliteCount = (int) Math.round(populationSize * eliteCountNumber);
         SelectionStrategy<Object> selectionStrategy = new TournamentSelection(numberGenerator);
 
 
-        ((DeadlineAwareFactory) chromosomeFactory).initialize(workflowElements, this.optimizationTime);
+        ((DeadlineAwareFactory) chromosomeFactory).initialize(workflowElements, this.optimizationEndTime);
         maxTimeAfterDeadline = ((DeadlineAwareFactory) chromosomeFactory).getMaxTimeAfterDeadline();
 
 
@@ -102,9 +101,10 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
 
         // TODO build a mutation function that changes the VMs
         // TODO build a crossover function that changes the VMs
-        operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationTime, maxTimeAfterDeadline, optimizationUtility, containerDeploymentTime));
+        operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationEndTime, maxTimeAfterDeadline, optimizationUtility, containerDeploymentTime));
         operators.add(new SpaceAwareCrossover2(maxTimeAfterDeadline));
 
+        this.fitnessFunction.setOptimizationEndTime(this.optimizationEndTime);
 
         EvolutionaryOperator<Chromosome> pipeline = new EvolutionPipeline<>(operators);
         EvolutionEngine<Chromosome> engine = new GenerationalEvolutionEngine<>(chromosomeFactory, pipeline, fitnessFunction, selectionStrategy, rng);

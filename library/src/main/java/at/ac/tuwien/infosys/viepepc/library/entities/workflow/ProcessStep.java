@@ -12,12 +12,9 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -138,7 +135,7 @@ public class ProcessStep extends Element implements Cloneable {
 
         processStep.setServiceType(serviceType);
 
-        //VirtualMachine cloneVM = new VirtualMachine();
+        //VirtualMachineInstance cloneVM = new VirtualMachineInstance();
         //processStep.setScheduledAtVM(this.scheduledAtVM);
 
         if(container != null) {
@@ -169,7 +166,7 @@ public class ProcessStep extends Element implements Cloneable {
                     "name='" + name + '\'' +
                     ", serviceType=" + serviceType.getName() +
                     ", scheduledStart=" + scheduledStart +
-                    ", startDate=" + startDateformat +
+                    ", startTime=" + startDateformat +
                     ", finishedAt=" + finishedAtformat +
                     ", lastElement=" + isLastElement() +
                     '}';
@@ -179,7 +176,7 @@ public class ProcessStep extends Element implements Cloneable {
                     "name='" + name + '\'' +
                     ", serviceType=" + serviceType.getName() +
                     ", scheduledStart=" + scheduledStart +
-                    ", startDate=" + startDateformat +
+                    ", startTime=" + startDateformat +
                     ", finishedAt=" + finishedAtformat +
                     ", container=" + containerName +
                     ", lastElement=" + isLastElement() +
@@ -189,7 +186,7 @@ public class ProcessStep extends Element implements Cloneable {
             return "ProcessStep{" +
                     "name='" + name + '\'' +
                     ", serviceType=" + serviceType.getName() +
-                    ", startDate=" + startDateformat +
+                    ", startTime=" + startDateformat +
                     ", finishedAt=" + finishedAtformat +
                     ", container=" + containerName +
                     ", lastElement=" + isLastElement() +
@@ -213,6 +210,6 @@ public class ProcessStep extends Element implements Cloneable {
     }
 
     public boolean isScheduled() {
-        return this.getContainer() != null && this.getContainer().getVirtualMachine() != null;
+        return this.getContainer() != null && this.getContainer().getVirtualMachineInstance() != null;
     }
 }

@@ -30,8 +30,8 @@ public class CacheWorkflowService {
 
     public void addWorkflowInstance(WorkflowElement workflowElement) {
         synchronized (inMemoryCache.getRunningWorkflows()) {
-            inMemoryCache.addRunningWorkflow(workflowElement);
-            inMemoryCache.addToAllWorkflows(workflowElement);
+            inMemoryCache.getRunningWorkflows().add(workflowElement);
+            inMemoryCache.getAllWorkflowInstances().add(workflowElement);
         }
     }
 

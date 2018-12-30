@@ -58,7 +58,7 @@ public class StartParNotExceedContainerImpl extends AbstractContainerProvisionin
 //            if(availableVms.size() < runningWorkflowInstances.size()) {
 //                int newVMs = runningWorkflowInstances.size() - availableVms.size();
 //                for(int i = 0; i < newVMs; i++) {
-//                    VirtualMachine vm = startNewDefaultVm(optimizationResult);
+//                    VirtualMachineInstance vm = startNewDefaultVm(optimizationResult);
 //                    availableVms.add(vm);
 //                    optimizationResult.addVirtualMachine(vm);
 //                }

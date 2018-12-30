@@ -10,7 +10,7 @@ import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowServ
 import at.ac.tuwien.infosys.viepepc.library.entities.Action;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerReportingAction;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineReportingAction;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
@@ -35,13 +35,13 @@ public class Watchdog {
     @Autowired
     private CacheProcessStepService cacheProcessStepService;
     @Autowired
-    private InMemoryCacheImpl inMemoryCache;
-    @Autowired
     private ReportDaoService reportDaoService;
     @Autowired
     private WorkflowUtilities workflowUtilities;
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
+    @Autowired
+    private CacheProcessStepService processStepService;
 
     public static Object SYNC_OBJECT = new Object();
 
@@ -55,10 +55,9 @@ public class Watchdog {
 
         synchronized (SYNC_OBJECT) {
 
-            Set<VirtualMachine> virtualMachineList = cacheVirtualMachineService.getStartedVMs();
+            List<VirtualMachineInstance> virtualMachineInstanceList = cacheVirtualMachineService.getDeployedVMInstances();
 
-            for (VirtualMachine vm : virtualMachineList) {
-
+            for (VirtualMachineInstance vm : virtualMachineInstanceList) {
 
                 boolean available = false;
                 int sleepTimer = 0;
@@ -89,9 +88,10 @@ public class Watchdog {
                         getContainersAndProcesses(vm, processSteps, containers, processStep);
                     }
 
-                    inMemoryCache.getProcessStepsWaitingForServiceDone().values().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
 
-                    inMemoryCache.getWaitingForExecutingProcessSteps().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
+                    processStepService.getProcessStepsWaitingForServiceDone().values().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
+
+                    processStepService.getWaitingForExecutingProcessSteps().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
 
                     processSteps.forEach(processStep -> log.warn("reset process step: " + processStep.toString()));
                     processSteps.forEach(processStep -> resetContainerAndProcessStep(vm, processStep, "VM"));
@@ -106,12 +106,12 @@ public class Watchdog {
             List<ProcessStep> processSteps = getAllRunningSteps();
 
             for (ProcessStep processStep : processSteps) {
-                if (processStep.getStartDate() != null && processStep.getServiceType() != null && processStep.getContainer() != null && processStep.getContainer().getVirtualMachine() != null) {
+                if (processStep.getStartDate() != null && processStep.getServiceType() != null && processStep.getContainer() != null && processStep.getContainer().getVirtualMachineInstance() != null) {
                     long maxDuration = processStep.getServiceType().getServiceTypeResources().getMakeSpan() * 5;
                     if (processStep.getStartDate().plus(maxDuration).isBeforeNow()) {
                         log.warn("Reset process step due to unexpected long execution: " + processStep.toString());
-                        resetContainerAndProcessStep(processStep.getContainer().getVirtualMachine(), processStep, "Service");
-//                            resetVM(processStep.getContainer().getVirtualMachine(), "Service");
+                        resetContainerAndProcessStep(processStep.getContainer().getVirtualMachineInstance(), processStep, "Service");
+//                            resetVM(processStep.getContainer().getVirtualMachineInstance(), "Service");
                     }
                 }
             }
@@ -124,7 +124,7 @@ public class Watchdog {
 
     }
 
-    private void resetVM(VirtualMachine vm, String reason) {
+    private void resetVM(VirtualMachineInstance vm, String reason) {
         VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, reason);
         reportDaoService.save(reportVM);
 
@@ -133,12 +133,12 @@ public class Watchdog {
         vm.terminate();
     }
 
-    private void resetContainerAndProcessStep(VirtualMachine vm, ProcessStep processStep, String reason) {
+    private void resetContainerAndProcessStep(VirtualMachineInstance vm, ProcessStep processStep, String reason) {
         ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getContainer().getName(), processStep.getContainer().getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, reason);
         reportDaoService.save(reportContainer);
 
-        inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
-        inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
+        cacheProcessStepService.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+        cacheProcessStepService.getWaitingForExecutingProcessSteps().remove(processStep);
         processStep.getContainer().shutdownContainer();
         processStep.reset();
     }
@@ -153,12 +153,12 @@ public class Watchdog {
     }
 
 
-    private void getContainersAndProcesses(VirtualMachine vm, Set<ProcessStep> processSteps, Set<Container> containers, ProcessStep processStep) {
+    private void getContainersAndProcesses(VirtualMachineInstance vm, Set<ProcessStep> processSteps, Set<Container> containers, ProcessStep processStep) {
         if (containers.contains(processStep.getContainer())) {
             processSteps.add(processStep);
         }
 
-        if (processStep.getContainer().getVirtualMachine() == vm) {
+        if (processStep.getContainer().getVirtualMachineInstance() == vm) {
             containers.add(processStep.getContainer());
             processSteps.add(processStep);
         }

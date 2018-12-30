@@ -1,22 +1,18 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory;
 
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
-import at.ac.tuwien.infosys.viepepc.library.registry.impl.container.ContainerImageNotFoundException;
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.service.ServiceTypeNotFoundException;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.GeCoVmApplication;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.TestSchedulerGecoConfiguration;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.OrderMaintainer;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.VirtualMachineSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -31,7 +27,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.xml.bind.JAXBException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -99,6 +94,7 @@ public class DeadlineAwareFactoryTest {
 
     }
 
+
     @Test
     public void generateRandomCandidate_parallelProcessDifferentServices() throws JAXBException, ServiceTypeNotFoundException {
         deadlineAwareFactory.initialize(workflowGenerationHelper.createParallelDifferentServicesProcess(), optimizationEndTime);
@@ -113,6 +109,7 @@ public class DeadlineAwareFactoryTest {
         genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit()).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getScheduledOnVm()));
 
         checkAllGenesHaveAnAvailableVm_true(genes);
+        checkIfContainerAmountEqualsGeneAmount_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
 
@@ -120,11 +117,9 @@ public class DeadlineAwareFactoryTest {
     }
 
     @Test
-    public void generateRandomCandidate_sequentialProcessDifferentServices() throws JAXBException, ServiceTypeNotFoundException {
+    public void generateRandomCandidate_sequentialProcess() throws JAXBException, ServiceTypeNotFoundException {
         deadlineAwareFactory.initialize(workflowGenerationHelper.createSequentialProcess(), optimizationEndTime);
-
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
-
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
 
         genes.forEach(gene -> assertNotNull(gene.getProcessStep()));
@@ -133,6 +128,7 @@ public class DeadlineAwareFactoryTest {
         genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit()).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getScheduledOnVm()));
 
         checkAllGenesHaveAnAvailableVm_true(genes);
+        checkIfContainerAmountEqualsGeneAmount_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
 
@@ -144,12 +140,12 @@ public class DeadlineAwareFactoryTest {
 
         List<WorkflowElement> workflowElements = workflowGenerationHelper.createSequentialProcess();
         WorkflowElement process = workflowElements.get(0);
-        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process,null);
+        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process, null);
 
         ProcessStep processStep = nextProcessSteps.get(0);
         workflowGenerationHelper.set_vmDeployed_containerDeployed(processStep);
         Container container = processStep.getContainer();
-        VirtualMachine vm = processStep.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep.getScheduledStartDate());
 
         deadlineAwareFactory.initialize(workflowElements, optimizationEndTime);
@@ -160,9 +156,10 @@ public class DeadlineAwareFactoryTest {
         assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
+        checkIfContainerAmountEqualsGeneAmount_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
 
@@ -174,12 +171,12 @@ public class DeadlineAwareFactoryTest {
 
         List<WorkflowElement> workflowElements = workflowGenerationHelper.createSequentialProcess();
         WorkflowElement process = workflowElements.get(0);
-        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process,null);
+        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process, null);
 
         ProcessStep processStep = nextProcessSteps.get(0);
         workflowGenerationHelper.set_vmDeploying_containerScheduled(processStep);
         Container container = processStep.getContainer();
-        VirtualMachine vm = processStep.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep.getScheduledStartDate());
 
         deadlineAwareFactory.initialize(workflowElements, optimizationEndTime);
@@ -187,12 +184,13 @@ public class DeadlineAwareFactoryTest {
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
         Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertNotSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
+        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
-        assertNotEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertNotSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());   // can be the same if the random selection choose the same vm
 
         checkAllGenesHaveAnAvailableVm_true(genes);
+        checkIfContainerAmountEqualsGeneAmount_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
 
@@ -204,12 +202,12 @@ public class DeadlineAwareFactoryTest {
 
         List<WorkflowElement> workflowElements = workflowGenerationHelper.createSequentialProcess();
         WorkflowElement process = workflowElements.get(0);
-        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process,null);
+        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process, null);
 
         ProcessStep processStep = nextProcessSteps.get(0);
         workflowGenerationHelper.set_vmDeployed_containerDeploying(processStep);
         Container container = processStep.getContainer();
-        VirtualMachine vm = processStep.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep.getScheduledStartDate());
 
         deadlineAwareFactory.initialize(workflowElements, optimizationEndTime);
@@ -220,9 +218,10 @@ public class DeadlineAwareFactoryTest {
         assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
+        checkIfContainerAmountEqualsGeneAmount_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
 
@@ -235,12 +234,12 @@ public class DeadlineAwareFactoryTest {
 
         List<WorkflowElement> workflowElements = workflowGenerationHelper.createParallelDifferentServicesProcess();
         WorkflowElement process = workflowElements.get(0);
-        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process,null);
+        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process, null);
 
         ProcessStep processStep = nextProcessSteps.get(0);
         workflowGenerationHelper.set_vmDeployed_containerDeploying(processStep);
         Container container = processStep.getContainer();
-        VirtualMachine vm = processStep.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep.getScheduledStartDate());
 
         deadlineAwareFactory.initialize(workflowElements, optimizationEndTime);
@@ -251,9 +250,10 @@ public class DeadlineAwareFactoryTest {
         assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
+        checkIfContainerAmountEqualsGeneAmount_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
 
@@ -265,12 +265,12 @@ public class DeadlineAwareFactoryTest {
 
         List<WorkflowElement> workflowElements = workflowGenerationHelper.createParallelDifferentServicesProcess();
         WorkflowElement process = workflowElements.get(0);
-        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process,null);
+        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process, null);
 
         ProcessStep processStep = nextProcessSteps.get(0);
         workflowGenerationHelper.set_vmDeployed_containerDeployed(processStep);
         Container container = processStep.getContainer();
-        VirtualMachine vm = processStep.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep.getScheduledStartDate());
 
         deadlineAwareFactory.initialize(workflowElements, optimizationEndTime);
@@ -281,9 +281,10 @@ public class DeadlineAwareFactoryTest {
         assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
+        checkIfContainerAmountEqualsGeneAmount_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
 
@@ -295,12 +296,12 @@ public class DeadlineAwareFactoryTest {
 
         List<WorkflowElement> workflowElements = workflowGenerationHelper.createParallelDifferentServicesProcess();
         WorkflowElement process = workflowElements.get(0);
-        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process,null);
+        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process, null);
 
         ProcessStep processStep = nextProcessSteps.get(0);
         workflowGenerationHelper.set_vmDeploying_containerScheduled(processStep);
         Container container = processStep.getContainer();
-        VirtualMachine vm = processStep.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep.getScheduledStartDate());
 
         deadlineAwareFactory.initialize(workflowElements, optimizationEndTime);
@@ -308,12 +309,13 @@ public class DeadlineAwareFactoryTest {
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
         Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertNotSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
+        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
-        assertNotEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertNotSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());  // can be the same if the random selection choose the same vm
 
         checkAllGenesHaveAnAvailableVm_true(genes);
+        checkIfContainerAmountEqualsGeneAmount_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
 
@@ -326,12 +328,12 @@ public class DeadlineAwareFactoryTest {
 
         List<WorkflowElement> workflowElements = workflowGenerationHelper.createSequentialProcess();
         WorkflowElement process = workflowElements.get(0);
-        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process,null);
+        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process, null);
 
         ProcessStep processStep = nextProcessSteps.get(0);
         workflowGenerationHelper.set_vmDeployed_containerDeploying(processStep);
         Container container = processStep.getContainer();
-        VirtualMachine vm = processStep.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep.getScheduledStartDate());
 
         workflowElements.addAll(workflowGenerationHelper.createParallelDifferentServicesProcess());
@@ -344,7 +346,7 @@ public class DeadlineAwareFactoryTest {
         assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
@@ -358,12 +360,12 @@ public class DeadlineAwareFactoryTest {
 
         List<WorkflowElement> workflowElements = workflowGenerationHelper.createSequentialProcess();
         WorkflowElement process = workflowElements.get(0);
-        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process,null);
+        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process, null);
 
         ProcessStep processStep = nextProcessSteps.get(0);
         workflowGenerationHelper.set_vmDeployed_containerDeployed(processStep);
         Container container = processStep.getContainer();
-        VirtualMachine vm = processStep.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep.getScheduledStartDate());
 
         workflowElements.addAll(workflowGenerationHelper.createParallelDifferentServicesProcess());
@@ -376,7 +378,7 @@ public class DeadlineAwareFactoryTest {
         assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
@@ -390,12 +392,12 @@ public class DeadlineAwareFactoryTest {
 
         List<WorkflowElement> workflowElements = workflowGenerationHelper.createSequentialProcess();
         WorkflowElement process = workflowElements.get(0);
-        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process,null);
+        List<ProcessStep> nextProcessSteps = workflowUtilities.getNextSteps(process, null);
 
         ProcessStep processStep = nextProcessSteps.get(0);
         workflowGenerationHelper.set_vmDeploying_containerScheduled(processStep);
         Container container = processStep.getContainer();
-        VirtualMachine vm = processStep.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep.getScheduledStartDate());
 
         workflowElements.addAll(workflowGenerationHelper.createParallelDifferentServicesProcess());
@@ -405,10 +407,10 @@ public class DeadlineAwareFactoryTest {
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
         Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertNotSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
+        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
-        assertNotEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertNotSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance()); // can be the same if the random selection choose the same vm
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
@@ -424,17 +426,17 @@ public class DeadlineAwareFactoryTest {
         WorkflowElement process = workflowElements.get(0);
         List<Element> flattenWorkflowList = workflowUtilities.getFlattenWorkflow(new ArrayList<>(), process);
 
-        ProcessStep processStep0 = (ProcessStep)flattenWorkflowList.get(1);
+        ProcessStep processStep0 = (ProcessStep) flattenWorkflowList.get(1);
         DateTime serviceExecutionStartTime = DateTime.now().minusMinutes(2);
         DateTime serviceExecutionEndTime = DateTime.now().minusMinutes(1);
         processStep0.setStartDate(serviceExecutionStartTime);
         processStep0.setFinishedAt(serviceExecutionEndTime);
         processStep0.setScheduledStartDate(serviceExecutionStartTime);
 
-        ProcessStep processStep1 = (ProcessStep)flattenWorkflowList.get(2);
+        ProcessStep processStep1 = (ProcessStep) flattenWorkflowList.get(2);
         workflowGenerationHelper.set_vmDeployed_containerDeploying(processStep1);
         Container container = processStep1.getContainer();
-        VirtualMachine vm = processStep1.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep1.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep1.getScheduledStartDate());
 
         workflowElements.addAll(workflowGenerationHelper.createParallelDifferentServicesProcess());
@@ -448,7 +450,7 @@ public class DeadlineAwareFactoryTest {
         assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep1.getInternId(), fixedGene.getProcessStep().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
         assertNull(genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep0.getInternId())).findFirst().orElse(null));
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
@@ -464,17 +466,17 @@ public class DeadlineAwareFactoryTest {
         WorkflowElement process = workflowElements.get(0);
         List<Element> flattenWorkflowList = workflowUtilities.getFlattenWorkflow(new ArrayList<>(), process);
 
-        ProcessStep processStep0 = (ProcessStep)flattenWorkflowList.get(1);
+        ProcessStep processStep0 = (ProcessStep) flattenWorkflowList.get(1);
         DateTime serviceExecutionStartTime = DateTime.now().minusMinutes(2);
         DateTime serviceExecutionEndTime = DateTime.now().minusMinutes(1);
         processStep0.setStartDate(serviceExecutionStartTime);
         processStep0.setFinishedAt(serviceExecutionEndTime);
         processStep0.setScheduledStartDate(serviceExecutionStartTime);
 
-        ProcessStep processStep1 = (ProcessStep)flattenWorkflowList.get(2);
+        ProcessStep processStep1 = (ProcessStep) flattenWorkflowList.get(2);
         workflowGenerationHelper.set_vmDeployed_containerDeployed(processStep1);
         Container container = processStep1.getContainer();
-        VirtualMachine vm = processStep1.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep1.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep1.getScheduledStartDate());
 
         workflowElements.addAll(workflowGenerationHelper.createParallelDifferentServicesProcess());
@@ -488,7 +490,7 @@ public class DeadlineAwareFactoryTest {
         assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep1.getInternId(), fixedGene.getProcessStep().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
         assertNull(genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep0.getInternId())).findFirst().orElse(null));
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
@@ -504,17 +506,17 @@ public class DeadlineAwareFactoryTest {
         WorkflowElement process = workflowElements.get(0);
         List<Element> flattenWorkflowList = workflowUtilities.getFlattenWorkflow(new ArrayList<>(), process);
 
-        ProcessStep processStep0 = (ProcessStep)flattenWorkflowList.get(1);
+        ProcessStep processStep0 = (ProcessStep) flattenWorkflowList.get(1);
         DateTime serviceExecutionStartTime = DateTime.now().minusMinutes(2);
         DateTime serviceExecutionEndTime = DateTime.now().minusMinutes(1);
         processStep0.setStartDate(serviceExecutionStartTime);
         processStep0.setFinishedAt(serviceExecutionEndTime);
         processStep0.setScheduledStartDate(serviceExecutionStartTime);
 
-        ProcessStep processStep1 = (ProcessStep)flattenWorkflowList.get(2);
+        ProcessStep processStep1 = (ProcessStep) flattenWorkflowList.get(2);
         workflowGenerationHelper.set_vmDeploying_containerScheduled(processStep1);
         Container container = processStep1.getContainer();
-        VirtualMachine vm = processStep1.getContainer().getVirtualMachine();
+        VirtualMachineInstance vm = processStep1.getContainer().getVirtualMachineInstance();
         DateTime processStepScheduledStartTime = new DateTime(processStep1.getScheduledStartDate());
 
         workflowElements.addAll(workflowGenerationHelper.createParallelDifferentServicesProcess());
@@ -525,10 +527,10 @@ public class DeadlineAwareFactoryTest {
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
         Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep1.getInternId())).findFirst().orElseThrow(Exception::new);
 
-        assertNotSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
+        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
         assertSame(processStep1.getInternId(), fixedGene.getProcessStep().getInternId());
-        assertNotEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertNotSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachine());
+        assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
+        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());  // can be the same if the random selection choose the same vm
         assertNull(genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep0.getInternId())).findFirst().orElse(null));
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
@@ -542,19 +544,13 @@ public class DeadlineAwareFactoryTest {
     private void checkAllGenesHaveAnAvailableVm_true(List<Chromosome.Gene> genes) {
         for (Chromosome.Gene gene : genes) {
             Interval geneExecutionInterval = gene.getExecutionInterval();
-            List<Interval> vmAvailableTimes = gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVmAvailableTimes();
-            boolean intervalFits = false;
-            for (Interval vmAvailableTime : vmAvailableTimes) {
-                if (vmAvailableTime.contains(geneExecutionInterval)) {
-                    intervalFits = true;
-                }
-            }
-            assertTrue(intervalFits);
+            Interval vmAvailableInterval = gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVmAvailableInterval();
+            assertTrue(vmAvailableInterval.contains(geneExecutionInterval));
         }
     }
 
     private void checkIfAllVmIntervalsAreUsed_true(List<Chromosome.Gene> genes) {
-        Set<Interval> vmAvailableIntervals = genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVmAvailableTimes()).flatMap(List::stream).collect(Collectors.toSet());
+        Set<Interval> vmAvailableIntervals = genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVmAvailableInterval()).collect(Collectors.toSet());
 
         for (Iterator<Interval> iterator = vmAvailableIntervals.iterator(); iterator.hasNext(); ) {
             Interval vmAvailableInterval = iterator.next();
@@ -565,8 +561,12 @@ public class DeadlineAwareFactoryTest {
                 }
             }
         }
-
         assertEquals(0, vmAvailableIntervals.size());
+    }
 
+    private void checkIfContainerAmountEqualsGeneAmount_true(List<Chromosome.Gene> genes) {
+        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
+        List<ContainerSchedulingUnit> containerSchedulingUnits = virtualMachineSchedulingUnits.stream().flatMap(virtualMachineSchedulingUnit -> virtualMachineSchedulingUnit.getScheduledContainers().stream()).collect(Collectors.toList());
+        assertEquals(genes.size(), containerSchedulingUnits.size());
     }
 }

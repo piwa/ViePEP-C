@@ -34,7 +34,7 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
     @Autowired
     private PrintRunningInfoVmContainer printRunningInformationVmContainer;
 
-//    private Set<VirtualMachine> waitingForExecutingVirtualMachines = new HashSet<>();
+//    private Set<VirtualMachineInstance> waitingForExecutingVirtualMachines = new HashSet<>();
 
     private boolean printRunningInformation = true;
 
@@ -43,7 +43,7 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
 
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
 //        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
-//        optimize.getProcessSteps().stream().filter(ps -> ps.getContainer().getVirtualMachine() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getContainer().getVirtualMachine()));
+//        optimize.getProcessSteps().stream().filter(ps -> ps.getContainer().getVirtualMachineInstance() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getContainer().getVirtualMachineInstance()));
 
         actionExecutor.startInvocationViaContainersOnVms(optimize.getProcessSteps());
 

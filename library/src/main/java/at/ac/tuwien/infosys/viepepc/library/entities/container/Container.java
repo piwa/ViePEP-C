@@ -1,7 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.library.entities.container;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,6 +41,8 @@ public class Container implements Cloneable {
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startDate;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    private Interval scheduledCloudResourceUsage;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private Interval scheduledAvailableInterval;
 
     private ContainerStatus containerStatus;
@@ -51,7 +53,7 @@ public class Container implements Cloneable {
     private String providerContainerId = "";
 
     @ManyToOne(cascade = CascadeType.ALL)
-    private VirtualMachine virtualMachine;
+    private VirtualMachineInstance virtualMachineInstance;
 
     public Container() {
         containerID = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
@@ -62,9 +64,9 @@ public class Container implements Cloneable {
     }
 
     public void shutdownContainer() {
-        if(virtualMachine != null) {
-            virtualMachine.undeployContainer(this);
-            virtualMachine = null;
+        if(virtualMachineInstance != null) {
+            virtualMachineInstance.undeployContainer(this);
+            virtualMachineInstance = null;
         }
         containerStatus = ContainerStatus.TERMINATED;
         bareMetal = false;
@@ -82,7 +84,7 @@ public class Container implements Cloneable {
         DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
         String startString = startDate == null ? "NULL" : startDate.toString();
-        String vmString = virtualMachine == null ? "NULL" : virtualMachine.getInstanceId();
+        String vmString = virtualMachineInstance == null ? "NULL" : virtualMachineInstance.getInstanceId();
 
         if(isBareMetal()) {
             return "Container{" +

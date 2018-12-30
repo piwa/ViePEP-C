@@ -1,16 +1,16 @@
 package at.ac.tuwien.infosys.viepepc.cloudcontroller;
 
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 
 /**
  * Created by philippwaibel on 21/04/2017.
  */
 public interface CloudControllerService {
 
-    VirtualMachine startVM(VirtualMachine vm) throws VmCouldNotBeStartedException;
+    VirtualMachineInstance startVM(VirtualMachineInstance vm) throws VmCouldNotBeStartedException;
 
-    boolean stopVirtualMachine(VirtualMachine vm);
+    boolean stopVirtualMachine(VirtualMachineInstance vm);
 
-    boolean checkAvailabilityOfDockerhost(VirtualMachine vm);
+    boolean checkAvailabilityOfDockerhost(VirtualMachineInstance vm);
 }

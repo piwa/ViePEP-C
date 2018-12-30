@@ -1,6 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.services;
 
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.VirtualMachineRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +18,11 @@ public class VirtualMachineDaoService {
     @Autowired
     private VirtualMachineRepository virtualMachineRepository;
 
-    public VirtualMachine update(VirtualMachine virtualMachine) {
-        return virtualMachineRepository.save(virtualMachine);
+    public VirtualMachineInstance update(VirtualMachineInstance virtualMachineInstance) {
+        return virtualMachineRepository.save(virtualMachineInstance);
     }
 
-    public VirtualMachine getVm(VirtualMachine vm) {
+    public VirtualMachineInstance getVm(VirtualMachineInstance vm) {
         return virtualMachineRepository.findById(vm.getId()).orElseThrow(EntityNotFoundException::new);
     }
 }

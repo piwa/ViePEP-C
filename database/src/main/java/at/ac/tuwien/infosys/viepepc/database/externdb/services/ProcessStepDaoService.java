@@ -1,7 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.database.externdb.services;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.database.externdb.repositories.ProcessStepElementRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +19,8 @@ public class ProcessStepDaoService {
     @Autowired
     private ProcessStepElementRepository processStepElementRepository;
 
-//    public List<ProcessStep> findByVM(VirtualMachine virtualMachine) {
-//        return processStepElementRepository.findByVM(virtualMachine.getId());
+//    public List<ProcessStep> findByVM(VirtualMachineInstance virtualMachineInstance) {
+//        return processStepElementRepository.findByVM(virtualMachineInstance.getId());
 //    }
     
     public List<ProcessStep> findByContainer(Container container) {

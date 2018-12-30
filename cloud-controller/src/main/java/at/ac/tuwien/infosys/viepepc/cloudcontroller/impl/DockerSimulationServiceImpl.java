@@ -2,7 +2,7 @@ package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -22,7 +22,7 @@ public class DockerSimulationServiceImpl {
     @Value("${viepep.node.port.available}")
     private String encodedHostNodeAvailablePorts;
 
-    public synchronized Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
+    public synchronized Container startContainer(VirtualMachineInstance virtualMachineInstance, Container container) throws DockerException, InterruptedException {
 
 //        StopWatch stopWatch = new StopWatch();
 
@@ -30,10 +30,10 @@ public class DockerSimulationServiceImpl {
         String id = UUID.randomUUID().toString();
         String hostPort = "2000";
 
-        virtualMachine.getDeployedContainers().add(container);
-        virtualMachine.getAvailableContainerImages().add(container.getContainerImage());
+        virtualMachineInstance.getDeployedContainers().add(container);
+        virtualMachineInstance.getAvailableContainerImages().add(container.getContainerImage());
         container.setContainerID(id);
-        container.setVirtualMachine(virtualMachine);
+        container.setVirtualMachineInstance(virtualMachineInstance);
         container.setContainerStatus(ContainerStatus.DEPLOYED);
         container.setStartDate(new DateTime());
         container.setExternPort(hostPort);
@@ -41,11 +41,11 @@ public class DockerSimulationServiceImpl {
 
 //        stopWatch.start("set used ports");
         /* Update the set of used port on docker host */
-        virtualMachine.getUsedPorts().add(hostPort);
+        virtualMachineInstance.getUsedPorts().add(hostPort);
 //        stopWatch.stop();
 
 //        stopWatch.start("text output");
-//        log.info("A new container with the ID: " + id + " on the host: " + virtualMachine.getInstanceId() + " has been started.");
+//        log.info("A new container with the ID: " + id + " on the host: " + virtualMachineInstance.getInstanceId() + " has been started.");
 //        stopWatch.stop();
 //        log.info("Container deploy time: " + container.toString() + "\n" + stopWatch.getTotalTimeMillis());
 
@@ -56,17 +56,17 @@ public class DockerSimulationServiceImpl {
     public void removeContainer(Container container) {
 
 
-        if (container.getVirtualMachine() != null) {
+        if (container.getVirtualMachineInstance() != null) {
             // Free monitoring port previously used by the docker container
-            List<String> usedPorts = container.getVirtualMachine().getUsedPorts();
+            List<String> usedPorts = container.getVirtualMachineInstance().getUsedPorts();
             usedPorts.remove(container.getExternPort());
-            container.getVirtualMachine().setUsedPorts(usedPorts);
+            container.getVirtualMachineInstance().setUsedPorts(usedPorts);
         }
 
         container.shutdownContainer();
 
-        if (container.getVirtualMachine() != null) {
-            log.debug("The container: " + container.getContainerID() + " on the host: " + container.getVirtualMachine() + " was removed.");
+        if (container.getVirtualMachineInstance() != null) {
+            log.debug("The container: " + container.getContainerID() + " on the host: " + container.getVirtualMachineInstance() + " was removed.");
         } else {
             log.debug("The container: " + container.getContainerID() + " was removed.");
         }

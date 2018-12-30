@@ -19,7 +19,7 @@ public class VirtualMachineSchedulingUnitTest {
 //        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(0);
 //        virtualMachineSchedulingUnit.setScheduledContainers(containerSchedulingUnits);
 //
-//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableTimes();
+//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableIntervals();
 //
 //
 //        assertTrue(resultingIntervals.size() == 3);
@@ -43,7 +43,7 @@ public class VirtualMachineSchedulingUnitTest {
 //        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(5);
 //        virtualMachineSchedulingUnit.setScheduledContainers(containerSchedulingUnits);
 //
-//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableTimes();
+//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableIntervals();
 //
 //        assertTrue(resultingIntervals.size() == 2);
 //
@@ -62,7 +62,7 @@ public class VirtualMachineSchedulingUnitTest {
 //        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(4);
 //        virtualMachineSchedulingUnit.setScheduledContainers(containerSchedulingUnits);
 //
-//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableTimes();
+//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableIntervals();
 //
 //
 //        assertTrue(resultingIntervals.size() == 3);
@@ -85,7 +85,7 @@ public class VirtualMachineSchedulingUnitTest {
 //        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(30);
 //        virtualMachineSchedulingUnit.setScheduledContainers(containerSchedulingUnits);
 //
-//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableTimes();
+//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableIntervals();
 //
 //
 //        assertTrue(resultingIntervals.size() == 1);
@@ -103,7 +103,7 @@ public class VirtualMachineSchedulingUnitTest {
 //        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(0);
 //        virtualMachineSchedulingUnit.setScheduledContainers(containerSchedulingUnits);
 //
-//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableTimes();
+//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableIntervals();
 //
 //
 //        assertTrue(resultingIntervals.size() == 3);
@@ -127,7 +127,7 @@ public class VirtualMachineSchedulingUnitTest {
 //        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(0);
 //        virtualMachineSchedulingUnit.setScheduledContainers(containerSchedulingUnits);
 //
-//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableTimes();
+//        List<Interval> resultingIntervals = virtualMachineSchedulingUnit.getVmAvailableIntervals();
 //
 //
 //        assertTrue(resultingIntervals.size() == 2);

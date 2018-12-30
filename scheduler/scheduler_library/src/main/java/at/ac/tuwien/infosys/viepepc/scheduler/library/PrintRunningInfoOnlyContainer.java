@@ -1,13 +1,15 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.library;
 
+import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheProcessStepService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
-import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -25,9 +27,13 @@ public class PrintRunningInfoOnlyContainer implements PrintRunningInfo {
     @Autowired
     private WorkflowUtilities workflowUtilities;
     @Autowired
+    private CacheVirtualMachineService cacheVirtualMachineService;
+    @Autowired
+    private CacheContainerService cacheContainerService;
+    @Autowired
     private CacheWorkflowService cacheWorkflowService;
     @Autowired
-    private InMemoryCacheImpl inMemoryCache;
+    private CacheProcessStepService cacheProcessStepService;
 
     @Override
     public void printRunningInformation() {
@@ -51,10 +57,8 @@ public class PrintRunningInfoOnlyContainer implements PrintRunningInfo {
         stringBuilder.append("Running Threads: " + threadSet.size() + "\n");
 
         stringBuilder.append("--------------------------- Containers running ---------------------------\n");
-        for (Container container : inMemoryCache.getRunningContainers()) {
-            if (container!= null && container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
-                stringBuilder.append(container.toString()).append("\n");
-            }
+        for (Container container : cacheContainerService.getDeployedContainers()) {
+            stringBuilder.append(container.toString()).append("\n");
         }
 
         stringBuilder.append("----------------------------- Tasks running ------------------------------\n");
@@ -64,14 +68,14 @@ public class PrintRunningInfoOnlyContainer implements PrintRunningInfo {
 
     private void printWaitingInformation(StringBuilder stringBuilder) {
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
-        Set<Container> containers = inMemoryCache.getWaitingForExecutingProcessSteps().stream().map(ProcessStep::getContainer).collect(Collectors.toSet());
+        List<Container> containers = cacheContainerService.getAllContainerInstances();
         for (Container container : containers) {
             if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED) || container.getContainerStatus().equals(ContainerStatus.DEPLOYING)) {
                 stringBuilder.append(container.toString()).append("\n");
             }
         }
         stringBuilder.append("----------------------- Tasks waiting for starting -----------------------\n");
-        for (ProcessStep processStep : inMemoryCache.getWaitingForExecutingProcessSteps()) {
+        for (ProcessStep processStep : cacheProcessStepService.getWaitingForExecutingProcessSteps()) {
             stringBuilder.append(processStep.toString()).append("\n");
         }
     }

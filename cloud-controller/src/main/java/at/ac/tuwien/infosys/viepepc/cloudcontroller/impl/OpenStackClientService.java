@@ -2,7 +2,8 @@ package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.AbstractViePEPCloudService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -14,6 +15,7 @@ import org.openstack4j.api.OSClient;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.compute.*;
 import org.openstack4j.openstack.OSFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +30,8 @@ import java.util.Map;
 @Component
 public class OpenStackClientService extends AbstractViePEPCloudService {
 
+    @Autowired
+    private CacheVirtualMachineService cacheVirtualMachineService;
 
     @Value("${openstack.default.image.id}")
     private String openStackDefaultImageId;
@@ -56,15 +60,15 @@ public class OpenStackClientService extends AbstractViePEPCloudService {
         log.debug("Successfully connected to " + openstackAuthUrl + " on tenant " + openstackTenantName + " with user " + openstackUsername);
     }
 
-    public VirtualMachine startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
+    public VirtualMachineInstance startVM(VirtualMachineInstance virtualMachineInstance) throws VmCouldNotBeStartedException {
 
         try {
 
             setup();
 
-            if (virtualMachine == null) {
-                virtualMachine = new VirtualMachine();
-                virtualMachine.getVmType().setFlavor("m1.large");
+            if (virtualMachineInstance == null) {
+                virtualMachineInstance = new VirtualMachineInstance(cacheVirtualMachineService.getDefaultVMType());
+                virtualMachineInstance.getVmType().setFlavorName("m1.large");
             }
 
             String cloudInit = "";
@@ -74,20 +78,20 @@ public class OpenStackClientService extends AbstractViePEPCloudService {
                 log.error("Could not load cloud init file");
             }
 
-            log.debug("getFlavor for VM: " + virtualMachine.toString());
-            Flavor flavor = os.compute().flavors().get(virtualMachine.getVmType().getFlavor());
+            log.debug("getFlavor for VM: " + virtualMachineInstance.toString());
+            Flavor flavor = os.compute().flavors().get(virtualMachineInstance.getVmType().getFlavorName());
 
             for (Flavor f : os.compute().flavors().list()) {
-                if (f.getName().equals(virtualMachine.getVmType().getFlavor())) {
+                if (f.getName().equals(virtualMachineInstance.getVmType().getFlavorName())) {
                     flavor = f;
                     break;
                 }
             }
 
-            log.debug("Flavor for VM: " + virtualMachine.toString() + ": " + flavor.getName());
+            log.debug("Flavor for VM: " + virtualMachineInstance.toString() + ": " + flavor.getName());
 
             ServerCreate sc = Builders.server()
-                    .name(virtualMachine.getName())
+                    .name(virtualMachineInstance.getInstanceId())
                     .flavor(flavor)
                     .image(openStackDefaultImageId)
                     .userData(Base64.encodeAsString(cloudInit))
@@ -96,45 +100,21 @@ public class OpenStackClientService extends AbstractViePEPCloudService {
                     .build();
 
 
-            log.debug("BootAndWaitActive for VM: " + virtualMachine.toString());
+            log.debug("BootAndWaitActive for VM: " + virtualMachineInstance.toString());
             Server server = os.compute().servers().bootAndWaitActive(sc, 600000);
             if (server.getStatus().equals(Server.Status.ERROR)) {
                 ActionResponse r = os.compute().servers().delete(server.getId());
-                log.error("Could not boot VM: " + virtualMachine.toString());
-                throw new VmCouldNotBeStartedException("Could not boot VM: " + virtualMachine.toString());
+                log.error("Could not boot VM: " + virtualMachineInstance.toString());
+                throw new VmCouldNotBeStartedException("Could not boot VM: " + virtualMachineInstance.toString());
             }
 
-//        boolean bootSuccessfully = false;
-//        Server server = null;
-//        int counter = 0;
-//        while(!bootSuccessfully) {
-//            counter = counter + 1;
-//
-//
-//
-//            if (server.getStatus().equals(Server.Status.ERROR)) {
-//                ActionResponse r = os.compute().servers().delete(server.getId());
-//                try {
-//                    TimeUnit.MINUTES.sleep(2);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                if(counter >= 10) {
-//                    throw new VmCouldNotBeStartedException("Could not boot VM: " + virtualMachine.toString());
-//                }
-//            }
-//            else {
-//                bootSuccessfully = true;
-//            }
-//        }
-
-            log.debug("BootAndWaitActive DONE for VM: " + virtualMachine.toString());
+            log.debug("BootAndWaitActive DONE for VM: " + virtualMachineInstance.toString());
 
             Map<String, List<? extends Address>> adrMap = server.getAddresses().getAddresses();
 
             String uri = adrMap.get("private").get(0).getAddr();
 
-            log.debug("VM " + virtualMachine.toString() + " active; IP: " + uri);
+            log.debug("VM " + virtualMachineInstance.toString() + " active; IP: " + uri);
 
             if (publicUsage) {
                 FloatingIP freeIP = null;
@@ -162,30 +142,30 @@ public class OpenStackClientService extends AbstractViePEPCloudService {
                 uri = freeIP.getFloatingIpAddress();
             }
 
-            virtualMachine.setIpAddress(uri);
+            virtualMachineInstance.setIpAddress(uri);
 //        dh.setBTUend(btuEnd);
 
 
-            log.info("VM with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
+            log.info("VM with id: " + virtualMachineInstance.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
 
 
-            waitUntilVmIsBooted(virtualMachine);
+            waitUntilVmIsBooted(virtualMachineInstance);
 
 
-            virtualMachine.setResourcepool("openstack");
-            virtualMachine.setInstanceId(server.getId());
-            virtualMachine.getVmType().setCores(flavor.getVcpus());
-            virtualMachine.getVmType().setRamPoints(flavor.getRam());
-            virtualMachine.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
-            virtualMachine.setStartDate(DateTime.now());
+            virtualMachineInstance.setResourcepool("openstack");
+            virtualMachineInstance.setInstanceId(server.getId());
+            virtualMachineInstance.getVmType().setCores(flavor.getVcpus());
+            virtualMachineInstance.getVmType().setRamPoints(flavor.getRam());
+            virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
+            virtualMachineInstance.setStartTime(DateTime.now());
             //size in GB
 
-            virtualMachine.getVmType().setStorage(flavor.getDisk() * 1024 + 0F);
+            virtualMachineInstance.getVmType().setStorage(flavor.getDisk() * 1024 + 0F);
 //        dh.setScheduledForShutdown(false);
             DateTime btuEnd = new DateTime(DateTimeZone.UTC);
 //        btuEnd = btuEnd.plusSeconds(BTU);
 
-            log.debug("VM connection with id: " + virtualMachine.getInstanceId() + " and IP " + uri + " established.");
+            log.debug("VM connection with id: " + virtualMachineInstance.getInstanceId() + " and IP " + uri + " established.");
 
 
         } catch (Exception e) {
@@ -193,14 +173,14 @@ public class OpenStackClientService extends AbstractViePEPCloudService {
             throw new VmCouldNotBeStartedException(e);
         }
 
-        return virtualMachine;
+        return virtualMachineInstance;
     }
 
 
-    public final boolean stopVirtualMachine(VirtualMachine virtualMachine) {
-        boolean success = stopVirtualMachine(virtualMachine.getInstanceId());
+    public final boolean stopVirtualMachine(VirtualMachineInstance virtualMachineInstance) {
+        boolean success = stopVirtualMachine(virtualMachineInstance.getInstanceId());
         if (success) {
-            virtualMachine.setIpAddress(null);
+            virtualMachineInstance.setIpAddress(null);
         }
 
         return success;

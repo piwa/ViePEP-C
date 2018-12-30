@@ -5,8 +5,7 @@ import at.ac.tuwien.infosys.viepepc.cloudcontroller.DockerControllerService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import com.spotify.docker.client.exceptions.DockerException;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -40,8 +39,6 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
     @Autowired
     private AWSFargateSimulationServiceImpl viePEPAWSFargateSimulation;
     @Autowired
-    private InMemoryCacheImpl inMemoryCache;
-    @Autowired
     private AzureContainerServiceImpl azureContainerServiceImpl;
 
     @Value("${simulate}")
@@ -62,13 +59,13 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
 
     @Override
 //    @Retryable(maxAttempts=10, backoff=@Backoff(delay=30000, maxDelay=120000, random = true))
-    public VirtualMachine startVM(VirtualMachine vm) throws VmCouldNotBeStartedException {
+    public VirtualMachineInstance startVM(VirtualMachineInstance vm) throws VmCouldNotBeStartedException {
 
         if (simulate) {
             return cloudSimulatorClientService.startVM(vm);
-        } else if (vm.getLocation().equals("aws")) {
+        } else if (vm.getVmType().getLocation().equals("aws")) {
             return awsClientService.startVM(vm);
-        } else if (vm.getLocation().equals("gcloud")) {
+        } else if (vm.getVmType().getLocation().equals("gcloud")) {
             return gCloudClientService.startVM(vm);
         } else {
             return openStackClientService.startVM(vm);
@@ -77,13 +74,13 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
     }
 
     @Override
-    public boolean stopVirtualMachine(VirtualMachine vm) {
+    public boolean stopVirtualMachine(VirtualMachineInstance vm) {
 
         if (simulate) {
             return cloudSimulatorClientService.stopVirtualMachine(vm);
-        } else if (vm.getLocation().equals("aws")) {
+        } else if (vm.getVmType().getLocation().equals("aws")) {
             return awsClientService.stopVirtualMachine(vm);
-        } else if (vm.getLocation().equals("gcloud")) {
+        } else if (vm.getVmType().getLocation().equals("gcloud")) {
             return gCloudClientService.stopVirtualMachine(vm);
         } else {
             return openStackClientService.stopVirtualMachine(vm);
@@ -92,13 +89,13 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
     }
 
     @Override
-    public boolean checkAvailabilityOfDockerhost(VirtualMachine vm) {
+    public boolean checkAvailabilityOfDockerhost(VirtualMachineInstance vm) {
 
         if (simulate) {
             return cloudSimulatorClientService.checkAvailabilityOfDockerhost(vm);
-        } else if (vm.getLocation().equals("aws")) {
+        } else if (vm.getVmType().getLocation().equals("aws")) {
             return awsClientService.checkAvailabilityOfDockerhost(vm);
-        } else if (vm.getLocation().equals("gcloud")) {
+        } else if (vm.getVmType().getLocation().equals("gcloud")) {
             return gCloudClientService.checkAvailabilityOfDockerhost(vm);
         } else {
             return openStackClientService.checkAvailabilityOfDockerhost(vm);
@@ -107,19 +104,19 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
     }
 
     @Override
-    public Container startContainer(VirtualMachine virtualMachine, Container container) throws DockerException, InterruptedException {
+    public Container startContainer(VirtualMachineInstance virtualMachineInstance, Container container) throws DockerException, InterruptedException {
 
         container.setContainerStatus(ContainerStatus.DEPLOYING);
         if (simulate) {
-            if (!virtualMachine.getAvailableContainerImages().contains(container.getContainerImage())) {
+            if (!virtualMachineInstance.getAvailableContainerImages().contains(container.getContainerImage())) {
                 TimeUnit.MILLISECONDS.sleep(getSleepTime(imageNotAvailableAverage, imageNotAvailableStdDev));
             } else {
                 TimeUnit.MILLISECONDS.sleep(getSleepTime(imageAvailableAverage, imageAvailableStdDev));
             }
-            container = viePEPDockerSimulationService.startContainer(virtualMachine, container);
+            container = viePEPDockerSimulationService.startContainer(virtualMachineInstance, container);
 
         } else {
-            container = viePEPDockerControllerService.startContainer(virtualMachine, container);
+            container = viePEPDockerControllerService.startContainer(virtualMachineInstance, container);
         }
 
         container.setContainerStatus(ContainerStatus.DEPLOYED);
@@ -140,11 +137,10 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
         } else if (container.isBareMetal()) {
             container = azureContainerServiceImpl.startContainer(container);
         } else {
-            container = viePEPDockerControllerService.startContainer(container.getVirtualMachine(), container);
+            container = viePEPDockerControllerService.startContainer(container.getVirtualMachineInstance(), container);
         }
         container.setContainerStatus(ContainerStatus.DEPLOYED);
         container.setStartDate(new DateTime());
-        inMemoryCache.addRunningContainer(container);
 
         return container;
     }
@@ -174,6 +170,5 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
                 viePEPDockerControllerService.removeContainer(container);
             }
         }
-        inMemoryCache.getRunningContainers().remove(container);
     }
 }

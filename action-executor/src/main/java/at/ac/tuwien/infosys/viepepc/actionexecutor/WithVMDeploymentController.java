@@ -5,11 +5,13 @@ import at.ac.tuwien.infosys.viepepc.cloudcontroller.DockerControllerService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheProcessStepService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.library.entities.Action;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerReportingAction;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachine;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineReportingAction;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
@@ -43,7 +45,9 @@ public class WithVMDeploymentController {
     @Autowired
     private ServiceExecution serviceExecution;
     @Autowired
-    private InMemoryCacheImpl inMemoryCache;
+    private CacheVirtualMachineService cacheVirtualMachineService;
+    @Autowired
+    private CacheProcessStepService cacheProcessStepService;
     @Autowired
     private DockerControllerService dockerControllerService;
 
@@ -53,21 +57,21 @@ public class WithVMDeploymentController {
     private boolean useDocker;
 
     @Async
-    public void leaseVMAndStartExecutionOnContainer(VirtualMachine virtualMachine, Map<Container, List<ProcessStep>> containerProcessSteps) {
+    public void leaseVMAndStartExecutionOnContainer(VirtualMachineInstance virtualMachineInstance, Map<Container, List<ProcessStep>> containerProcessSteps) {
 
         try {
             final StopWatch stopWatch = new StopWatch();
             stopWatch.start();
 
-            log.info("Start VM: " + virtualMachine.toString());
+            log.info("Start VM: " + virtualMachineInstance.toString());
             StopWatch stopWatch2 = new StopWatch();
             stopWatch2.start("deploy vm");
-            String address = startVM(virtualMachine);
+            String address = startVM(virtualMachineInstance);
             stopWatch2.stop();
-            log.info("VM deploy duration: " + virtualMachine.toString() + ": " + stopWatch2.getTotalTimeMillis());
+            log.info("VM deploy duration: " + virtualMachineInstance.toString() + ": " + stopWatch2.getTotalTimeMillis());
 
             if (address == null) {
-                log.error("VM " + virtualMachine.getInstanceId() + " was not started, reset task");
+                log.error("VM " + virtualMachineInstance.getInstanceId() + " was not started, reset task");
                 for (Container container : containerProcessSteps.keySet()) {
                     for (ProcessStep processStep : containerProcessSteps.get(container)) {
                         processStep.setStartDate(null);
@@ -79,33 +83,33 @@ public class WithVMDeploymentController {
 
                 stopWatch.stop();
 
-                if (virtualMachine.getStartDate() == null) {
+                if (virtualMachineInstance.getStartTime() == null) {
                     log.error("StartedAt is null");
-                    virtualMachine.setStartDate(DateTime.now());
+                    virtualMachineInstance.setStartTime(DateTime.now());
                 }
-                startExecutionsOnContainer(containerProcessSteps, virtualMachine);
+                startExecutionsOnContainer(containerProcessSteps, virtualMachineInstance);
 
             }
         } catch (VmCouldNotBeStartedException e) {
             log.error("VM could not be started. Stop VM and reset.", e);
             for (Map.Entry<Container, List<ProcessStep>> entry : containerProcessSteps.entrySet()) {
-                resetContainer(entry.getKey(), virtualMachine, "VM");
+                resetContainer(entry.getKey(), virtualMachineInstance, "VM");
                 resetProcessSteps(entry.getValue());
             }
-            resetVM(virtualMachine, "VM");
+            resetVM(virtualMachineInstance, "VM");
         }
 
     }
 
 
-    public void startExecutionsOnContainer(Map<Container, List<ProcessStep>> containerProcessSteps, VirtualMachine virtualMachine) {
+    public void startExecutionsOnContainer(Map<Container, List<ProcessStep>> containerProcessSteps, VirtualMachineInstance virtualMachineInstance) {
         for (Map.Entry<Container, List<ProcessStep>> entry : containerProcessSteps.entrySet()) {
 
-            log.info("Start Container: " + entry.getKey() + " on VM: " + virtualMachine);
+            log.info("Start Container: " + entry.getKey() + " on VM: " + virtualMachineInstance);
             StopWatch stopWatch = new StopWatch();
             stopWatch.start("deploy container");
 
-            boolean success = deployContainer(virtualMachine, entry.getKey());
+            boolean success = deployContainer(virtualMachineInstance, entry.getKey());
 
             if (success) {
                 stopWatch.stop();
@@ -116,40 +120,40 @@ public class WithVMDeploymentController {
                         serviceExecution.startExecution(processStep, entry.getKey());
                     } catch (ServiceInvokeException e) {
                         log.error("Exception while invoking service. Stop VM and reset.", e);
-                        reset(entry.getValue(), entry.getKey(), virtualMachine, "Service");
+                        reset(entry.getValue(), entry.getKey(), virtualMachineInstance, "Service");
                     }
                 }
             } else {
-                reset(entry.getValue(), entry.getKey(), virtualMachine, "Container");
+                reset(entry.getValue(), entry.getKey(), virtualMachineInstance, "Container");
             }
         }
     }
 
-    private String startVM(VirtualMachine virtualMachine) throws VmCouldNotBeStartedException {
+    private String startVM(VirtualMachineInstance virtualMachineInstance) throws VmCouldNotBeStartedException {
 
-        Object waitObject = inMemoryCache.getVmDeployedWaitObject().get(virtualMachine);
+        Object waitObject = cacheVirtualMachineService.getVmDeployedWaitObjectMap().get(virtualMachineInstance);
         if (waitObject == null) {
             waitObject = new Object();
-            inMemoryCache.getVmDeployedWaitObject().put(virtualMachine, waitObject);
+            cacheVirtualMachineService.getVmDeployedWaitObjectMap().put(virtualMachineInstance, waitObject);
 
             try {
-                virtualMachine = cloudControllerService.startVM(virtualMachine);
+                virtualMachineInstance = cloudControllerService.startVM(virtualMachineInstance);
             } catch (VmCouldNotBeStartedException e) {
                 synchronized (waitObject) {
                     waitObject.notifyAll();
                 }
-                inMemoryCache.getVmDeployedWaitObject().remove(virtualMachine);
+                cacheVirtualMachineService.getVmDeployedWaitObjectMap().remove(virtualMachineInstance);
                 throw e;
             }
 
-            log.info("VM up and running with ip: " + virtualMachine.getIpAddress() + " vm: " + virtualMachine);
-            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachine.getStartDate(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.START);
+            log.info("VM up and running with ip: " + virtualMachineInstance.getIpAddress() + " vm: " + virtualMachineInstance);
+            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachineInstance.getStartTime(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.START);
             reportDaoService.save(report);
 
             synchronized (waitObject) {
                 waitObject.notifyAll();
             }
-            inMemoryCache.getVmDeployedWaitObject().remove(virtualMachine);
+            cacheVirtualMachineService.getVmDeployedWaitObjectMap().remove(virtualMachineInstance);
         } else {
             try {
                 synchronized (waitObject) {
@@ -158,17 +162,17 @@ public class WithVMDeploymentController {
             } catch (InterruptedException e) {
                 log.error("Exception", e);
             }
-            if (!virtualMachine.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
+            if (!virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
                 throw new VmCouldNotBeStartedException("VM could not be started");
             }
         }
 
-        return virtualMachine.getIpAddress();
+        return virtualMachineInstance.getIpAddress();
     }
 
-    private boolean deployContainer(VirtualMachine vm, Container container) {
+    private boolean deployContainer(VirtualMachineInstance vm, Container container) {
         if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
-            log.info(container + " already running on vm " + container.getVirtualMachine());
+            log.info(container + " already running on vm " + container.getVirtualMachineInstance());
             return true;
         }
 
@@ -185,7 +189,7 @@ public class WithVMDeploymentController {
     }
 
 
-    private void reset(List<ProcessStep> value, Container container, VirtualMachine vm, String failureReason) {
+    private void reset(List<ProcessStep> value, Container container, VirtualMachineInstance vm, String failureReason) {
 
         resetContainer(container, vm, failureReason);
         resetProcessSteps(value);
@@ -194,13 +198,13 @@ public class WithVMDeploymentController {
 
     private void resetProcessSteps(List<ProcessStep> value) {
         for (ProcessStep processStep : value) {
-            inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
-            inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+            cacheProcessStepService.getWaitingForExecutingProcessSteps().remove(processStep);
+            cacheProcessStepService.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
             processStep.reset();
         }
     }
 
-    private void resetContainer(Container container, VirtualMachine vm, String failureReason) {
+    private void resetContainer(Container container, VirtualMachineInstance vm, String failureReason) {
         if (container != null) {
             ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, failureReason);
             reportDaoService.save(reportContainer);
@@ -208,14 +212,14 @@ public class WithVMDeploymentController {
         }
     }
 
-    private void resetVM(VirtualMachine virtualMachine, String failureReason) {
-        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), virtualMachine.getInstanceId(), virtualMachine.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
+    private void resetVM(VirtualMachineInstance virtualMachineInstance, String failureReason) {
+        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
         reportDaoService.save(reportVM);
 
-        log.info("Terminate: " + virtualMachine);
+        log.info("Terminate: " + virtualMachineInstance);
 
-        cloudControllerService.stopVirtualMachine(virtualMachine);
-        virtualMachine.terminate();
+        cloudControllerService.stopVirtualMachine(virtualMachineInstance);
+        virtualMachineInstance.terminate();
     }
 
 }
