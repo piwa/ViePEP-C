@@ -1,6 +1,5 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations;
 
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.OrderMaintainer;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +12,7 @@ import java.util.*;
 
 @Slf4j
 @SuppressWarnings("Duplicates")
-public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
+public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
 
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
     private Map<String, DateTime> maxTimeAfterDeadline;
@@ -22,7 +21,7 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
     /**
      * Single-point cross-over.
      */
-    public SpaceAwareCrossover2(Map<String, DateTime> maxTimeAfterDeadline) {
+    public SpaceAwareCrossover(Map<String, DateTime> maxTimeAfterDeadline) {
         this(1, maxTimeAfterDeadline);
     }
 
@@ -33,7 +32,7 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
      * @param crossoverPoints The fixed number of cross-overs applied to each
      *                        pair of parents.
      */
-    public SpaceAwareCrossover2(int crossoverPoints, Map<String, DateTime> maxTimeAfterDeadline) {
+    public SpaceAwareCrossover(int crossoverPoints, Map<String, DateTime> maxTimeAfterDeadline) {
         super(crossoverPoints);
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
     }
@@ -45,7 +44,7 @@ public class SpaceAwareCrossover2 extends AbstractCrossover<Chromosome> {
      * @param crossoverPointsVariable Provides the (possibly variable) number of
      *                                cross-overs applied to each pair of parents.
      */
-    public SpaceAwareCrossover2(NumberGenerator<Integer> crossoverPointsVariable, Map<String, DateTime> maxTimeAfterDeadline) {
+    public SpaceAwareCrossover(NumberGenerator<Integer> crossoverPointsVariable, Map<String, DateTime> maxTimeAfterDeadline) {
         super(crossoverPointsVariable);
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
     }

@@ -2,7 +2,7 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory.DeadlineAwareFactory;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations.SpaceAwareCrossover2;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations.SpaceAwareCrossover;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations.SpaceAwareMutation;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.ProblemNotSolvedException;
@@ -102,7 +102,7 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         // TODO build a mutation function that changes the VMs
         // TODO build a crossover function that changes the VMs
         operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationEndTime, maxTimeAfterDeadline, optimizationUtility, containerDeploymentTime));
-        operators.add(new SpaceAwareCrossover2(maxTimeAfterDeadline));
+        operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));
 
         this.fitnessFunction.setOptimizationEndTime(this.optimizationEndTime);
 

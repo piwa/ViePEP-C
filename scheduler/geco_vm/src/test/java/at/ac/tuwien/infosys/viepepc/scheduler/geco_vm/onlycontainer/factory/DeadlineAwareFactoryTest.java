@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {GeCoVmApplication.class, TestSchedulerGecoConfiguration.class},
         properties = {"evaluation.prefix=develop",
-                "profile.specific.database.name=onlycontainergeneticalgorithm",
+                "profile.specific.database.name=geco_vm",
                 "evaluation.suffix=1",
                 "min.optimization.interval.ms = 20000",
                 "vm.simulation.deploy.duration.average=53819",
@@ -372,6 +372,7 @@ public class DeadlineAwareFactoryTest {
 
         deadlineAwareFactory.initialize(workflowElements, optimizationEndTime);
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
+
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
         Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);

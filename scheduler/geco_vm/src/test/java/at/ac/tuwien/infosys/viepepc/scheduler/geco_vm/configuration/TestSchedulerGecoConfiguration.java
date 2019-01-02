@@ -22,7 +22,7 @@ import org.springframework.test.context.TestPropertySource;
         "classpath:cloud-config/viepep4.0.properties",
         "classpath:application_cloud_controller.properties",
         "classpath:container-config/container.properties"
-}, properties = {"evaluation.prefix=1", "profile.specific.database.name=onlycontainergeneticalgorithm", "evaluation.suffix=1"})
+}, properties = {"evaluation.prefix=1", "profile.specific.database.name=geco_vm", "evaluation.suffix=1"})
 @Profile("test")
 public class TestSchedulerGecoConfiguration {
 
