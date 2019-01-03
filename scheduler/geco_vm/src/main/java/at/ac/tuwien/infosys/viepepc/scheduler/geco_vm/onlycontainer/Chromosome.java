@@ -10,6 +10,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @SuppressWarnings("Duplicates")
@@ -28,6 +29,11 @@ public class Chromosome {
 
     public List<Gene> getRow(int row) {
         return genes.get(row);
+    }
+
+
+    public List<Gene> getFlattenChromosome() {
+        return genes.stream().flatMap(List::stream).collect(Collectors.toList());
     }
 
     public int getRowAmount() {

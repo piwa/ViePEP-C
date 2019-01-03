@@ -38,7 +38,7 @@ public class OptimizationUtility {
 
         ContainerConfiguration bestContainerConfig = new ContainerConfiguration();
         bestContainerConfig.setId(0L);
-        bestContainerConfig.setName(String.valueOf(cpuLoad) + "_" + String.valueOf(ram));
+        bestContainerConfig.setName(cpuLoad + "_" + ram);
         bestContainerConfig.setCores(cpuLoad / 100);
         bestContainerConfig.setRam(ram);
         bestContainerConfig.setDisc(100);
@@ -110,40 +110,6 @@ public class OptimizationUtility {
             }
         });
 
-//        for (List<Chromosome.Gene> row : chromosome.getGenes()) {
-//            for (Chromosome.Gene gene : row) {
-//                if(!gene.isFixed()) {
-//           if (!requiredContainerSchedulingMap.containsKey(gene.getProcessStep().getServiceType())) {
-//                        requiredContainerSchedulingMap.put(gene.getProcessStep().getServiceType(), new ArrayList<>());
-//                    }
-//
-//                    boolean overlapFound = false;
-//                    List<ContainerSchedulingUnit> requiredServiceTypes = requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType());
-//                    for (ContainerSchedulingUnit containerSchedulingUnit : requiredServiceTypes) {
-//                        Interval overlap = containerSchedulingUnit.getServiceAvailableTime().overlap(gene.getExecutionInterval());
-//                        if (overlap != null) {
-//
-//                            // TODO something is wrong here. the fixedContainerSchedulingUnitMap gets the processStepGene twice
-//                            if (!containerSchedulingUnit.getProcessStepGenes().contains(gene)) {
-//                                containerSchedulingUnit.getProcessStepGenes().add(gene);
-//                            }
-//                            overlapFound = true;
-//                            break;
-//                        }
-//                    }
-//
-//                    if (!overlapFound) {
-//                        ContainerSchedulingUnit newContainerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime);
-//                        newContainerSchedulingUnit.getProcessStepGenes().add(gene);
-//
-//                        requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType()).add(newContainerSchedulingUnit);
-//                    }
-//                }
-//            }
-//        }
-
-//        List<ContainerSchedulingUnit> requiredServiceTypeList = new ArrayList<>();
-//        requiredContainerSchedulingMap.forEach((k, v) -> requiredServiceTypeList.addAll(v));
         return requiredContainerSchedulingMap.values().stream().flatMap(List::stream).collect(Collectors.toList());
     }
 

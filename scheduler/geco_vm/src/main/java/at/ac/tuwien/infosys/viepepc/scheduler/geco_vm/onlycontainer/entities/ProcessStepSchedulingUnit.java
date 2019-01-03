@@ -34,7 +34,7 @@ public class ProcessStepSchedulingUnit {
                 ", internId=" + internId +
                 ", workflowName='" + workflowName + '\'' +
                 ", lastElement=" + lastElement +
-                ", containerSchedulingUnit=" + containerSchedulingUnit +
+                ", containerSchedulingUnits=" + containerSchedulingUnit +
                 '}';
     }
 }

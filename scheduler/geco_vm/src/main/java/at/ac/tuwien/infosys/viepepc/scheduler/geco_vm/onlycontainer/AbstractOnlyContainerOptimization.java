@@ -60,15 +60,15 @@ public abstract class AbstractOnlyContainerOptimization {
 
         orderMaintainer.checkRowAndPrintError(winner, this.getClass().getSimpleName(), slackWebhook);
 
-//        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnitList) {
+//        for (ContainerSchedulingUnit containerSchedulingUnits : containerSchedulingUnitList) {
 //
 //
-//            ProcessStep psHasToDeployContainer = containerSchedulingUnit.getFirstGene().getProcessStep();
+//            ProcessStep psHasToDeployContainer = containerSchedulingUnits.getFirstGene().getProcessStep();
 //
-//            Container container = containerSchedulingUnit.getProcessStepGenes().get(0).getProcessStep().getContainer();
+//            Container container = containerSchedulingUnits.getProcessStepGenes().get(0).getProcessStep().getContainer();
 //            container.setBareMetal(false);
 //
-//            for (Chromosome.Gene processStepGene : containerSchedulingUnit.getProcessStepGenes()) {
+//            for (Chromosome.Gene processStepGene : containerSchedulingUnits.getProcessStepGenes()) {
 //                if (!processStepGene.isFixed()) {
 //                    ProcessStep processStep = processStepGene.getProcessStep();
 //                    if (processStep.getStartTime() != null && (processStep.getContainer().isRunning() == true || processStep.getContainer().isDeploying() == true)) {

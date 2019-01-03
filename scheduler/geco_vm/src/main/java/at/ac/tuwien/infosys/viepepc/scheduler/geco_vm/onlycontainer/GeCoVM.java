@@ -91,8 +91,8 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         SelectionStrategy<Object> selectionStrategy = new TournamentSelection(numberGenerator);
 
 
-        ((DeadlineAwareFactory) chromosomeFactory).initialize(workflowElements, this.optimizationEndTime);
-        maxTimeAfterDeadline = ((DeadlineAwareFactory) chromosomeFactory).getMaxTimeAfterDeadline();
+        chromosomeFactory.initialize(workflowElements, this.optimizationEndTime);
+        maxTimeAfterDeadline = chromosomeFactory.getMaxTimeAfterDeadline();
 
 
         Random rng = new MersenneTwisterRNG();
@@ -101,7 +101,7 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
 
         // TODO build a mutation function that changes the VMs
         // TODO build a crossover function that changes the VMs
-        operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationEndTime, maxTimeAfterDeadline, optimizationUtility, containerDeploymentTime));
+        operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationEndTime, maxTimeAfterDeadline));
         operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));
 
         this.fitnessFunction.setOptimizationEndTime(this.optimizationEndTime);

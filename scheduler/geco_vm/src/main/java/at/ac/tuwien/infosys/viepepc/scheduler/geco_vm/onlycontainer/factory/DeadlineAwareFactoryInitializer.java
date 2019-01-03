@@ -6,6 +6,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.VMSelectionHelper;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ProcessStepSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.VirtualMachineSchedulingUnit;
@@ -13,6 +14,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,35 +24,30 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
+@Component
 public class DeadlineAwareFactoryInitializer {
 
-    @Getter
-    @Setter
-    private Chromosome.Gene firstGene;
-    @Getter
-    @Setter
-    private Chromosome.Gene lastGene;
+    @Autowired
+    private VMSelectionHelper vmSelectionHelper;
+
+    @Value("${virtual.machine.default.deploy.time}")
+    private long virtualMachineDeploymentTime;
+    @Value("${container.default.deploy.time}")
+    private long containerDeploymentTime;
+
+    @Getter @Setter private Chromosome.Gene firstGene;
+    @Getter @Setter private Chromosome.Gene lastGene;
+    @Getter private Map<ProcessStepSchedulingUnit, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap = new HashMap<>();
+
     private DateTime optimizationEndTime;
-    @Setter
-    private final long containerDeploymentTime;
-    @Setter
-    private final long virtualMachineDeploymentTime;
-
     private Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
-    @Getter
-    private Map<VirtualMachineInstance, VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitMap = new HashMap<>();
-    @Getter
-    private Map<ProcessStepSchedulingUnit, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap = new HashMap<>();
 
-    public DeadlineAwareFactoryInitializer(DateTime optimizationEndTime, long containerDeploymentTime, long virtualMachineDeploymentTime) {
+    public void initialize(DateTime optimizationEndTime) {
         this.optimizationEndTime = optimizationEndTime;
-        this.containerDeploymentTime = containerDeploymentTime;
-        this.virtualMachineDeploymentTime = virtualMachineDeploymentTime;
 
         this.firstGene = null;
         this.lastGene = null;
         this.clonedServiceTypes = new HashMap<>();
-        this.virtualMachineSchedulingUnitMap = new HashMap<>();
         this.fixedContainerSchedulingUnitMap = new HashMap<>();
     }
 
@@ -195,11 +194,11 @@ public class DeadlineAwareFactoryInitializer {
                 }
                 processStepSchedulingUnit.setContainerSchedulingUnit(containerSchedulingUnit);
 
-                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());
+                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = vmSelectionHelper.getVirtualMachineSchedulingUnitMap().get(container.getVirtualMachineInstance());
                 if (virtualMachineSchedulingUnit == null) {
                     virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(virtualMachineDeploymentTime);
                     virtualMachineSchedulingUnit.setVirtualMachineInstance(container.getVirtualMachineInstance());
-                    virtualMachineSchedulingUnitMap.put(container.getVirtualMachineInstance(), virtualMachineSchedulingUnit);
+                    vmSelectionHelper.getVirtualMachineSchedulingUnitMap().put(container.getVirtualMachineInstance(), virtualMachineSchedulingUnit);
                 }
                 virtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
                 containerSchedulingUnit.setScheduledOnVm(virtualMachineSchedulingUnit);

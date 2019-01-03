@@ -1,14 +1,20 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations;
 
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContext;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.OrderMaintainer;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.VMSelectionHelper;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.VirtualMachineSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
+import org.springframework.context.ApplicationContext;
 import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.watchmaker.framework.operators.AbstractCrossover;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @SuppressWarnings("Duplicates")
@@ -16,6 +22,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
 
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
     private Map<String, DateTime> maxTimeAfterDeadline;
+    private VMSelectionHelper vmSelectionHelper;
 
 
     /**
@@ -35,6 +42,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
     public SpaceAwareCrossover(int crossoverPoints, Map<String, DateTime> maxTimeAfterDeadline) {
         super(crossoverPoints);
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
+        this.vmSelectionHelper = SpringContext.getApplicationContext().getBean(VMSelectionHelper.class);
     }
 
 
@@ -47,6 +55,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
     public SpaceAwareCrossover(NumberGenerator<Integer> crossoverPointsVariable, Map<String, DateTime> maxTimeAfterDeadline) {
         super(crossoverPointsVariable);
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
+        this.vmSelectionHelper = SpringContext.getApplicationContext().getBean(VMSelectionHelper.class);
     }
 
 
@@ -110,9 +119,13 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
         result.add(offspring1Chromosome);
         result.add(offspring2Chromosome);
 
-        // TODO check if VM deployment times and size still fits. If not get new fitting VM and set deployment times
+        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring1Chromosome);
+        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring2Chromosome);
+
         return result;
     }
+
+
 
 
     private boolean performCrossover(boolean rowClone2Changed, Map<String, Chromosome.Gene> processStepNameToCloneMap2, List<Chromosome.Gene> rowParent1, List<Chromosome.Gene> rowParent2, Chromosome.Gene parent1Gene, Chromosome.Gene clone2PreviousGene, DateTime maxDeadlineExtensionClone2) {

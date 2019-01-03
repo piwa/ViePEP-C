@@ -94,7 +94,6 @@ public class ProcessStep extends Element implements Cloneable {
         return remaining > 0 ? remaining : serviceType.getServiceTypeResources().getMakeSpan() ;
     }
 
-
     public void setScheduledForExecution(DateTime scheduledStartDate, Container container) {
         this.scheduledStartDate = scheduledStartDate;
         this.container = container;

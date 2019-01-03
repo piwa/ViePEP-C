@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory;
 
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
@@ -57,6 +58,8 @@ public class DeadlineAwareFactoryTest {
     private WorkflowGenerationHelper workflowGenerationHelper;
     @Autowired
     private WorkflowUtilities workflowUtilities;
+    @Autowired
+    private CacheVirtualMachineService cacheVirtualMachineService;
 
     OrderMaintainer orderMaintainer = new OrderMaintainer();
 
@@ -70,6 +73,7 @@ public class DeadlineAwareFactoryTest {
     @Before
     public void initFactory() {
         optimizationEndTime = DateTime.now().plus(maxOptimizationDuration).plus(additionalOptimizationTime);
+        this.cacheVirtualMachineService.getAllVMInstancesFromInMemory().clear();
     }
 
     @Test

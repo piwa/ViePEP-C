@@ -103,37 +103,37 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
     }
 
 
-    private Map<VirtualMachineInstance, List<Interval>> createVirtualMachineIntervalsMap(List<ContainerSchedulingUnit> requiredServiceTypeList) {
-
-        Map<VirtualMachineInstance, List<Interval>> virtualMachineIntervals = new HashMap<>();
-
-        requiredServiceTypeList.forEach(schedulingUnit -> {
-            try {
-                VirtualMachineInstance virtualMachineInstance = schedulingUnit.getProcessStepGenes().stream().findFirst().orElseThrow(Exception::new).getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance();
-
-                if (!virtualMachineIntervals.containsKey(virtualMachineInstance)) {
-                    virtualMachineIntervals.put(virtualMachineInstance, new ArrayList<>());
-                    virtualMachineIntervals.get(virtualMachineInstance).add(schedulingUnit.getServiceAvailableTime());
-                } else {
-                    Interval vmDeployInterval = virtualMachineIntervals.get(virtualMachineInstance).stream().filter(i -> i.overlap(schedulingUnit.getServiceAvailableTime()) != null).findFirst().orElse(null);
-                    if (vmDeployInterval == null) {
-                        virtualMachineIntervals.get(virtualMachineInstance).add(schedulingUnit.getServiceAvailableTime());
-                    } else {
-                        virtualMachineIntervals.get(virtualMachineInstance).remove(vmDeployInterval);
-                        Interval newVmDeployInterval = new Interval(vmDeployInterval);
-                        newVmDeployInterval = newVmDeployInterval.withStartMillis(Math.min(vmDeployInterval.getStartMillis(), schedulingUnit.getServiceAvailableTime().getStartMillis()));
-                        newVmDeployInterval = newVmDeployInterval.withEndMillis(Math.max(vmDeployInterval.getEndMillis(), schedulingUnit.getServiceAvailableTime().getEndMillis()));
-                        virtualMachineIntervals.get(virtualMachineInstance).add(newVmDeployInterval);
-                    }
-                }
-
-            } catch (Exception e) {
-                log.error("Exception", e);
-            }
-        });
-
-        return virtualMachineIntervals;
-    }
+//    private Map<VirtualMachineInstance, List<Interval>> createVirtualMachineIntervalsMap(List<ContainerSchedulingUnit> requiredServiceTypeList) {
+//
+//        Map<VirtualMachineInstance, List<Interval>> virtualMachineIntervals = new HashMap<>();
+//
+//        requiredServiceTypeList.forEach(schedulingUnit -> {
+//            try {
+//                VirtualMachineInstance virtualMachineInstance = schedulingUnit.getProcessStepGenes().stream().findFirst().orElseThrow(Exception::new).getProcessStep().getContainerSchedulingUnits().getScheduledOnVm().getVirtualMachineInstance();
+//
+//                if (!virtualMachineIntervals.containsKey(virtualMachineInstance)) {
+//                    virtualMachineIntervals.put(virtualMachineInstance, new ArrayList<>());
+//                    virtualMachineIntervals.get(virtualMachineInstance).add(schedulingUnit.getServiceAvailableTime());
+//                } else {
+//                    Interval vmDeployInterval = virtualMachineIntervals.get(virtualMachineInstance).stream().filter(i -> i.overlap(schedulingUnit.getServiceAvailableTime()) != null).findFirst().orElse(null);
+//                    if (vmDeployInterval == null) {
+//                        virtualMachineIntervals.get(virtualMachineInstance).add(schedulingUnit.getServiceAvailableTime());
+//                    } else {
+//                        virtualMachineIntervals.get(virtualMachineInstance).remove(vmDeployInterval);
+//                        Interval newVmDeployInterval = new Interval(vmDeployInterval);
+//                        newVmDeployInterval = newVmDeployInterval.withStartMillis(Math.min(vmDeployInterval.getStartMillis(), schedulingUnit.getServiceAvailableTime().getStartMillis()));
+//                        newVmDeployInterval = newVmDeployInterval.withEndMillis(Math.max(vmDeployInterval.getEndMillis(), schedulingUnit.getServiceAvailableTime().getEndMillis()));
+//                        virtualMachineIntervals.get(virtualMachineInstance).add(newVmDeployInterval);
+//                    }
+//                }
+//
+//            } catch (Exception e) {
+//                log.error("Exception", e);
+//            }
+//        });
+//
+//        return virtualMachineIntervals;
+//    }
 
 
     @Override

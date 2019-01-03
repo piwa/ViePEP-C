@@ -31,7 +31,6 @@ public class WorkflowGenerationHelper {
 
     @Autowired
     private ServiceRegistryReader serviceRegistryReader;
-
     @Autowired
     private OptimizationUtility optimizationUtility;
     @Autowired

@@ -1,13 +1,16 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations;
 
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContext;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.OrderMaintainer;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.VMSelectionHelper;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
+import org.springframework.context.ApplicationContext;
 import org.uncommons.maths.number.ConstantGenerator;
 import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.maths.random.PoissonGenerator;
@@ -20,29 +23,29 @@ import java.util.*;
 public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
 
     private final NumberGenerator<Integer> mutationCountVariable;
-    private final DateTime optimizationTime;
+    private final DateTime optimizationEndTime;
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
     private Map<String, DateTime> maxTimeAfterDeadline;
     private OptimizationUtility optimizationUtility;
-    private long onlyContinerDeploymentTime;
+    private VMSelectionHelper vmSelectionHelper;
 
     /**
      * Default is one mutation per candidate.
      *
      * @param poissonGenerator
-     * @param optimizationTime
+     * @param optimizationEndTime
      * @param maxTimeAfterDeadline
      */
-    public SpaceAwareMutation(PoissonGenerator poissonGenerator, DateTime optimizationTime, Map<String, DateTime> maxTimeAfterDeadline, OptimizationUtility optimizationUtility, long onlyContinerDeploymentTime) {
-        this(1, optimizationTime, maxTimeAfterDeadline, optimizationUtility, onlyContinerDeploymentTime);
+    public SpaceAwareMutation(PoissonGenerator poissonGenerator, DateTime optimizationEndTime, Map<String, DateTime> maxTimeAfterDeadline) {
+        this(1, optimizationEndTime, maxTimeAfterDeadline);
     }
 
     /**
      * @param mutationCount The constant number of mutations
      *                      to apply to each row in a Sudoku solution.
      */
-    public SpaceAwareMutation(int mutationCount, DateTime optimizationTime, Map<String, DateTime> maxTimeAfterDeadline, OptimizationUtility optimizationUtility, long onlyContinerDeploymentTime) {
-        this(new ConstantGenerator<>(mutationCount), optimizationTime, maxTimeAfterDeadline, optimizationUtility, onlyContinerDeploymentTime);
+    public SpaceAwareMutation(int mutationCount, DateTime optimizationEndTime, Map<String, DateTime> maxTimeAfterDeadline) {
+        this(new ConstantGenerator<>(mutationCount), optimizationEndTime, maxTimeAfterDeadline);
         if (mutationCount < 1) {
             throw new IllegalArgumentException("Mutation count must be at least 1.");
         }
@@ -56,12 +59,14 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
      * @param mutationCount A random variable that provides a number
      *                      of mutations that will be applied to each row in an individual.
      */
-    public SpaceAwareMutation(NumberGenerator<Integer> mutationCount, DateTime optimizationTime, Map<String, DateTime> maxTimeAfterDeadline, OptimizationUtility optimizationUtility, long onlyContinerDeploymentTime) {
+    public SpaceAwareMutation(NumberGenerator<Integer> mutationCount, DateTime optimizationEndTime, Map<String, DateTime> maxTimeAfterDeadline) {
         this.mutationCountVariable = mutationCount;
-        this.optimizationTime = optimizationTime;
+        this.optimizationEndTime = optimizationEndTime;
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
-        this.optimizationUtility = optimizationUtility;
-        this.onlyContinerDeploymentTime = onlyContinerDeploymentTime;
+
+        ApplicationContext context = SpringContext.getApplicationContext();
+        this.optimizationUtility = context.getBean(OptimizationUtility.class);
+        this.vmSelectionHelper = context.getBean(VMSelectionHelper.class);
     }
 
     @Override
@@ -73,7 +78,6 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
         }
 
         return mutatedCandidates;
-
     }
 
     private Chromosome mutate(Chromosome candidate, Random random) {
@@ -99,10 +103,10 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                 DateTime startTimeNextGene = null;
                 if (previousGene != null) {
                     endTimePreviousGene = previousGene.getExecutionInterval().getEnd();
-                } else if (previousGene != null && this.optimizationTime.isAfter(oldInterval.getStart())) {
+                } else if (previousGene != null && this.optimizationEndTime.isAfter(oldInterval.getStart())) {
                     endTimePreviousGene = previousGene.getExecutionInterval().getEnd();
                 } else {
-                    endTimePreviousGene = this.optimizationTime;
+                    endTimePreviousGene = this.optimizationEndTime;
                 }
 
                 if (nextGene != null) {
@@ -126,7 +130,6 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
 
                 try {
                     int deltaTime = getRandomNumber((int) previousDuration.getMillis(), (int) nextDuration.getMillis(), random);
-
 
                     Interval newInterval = new Interval(oldInterval.getStartMillis() + deltaTime, oldInterval.getEndMillis() + deltaTime);
 
@@ -153,24 +156,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
 
         Chromosome newChromosome = new Chromosome(newCandidate);
 
-        // TODO check if VM deployment times and size still fits. If not get new fitting VM and set deployment times
-        // TODO times should be the same but the size might changed
-//        List<ContainerSchedulingUnit> containerSchedulingUnits = optimizationUtility.getContainerSchedulingUnit(newChromosome);
-//        Map<Interval, List<Container>> overlappingContainer = new HashMap<>();
-//        containerSchedulingUnits.forEach(serviceTypeSchedulingUnit ->
-//            optimizationUtility.addContainerToOverlappingMap(overlappingContainer, serviceTypeSchedulingUnit, serviceTypeSchedulingUnit.getProcessStepGenes().get(0).getProcessStep().getContainer())
-//        );
-//
-//        overlappingContainer.forEach( (interval, containers) -> {
-//
-//            Map<VirtualMachineInstance, List<Container>> virtualMachineContainerMap = new HashMap<>();
-//
-//
-//
-//
-//        });
-
-
+        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newChromosome);
 
         return newChromosome;
     }
@@ -196,7 +182,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
             if (containerSchedulingUnit.getProcessStepGenes().contains(movedGene)) {
                 DateTime deploymentStartTime = containerSchedulingUnit.getDeployStartTime();
 
-                if (deploymentStartTime.isBefore(this.optimizationTime) && containerSchedulingUnit.getFirstGene() == movedGene) {
+                if (deploymentStartTime.isBefore(this.optimizationEndTime) && containerSchedulingUnit.getFirstGene() == movedGene) {
                     return false;
                 } else {
                     return true;
