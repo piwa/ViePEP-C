@@ -112,10 +112,10 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                 if (nextGene != null) {
                     startTimeNextGene = nextGene.getExecutionInterval().getStart();
                 } else {
-                    if (maxTimeAfterDeadline == null || maxTimeAfterDeadline.size() == 0 || maxTimeAfterDeadline.get(gene.getProcessStep().getWorkflowName()) == null) {
+                    if (maxTimeAfterDeadline == null || maxTimeAfterDeadline.size() == 0 || maxTimeAfterDeadline.get(gene.getProcessStepSchedulingUnit().getWorkflowName()) == null) {
                         startTimeNextGene = getLastProcessStep(row).getExecutionInterval().getEnd().plusMinutes(10);
                     } else {
-                        startTimeNextGene = maxTimeAfterDeadline.get(gene.getProcessStep().getWorkflowName());
+                        startTimeNextGene = maxTimeAfterDeadline.get(gene.getProcessStepSchedulingUnit().getWorkflowName());
                     }
 
                     if (gene.getExecutionInterval().getEnd().isAfter(startTimeNextGene)) {       // TODO why?

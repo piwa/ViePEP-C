@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.serviceexecutor;
 
 
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheProcessStepService;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokeException;
@@ -24,7 +25,7 @@ public class ServiceExecution {
     @Autowired
     private ServiceInvoker serviceInvoker;
     @Autowired
-    private InMemoryCacheImpl inMemoryCache;
+    private CacheProcessStepService cacheProcessStepService;
 
     @Value("${simulate}")
     private boolean simulate;
@@ -33,7 +34,7 @@ public class ServiceExecution {
         processStep.setStartDate(DateTime.now());
         log.info("Task-Start: " + processStep);
 
-        inMemoryCache.getProcessStepsWaitingForServiceDone().put(processStep.getName(), processStep);
+        cacheProcessStepService.getProcessStepsWaitingForServiceDone().put(processStep.getName(), processStep);
 
         serviceInvoker.invoke(container, processStep);
     }

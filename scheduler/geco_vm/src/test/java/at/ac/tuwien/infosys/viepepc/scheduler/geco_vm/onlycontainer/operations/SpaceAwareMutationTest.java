@@ -114,7 +114,7 @@ public class SpaceAwareMutationTest {
 
         for (Chromosome.Gene originalGene : originalGenes) {
             for (Chromosome.Gene mutatedGene : mutatedGenes) {
-                if (originalGene.getProcessStep().getInternId().equals(mutatedGene.getProcessStep().getInternId()) &&
+                if (originalGene.getProcessStepSchedulingUnit().getInternId().equals(mutatedGene.getProcessStepSchedulingUnit().getInternId()) &&
                         originalGene.getExecutionInterval().getStartMillis() != mutatedGene.getExecutionInterval().getStartMillis() &&
                         originalGene.getExecutionInterval().getEndMillis() != mutatedGene.getExecutionInterval().getEndMillis()) {
                     changes = changes + 1;
@@ -123,7 +123,7 @@ public class SpaceAwareMutationTest {
         }
         assertThat(changes, is(1));
 
-        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = mutatedGenes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
+        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = mutatedGenes.stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
         virtualMachineSchedulingUnits.forEach(unit -> assertTrue(vmSelectionHelper.checkEnoughResourcesLeftOnVM(unit)));
 
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));

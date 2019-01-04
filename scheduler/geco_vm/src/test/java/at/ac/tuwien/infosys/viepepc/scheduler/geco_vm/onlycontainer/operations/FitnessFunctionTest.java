@@ -1,6 +1,5 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations;
 
-import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
@@ -10,7 +9,6 @@ import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.GeCoVmApplication;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.TestSchedulerGecoConfiguration;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.OrderMaintainer;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.VirtualMachineSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory.DeadlineAwareFactory;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory.WorkflowGenerationHelper;
@@ -18,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -99,8 +95,8 @@ public class FitnessFunctionTest {
         Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitSet = new HashSet<>();
         for (Chromosome.Gene gene : genes) {
             VirtualMachineInstance vm = cacheVirtualMachineService.getNewVirtualMachineInstance(2);
-            gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance().setVmType(vm.getVmType());
-            virtualMachineSchedulingUnitSet.add(gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm());
+            gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance().setVmType(vm.getVmType());
+            virtualMachineSchedulingUnitSet.add(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm());
         }
 
         assertEquals(calculateLeasingCost(virtualMachineSchedulingUnitSet), fitnessFunction.getFitness(chromosome, null),0.0);
@@ -118,8 +114,8 @@ public class FitnessFunctionTest {
         Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitSet = new HashSet<>();
         for (Chromosome.Gene gene : genes) {
             VirtualMachineInstance vm = cacheVirtualMachineService.getNewVirtualMachineInstance(2);
-            gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance().setVmType(vm.getVmType());
-            virtualMachineSchedulingUnitSet.add(gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm());
+            gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance().setVmType(vm.getVmType());
+            virtualMachineSchedulingUnitSet.add(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm());
         }
 
         VirtualMachineInstance virtualMachineInstance = cacheVirtualMachineService.getNewVirtualMachineInstance(2);
@@ -155,8 +151,8 @@ public class FitnessFunctionTest {
         Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitSet = new HashSet<>();
         for (Chromosome.Gene gene : genes) {
             VirtualMachineInstance vm = cacheVirtualMachineService.getNewVirtualMachineInstance(2);
-            gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance().setVmType(vm.getVmType());
-            virtualMachineSchedulingUnitSet.add(gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm());
+            gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance().setVmType(vm.getVmType());
+            virtualMachineSchedulingUnitSet.add(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm());
         }
 
         assertEquals(calculateLeasingCost(virtualMachineSchedulingUnitSet) + penaltyCost, fitnessFunction.getFitness(chromosome, null),0.0);

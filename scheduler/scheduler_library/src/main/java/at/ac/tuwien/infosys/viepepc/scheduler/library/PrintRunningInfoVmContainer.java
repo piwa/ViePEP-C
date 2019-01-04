@@ -89,9 +89,10 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
             }
         }
         stringBuilder.append("----------------------- Tasks waiting for starting -----------------------\n");
-        for (ProcessStep processStep : cacheProcessStepService.getWaitingForExecutingProcessSteps()) {
-            stringBuilder.append(processStep.toString()).append("\n");
-        }
+        // TODO
+//        for (ProcessStep processStep : cacheProcessStepService.getProcessStepsWaitingForExecution()) {
+//            stringBuilder.append(processStep.toString()).append("\n");
+//        }
     }
 
     private void getRunningTasks(StringBuilder stringBuilder) {

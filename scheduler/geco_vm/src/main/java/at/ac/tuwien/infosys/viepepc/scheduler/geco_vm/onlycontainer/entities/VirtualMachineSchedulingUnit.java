@@ -25,7 +25,7 @@ public class VirtualMachineSchedulingUnit {
     }
 
     public Interval getVmAvailableInterval() {
-        List<Interval> containerIntervals = scheduledContainers.stream().map(ContainerSchedulingUnit::getResourceRequirementDuration).collect(Collectors.toList());
+        List<Interval> containerIntervals = scheduledContainers.stream().map(ContainerSchedulingUnit::getCloudResourceUsage).collect(Collectors.toList());
         return IntervalMergeHelper.mergeAndConsiderVMDeploymentDuration(containerIntervals);
     }
 

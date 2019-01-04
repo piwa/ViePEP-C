@@ -88,10 +88,9 @@ public class Watchdog {
                         getContainersAndProcesses(vm, processSteps, containers, processStep);
                     }
 
-
-                    processStepService.getProcessStepsWaitingForServiceDone().values().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
-
-                    processStepService.getWaitingForExecutingProcessSteps().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
+                    // TODO
+//                    processStepService.getProcessStepsWaitingForServiceDone().values().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
+//                    processStepService.getProcessStepsWaitingForExecution().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
 
                     processSteps.forEach(processStep -> log.warn("reset process step: " + processStep.toString()));
                     processSteps.forEach(processStep -> resetContainerAndProcessStep(vm, processStep, "VM"));
@@ -137,8 +136,9 @@ public class Watchdog {
         ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getContainer().getName(), processStep.getContainer().getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, reason);
         reportDaoService.save(reportContainer);
 
-        cacheProcessStepService.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
-        cacheProcessStepService.getWaitingForExecutingProcessSteps().remove(processStep);
+        // TODO
+//        cacheProcessStepService.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+//        cacheProcessStepService.getProcessStepsWaitingForExecution().remove(processStep);
         processStep.getContainer().shutdownContainer();
         processStep.reset();
     }

@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ActionExecutor;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.ProvisioningSchedule;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,41 +25,31 @@ import java.util.Set;
 @Slf4j
 @Component
 @Profile("GeCo_VM")
-public class HandleResultVmContainer implements HandleOptimizationResult {
+public class HandleResultGeCoVM implements HandleOptimizationResult {
 
     @Autowired
-    private ActionExecutor actionExecutor;
-    @Autowired
-    private InMemoryCacheImpl inMemoryCache;
-    @Autowired
-    private PrintRunningInfoVmContainer printRunningInformationVmContainer;
-
-//    private Set<VirtualMachineInstance> waitingForExecutingVirtualMachines = new HashSet<>();
-
-    private boolean printRunningInformation = true;
+    private ProvisioningSchedule provisioningSchedule;
 
     @Override
     public Boolean processResults(OptimizationResult optimize, DateTime tau_t) {
 
-        inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
-//        optimize.getProcessStepGenes().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
-//        optimize.getProcessStepGenes().stream().filter(ps -> ps.getContainer().getVirtualMachineInstance() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getContainer().getVirtualMachineInstance()));
+        printOptimizationResultInformation(optimize, tau_t);
 
-        actionExecutor.startInvocationViaContainersOnVms(optimize.getProcessSteps());
+        synchronized (provisioningSchedule) {
+            provisioningSchedule.getProcessSteps().addAll(optimize.getProcessSteps());
+            provisioningSchedule.getContainers().addAll(optimize.getContainers());
+            provisioningSchedule.getVirtualMachineInstances().addAll(optimize.getVirtualMachineInstances());
 
-        printRunningInformationVmContainer.printRunningInformation();
-
-        if (printRunningInformation) {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("Optimization result:\n");
-            printOptimizationResultInformation(optimize, tau_t, stringBuilder);
-            log.debug(stringBuilder.toString());
+            provisioningSchedule.sortLists();
         }
-
         return true;
     }
 
-    private void printOptimizationResultInformation(OptimizationResult optimize, DateTime tau_t, StringBuilder stringBuilder) {
+    private void printOptimizationResultInformation(OptimizationResult optimize, DateTime tau_t) {
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Optimization result:\n");
+
         Set<VirtualMachineInstance> vmsToStart = new HashSet<>();
         Set<Container> containersToDeploy = new HashSet<>();
         processProcessSteps(optimize, vmsToStart, containersToDeploy, tau_t);
@@ -75,6 +67,8 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
         for (ProcessStep processStep : optimize.getProcessSteps()) {
             stringBuilder.append(processStep).append("\n");
         }
+
+        log.debug(stringBuilder.toString());
     }
 
     private void processProcessSteps(OptimizationResult optimize, Set<VirtualMachineInstance> vmsToStart, Set<Container> containersToDeploy, DateTime tau_t) {
@@ -83,9 +77,6 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
                 vmsToStart.add(processStep.getContainer().getVirtualMachineInstance());
             }
             containersToDeploy.add(processStep.getContainer());
-
-            processStep.setScheduledForExecution(tau_t, processStep.getContainer());
-
         }
     }
 

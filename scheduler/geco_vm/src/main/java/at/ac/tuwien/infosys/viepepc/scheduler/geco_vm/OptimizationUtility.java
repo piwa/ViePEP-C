@@ -63,9 +63,9 @@ public class OptimizationUtility {
         containerSchedulingUnits.forEach(schedulingUnit -> {
             if (!fixedContainerSchedulingUnits.contains(schedulingUnit)) {
                 try {
-                    Container container = getContainer(schedulingUnit.getProcessStepGenes().get(0).getProcessStep().getServiceType(), schedulingUnit.getProcessStepGenes().size());
+                    Container container = getContainer(schedulingUnit.getProcessStepGenes().get(0).getProcessStepSchedulingUnit().getProcessStep().getServiceType(), schedulingUnit.getProcessStepGenes().size());
                     schedulingUnit.setContainer(container);
-                    schedulingUnit.getProcessStepGenes().forEach(gene -> gene.getProcessStep().setContainerSchedulingUnit(schedulingUnit));
+                    schedulingUnit.getProcessStepGenes().forEach(gene -> gene.getProcessStepSchedulingUnit().setContainerSchedulingUnit(schedulingUnit));
                 } catch (ContainerImageNotFoundException e) {
                     log.error("Exception", e);
                 }
@@ -83,12 +83,12 @@ public class OptimizationUtility {
         Map<ServiceType, List<ContainerSchedulingUnit>> requiredContainerSchedulingMap = new HashMap<>();
 
         chromosome.getGenes().stream().flatMap(Collection::stream).filter(gene -> !gene.isFixed()).forEach(gene -> {
-            if (!requiredContainerSchedulingMap.containsKey(gene.getProcessStep().getServiceType())) {
-                requiredContainerSchedulingMap.put(gene.getProcessStep().getServiceType(), new ArrayList<>());
+            if (!requiredContainerSchedulingMap.containsKey(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType())) {
+                requiredContainerSchedulingMap.put(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType(), new ArrayList<>());
             }
 
             boolean overlapFound = false;
-            List<ContainerSchedulingUnit> requiredServiceTypes = requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType());
+            List<ContainerSchedulingUnit> requiredServiceTypes = requiredContainerSchedulingMap.get(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType());
             for (ContainerSchedulingUnit containerSchedulingUnit : requiredServiceTypes) {
                 Interval overlap = containerSchedulingUnit.getServiceAvailableTime().overlap(gene.getExecutionInterval());
                 if (overlap != null) {
@@ -106,7 +106,7 @@ public class OptimizationUtility {
                 ContainerSchedulingUnit newContainerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime);
                 newContainerSchedulingUnit.getProcessStepGenes().add(gene);
 
-                requiredContainerSchedulingMap.get(gene.getProcessStep().getServiceType()).add(newContainerSchedulingUnit);
+                requiredContainerSchedulingMap.get(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType()).add(newContainerSchedulingUnit);
             }
         });
 
@@ -116,10 +116,10 @@ public class OptimizationUtility {
     public Map<String, Chromosome.Gene> getLastElements(Chromosome chromosome) {
         Map<String, Chromosome.Gene> lastElements = new HashMap<>();
 
-        chromosome.getGenes().stream().flatMap(Collection::stream).filter(gene -> gene.getProcessStep().isLastElement()).forEach(gene -> {
-            Chromosome.Gene lastGene = lastElements.get(gene.getProcessStep().getWorkflowName());
+        chromosome.getGenes().stream().flatMap(Collection::stream).filter(gene -> gene.getProcessStepSchedulingUnit().getProcessStep().isLastElement()).forEach(gene -> {
+            Chromosome.Gene lastGene = lastElements.get(gene.getProcessStepSchedulingUnit().getWorkflowName());
             if (lastGene == null || gene.getExecutionInterval().getEnd().isAfter(lastGene.getExecutionInterval().getEnd())) {
-                lastElements.put(gene.getProcessStep().getWorkflowName(), gene);
+                lastElements.put(gene.getProcessStepSchedulingUnit().getWorkflowName(), gene);
             }
         });
 

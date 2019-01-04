@@ -7,14 +7,12 @@ import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachi
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.VirtualMachineSchedulingUnit;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
-import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -60,7 +58,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
 
         Map<String, Chromosome.Gene> lastGeneOfProcessList = optimizationUtility.getLastElements(chromosome);
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
+        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = genes.stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
         List<VirtualMachineInstance> runningButNotUsedVirtualMachineInstances;
         List<VirtualMachineInstance> scheduledVirtualMachineInstances = virtualMachineSchedulingUnits.stream().map(VirtualMachineSchedulingUnit::getVirtualMachineInstance).collect(Collectors.toList());
 
@@ -85,7 +83,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         double penaltyCost = 0;
         for (Chromosome.Gene lastGeneOfProcess : lastGeneOfProcessList.values()) {
             // get deadline of workflow
-            WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(lastGeneOfProcess.getProcessStep().getWorkflowName());
+            WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(lastGeneOfProcess.getProcessStepSchedulingUnit().getWorkflowName());
             if (workflowElement != null) {
                 DateTime deadline = workflowElement.getDeadlineDateTime();
                 if (lastGeneOfProcess.getExecutionInterval().getEnd().isAfter(deadline)) {
@@ -109,7 +107,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
 //
 //        requiredServiceTypeList.forEach(schedulingUnit -> {
 //            try {
-//                VirtualMachineInstance virtualMachineInstance = schedulingUnit.getProcessStepGenes().stream().findFirst().orElseThrow(Exception::new).getProcessStep().getContainerSchedulingUnits().getScheduledOnVm().getVirtualMachineInstance();
+//                VirtualMachineInstance virtualMachineInstance = schedulingUnit.getProcessStepGenes().stream().findFirst().orElseThrow(Exception::new).getProcessStepSchedulingUnit().getContainerSchedulingUnits().getScheduledOnVm().getVirtualMachineInstance();
 //
 //                if (!virtualMachineIntervals.containsKey(virtualMachineInstance)) {
 //                    virtualMachineIntervals.put(virtualMachineInstance, new ArrayList<>());

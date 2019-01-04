@@ -1,13 +1,13 @@
 package at.ac.tuwien.infosys.viepepc.engine.watchdog;
 
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.ActionExecutorUtilities;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheProcessStepService;
 import at.ac.tuwien.infosys.viepepc.library.entities.Action;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerReportingAction;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
 import at.ac.tuwien.infosys.viepepc.library.Message;
@@ -37,7 +37,7 @@ public class Receiver {
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
     @Autowired
-    private InMemoryCacheImpl inMemoryCache;
+    private CacheProcessStepService cacheProcessStepService;
     @Autowired
     private TaskExecutor workflowDoneTaskExecutor;
     @Autowired
@@ -48,14 +48,14 @@ public class Receiver {
         try {
             log.debug(message.toString());
             if (message.getStatus().equals(ServiceExecutionStatus.DONE)) {
-                ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
+                ProcessStep processStep = cacheProcessStepService.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
                 if (processStep != null) {
                     finaliseSuccessfulExecution(processStep);
-                    inMemoryCache.getProcessStepsWaitingForServiceDone().remove(message.getProcessStepName());
+                    cacheProcessStepService.getProcessStepsWaitingForServiceDone().remove(message.getProcessStepName());
                 }
             } else {
                 log.warn("Service throw an exception: ProcessStep=" + message.getProcessStepName() + ",Exception=" + message.getBody());
-                ProcessStep processStep = inMemoryCache.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
+                ProcessStep processStep = cacheProcessStepService.getProcessStepsWaitingForServiceDone().get(message.getProcessStepName());
                 resetContainerAndProcessStep(processStep.getContainer().getVirtualMachineInstance(), processStep, "Service");
             }
         } catch (Exception ex) {
@@ -67,8 +67,8 @@ public class Receiver {
         ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getContainer().getName(), processStep.getContainer().getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, reason);
         reportDaoService.save(reportContainer);
 
-        inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
-        inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
+        cacheProcessStepService.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+        cacheProcessStepService.getProcessStepsWaitingForExecution().remove(processStep);
         processStep.getContainer().shutdownContainer();
         processStep.reset();
     }

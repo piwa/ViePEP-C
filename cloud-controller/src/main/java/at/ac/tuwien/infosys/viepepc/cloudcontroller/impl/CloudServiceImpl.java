@@ -59,7 +59,7 @@ public class CloudServiceImpl implements CloudControllerService, DockerControlle
 
     @Override
 //    @Retryable(maxAttempts=10, backoff=@Backoff(delay=30000, maxDelay=120000, random = true))
-    public VirtualMachineInstance startVM(VirtualMachineInstance vm) throws VmCouldNotBeStartedException {
+    public VirtualMachineInstance deployVM(VirtualMachineInstance vm) throws VmCouldNotBeStartedException {
 
         if (simulate) {
             return cloudSimulatorClientService.startVM(vm);

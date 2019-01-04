@@ -1,10 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer;
 
-import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ProcessStepSchedulingUnit;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -120,15 +118,15 @@ public class Chromosome {
         private Interval executionInterval;
 
         private boolean fixed;
-        private ProcessStepSchedulingUnit processStep;
+        private ProcessStepSchedulingUnit processStepSchedulingUnit;
         private Set<Gene> previousGenes = new HashSet<>();
         private Set<Gene> nextGenes = new HashSet<>();
 
 
-        public Gene(ProcessStepSchedulingUnit processStep, DateTime startTime, boolean fixed) {
+        public Gene(ProcessStepSchedulingUnit processStepSchedulingUnit, DateTime startTime, boolean fixed) {
             this.fixed = fixed;
-            this.processStep = processStep;
-            this.executionInterval = new Interval(startTime, startTime.plus(processStep.getServiceType().getServiceTypeResources().getMakeSpan()));
+            this.processStepSchedulingUnit = processStepSchedulingUnit;
+            this.executionInterval = new Interval(startTime, startTime.plus(processStepSchedulingUnit.getProcessStep().getServiceType().getServiceTypeResources().getMakeSpan()));
         }
 
         public void moveIntervalPlus(long delta) {
@@ -140,7 +138,7 @@ public class Chromosome {
         }
 
         public static Gene clone(Gene gene) {
-            Gene clonedGene = new Gene(gene.getProcessStep(), gene.getExecutionInterval().getStart(), gene.isFixed());
+            Gene clonedGene = new Gene(gene.getProcessStepSchedulingUnit(), gene.getExecutionInterval().getStart(), gene.isFixed());
             return clonedGene;
         }
 
@@ -187,9 +185,7 @@ public class Chromosome {
             return "Gene{" +
                     "executionInterval=" + executionInterval +
                     ", fixed=" + fixed +
-                    ", processStep=" + processStep +
-//                    ", previousGenes=" + previousGenes +
-//                    ", nextGenes=" + nextGenes +
+                    ", processStepSchedulingUnit=" + processStepSchedulingUnit +
                     "}, ";
         }
     }

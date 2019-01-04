@@ -94,11 +94,6 @@ public class ProcessStep extends Element implements Cloneable {
         return remaining > 0 ? remaining : serviceType.getServiceTypeResources().getMakeSpan() ;
     }
 
-    public void setScheduledForExecution(DateTime scheduledStartDate, Container container) {
-        this.scheduledStartDate = scheduledStartDate;
-        this.container = container;
-    }
-
     @Override
     public ProcessStep getLastExecutedElement() {
         return this;
@@ -115,11 +110,6 @@ public class ProcessStep extends Element implements Cloneable {
     public ProcessStep clone() throws CloneNotSupportedException {
 
         ServiceType serviceType = this.serviceType.clone();
-        return this.clone(serviceType);
-    }
-
-
-    public ProcessStep clone(ServiceType serviceType) throws CloneNotSupportedException {
         ProcessStep processStep = new ProcessStep();
 
         processStep.setName(this.name);
@@ -131,7 +121,6 @@ public class ProcessStep extends Element implements Cloneable {
         processStep.setHasToBeExecuted(this.hasToBeExecuted);
         processStep.setLastElement(this.isLastElement());
         processStep.setHasToDeployContainer(this.hasToDeployContainer);
-
         processStep.setServiceType(serviceType);
 
         //VirtualMachineInstance cloneVM = new VirtualMachineInstance();
@@ -147,7 +136,6 @@ public class ProcessStep extends Element implements Cloneable {
 
         return processStep;
     }
-
 
 
 
@@ -195,8 +183,10 @@ public class ProcessStep extends Element implements Cloneable {
 
     public void setHasBeenExecuted(boolean hasBeenExecuted) {
         if (hasBeenExecuted) {
-            finishedAt = new DateTime();
-        } else finishedAt = null;
+            finishedAt = DateTime.now();
+        } else {
+            finishedAt = null;
+        }
     }
 
     public void reset() {

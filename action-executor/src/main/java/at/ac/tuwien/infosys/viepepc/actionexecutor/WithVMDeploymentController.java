@@ -4,7 +4,6 @@ import at.ac.tuwien.infosys.viepepc.cloudcontroller.CloudControllerService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.DockerControllerService;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBeStartedException;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheProcessStepService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.library.entities.Action;
@@ -137,7 +136,7 @@ public class WithVMDeploymentController {
             cacheVirtualMachineService.getVmDeployedWaitObjectMap().put(virtualMachineInstance, waitObject);
 
             try {
-                virtualMachineInstance = cloudControllerService.startVM(virtualMachineInstance);
+                virtualMachineInstance = cloudControllerService.deployVM(virtualMachineInstance);
             } catch (VmCouldNotBeStartedException e) {
                 synchronized (waitObject) {
                     waitObject.notifyAll();
@@ -198,8 +197,9 @@ public class WithVMDeploymentController {
 
     private void resetProcessSteps(List<ProcessStep> value) {
         for (ProcessStep processStep : value) {
-            cacheProcessStepService.getWaitingForExecutingProcessSteps().remove(processStep);
-            cacheProcessStepService.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+            // TODO
+//            cacheProcessStepService.getProcessStepsWaitingForExecution().remove(processStep);
+//            cacheProcessStepService.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
             processStep.reset();
         }
     }

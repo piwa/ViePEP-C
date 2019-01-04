@@ -30,7 +30,7 @@ public class CacheProcessStepService {
         return inMemoryCache.getProcessStepsWaitingForServiceDone();
     }
 
-    public Set<ProcessStep> getWaitingForExecutingProcessSteps() {
-        return inMemoryCache.getWaitingForExecutingProcessSteps();
+    public Set<ProcessStep> getProcessStepsWaitingForExecution() {
+        return inMemoryCache.getProcessStepsWaitingForExecution();
     }
 }

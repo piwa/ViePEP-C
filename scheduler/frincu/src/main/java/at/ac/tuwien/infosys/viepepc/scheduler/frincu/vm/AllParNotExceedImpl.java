@@ -135,7 +135,7 @@ public class AllParNotExceedImpl extends AbstractVMProvisioningImpl implements S
             throw new ProblemNotSolvedException();
         }
 
-//        inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimizationResult.getProcessSteps());
+//        inMemoryCache.getProcessStepsWaitingForExecution().addAll(optimizationResult.getProcessSteps());
 
         return optimizationResult;
     }

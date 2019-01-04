@@ -1,8 +1,5 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory;
 
-import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
-import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
@@ -75,7 +72,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
                 continue;
             }
 
-            subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStep().getInternId(), gene));
+            subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStepSchedulingUnit().getInternId(), gene));
             fillProcessStepChain(workflowElement);
 
             subChromosome.stream().filter(Chromosome.Gene::isFixed).forEach(gene -> setAllPrecedingFixed(gene));
@@ -103,7 +100,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
             int bufferBound = 0;
             if (row.size() > 0) {
-                DateTime deadline = workflowDeadlines.get(row.get(0).getProcessStep().getWorkflowName());
+                DateTime deadline = workflowDeadlines.get(row.get(0).getProcessStepSchedulingUnit().getWorkflowName());
                 Chromosome.Gene lastProcessStep = getLastProcessStep(row);
                 Duration durationToDeadline = new Duration(lastProcessStep.getExecutionInterval().getEnd(), deadline);
 
@@ -195,7 +192,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         boolean redo = true;
 
         while (redo) {
-            List<ContainerSchedulingUnit> containerSchedulingUnits = newChromosome.getGenes().stream().flatMap(List::stream).map(gene -> gene.getProcessStep().getContainerSchedulingUnit()).collect(Collectors.toList());
+            List<ContainerSchedulingUnit> containerSchedulingUnits = newChromosome.getGenes().stream().flatMap(List::stream).map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit()).collect(Collectors.toList());
 
             redo = false;
             for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
@@ -302,7 +299,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
                 if (latestPreviousGene != null) {
                     DateTime newStartTime = new DateTime(latestPreviousGene.getExecutionInterval().getEnd().getMillis() + 1);
-                    DateTime newEndTime = newStartTime.plus(gene.getProcessStep().getServiceType().getServiceTypeResources().getMakeSpan());
+                    DateTime newEndTime = newStartTime.plus(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType().getServiceTypeResources().getMakeSpan());
                     gene.setExecutionInterval(new Interval(newStartTime, newEndTime));
                 }
                 if (bufferBound > 0) {

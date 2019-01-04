@@ -31,8 +31,6 @@ public class OnlyContainerDeploymentController implements Runnable {
     @Autowired
     private ServiceExecution serviceExecution;
     @Autowired
-    private InMemoryCacheImpl inMemoryCache;
-    @Autowired
     private DockerControllerService dockerControllerService;
 
     @Value("${simulate}")
@@ -119,8 +117,9 @@ public class OnlyContainerDeploymentController implements Runnable {
             container.shutdownContainer();
         }
 
-        inMemoryCache.getWaitingForExecutingProcessSteps().remove(processStep);
-        inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
+        // TODO
+//        inMemoryCache.getProcessStepsWaitingForExecution().remove(processStep);
+//        inMemoryCache.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
         processStep.reset();
     }
 

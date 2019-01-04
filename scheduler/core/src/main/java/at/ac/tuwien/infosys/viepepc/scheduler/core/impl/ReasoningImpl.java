@@ -125,7 +125,7 @@ public class ReasoningImpl implements Reasoning {
             }
         }
 
-        waitUntilAllProcessDone();
+        waitUntilAllProcessesDone();
 
         finishingTasks();
 
@@ -163,7 +163,7 @@ public class ReasoningImpl implements Reasoning {
         log.info(String.format("From %s workflows, %s where delayed", workflows.size(), delayed));
     }
 
-    private void waitUntilAllProcessDone() {
+    private void waitUntilAllProcessesDone() {
         int times = 0;
         int size = workflowUtilities.getRunningSteps().size();
         while (size != 0 && times <= 5) {
@@ -186,30 +186,18 @@ public class ReasoningImpl implements Reasoning {
 
         log.info("---------------- tau_t_0 : " + tau_t_0 + " -----------------");
         log.info("-------------- tau_t_0.time : " + tau_t_0.toString() + " --------------");
-//        Future<OptimizationResult> asyncOptimize = resourcePredictionService.asyncOptimize(tau_t_0);
-//        OptimizationResult optimize = asyncOptimize.get();
-        OptimizationResult optimize = resourcePredictionService.optimize(tau_t_0);
 
+        OptimizationResult optimize = resourcePredictionService.optimize(tau_t_0);
 
         if (optimize == null) {
             throw new ProblemNotSolvedException("Could not solve the Problem");
         }
 
-//        log.info("Objective: " + optimize.getObjective());
-        long tau_t_1 = optimize.getTauT1();
-//        long tau_t_1 = optimize.get("tau_t_1").longValue() * 1000;//VERY IMPORTANT,
-        log.info("tau_t_1 was calculted as: " + new DateTime(tau_t_1));
+        handleOptimizationResult.processResults(optimize, tau_t_0);
 
-        Boolean processed = handleOptimizationResult.processResults(optimize, tau_t_0);
-//        processed.get();
-
-        long difference = tau_t_1 - new DateTime().getMillis();
-        if (difference < 0 || difference > 60 * 60 * 1000) {
-            difference = minTauTDifference;
-        }
+        long difference = minTauTDifference;
         log.info("------------------------- sleep for: " + difference / 1000 + " seconds --------------------------");
         log.info("------------- next iteration: " + DateTime.now().plus(difference) + " --------------");
-
 
         return difference;
     }

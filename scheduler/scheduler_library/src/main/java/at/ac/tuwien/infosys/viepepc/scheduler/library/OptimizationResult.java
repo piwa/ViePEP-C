@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.library;
 
+import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import lombok.Getter;
@@ -14,30 +15,12 @@ import java.util.List;
 /**
  * Created by philippwaibel on 19/10/2016.
  */
-@Component
 @Getter
 @Setter
 public class OptimizationResult {
 
-    @Value("${min.optimization.interval.ms}")
-    private int minTauTDifference;
-    private long tauT1;
     private List<ProcessStep> processSteps = new ArrayList<>();
-    private List<VirtualMachineInstance> vms = new ArrayList<>();
+    private List<VirtualMachineInstance> virtualMachineInstances = new ArrayList<>();
+    private List<Container> containers = new ArrayList<>();
 
-    public OptimizationResult() {
-        tauT1 = DateTime.now().plus(minTauTDifference).getMillis();
-    }
-
-    public OptimizationResult(DateTime epocheTime) {
-        tauT1 = epocheTime.plusSeconds(minTauTDifference).getMillis();
-    }
-
-    public void addProcessStep(ProcessStep processStep) {
-        processSteps.add(processStep);
-    }
-
-    public void addVirtualMachine(VirtualMachineInstance virtualMachineInstance) {
-        vms.add(virtualMachineInstance);
-    }
 }

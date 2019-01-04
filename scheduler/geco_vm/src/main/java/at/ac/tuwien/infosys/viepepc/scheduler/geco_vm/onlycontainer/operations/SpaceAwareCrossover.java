@@ -4,17 +4,13 @@ import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContex
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.OrderMaintainer;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.VMSelectionHelper;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.VirtualMachineSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
-import org.springframework.context.ApplicationContext;
 import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.watchmaker.framework.operators.AbstractCrossover;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @SuppressWarnings("Duplicates")
@@ -95,14 +91,14 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
             // crossover from rowParent2 to rowClone1 possible
             Chromosome.Gene parent2Gene = rowParent2.get(crossoverStartIndex);
             Chromosome.Gene clone1PreviousGene = rowClone1.get(crossoverStartIndex).getLatestPreviousGene();
-            DateTime maxDeadlineExtensionClone1 = maxTimeAfterDeadline.get(parent2Gene.getProcessStep().getWorkflowName());
+            DateTime maxDeadlineExtensionClone1 = maxTimeAfterDeadline.get(parent2Gene.getProcessStepSchedulingUnit().getWorkflowName());
 
             rowClone1Changed = performCrossover(rowClone1Changed, processStepNameToCloneMap1, rowParent2, rowParent1, parent2Gene, clone1PreviousGene, maxDeadlineExtensionClone1);
 
             // crossover from rowParent1 to rowClone2 possible
             Chromosome.Gene parent1Gene = rowParent1.get(crossoverStartIndex);
             Chromosome.Gene clone2PreviousGene = rowClone2.get(crossoverStartIndex).getLatestPreviousGene();
-            DateTime maxDeadlineExtensionClone2 = maxTimeAfterDeadline.get(parent1Gene.getProcessStep().getWorkflowName());
+            DateTime maxDeadlineExtensionClone2 = maxTimeAfterDeadline.get(parent1Gene.getProcessStepSchedulingUnit().getWorkflowName());
 
 
             rowClone2Changed = performCrossover(rowClone2Changed, processStepNameToCloneMap2, rowParent1, rowParent2, parent1Gene, clone2PreviousGene, maxDeadlineExtensionClone2);
@@ -139,7 +135,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
             }
 
             for (Chromosome.Gene currentParentGene : currentParentGenes) {
-                performCrossoverRec(currentParentGene, processStepNameToCloneMap2.get(currentParentGene.getProcessStep().getName()), processStepNameToCloneMap2);
+                performCrossoverRec(currentParentGene, processStepNameToCloneMap2.get(currentParentGene.getProcessStepSchedulingUnit().getName()), processStepNameToCloneMap2);
             }
 
             rowClone2Changed = true;
@@ -160,7 +156,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
 
     private Map<String, Chromosome.Gene> fillMap(Chromosome chromosome) {
         Map<String, Chromosome.Gene> map = new HashMap<>();
-        chromosome.getGenes().forEach(row -> row.forEach(gene -> map.put(gene.getProcessStep().getName(), gene)));
+        chromosome.getGenes().forEach(row -> row.forEach(gene -> map.put(gene.getProcessStepSchedulingUnit().getName(), gene)));
         return map;
     }
 
@@ -170,7 +166,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
 
         for (Chromosome.Gene nextGene : parent2Gene.getNextGenes()) {
             if (nextGene != null) {
-                performCrossoverRec(nextGene, processStepNameToCloneMap.get(nextGene.getProcessStep().getName()), processStepNameToCloneMap);
+                performCrossoverRec(nextGene, processStepNameToCloneMap.get(nextGene.getProcessStepSchedulingUnit().getName()), processStepNameToCloneMap);
             }
         }
     }

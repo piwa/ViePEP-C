@@ -8,7 +8,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachi
  */
 public interface CloudControllerService {
 
-    VirtualMachineInstance startVM(VirtualMachineInstance vm) throws VmCouldNotBeStartedException;
+    VirtualMachineInstance deployVM(VirtualMachineInstance vm) throws VmCouldNotBeStartedException;
 
     boolean stopVirtualMachine(VirtualMachineInstance vm);
 

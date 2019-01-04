@@ -57,6 +57,7 @@ public class Container implements Cloneable {
 
     public Container() {
         containerID = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
+        containerStatus = ContainerStatus.UNUSED;
     }
 
     public String getName() {

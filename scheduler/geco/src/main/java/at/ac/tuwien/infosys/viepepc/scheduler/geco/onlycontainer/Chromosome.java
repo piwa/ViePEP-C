@@ -200,7 +200,7 @@ public class Chromosome {
         public String toString() {
             StringBuilder builder = new StringBuilder();
             builder.append("{");
-            builder.append("processStep=" + getProcessStep().getName() + ", ");
+            builder.append("processStepSchedulingUnit=" + getProcessStep().getName() + ", ");
             builder.append("serviceType=" + getProcessStep().getServiceType().getName() + ", ");
             builder.append("start=" + getExecutionInterval().getStart().toString() + ", ");
             builder.append("end=" + getExecutionInterval().getEnd().toString() + ", ");

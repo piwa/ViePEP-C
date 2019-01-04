@@ -10,7 +10,6 @@ import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.Vir
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory.DeadlineAwareFactory;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.factory.WorkflowGenerationHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.hamcrest.Matchers;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +26,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -116,7 +114,7 @@ public class SpaceAwareCrossoverTest {
             for (int i = 0; i < new_chromosome_1_genes.size(); i++) {
                 Chromosome.Gene newGene = new_chromosome_1_genes.get(i);
                 Chromosome.Gene originGene = origin_chromosome_1_genes.get(i);
-                if (newGene.getProcessStep().getInternId().equals(originGene.getProcessStep().getInternId()) &&
+                if (newGene.getProcessStepSchedulingUnit().getInternId().equals(originGene.getProcessStepSchedulingUnit().getInternId()) &&
                         newGene.getExecutionInterval().getStartMillis() != originGene.getExecutionInterval().getStartMillis() &&
                         newGene.getExecutionInterval().getEndMillis() != originGene.getExecutionInterval().getEndMillis()) {
                     crossoverPoint = i;
@@ -129,14 +127,14 @@ public class SpaceAwareCrossoverTest {
                 for (int i = 0; i < crossoverPoint; i++) {
                     Chromosome.Gene newGene = new_chromosome_1_genes.get(i);
                     Chromosome.Gene originGene = origin_chromosome_1_genes.get(i);
-                    assertTrue(newGene.getProcessStep().getInternId().equals(originGene.getProcessStep().getInternId()) &&
+                    assertTrue(newGene.getProcessStepSchedulingUnit().getInternId().equals(originGene.getProcessStepSchedulingUnit().getInternId()) &&
                             newGene.getExecutionInterval().getStartMillis() == originGene.getExecutionInterval().getStartMillis() &&
                             newGene.getExecutionInterval().getEndMillis() == originGene.getExecutionInterval().getEndMillis());
                 }
                 for (int i = crossoverPoint; i < new_chromosome_1_genes.size(); i++) {
                     Chromosome.Gene newGene = new_chromosome_1_genes.get(i);
                     Chromosome.Gene originGene = origin_chromosome_2_genes.get(i);
-                    assertTrue(newGene.getProcessStep().getInternId().equals(originGene.getProcessStep().getInternId()) &&
+                    assertTrue(newGene.getProcessStepSchedulingUnit().getInternId().equals(originGene.getProcessStepSchedulingUnit().getInternId()) &&
                             newGene.getExecutionInterval().getStartMillis() == originGene.getExecutionInterval().getStartMillis() &&
                             newGene.getExecutionInterval().getEndMillis() == originGene.getExecutionInterval().getEndMillis());
                 }
@@ -144,14 +142,14 @@ public class SpaceAwareCrossoverTest {
                 for (int i = 0; i < crossoverPoint; i++) {
                     Chromosome.Gene newGene = new_chromosome_2_genes.get(i);
                     Chromosome.Gene originGene = origin_chromosome_2_genes.get(i);
-                    assertTrue(newGene.getProcessStep().getInternId().equals(originGene.getProcessStep().getInternId()) &&
+                    assertTrue(newGene.getProcessStepSchedulingUnit().getInternId().equals(originGene.getProcessStepSchedulingUnit().getInternId()) &&
                             newGene.getExecutionInterval().getStartMillis() == originGene.getExecutionInterval().getStartMillis() &&
                             newGene.getExecutionInterval().getEndMillis() == originGene.getExecutionInterval().getEndMillis());
                 }
                 for (int i = crossoverPoint; i < new_chromosome_1_genes.size(); i++) {
                     Chromosome.Gene newGene = new_chromosome_2_genes.get(i);
                     Chromosome.Gene originGene = origin_chromosome_1_genes.get(i);
-                    assertTrue(newGene.getProcessStep().getInternId().equals(originGene.getProcessStep().getInternId()) &&
+                    assertTrue(newGene.getProcessStepSchedulingUnit().getInternId().equals(originGene.getProcessStepSchedulingUnit().getInternId()) &&
                             newGene.getExecutionInterval().getStartMillis() == originGene.getExecutionInterval().getStartMillis() &&
                             newGene.getExecutionInterval().getEndMillis() == originGene.getExecutionInterval().getEndMillis());
                 }
@@ -160,7 +158,7 @@ public class SpaceAwareCrossoverTest {
         assertTrue(crossoverFound);
 
         crossoverChromosomes.forEach(chromosome -> {
-            Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
+            Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
             virtualMachineSchedulingUnits.forEach(unit -> assertTrue(vmSelectionHelper.checkEnoughResourcesLeftOnVM(unit)));
         });
 

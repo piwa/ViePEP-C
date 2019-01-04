@@ -37,7 +37,7 @@ public class VMSelectionHelper {
 
     public void checkVmSizeAndSolveSpaceIssues(Chromosome chromosome) {
         List<Chromosome.Gene> genes = chromosome.getFlattenChromosome();
-        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
+        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = genes.stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
 
         for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
 
@@ -183,7 +183,7 @@ public class VMSelectionHelper {
         tempSchedulingUnits.addAll(containerSchedulingUnits);
 
         for (ContainerSchedulingUnit scheduledContainer : tempSchedulingUnits) {
-            Interval resourceRequirementInterval = scheduledContainer.getResourceRequirementDuration();
+            Interval resourceRequirementInterval = scheduledContainer.getCloudResourceUsage();
 
             boolean found = false;
             for (IntervalContainerSchedulingUnitHolder holder : holders) {
@@ -197,7 +197,7 @@ public class VMSelectionHelper {
                 }
             }
             if (!found) {
-                IntervalContainerSchedulingUnitHolder holder = new IntervalContainerSchedulingUnitHolder(scheduledContainer.getResourceRequirementDuration(), scheduledContainer);
+                IntervalContainerSchedulingUnitHolder holder = new IntervalContainerSchedulingUnitHolder(scheduledContainer.getCloudResourceUsage(), scheduledContainer);
                 holders.add(holder);
             }
         }

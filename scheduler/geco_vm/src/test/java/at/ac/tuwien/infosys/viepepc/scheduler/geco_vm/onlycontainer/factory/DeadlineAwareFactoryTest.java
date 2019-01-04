@@ -84,11 +84,11 @@ public class DeadlineAwareFactoryTest {
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
 
-        genes.forEach(gene -> assertNotNull(gene.getProcessStep()));
-        genes.stream().map(Chromosome.Gene::getProcessStep).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getContainerSchedulingUnit()));
-        genes.stream().map(Chromosome.Gene::getProcessStep).forEach(schedulingUnit -> assertEquals(3, schedulingUnit.getContainerSchedulingUnit().getProcessStepGenes().size()));
-        genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit()).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getScheduledOnVm()));
-        genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit()).forEach(schedulingUnit -> assertEquals(1, schedulingUnit.getScheduledOnVm().getScheduledContainers().size()));
+        genes.forEach(gene -> assertNotNull(gene.getProcessStepSchedulingUnit()));
+        genes.stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getContainerSchedulingUnit()));
+        genes.stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).forEach(schedulingUnit -> assertEquals(3, schedulingUnit.getContainerSchedulingUnit().getProcessStepGenes().size()));
+        genes.stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit()).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getScheduledOnVm()));
+        genes.stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit()).forEach(schedulingUnit -> assertEquals(1, schedulingUnit.getScheduledOnVm().getScheduledContainers().size()));
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
@@ -107,10 +107,10 @@ public class DeadlineAwareFactoryTest {
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
 
-        genes.forEach(gene -> assertNotNull(gene.getProcessStep()));
-        genes.stream().map(Chromosome.Gene::getProcessStep).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getContainerSchedulingUnit()));
-        genes.stream().map(Chromosome.Gene::getProcessStep).forEach(schedulingUnit -> assertEquals(1, schedulingUnit.getContainerSchedulingUnit().getProcessStepGenes().size()));
-        genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit()).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getScheduledOnVm()));
+        genes.forEach(gene -> assertNotNull(gene.getProcessStepSchedulingUnit()));
+        genes.stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getContainerSchedulingUnit()));
+        genes.stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).forEach(schedulingUnit -> assertEquals(1, schedulingUnit.getContainerSchedulingUnit().getProcessStepGenes().size()));
+        genes.stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit()).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getScheduledOnVm()));
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfContainerAmountEqualsGeneAmount_true(genes);
@@ -126,10 +126,10 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
 
-        genes.forEach(gene -> assertNotNull(gene.getProcessStep()));
-        genes.stream().map(Chromosome.Gene::getProcessStep).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getContainerSchedulingUnit()));
-        genes.stream().map(Chromosome.Gene::getProcessStep).forEach(schedulingUnit -> assertEquals(1, schedulingUnit.getContainerSchedulingUnit().getProcessStepGenes().size()));
-        genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit()).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getScheduledOnVm()));
+        genes.forEach(gene -> assertNotNull(gene.getProcessStepSchedulingUnit()));
+        genes.stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getContainerSchedulingUnit()));
+        genes.stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).forEach(schedulingUnit -> assertEquals(1, schedulingUnit.getContainerSchedulingUnit().getProcessStepGenes().size()));
+        genes.stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit()).forEach(schedulingUnit -> assertNotNull(schedulingUnit.getScheduledOnVm()));
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfContainerAmountEqualsGeneAmount_true(genes);
@@ -156,11 +156,11 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfContainerAmountEqualsGeneAmount_true(genes);
@@ -187,11 +187,11 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());   // can be the same if the random selection choose the same vm
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());   // can be the same if the random selection choose the same vm
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfContainerAmountEqualsGeneAmount_true(genes);
@@ -218,11 +218,11 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfContainerAmountEqualsGeneAmount_true(genes);
@@ -250,11 +250,11 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfContainerAmountEqualsGeneAmount_true(genes);
@@ -281,11 +281,11 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfContainerAmountEqualsGeneAmount_true(genes);
@@ -312,11 +312,11 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());  // can be the same if the random selection choose the same vm
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());  // can be the same if the random selection choose the same vm
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfContainerAmountEqualsGeneAmount_true(genes);
@@ -346,11 +346,11 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
@@ -379,11 +379,11 @@ public class DeadlineAwareFactoryTest {
 
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
@@ -411,11 +411,11 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep.getInternId(), fixedGene.getProcessStep().getInternId());
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep.getInternId())).findFirst().orElseThrow(Exception::new);
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance()); // can be the same if the random selection choose the same vm
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance()); // can be the same if the random selection choose the same vm
 
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
@@ -450,13 +450,13 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep1.getInternId())).findFirst().orElseThrow(Exception::new);
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep1.getInternId())).findFirst().orElseThrow(Exception::new);
 
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep1.getInternId(), fixedGene.getProcessStep().getInternId());
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep1.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
-        assertNull(genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep0.getInternId())).findFirst().orElse(null));
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
+        assertNull(genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep0.getInternId())).findFirst().orElse(null));
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
@@ -490,13 +490,13 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep1.getInternId())).findFirst().orElseThrow(Exception::new);
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep1.getInternId())).findFirst().orElseThrow(Exception::new);
 
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep1.getInternId(), fixedGene.getProcessStep().getInternId());
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep1.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
-        assertNull(genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep0.getInternId())).findFirst().orElse(null));
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());
+        assertNull(genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep0.getInternId())).findFirst().orElse(null));
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
@@ -530,13 +530,13 @@ public class DeadlineAwareFactoryTest {
         Chromosome chromosome = deadlineAwareFactory.generateRandomCandidate(new Random());
 
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep1.getInternId())).findFirst().orElseThrow(Exception::new);
+        Chromosome.Gene fixedGene = genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep1.getInternId())).findFirst().orElseThrow(Exception::new);
 
-        assertSame(container, fixedGene.getProcessStep().getContainerSchedulingUnit().getContainer());
-        assertSame(processStep1.getInternId(), fixedGene.getProcessStep().getInternId());
+        assertSame(container, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer());
+        assertSame(processStep1.getInternId(), fixedGene.getProcessStepSchedulingUnit().getInternId());
         assertEquals(processStepScheduledStartTime.getMillis(), fixedGene.getExecutionInterval().getStartMillis());
-        assertSame(vm, fixedGene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());  // can be the same if the random selection choose the same vm
-        assertNull(genes.stream().filter(gene -> gene.getProcessStep().getInternId().equals(processStep0.getInternId())).findFirst().orElse(null));
+        assertSame(vm, fixedGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVirtualMachineInstance());  // can be the same if the random selection choose the same vm
+        assertNull(genes.stream().filter(gene -> gene.getProcessStepSchedulingUnit().getInternId().equals(processStep0.getInternId())).findFirst().orElse(null));
         checkAllGenesHaveAnAvailableVm_true(genes);
         checkIfAllVmIntervalsAreUsed_true(genes);
         assertTrue(orderMaintainer.orderIsOk(chromosome.getGenes()));
@@ -549,13 +549,13 @@ public class DeadlineAwareFactoryTest {
     private void checkAllGenesHaveAnAvailableVm_true(List<Chromosome.Gene> genes) {
         for (Chromosome.Gene gene : genes) {
             Interval geneExecutionInterval = gene.getExecutionInterval();
-            Interval vmAvailableInterval = gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVmAvailableInterval();
+            Interval vmAvailableInterval = gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVmAvailableInterval();
             assertTrue(vmAvailableInterval.contains(geneExecutionInterval));
         }
     }
 
     private void checkIfAllVmIntervalsAreUsed_true(List<Chromosome.Gene> genes) {
-        Set<Interval> vmAvailableIntervals = genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm().getVmAvailableInterval()).collect(Collectors.toSet());
+        Set<Interval> vmAvailableIntervals = genes.stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getVmAvailableInterval()).collect(Collectors.toSet());
 
         for (Iterator<Interval> iterator = vmAvailableIntervals.iterator(); iterator.hasNext(); ) {
             Interval vmAvailableInterval = iterator.next();
@@ -570,7 +570,7 @@ public class DeadlineAwareFactoryTest {
     }
 
     private void checkIfContainerAmountEqualsGeneAmount_true(List<Chromosome.Gene> genes) {
-        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = genes.stream().map(gene -> gene.getProcessStep().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
+        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = genes.stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
         List<ContainerSchedulingUnit> containerSchedulingUnits = virtualMachineSchedulingUnits.stream().flatMap(virtualMachineSchedulingUnit -> virtualMachineSchedulingUnit.getScheduledContainers().stream()).collect(Collectors.toList());
         assertEquals(genes.size(), containerSchedulingUnits.size());
     }

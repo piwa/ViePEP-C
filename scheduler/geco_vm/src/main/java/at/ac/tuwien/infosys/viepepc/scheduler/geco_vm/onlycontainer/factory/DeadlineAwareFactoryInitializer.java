@@ -153,7 +153,7 @@ public class DeadlineAwareFactoryInitializer {
             }
 
             Chromosome.Gene gene = new Chromosome.Gene(getProcessStepSchedulingUnit(processStep, true), realStartTime, true);
-            gene.getProcessStep().getContainerSchedulingUnit().getProcessStepGenes().add(gene);
+            gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getProcessStepGenes().add(gene);
             chromosome.add(gene);
 
             checkFirstAndLastGene(gene);
@@ -174,15 +174,15 @@ public class DeadlineAwareFactoryInitializer {
 
     private ProcessStepSchedulingUnit getProcessStepSchedulingUnit(ProcessStep processStep, boolean isFixed) {
 
-        try {
-            ServiceType clonedServiceType = clonedServiceTypes.get(processStep.getServiceType());
+//        try {
+//            ServiceType clonedServiceType = clonedServiceTypes.get(processStep.getServiceType());
+//
+//            if (clonedServiceType == null) {
+//                clonedServiceType = processStep.getServiceType().clone();
+//                clonedServiceTypes.put(processStep.getServiceType(), clonedServiceType);
+//            }
 
-            if (clonedServiceType == null) {
-                clonedServiceType = processStep.getServiceType().clone();
-                clonedServiceTypes.put(processStep.getServiceType(), clonedServiceType);
-            }
-
-            ProcessStepSchedulingUnit processStepSchedulingUnit = new ProcessStepSchedulingUnit(processStep, clonedServiceType);
+            ProcessStepSchedulingUnit processStepSchedulingUnit = new ProcessStepSchedulingUnit(processStep);
 
             if (isFixed) {
                 Container container = processStep.getContainer();
@@ -205,9 +205,9 @@ public class DeadlineAwareFactoryInitializer {
             }
 
             return processStepSchedulingUnit;
-        } catch (CloneNotSupportedException e) {
-            log.error("Exception", e);
-            return null;
-        }
+//        } catch (CloneNotSupportedException e) {
+//            log.error("Exception", e);
+//            return null;
+//        }
     }
 }

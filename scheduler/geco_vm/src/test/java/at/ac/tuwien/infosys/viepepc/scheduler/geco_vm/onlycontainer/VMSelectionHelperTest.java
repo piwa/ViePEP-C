@@ -15,11 +15,9 @@ import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.Pro
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.VMTypeNotFoundException;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.VirtualMachineSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -120,10 +118,10 @@ public class VMSelectionHelperTest {
         newContainerSchedulingUnits_1.forEach(element -> assertThat(element.getScheduledOnVm(), is(virtualMachineSchedulingUnit)));
         newContainerSchedulingUnits_2.forEach(element -> assertThat(element.getScheduledOnVm(), is(newVirtualMachineSchedulingUnit)));
 
-        assertThat(genes.get(0).getProcessStep().getContainerSchedulingUnit().getScheduledOnVm(), is(virtualMachineSchedulingUnit));
-        assertThat(genes.get(1).getProcessStep().getContainerSchedulingUnit().getScheduledOnVm(), is(virtualMachineSchedulingUnit));
-        assertThat(genes.get(2).getProcessStep().getContainerSchedulingUnit().getScheduledOnVm(), is(newVirtualMachineSchedulingUnit));
-        assertThat(genes.get(3).getProcessStep().getContainerSchedulingUnit().getScheduledOnVm(), is(newVirtualMachineSchedulingUnit));
+        assertThat(genes.get(0).getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm(), is(virtualMachineSchedulingUnit));
+        assertThat(genes.get(1).getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm(), is(virtualMachineSchedulingUnit));
+        assertThat(genes.get(2).getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm(), is(newVirtualMachineSchedulingUnit));
+        assertThat(genes.get(3).getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm(), is(newVirtualMachineSchedulingUnit));
     }
 
     @Test
@@ -252,8 +250,9 @@ public class VMSelectionHelperTest {
 
         ProcessStep processStep = new ProcessStep();
         processStep.setLastElement(false);
+        processStep.setServiceType(serviceType);
 
-        return new ProcessStepSchedulingUnit(processStep, serviceType);
+        return new ProcessStepSchedulingUnit(processStep);
     }
 
     private ContainerSchedulingUnit getContainerSchedulingUnitMock(double cores, double ram) {
@@ -264,7 +263,7 @@ public class VMSelectionHelperTest {
 
         ProcessStepSchedulingUnit processStepSchedulingUnit = getProcessStepSchedulingUnitMock();
         if(executionDuration != null) {
-            processStepSchedulingUnit.getServiceType().getServiceTypeResources().setMakeSpan(executionDuration);
+            processStepSchedulingUnit.getProcessStep().getServiceType().getServiceTypeResources().setMakeSpan(executionDuration);
         }
         Chromosome.Gene gene = new Chromosome.Gene(processStepSchedulingUnit, startTime, false);
         List<Chromosome.Gene> processStepGenes = new ArrayList<>();

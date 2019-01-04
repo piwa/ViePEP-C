@@ -45,7 +45,7 @@ public class ContainerSchedulingUnit {
         return this.getServiceAvailableTime().getStart().minus(containerDeploymentDuration);
     }
 
-    public Interval getResourceRequirementDuration() {
+    public Interval getCloudResourceUsage() {
         return getServiceAvailableTime().withStart(this.getServiceAvailableTime().getStart().minus(containerDeploymentDuration));
     }
 

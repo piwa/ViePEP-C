@@ -2,10 +2,15 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer;
 
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ProcessStepSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.VirtualMachineSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.operations.FitnessFunction;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +18,8 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @SuppressWarnings("Duplicates")
@@ -34,17 +37,15 @@ public abstract class AbstractOnlyContainerOptimization {
     private String slackWebhook;
 
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
-
     protected DateTime optimizationEndTime;
 
-    // TODO
     protected OptimizationResult createOptimizationResult(Chromosome winner, List<WorkflowElement> workflowElements) {
-        OptimizationResult optimizationResult = new OptimizationResult();
 
-        List<Element> flattenWorkflowList = new ArrayList<>();
-        for (WorkflowElement workflowElement : workflowElements) {
-            workflowUtilities.getFlattenWorkflow(flattenWorkflowList, workflowElement);
-        }
+
+//        List<Element> flattenWorkflowList = new ArrayList<>();
+//        for (WorkflowElement workflowElement : workflowElements) {
+//            workflowUtilities.getFlattenWorkflow(flattenWorkflowList, workflowElement);
+//        }
 
         fitnessFunction.getFitness(winner, null);
         StringBuilder builder = new StringBuilder();
@@ -56,56 +57,40 @@ public abstract class AbstractOnlyContainerOptimization {
         builder.append("Total Fitness=").append(fitnessFunction.getLeasingCost() + fitnessFunction.getPenaltyCost() + fitnessFunction.getEarlyEnactmentCost()).append("\n");
         log.info(builder.toString());
 
-        List<ContainerSchedulingUnit> containerSchedulingUnitList = optimizationUtility.createRequiredContainerSchedulingUnits(winner);
-
         orderMaintainer.checkRowAndPrintError(winner, this.getClass().getSimpleName(), slackWebhook);
 
-//        for (ContainerSchedulingUnit containerSchedulingUnits : containerSchedulingUnitList) {
-//
-//
-//            ProcessStep psHasToDeployContainer = containerSchedulingUnits.getFirstGene().getProcessStep();
-//
-//            Container container = containerSchedulingUnits.getProcessStepGenes().get(0).getProcessStep().getContainer();
-//            container.setBareMetal(false);
-//
-//            for (Chromosome.Gene processStepGene : containerSchedulingUnits.getProcessStepGenes()) {
-//                if (!processStepGene.isFixed()) {
-//                    ProcessStep processStep = processStepGene.getProcessStep();
-//                    if (processStep.getStartTime() != null && (processStep.getContainer().isRunning() == true || processStep.getContainer().isDeploying() == true)) {
-//
-//                    } else {
-//                        DateTime scheduledStartTime = processStepGene.getExecutionInterval().getStart();
-//
-//                        ProcessStep realProcessStep = null;
-//
-//                        for (Element element : flattenWorkflowList) {
-//                            if (element instanceof ProcessStep && ((ProcessStep) element).getInternId().equals(processStep.getInternId())) {
-//                                realProcessStep = (ProcessStep) element;
-//                            }
-//                        }
-//
-//                        boolean alreadyDeploying = false;
-//                        if (realProcessStep.getContainer() != null && (realProcessStep.getContainer().isDeploying() || realProcessStep.getContainer().isRunning())) {
-//
-//                            if (realProcessStep.getContainer().getStartedAt().isAfter(optimizationEndTime)) {
-//                                alreadyDeploying = true;
-//                            }
-//
-//                        }
-//
-//                        if (realProcessStep.getStartTime() == null && !alreadyDeploying) {
-//                            realProcessStep.setScheduledForExecution(true, scheduledStartTime, container);
-//                            if (psHasToDeployContainer.getInternId().equals(processStep.getInternId())) {
-//                                realProcessStep.setHasToDeployContainer(true);
-//                            } else {
-//                                realProcessStep.setHasToDeployContainer(false);
-//                            }
-//                            optimizationResult.addProcessStep(realProcessStep);
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        OptimizationResult optimizationResult = new OptimizationResult();
+
+        List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>();
+        for (Chromosome.Gene gene : winner.getFlattenChromosome()) {
+            processStepSchedulingUnits.add(gene.getProcessStepSchedulingUnit());
+            ProcessStep processStep = gene.getProcessStepSchedulingUnit().getProcessStep();
+            Container container = gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer();
+            processStep.setScheduledStartDate(gene.getExecutionInterval().getStart());
+            processStep.setContainer(container);
+
+            optimizationResult.getProcessSteps().add(processStep);
+        }
+
+        Set<ContainerSchedulingUnit> containerSchedulingUnits = processStepSchedulingUnits.stream().map(ProcessStepSchedulingUnit::getContainerSchedulingUnit).collect(Collectors.toSet());
+        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
+            Container container = containerSchedulingUnit.getContainer();
+            container.setScheduledCloudResourceUsage(containerSchedulingUnit.getCloudResourceUsage());
+            container.setScheduledAvailableInterval(containerSchedulingUnit.getServiceAvailableTime());
+            container.setVirtualMachineInstance(containerSchedulingUnit.getScheduledOnVm().getVirtualMachineInstance());
+
+            optimizationResult.getContainers().add(container);
+        }
+
+        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = containerSchedulingUnits.stream().map(ContainerSchedulingUnit::getScheduledOnVm).collect(Collectors.toSet());
+        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
+            VirtualMachineInstance virtualMachineInstance = virtualMachineSchedulingUnit.getVirtualMachineInstance();
+            virtualMachineInstance.setScheduledCloudResourceUsage(virtualMachineSchedulingUnit.getCloudResourceUsageInterval());
+            virtualMachineInstance.setScheduledAvailableInterval(virtualMachineSchedulingUnit.getVmAvailableInterval());
+            virtualMachineSchedulingUnit.getScheduledContainers().forEach(container -> virtualMachineInstance.getDeployedContainers().add(container.getContainer()));
+
+            optimizationResult.getVirtualMachineInstances().add(virtualMachineInstance);
+        }
 
         return optimizationResult;
     }
