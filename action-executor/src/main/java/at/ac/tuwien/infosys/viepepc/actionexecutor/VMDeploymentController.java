@@ -14,24 +14,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 @Component
 @Slf4j
 public class VMDeploymentController {
 
     @Autowired
-    private CacheVirtualMachineService cacheVirtualMachineService;
-    @Autowired
     private CloudControllerService cloudControllerService;
     @Autowired
     private ReportDaoService reportDaoService;
 
-    @Async
-    public String deployVirtualMachine(VirtualMachineInstance virtualMachineInstance) throws VmCouldNotBeStartedException {
+    private ConcurrentMap<VirtualMachineInstance, Object> vmDeployedWaitObjectMap = new ConcurrentHashMap<>();
 
-        Object waitObject = cacheVirtualMachineService.getVmDeployedWaitObjectMap().get(virtualMachineInstance);
+    @Async
+    public String deploy(VirtualMachineInstance virtualMachineInstance) {
+
+        virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYING);
+
+        Object waitObject = vmDeployedWaitObjectMap.get(virtualMachineInstance);
         if (waitObject == null) {
             waitObject = new Object();
-            cacheVirtualMachineService.getVmDeployedWaitObjectMap().put(virtualMachineInstance, waitObject);
+            vmDeployedWaitObjectMap.put(virtualMachineInstance, waitObject);
 
             try {
                 virtualMachineInstance = cloudControllerService.deployVM(virtualMachineInstance);
@@ -39,9 +44,8 @@ public class VMDeploymentController {
                 synchronized (waitObject) {
                     waitObject.notifyAll();
                 }
-                cacheVirtualMachineService.getVmDeployedWaitObjectMap().remove(virtualMachineInstance);
+                vmDeployedWaitObjectMap.remove(virtualMachineInstance);
                 reset(virtualMachineInstance, "VM could not be started");
-                throw e;
             }
 
             log.info("VM up and running with ip: " + virtualMachineInstance.getIpAddress() + " vm: " + virtualMachineInstance);
@@ -51,7 +55,7 @@ public class VMDeploymentController {
             synchronized (waitObject) {
                 waitObject.notifyAll();
             }
-            cacheVirtualMachineService.getVmDeployedWaitObjectMap().remove(virtualMachineInstance);
+            vmDeployedWaitObjectMap.remove(virtualMachineInstance);
         } else {
             try {
                 synchronized (waitObject) {
@@ -62,7 +66,7 @@ public class VMDeploymentController {
             }
             if (!virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
                 reset(virtualMachineInstance, "VM could not be started");
-                throw new VmCouldNotBeStartedException("VM could not be started");
+//                throw new VmCouldNotBeStartedException("VM could not be started");
             }
         }
 
@@ -79,4 +83,20 @@ public class VMDeploymentController {
         virtualMachineInstance.terminate();
     }
 
+    public void terminate(VirtualMachineInstance virtualMachineInstance) {
+        log.info("Terminate: " + virtualMachineInstance);
+
+        virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.TERMINATED);
+
+//        if (virtualMachineInstance.getDeployedContainers().size() > 0) {
+//            virtualMachineInstance.getDeployedContainers().forEach(container -> stopContainer(container));
+//        }
+
+        cloudControllerService.stopVirtualMachine(virtualMachineInstance);
+
+        virtualMachineInstance.terminate();
+
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.STOPPED);
+        reportDaoService.save(report);
+    }
 }

@@ -24,24 +24,27 @@ public class ContainerDeploymentController {
     private ReportDaoService reportDaoService;
 
     @Async
-    public boolean deployContainer(Container container) {
+    public void deploy(Container container) {
+
+        container.setContainerStatus(ContainerStatus.DEPLOYING);
+
         VirtualMachineInstance vm = container.getVirtualMachineInstance();
 
         if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
             log.info(container + " already running on vm " + container.getVirtualMachineInstance());
-            return true;
+            return;
         }
 
         try {
             dockerControllerService.startContainer(vm, container);
             ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.START);
             reportDaoService.save(report);
-            return true;
+            return;
 
         } catch (InterruptedException | DockerException e) {
             log.error("EXCEPTION while deploying Container. Reset execution request.", e);
             reset(container, "EXCEPTION while deploying Container. Reset execution request.");
-            return false;
+            return;
         }
     }
 
@@ -54,4 +57,28 @@ public class ContainerDeploymentController {
         }
     }
 
+    public void terminate(Container container) {
+        synchronized (container) {
+
+            if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
+
+                if (container.getVirtualMachineInstance() != null) {
+                    VirtualMachineInstance vm = container.getVirtualMachineInstance();
+                    log.info("Stop Container: " + container + " on VM: " + vm);
+
+                    ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.STOPPED);
+                    reportDaoService.save(report);
+
+                    dockerControllerService.removeContainer(container);
+                } else {
+                    log.info("Stop Container: " + container);
+
+                    ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), null, Action.STOPPED);
+                    reportDaoService.save(report);
+
+                    dockerControllerService.removeContainer(container);
+                }
+            }
+        }
+    }
 }

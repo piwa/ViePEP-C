@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.actionexecutor;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStepStatus;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.ServiceExecution;
 import at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker.ServiceInvokeException;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,9 @@ public class ProcessStepExecutorController {
 
     @Async
     public void startProcessStepExecution(ProcessStep processStep) {
+
+        processStep.setProcessStepStatus(ProcessStepStatus.DEPLOYING);
+
         try {
             serviceExecution.startExecution(processStep, processStep.getContainer());
         } catch (ServiceInvokeException e) {

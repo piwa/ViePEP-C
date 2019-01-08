@@ -9,10 +9,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -22,17 +19,19 @@ import java.util.concurrent.ConcurrentMap;
 public class InMemoryCacheImpl {
 
     private List<VMType> vmTypes = new ArrayList<>();
-    private List<VirtualMachineInstance> vmInstances = new ArrayList<>();
-    private ConcurrentMap<VirtualMachineInstance, Object> vmDeployedWaitObjectMap = new ConcurrentHashMap<>();
+    private Set<VirtualMachineInstance> vmInstances = new HashSet<>();
+
 
     private List<WorkflowElement> allWorkflowInstances = new ArrayList<>();
     private List<WorkflowElement> runningWorkflows = new ArrayList<>();
 
-    private ConcurrentMap<String, ProcessStep> processStepsWaitingForServiceDone = new ConcurrentHashMap<>();
-    private Set<ProcessStep> processStepsWaitingForExecution = new HashSet<>();
+//    private Map<String, ProcessStep> processStepsWaitingForServiceDone = new HashMap<>();
+//    private Set<ProcessStep> processStepsWaitingForExecution = new HashSet<>();
+    private Set<ProcessStep> allProcessSteps = new HashSet<>();
+
 
     private List<ContainerConfiguration> containerConfigurations = new ArrayList<>();
-    private List<Container> containerInstances = new ArrayList<>();
+    private Set<Container> containerInstances = new HashSet<>();
 
 
 }

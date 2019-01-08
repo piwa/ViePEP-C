@@ -57,61 +57,58 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
 
 
         stringBuilder.append("\n------------------------------ VMs running -------------------------------\n");
-        List<VirtualMachineInstance> deployedVMInstances = cacheVirtualMachineService.getDeployedVMInstances();
-        for (VirtualMachineInstance vm : deployedVMInstances) {
-            stringBuilder.append(vm.toString()).append("\n");
-        }
+        stringBuilder.append(cacheVirtualMachineService.getDeployedVMInstances().stream().map(vm -> vm.toString() + "\n").collect(Collectors.joining()));
 
         stringBuilder.append("--------------------------- Containers running ---------------------------\n");
-        for (Container container : cacheContainerService.getDeployedContainers()) {
-            stringBuilder.append(container.toString()).append("\n");
+        stringBuilder.append(cacheContainerService.getDeployedContainers().stream().map(container -> container + "\n").collect(Collectors.joining()));
 
-        }
         stringBuilder.append("----------------------------- Tasks running ------------------------------\n");
-        getRunningTasks(stringBuilder);
+
+        stringBuilder.append(cacheProcessStepService.getRunningProcessSteps().stream().map(runningStep -> runningStep + "\n").collect(Collectors.joining()));
+
     }
 
 
     private void printWaitingInformation(StringBuilder stringBuilder) {
 
         stringBuilder.append("------------------------ VMs waiting for starting ------------------------\n");
-        List<VirtualMachineInstance> vms = cacheVirtualMachineService.getDeployedVMInstances();
+        List<VirtualMachineInstance> vms = cacheVirtualMachineService.getScheduledVMInstances();
+        vms.addAll(cacheVirtualMachineService.getDeployingVMInstances());
         for (VirtualMachineInstance vm : vms) {
-            if (vm.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED) || vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYING)) {
-                stringBuilder.append(vm.toString()).append("\n");
-            }
+            stringBuilder.append(vm.toString()).append("\n");
         }
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
-        List<Container> containers = cacheContainerService.getAllContainerInstances();
+        Set<Container> containers = cacheContainerService.getAllContainerInstances();
         for (Container container : containers) {
             if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED) || container.getContainerStatus().equals(ContainerStatus.DEPLOYING)) {
                 stringBuilder.append(container.toString()).append("\n");
             }
         }
         stringBuilder.append("----------------------- Tasks waiting for starting -----------------------\n");
-        // TODO
-//        for (ProcessStep processStep : cacheProcessStepService.getProcessStepsWaitingForExecution()) {
-//            stringBuilder.append(processStep.toString()).append("\n");
-//        }
-    }
-
-    private void getRunningTasks(StringBuilder stringBuilder) {
-        List<WorkflowElement> allWorkflowInstances = cacheWorkflowService.getRunningWorkflowInstances();
-        List<ProcessStep> nextSteps = workflowUtilities.getNotStartedUnfinishedSteps();
-        for (Element workflow : allWorkflowInstances) {
-            List<ProcessStep> runningSteps = workflowUtilities.getRunningProcessSteps(workflow.getName());
-            for (ProcessStep runningStep : runningSteps) {
-                if ((runningStep.getContainer() != null && runningStep.getContainer().getContainerStatus().equals(ContainerStatus.DEPLOYED)) && runningStep.getStartDate() != null) {
-                    stringBuilder.append(runningStep).append("\n");
-                }
-            }
-
-            for (ProcessStep processStep : nextSteps) {
-                if (!processStep.getWorkflowName().equals(workflow.getName())) {
-                    continue;
-                }
-            }
+        List<ProcessStep> processSteps = cacheProcessStepService.getScheduledProcessSteps();
+        processSteps.addAll(cacheProcessStepService.getDeployingProcessSteps());
+        for (ProcessStep processStep : processSteps) {
+            stringBuilder.append(processStep.toString()).append("\n");
         }
     }
+
+//    private void getRunningTasks(StringBuilder stringBuilder) {
+//        List<WorkflowElement> allWorkflowInstances = cacheWorkflowService.getRunningWorkflowInstances();
+//        List<ProcessStep> nextSteps = workflowUtilities.getNotStartedUnfinishedSteps();
+//        for (Element workflow : allWorkflowInstances) {
+//            List<ProcessStep> runningSteps = workflowUtilities.getRunningProcessSteps(workflow.getName());
+//            for (ProcessStep runningStep : runningSteps) {
+//                if ((runningStep.getContainer() != null && runningStep.getContainer().getContainerStatus().equals(ContainerStatus.DEPLOYED)) && runningStep.getStartDate() != null) {
+//                    stringBuilder.append(runningStep).append("\n");
+//                }
+//            }
+//
+//            for (ProcessStep processStep : nextSteps) {
+//                if (!processStep.getWorkflowName().equals(workflow.getName())) {
+//                    continue;
+//                }
+//            }
+//        }
+//    }
 
 }

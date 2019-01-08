@@ -7,9 +7,9 @@ import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.library.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.container.ContainerImageNotFoundException;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.Chromosome;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ContainerSchedulingUnit;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.onlycontainer.entities.ProcessStepSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ProcessStepSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +30,19 @@ public class OptimizationUtility {
     protected WorkflowUtilities workflowUtilities;
     @Value("${container.default.deploy.time}")
     private long containerDeploymentTime;
+
+    public void checkContainerSchedulingUnits(Chromosome chromosome) {
+
+        List<ContainerSchedulingUnit> containerSchedulingUnits1 = new ArrayList<>();
+        Set<ContainerSchedulingUnit> containerSchedulingUnits2 = new HashSet<>();
+        for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
+            containerSchedulingUnits1.add(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit());
+            containerSchedulingUnits2.addAll(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getScheduledContainers());
+        }
+        if(containerSchedulingUnits1.size() != containerSchedulingUnits2.size()) {
+            log.info("Problem 1");
+        }
+    }
 
     public Container getContainer(ServiceType serviceType, int amount) throws ContainerImageNotFoundException {
 
@@ -93,7 +106,6 @@ public class OptimizationUtility {
                 Interval overlap = containerSchedulingUnit.getServiceAvailableTime().overlap(gene.getExecutionInterval());
                 if (overlap != null) {
 
-                    // TODO something is wrong here. the fixedContainerSchedulingUnitMap gets the processStepGene twice
                     if (!containerSchedulingUnit.getProcessStepGenes().contains(gene)) {
                         containerSchedulingUnit.getProcessStepGenes().add(gene);
                     }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
@@ -36,7 +37,7 @@ public class CacheVirtualMachineService {
         throw new Exception("TYPE not found");
     }
 
-    public List<VirtualMachineInstance> getAllVMInstancesFromInMemory() {
+    public Set<VirtualMachineInstance> getAllVMInstancesFromInMemory() {
         return inMemoryCache.getVmInstances();
     }
 
@@ -72,8 +73,8 @@ public class CacheVirtualMachineService {
         }
         throw new Exception("TYPE not found");
     }
-
-    public ConcurrentMap<VirtualMachineInstance, Object> getVmDeployedWaitObjectMap() {
-        return inMemoryCache.getVmDeployedWaitObjectMap();
-    }
+//
+//    public ConcurrentMap<VirtualMachineInstance, Object> getVmDeployedWaitObjectMap() {
+//        return inMemoryCache.getVmDeployedWaitObjectMap();
+//    }
 }

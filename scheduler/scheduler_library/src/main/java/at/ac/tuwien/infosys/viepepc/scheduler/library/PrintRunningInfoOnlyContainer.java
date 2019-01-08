@@ -68,7 +68,7 @@ public class PrintRunningInfoOnlyContainer implements PrintRunningInfo {
 
     private void printWaitingInformation(StringBuilder stringBuilder) {
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
-        List<Container> containers = cacheContainerService.getAllContainerInstances();
+        Set<Container> containers = cacheContainerService.getAllContainerInstances();
         for (Container container : containers) {
             if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED) || container.getContainerStatus().equals(ContainerStatus.DEPLOYING)) {
                 stringBuilder.append(container.toString()).append("\n");

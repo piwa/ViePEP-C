@@ -130,41 +130,41 @@ public class WithVMDeploymentController {
 
     private String startVM(VirtualMachineInstance virtualMachineInstance) throws VmCouldNotBeStartedException {
 
-        Object waitObject = cacheVirtualMachineService.getVmDeployedWaitObjectMap().get(virtualMachineInstance);
-        if (waitObject == null) {
-            waitObject = new Object();
-            cacheVirtualMachineService.getVmDeployedWaitObjectMap().put(virtualMachineInstance, waitObject);
-
-            try {
-                virtualMachineInstance = cloudControllerService.deployVM(virtualMachineInstance);
-            } catch (VmCouldNotBeStartedException e) {
-                synchronized (waitObject) {
-                    waitObject.notifyAll();
-                }
-                cacheVirtualMachineService.getVmDeployedWaitObjectMap().remove(virtualMachineInstance);
-                throw e;
-            }
-
-            log.info("VM up and running with ip: " + virtualMachineInstance.getIpAddress() + " vm: " + virtualMachineInstance);
-            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachineInstance.getStartTime(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.START);
-            reportDaoService.save(report);
-
-            synchronized (waitObject) {
-                waitObject.notifyAll();
-            }
-            cacheVirtualMachineService.getVmDeployedWaitObjectMap().remove(virtualMachineInstance);
-        } else {
-            try {
-                synchronized (waitObject) {
-                    waitObject.wait();
-                }
-            } catch (InterruptedException e) {
-                log.error("Exception", e);
-            }
-            if (!virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
-                throw new VmCouldNotBeStartedException("VM could not be started");
-            }
-        }
+//        Object waitObject = cacheVirtualMachineService.getVmDeployedWaitObjectMap().get(virtualMachineInstance);
+//        if (waitObject == null) {
+//            waitObject = new Object();
+//            cacheVirtualMachineService.getVmDeployedWaitObjectMap().put(virtualMachineInstance, waitObject);
+//
+//            try {
+//                virtualMachineInstance = cloudControllerService.deployVM(virtualMachineInstance);
+//            } catch (VmCouldNotBeStartedException e) {
+//                synchronized (waitObject) {
+//                    waitObject.notifyAll();
+//                }
+//                cacheVirtualMachineService.getVmDeployedWaitObjectMap().remove(virtualMachineInstance);
+//                throw e;
+//            }
+//
+//            log.info("VM up and running with ip: " + virtualMachineInstance.getIpAddress() + " vm: " + virtualMachineInstance);
+//            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachineInstance.getStartTime(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.START);
+//            reportDaoService.save(report);
+//
+//            synchronized (waitObject) {
+//                waitObject.notifyAll();
+//            }
+//            cacheVirtualMachineService.getVmDeployedWaitObjectMap().remove(virtualMachineInstance);
+//        } else {
+//            try {
+//                synchronized (waitObject) {
+//                    waitObject.wait();
+//                }
+//            } catch (InterruptedException e) {
+//                log.error("Exception", e);
+//            }
+//            if (!virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
+//                throw new VmCouldNotBeStartedException("VM could not be started");
+//            }
+//        }
 
         return virtualMachineInstance.getIpAddress();
     }

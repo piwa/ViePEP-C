@@ -45,4 +45,15 @@ public class ContainerConfiguration implements Cloneable {
     public ContainerConfiguration clone() throws CloneNotSupportedException {
         return (ContainerConfiguration)super.clone();
     }
+
+    @Override
+    public String toString() {
+        return "ContainerConfiguration{" +
+//                "id=" + id +
+//                ", name='" + name + '\'' +
+                "cores=" + cores +
+                ", ram=" + ram +
+//                ", disc=" + disc +
+                '}';
+    }
 }

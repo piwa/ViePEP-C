@@ -34,7 +34,7 @@ import java.util.UUID;
 public class ProcessStep extends Element implements Cloneable {
 
 
-    private UUID internId;
+    private final UUID internId;
 
     private String workflowName;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
@@ -45,6 +45,7 @@ public class ProcessStep extends Element implements Cloneable {
     private int numberOfExecutions;
     private boolean hasToBeExecuted = true;
     private boolean hasToDeployContainer = false;
+    private ProcessStepStatus processStepStatus;
 
     @ManyToOne
     @JoinColumn(name="serviceTypeId")
@@ -61,11 +62,17 @@ public class ProcessStep extends Element implements Cloneable {
         return super.getElements();
     }
 
+    public ProcessStep(UUID internId) {
+        this.internId = internId;
+        this.processStepStatus = ProcessStepStatus.UNUSED;
+    }
+
     public ProcessStep() {
-        internId = UUID.randomUUID();
+        this(UUID.randomUUID());
     }
 
     public ProcessStep(String name, ServiceType serviceType, String workflowName) {
+        this(UUID.randomUUID());
         this.name = name;
         this.serviceType = serviceType;
         this.workflowName = workflowName;
@@ -110,7 +117,7 @@ public class ProcessStep extends Element implements Cloneable {
     public ProcessStep clone() throws CloneNotSupportedException {
 
         ServiceType serviceType = this.serviceType.clone();
-        ProcessStep processStep = new ProcessStep();
+        ProcessStep processStep = new ProcessStep(this.internId);
 
         processStep.setName(this.name);
         processStep.setStartDate(new DateTime(this.startDate));
@@ -132,54 +139,73 @@ public class ProcessStep extends Element implements Cloneable {
         else {
             processStep.setContainer(null);
         }
-        processStep.setInternId(this.internId);
 
         return processStep;
     }
 
 
-
     @Override
     public String toString() {
-        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-        String startDateformat = startDate != null ? startDate.toString() : null;
-        String scheduledStart = scheduledStartDate != null ? scheduledStartDate.toString() : null;
-        String finishedAtformat = finishedAt != null ? finishedAt.toString() : null;
-        String containerName = container != null ? container.getName() : null;
+        String containerId = "";
+        if(container != null) containerId = container.getInternId().toString();
 
-        if(container == null) {
-            return "ProcessStep{" +
-                    "name='" + name + '\'' +
-                    ", serviceType=" + serviceType.getName() +
-                    ", scheduledStart=" + scheduledStart +
-                    ", startTime=" + startDateformat +
-                    ", finishedAt=" + finishedAtformat +
-                    ", lastElement=" + isLastElement() +
-                    '}';
-        }
-        else if(container.isBareMetal()) {
-            return "ProcessStep{" +
-                    "name='" + name + '\'' +
-                    ", serviceType=" + serviceType.getName() +
-                    ", scheduledStart=" + scheduledStart +
-                    ", startTime=" + startDateformat +
-                    ", finishedAt=" + finishedAtformat +
-                    ", container=" + containerName +
-                    ", lastElement=" + isLastElement() +
-                    '}';
-        }
-        else {
-            return "ProcessStep{" +
-                    "name='" + name + '\'' +
-                    ", serviceType=" + serviceType.getName() +
-                    ", startTime=" + startDateformat +
-                    ", finishedAt=" + finishedAtformat +
-                    ", container=" + containerName +
-                    ", lastElement=" + isLastElement() +
-                    '}';
-        }
+        return "ProcessStep{" +
+                "internId=" + internId +
+                ", workflowName='" + workflowName + '\'' +
+                ", scheduledStartDate=" + scheduledStartDate +
+                ", startDate=" + startDate +
+                ", finishedAt=" + finishedAt +
+//                ", numberOfExecutions=" + numberOfExecutions +
+//                ", hasToBeExecuted=" + hasToBeExecuted +
+//                ", hasToDeployContainer=" + hasToDeployContainer +
+                ", processStepStatus=" + processStepStatus +
+                ", serviceType=" + serviceType +
+                ", container=" + containerId +
+                '}';
     }
+
+//    @Override
+//    public String toString() {
+//        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+//
+//        String startDateformat = startDate != null ? startDate.toString() : null;
+//        String scheduledStart = scheduledStartDate != null ? scheduledStartDate.toString() : null;
+//        String finishedAtformat = finishedAt != null ? finishedAt.toString() : null;
+//        String containerName = container != null ? container.getName() : null;
+//
+//        if(container == null) {
+//            return "ProcessStep{" +
+//                    "name='" + name + '\'' +
+//                    ", serviceType=" + serviceType.getName() +
+//                    ", scheduledStart=" + scheduledStart +
+//                    ", startTime=" + startDateformat +
+//                    ", finishedAt=" + finishedAtformat +
+//                    ", lastElement=" + isLastElement() +
+//                    '}';
+//        }
+//        else if(container.isBareMetal()) {
+//            return "ProcessStep{" +
+//                    "name='" + name + '\'' +
+//                    ", serviceType=" + serviceType.getName() +
+//                    ", scheduledStart=" + scheduledStart +
+//                    ", startTime=" + startDateformat +
+//                    ", finishedAt=" + finishedAtformat +
+//                    ", container=" + containerName +
+//                    ", lastElement=" + isLastElement() +
+//                    '}';
+//        }
+//        else {
+//            return "ProcessStep{" +
+//                    "name='" + name + '\'' +
+//                    ", serviceType=" + serviceType.getName() +
+//                    ", startTime=" + startDateformat +
+//                    ", finishedAt=" + finishedAtformat +
+//                    ", container=" + containerName +
+//                    ", lastElement=" + isLastElement() +
+//                    '}';
+//        }
+//    }
 
     public void setHasBeenExecuted(boolean hasBeenExecuted) {
         if (hasBeenExecuted) {

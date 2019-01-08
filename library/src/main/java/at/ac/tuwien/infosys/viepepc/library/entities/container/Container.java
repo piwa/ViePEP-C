@@ -16,6 +16,7 @@ import javax.persistence.*;
 import java.util.UUID;
 
 /**
+ *
  */
 
 @Entity
@@ -31,11 +32,13 @@ public class Container implements Cloneable {
 
     private String containerID;
 
+    private final UUID internId = UUID.randomUUID();
+
     @ManyToOne//(cascade = CascadeType.ALL)
-    @JoinColumn(name="containerConfigurationId")
+    @JoinColumn(name = "containerConfigurationId")
     private ContainerConfiguration containerConfiguration;
     @ManyToOne
-    @JoinColumn(name="containerImageId")
+    @JoinColumn(name = "containerImageId")
     private ContainerImage containerImage;
 
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
@@ -65,7 +68,7 @@ public class Container implements Cloneable {
     }
 
     public void shutdownContainer() {
-        if(virtualMachineInstance != null) {
+        if (virtualMachineInstance != null) {
             virtualMachineInstance.undeployContainer(this);
             virtualMachineInstance = null;
         }
@@ -74,7 +77,7 @@ public class Container implements Cloneable {
     }
 
     public Container clone(ServiceType serviceType) throws CloneNotSupportedException {
-        Container container = (Container)super.clone();
+        Container container = (Container) super.clone();
         container.setContainerConfiguration(this.containerConfiguration.clone());
         container.setContainerImage(this.containerImage.clone(serviceType));
         return container;
@@ -82,81 +85,80 @@ public class Container implements Cloneable {
 
     @Override
     public String toString() {
-        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-        String startString = startDate == null ? "NULL" : startDate.toString();
-        String vmString = virtualMachineInstance == null ? "NULL" : virtualMachineInstance.getInstanceId();
+        String virtualMachineInstanceId = "";
+        if(virtualMachineInstance != null) virtualMachineInstanceId = virtualMachineInstance.getInternId().toString();
 
-        if(isBareMetal()) {
-            return "Container{" +
-                    "name='" + getName() + '\'' +
-                    ", status=" + containerStatus +
-                    ", startedAt=" + startString +
-                    ", url=" + ipAddress + ":" + externPort +
-                    ", serviceType=" + containerImage.getServiceType().getName() +
-                    '}';
-        }
-        else {
-            return "Container{" +
-                    "name='" + getName() + '\'' +
-                    ", startedAt=" + startString +
-                    ", runningOnVM=" + vmString +
-                    ", externalPort=" + externPort +
-                    ", serviceType=" + containerImage.getServiceType().getName() +
-                    '}';
-        }
+//        String virtualMachineInstanceId = "";
+//        if(virtualMachineInstance != null) virtualMachineInstanceId = virtualMachineInstance.getInternId().toString();
+
+        return "Container{" +
+//                "id=" + id +
+                "internId=" + internId +
+//                ", containerID='" + containerID + '\'' +
+//                ", containerImage=" + containerImage +
+                ", startDate=" + startDate +
+                ", scheduledCloudResourceUsage=" + scheduledCloudResourceUsage +
+                ", scheduledAvailableInterval=" + scheduledAvailableInterval +
+                ", containerStatus=" + containerStatus +
+                ", bareMetal=" + bareMetal +
+                ", containerConfiguration=" + containerConfiguration +
+//                ", externPort='" + externPort + '\'' +
+//                ", ipAddress='" + ipAddress + '\'' +
+//                ", providerContainerId='" + providerContainerId + '\'' +
+                ", virtualMachineInstance=" + virtualMachineInstanceId +
+                '}';
     }
 
 
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        Container other = (Container) obj;
-        if (containerID == null) {
-            if (other.containerID != null) {
-                return false;
-            }
-        }
-        else if (!containerID.equals(other.containerID)) {
-            return false;
-        }
-        if (containerImage == null) {
-            if (other.containerImage != null) {
-                return false;
-            }
-        }
-        else if (!containerImage.equals(other.containerImage)) {
-            return false;
-        }
-        if (id == null) {
-            if (other.id != null) {
-                return false;
-            }
-        }
-        else if (!id.equals(other.id)) {
-            return false;
-        }
-
-        //  also consider the name here:
-        String otherName = other.getName();
-        String thisName = this.getName();
-        if (thisName == null) {
-            if (otherName != null) {
-                return false;
-            }
-        }
-        else if (!thisName.equals(otherName)) {
-            return false;
-        }
-        return true;
-    }
+//    @Override
+//    public boolean equals(Object obj) {
+//        if (this == obj) {
+//            return true;
+//        }
+//        if (obj == null) {
+//            return false;
+//        }
+//        if (getClass() != obj.getClass()) {
+//            return false;
+//        }
+//        Container other = (Container) obj;
+//        if (containerID == null) {
+//            if (other.containerID != null) {
+//                return false;
+//            }
+//        }
+//        else if (!containerID.equals(other.containerID)) {
+//            return false;
+//        }
+//        if (containerImage == null) {
+//            if (other.containerImage != null) {
+//                return false;
+//            }
+//        }
+//        else if (!containerImage.equals(other.containerImage)) {
+//            return false;
+//        }
+//        if (id == null) {
+//            if (other.id != null) {
+//                return false;
+//            }
+//        }
+//        else if (!id.equals(other.id)) {
+//            return false;
+//        }
+//
+//        //  also consider the name here:
+//        String otherName = other.getName();
+//        String thisName = this.getName();
+//        if (thisName == null) {
+//            if (otherName != null) {
+//                return false;
+//            }
+//        }
+//        else if (!thisName.equals(otherName)) {
+//            return false;
+//        }
+//        return true;
+//    }
 }

@@ -30,6 +30,8 @@ public class VirtualMachineInstance implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private final UUID internId;
+
     private String instanceId;
 
     private String googleName;
@@ -65,6 +67,7 @@ public class VirtualMachineInstance implements Serializable {
 
 
     public VirtualMachineInstance(VMType vmType) {
+        this.internId = UUID.randomUUID();
         this.vmType = vmType;
         this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
         this.virtualMachineStatus = VirtualMachineStatus.UNUSED;
@@ -88,19 +91,22 @@ public class VirtualMachineInstance implements Serializable {
     @Override
     public String toString() {
         return "VirtualMachineInstance{" +
-                "id=" + id +
-                ", googleName='" + googleName + '\'' +
-                ", instanceId='" + instanceId + '\'' +
-                ", ipAddress='" + ipAddress + '\'' +
-                ", scheduledAvailableIntervals=" + scheduledAvailableInterval +
+//                "id=" + id +
+                "internId=" + internId +
+//                ", instanceId='" + instanceId + '\'' +
+//                ", googleName='" + googleName + '\'' +
+//                ", ipAddress='" + ipAddress + '\'' +
+                ", scheduledCloudResourceUsage=" + scheduledCloudResourceUsage +
+                ", scheduledAvailableInterval=" + scheduledAvailableInterval +
+                ", deploymentStartTime=" + deploymentStartTime +
                 ", startTime=" + startTime +
                 ", terminationTime=" + terminationTime +
-                ", resourcepool='" + resourcepool + '\'' +
+//                ", resourcepool='" + resourcepool + '\'' +
                 ", virtualMachineStatus=" + virtualMachineStatus +
-                ", vmType=" + vmType +
-                ", usedPorts=" + usedPorts +
-                ", deployedContainers=" + deployedContainers +
-                ", availableContainerImages=" + availableContainerImages +
+                ", vmType=" + vmType.toString() +
+//                ", usedPorts=" + usedPorts +
+//                ", deployedContainers=" + deployedContainers +
+//                ", availableContainerImages=" + availableContainerImages +
                 '}';
     }
 

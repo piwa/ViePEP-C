@@ -61,55 +61,10 @@ public class CacheContainerService {
         inMemoryCache.getContainerInstances().add(container);
     }
 
-    public List<Container> getAllContainerInstances() {
+    public Set<Container> getAllContainerInstances() {
         return inMemoryCache.getContainerInstances();
     }
 
-//    public List<ContainerConfiguration> getContainerConfigurations(ServiceType serviceType) {
-//        List<ContainerConfiguration> returnList = new ArrayList<>();
-//
-//        for(ContainerConfiguration containerConfiguration : inMemoryCache.getContainerConfigurations()) {
-//            if (serviceType.getServiceTypeResources().getCpuLoad() <= containerConfiguration.getCPUPoints() && serviceType.getServiceTypeResources().getMemory() <= containerConfiguration.getRam()) {
-//                returnList.add(containerConfiguration);
-//            }
-//        }
-//
-//        returnList.sort((config1, config2) -> (Double.compare(config1.getCores(), config2.getCores())));
-//
-//        return returnList;
-//    }
-//
-//    public ContainerConfiguration getBestContainerConfigurations(double requiredCpuLoad, double requiredRamLoad) throws ContainerConfigurationNotFoundException {
-//        List<ContainerConfiguration> allPossibleConfigs = getAllPossibleContainerConfigurations(requiredCpuLoad, requiredRamLoad);
-//        ContainerConfiguration containerConfiguration = null;
-//        for (ContainerConfiguration tempContainerConfig : allPossibleConfigs) {
-//            if (containerConfiguration == null) {
-//                containerConfiguration = tempContainerConfig;
-//            }
-//            else if (containerConfiguration.getCPUPoints() > tempContainerConfig.getCPUPoints() || containerConfiguration.getRam() > tempContainerConfig.getRam()) {
-//                containerConfiguration = tempContainerConfig;
-//            }
-//        }
-//
-//        if(containerConfiguration == null) {
-//            throw new ContainerConfigurationNotFoundException();
-//        }
-//
-//        return containerConfiguration;
-//    }
-//
-//    public List<ContainerConfiguration> getAllPossibleContainerConfigurations(double requiredCpuLoad, double requiredRamLoad) {
-//        List<ContainerConfiguration> returnList = new ArrayList<>();
-//
-//        for(ContainerConfiguration containerConfiguration : inMemoryCache.getContainerConfigurations()) {
-//            if (requiredCpuLoad <= containerConfiguration.getCPUPoints() && requiredRamLoad <= containerConfiguration.getRam()) {
-//                returnList.add(containerConfiguration);
-//            }
-//        }
-//
-//        returnList.sort((config1, config2) -> (Double.compare(config1.getCores(), config2.getCores())));
-//
-//        return returnList;
-//    }
+
 
 }

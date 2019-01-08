@@ -3,6 +3,9 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm;
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ActionExecutor;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.ProvisioningSchedule;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheProcessStepService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
@@ -29,6 +32,12 @@ public class HandleResultGeCoVM implements HandleOptimizationResult {
 
     @Autowired
     private ProvisioningSchedule provisioningSchedule;
+    @Autowired
+    private CacheVirtualMachineService cacheVirtualMachineService;
+    @Autowired
+    private CacheContainerService cacheContainerService;
+    @Autowired
+    private CacheProcessStepService processStepService;
 
     @Override
     public Boolean processResults(OptimizationResult optimize, DateTime tau_t) {
@@ -36,11 +45,12 @@ public class HandleResultGeCoVM implements HandleOptimizationResult {
         printOptimizationResultInformation(optimize, tau_t);
 
         synchronized (provisioningSchedule) {
-            provisioningSchedule.getProcessSteps().addAll(optimize.getProcessSteps());
-            provisioningSchedule.getContainers().addAll(optimize.getContainers());
-            provisioningSchedule.getVirtualMachineInstances().addAll(optimize.getVirtualMachineInstances());
-
-            provisioningSchedule.sortLists();
+            provisioningSchedule.addAllProcessSteps(optimize.getProcessSteps());
+            provisioningSchedule.addAllContainers(optimize.getContainers());
+            provisioningSchedule.addAllVirtualMachineInstances(optimize.getVirtualMachineInstances());
+            cacheVirtualMachineService.getAllVMInstancesFromInMemory().addAll(optimize.getVirtualMachineInstances());
+            cacheContainerService.getAllContainerInstances().addAll(optimize.getContainers());
+            processStepService.getAllProcessSteps().addAll(optimize.getProcessSteps());
         }
         return true;
     }

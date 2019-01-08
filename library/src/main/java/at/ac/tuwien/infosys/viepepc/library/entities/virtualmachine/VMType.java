@@ -47,4 +47,18 @@ public class VMType implements Serializable {
         return i - (i / 10);       //10% are used for the OS
     }
 
+    @Override
+    public String toString() {
+        return "VMType{" +
+//                "tableId=" + tableId +
+                ", identifier=" + identifier +
+                ", name='" + name + '\'' +
+//                ", costs=" + costs +
+                ", cores=" + cores +
+                ", flavorName='" + flavorName + '\'' +
+                ", ramPoints=" + ramPoints +
+                ", location='" + location + '\'' +
+//                ", storage=" + storage +
+                '}';
+    }
 }

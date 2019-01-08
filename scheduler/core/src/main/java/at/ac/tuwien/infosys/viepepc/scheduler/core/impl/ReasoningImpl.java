@@ -57,7 +57,7 @@ public class ReasoningImpl implements Reasoning {
     private static final long TERMINATE_CHECK_INTERVAL_MILLISECONDS = 30000;
     private static final long PRINT_STATUS_INTERVAL_MILLISECONDS = 120000;
 
-    @Value("${min.optimization.interval.ms}")
+    @Value("${optimization.interval.ms}")
     private int minTauTDifference;
     private boolean printRunningInformation = true;
 
