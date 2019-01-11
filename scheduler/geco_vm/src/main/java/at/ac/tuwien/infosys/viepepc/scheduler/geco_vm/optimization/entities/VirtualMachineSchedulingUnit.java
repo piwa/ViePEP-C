@@ -5,10 +5,7 @@ import lombok.Data;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
@@ -16,16 +13,18 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
 
     private final UUID uid;
     private final long virtualMachineDeploymentDuration;
+    private final boolean fixed;
     private VirtualMachineInstance virtualMachineInstance;
-    private List<ContainerSchedulingUnit> scheduledContainers = new ArrayList<>();
+    private Set<ContainerSchedulingUnit> scheduledContainers = new HashSet<>();
 
-    private VirtualMachineSchedulingUnit(UUID uid, long virtualMachineDeploymentDuration) {
+    private VirtualMachineSchedulingUnit(UUID uid, long virtualMachineDeploymentDuration, boolean fixed) {
         this.uid = uid;
         this.virtualMachineDeploymentDuration = virtualMachineDeploymentDuration;
+        this.fixed = fixed;
     }
 
-    public VirtualMachineSchedulingUnit(long virtualMachineDeploymentDuration) {
-        this(UUID.randomUUID(), virtualMachineDeploymentDuration);
+    public VirtualMachineSchedulingUnit(long virtualMachineDeploymentDuration, boolean fixed) {
+        this(UUID.randomUUID(), virtualMachineDeploymentDuration, fixed);
     }
 
     public Interval getVmAvailableInterval() {
@@ -48,35 +47,55 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
 
     @Override
     public VirtualMachineSchedulingUnit clone() {
-        VirtualMachineSchedulingUnit clone = new VirtualMachineSchedulingUnit(this.uid, this.virtualMachineDeploymentDuration);
+        VirtualMachineSchedulingUnit clone = new VirtualMachineSchedulingUnit(this.uid, this.virtualMachineDeploymentDuration, this.fixed);
         clone.setVirtualMachineInstance(this.virtualMachineInstance);
-        clone.setScheduledContainers(new ArrayList<>(this.scheduledContainers));
+//        clone.setScheduledContainers(new HashSet<>(this.scheduledContainers));
         return clone;
     }
 
     @Override
     public String toString() {
+
+        String containerIds = scheduledContainers.stream().map(unit -> unit.getUid().toString() + ", ").collect(Collectors.joining());
+
         return "VirtualMachineSchedulingUnit{" +
-                "virtualMachineInstance=" + virtualMachineInstance +
+                "internId=" + uid.toString() +
+                ", fixed=" + fixed +
                 ", availableTimes=" + getVmAvailableInterval() +
                 ", deploymentTimes=" + getDeploymentStartTime() +
+                ", containerAmount=" + scheduledContainers.size() +
+                ", containerIds=" + containerIds +
+                ", virtualMachineInstance=" + virtualMachineInstance +
                 '}';
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof VirtualMachineSchedulingUnit)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         VirtualMachineSchedulingUnit that = (VirtualMachineSchedulingUnit) o;
-        return getVirtualMachineDeploymentDuration() == that.getVirtualMachineDeploymentDuration() &&
-                getUid().equals(that.getUid()) &&
-                this.getVirtualMachineInstance().equals(that.getVirtualMachineInstance());
+        return uid.equals(that.uid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUid(), getVirtualMachineDeploymentDuration(), this.getVirtualMachineInstance());
+        return Objects.hash(uid);
     }
 
+
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (o == null || getClass() != o.getClass()) return false;
+//        VirtualMachineSchedulingUnit that = (VirtualMachineSchedulingUnit) o;
+//        return virtualMachineDeploymentDuration == that.virtualMachineDeploymentDuration &&
+//                fixed == that.fixed &&
+//                uid.equals(that.uid);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(uid, virtualMachineDeploymentDuration, fixed);
+//    }
 }
 

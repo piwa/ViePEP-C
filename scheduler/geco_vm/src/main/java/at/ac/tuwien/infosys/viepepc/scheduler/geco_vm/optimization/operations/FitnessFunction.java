@@ -57,7 +57,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
     @Override
     public double getFitness(Chromosome chromosome, List<? extends Chromosome> list) {
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_getFitness_1");
 
         Map<String, Chromosome.Gene> lastGeneOfProcessList = optimizationUtility.getLastElements(chromosome);
         List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
@@ -100,7 +100,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         this.leasingCost = leasingCost;
         this.penaltyCost = penaltyCost;
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_getFitness_2");
 
         return leasingCost + penaltyCost;
     }

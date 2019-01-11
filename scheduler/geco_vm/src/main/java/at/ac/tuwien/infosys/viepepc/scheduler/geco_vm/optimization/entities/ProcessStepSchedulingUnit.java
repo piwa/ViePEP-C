@@ -28,18 +28,18 @@ public class ProcessStepSchedulingUnit implements Cloneable {
         clone.setName(this.name);
         clone.setInternId(this.internId);
         clone.setWorkflowName(this.workflowName);
-        clone.setContainerSchedulingUnit(this.containerSchedulingUnit);
+//        clone.setContainerSchedulingUnit(this.containerSchedulingUnit);
         return clone;
     }
 
     @Override
     public String toString() {
         return "ProcessStepSchedulingUnit{" +
-                "processStepSchedulingUnit=" + processStep +
+                "internId=" + internId +
                 ", name='" + name + '\'' +
-                ", internId=" + internId +
                 ", workflowName='" + workflowName + '\'' +
                 ", containerSchedulingUnits=" + containerSchedulingUnit +
+                ", processStep=" + processStep +
                 '}';
     }
 }

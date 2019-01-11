@@ -36,6 +36,8 @@ public abstract class AbstractOnlyContainerOptimization {
     protected FitnessFunction fitnessFunction;
     @Autowired
     protected OptimizationUtility optimizationUtility;
+    @Autowired
+    private VMSelectionHelper vmSelectionHelper;
     @Value("${slack.webhook}")
     private String slackWebhook;
 
@@ -62,20 +64,29 @@ public abstract class AbstractOnlyContainerOptimization {
         builder.append("Generation Amount=" + evolutionLogger.getAmountOfGenerations());
         log.info(builder.toString());
 
+        Set<VirtualMachineSchedulingUnit> temp = winner.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
+        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : temp) {
+            if(!vmSelectionHelper.checkEnoughResourcesLeftOnVM(virtualMachineSchedulingUnit)) {
+                log.error("not enough space after the optimization on VM=" + virtualMachineSchedulingUnit);
+            }
+        }
+
         orderMaintainer.checkRowAndPrintError(winner, this.getClass().getSimpleName(), slackWebhook);
 
         OptimizationResult optimizationResult = new OptimizationResult();
 
         List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>();
         for (Chromosome.Gene gene : winner.getFlattenChromosome()) {
-            processStepSchedulingUnits.add(gene.getProcessStepSchedulingUnit());
-            ProcessStep processStep = gene.getProcessStepSchedulingUnit().getProcessStep();
-            Container container = gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer();
-            processStep.setScheduledStartDate(gene.getExecutionInterval().getStart());
-            processStep.setProcessStepStatus(ProcessStepStatus.SCHEDULED);
-            processStep.setContainer(container);
+//            if(!gene.isFixed()) {
+                processStepSchedulingUnits.add(gene.getProcessStepSchedulingUnit());
+                ProcessStep processStep = gene.getProcessStepSchedulingUnit().getProcessStep();
+                Container container = gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer();
+                processStep.setScheduledStartDate(gene.getExecutionInterval().getStart());
+                processStep.setProcessStepStatus(ProcessStepStatus.SCHEDULED);
+                processStep.setContainer(container);
 
-            optimizationResult.getProcessSteps().add(processStep);
+                optimizationResult.getProcessSteps().add(processStep);
+//            }
         }
 
         Set<ContainerSchedulingUnit> containerSchedulingUnits = processStepSchedulingUnits.stream().map(ProcessStepSchedulingUnit::getContainerSchedulingUnit).collect(Collectors.toSet());
@@ -83,7 +94,9 @@ public abstract class AbstractOnlyContainerOptimization {
             Container container = containerSchedulingUnit.getContainer();
             container.setScheduledCloudResourceUsage(containerSchedulingUnit.getCloudResourceUsage());
             container.setScheduledAvailableInterval(containerSchedulingUnit.getServiceAvailableTime());
-            container.setContainerStatus(ContainerStatus.SCHEDULED);
+            if(container.getContainerStatus().equals(ContainerStatus.UNUSED)) {
+                container.setContainerStatus(ContainerStatus.SCHEDULED);
+            }
             container.setVirtualMachineInstance(containerSchedulingUnit.getScheduledOnVm().getVirtualMachineInstance());
 
             optimizationResult.getContainers().add(container);
@@ -94,7 +107,9 @@ public abstract class AbstractOnlyContainerOptimization {
             VirtualMachineInstance virtualMachineInstance = virtualMachineSchedulingUnit.getVirtualMachineInstance();
             virtualMachineInstance.setScheduledCloudResourceUsage(virtualMachineSchedulingUnit.getCloudResourceUsageInterval());
             virtualMachineInstance.setScheduledAvailableInterval(virtualMachineSchedulingUnit.getVmAvailableInterval());
-            virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.SCHEDULED);
+            if(virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.UNUSED)) {
+                virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.SCHEDULED);
+            }
             virtualMachineSchedulingUnit.getScheduledContainers().forEach(container -> virtualMachineInstance.getDeployedContainers().add(container.getContainer()));
 
             optimizationResult.getVirtualMachineInstances().add(virtualMachineInstance);

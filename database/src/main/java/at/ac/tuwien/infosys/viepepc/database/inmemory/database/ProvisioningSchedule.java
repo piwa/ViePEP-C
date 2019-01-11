@@ -7,6 +7,7 @@ import lombok.Data;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Data
@@ -35,14 +36,22 @@ public class ProvisioningSchedule {
     }
 
     public void addAllProcessSteps(List<ProcessStep> processSteps) {
-        processSteps.forEach(processStep -> processStepsMap.put(processStep.getInternId(), processStep));
+        processSteps.forEach(processStep -> processStepsMap.putIfAbsent(processStep.getInternId(), processStep));
     }
 
     public void addAllContainers(List<Container> containers) {
-        containers.forEach(container -> containersMap.put(container.getInternId(), container));
+        containers.forEach(container -> containersMap.putIfAbsent(container.getInternId(), container));
     }
 
     public void addAllVirtualMachineInstances(List<VirtualMachineInstance> virtualMachineInstances) {
-        virtualMachineInstances.forEach(vm -> virtualMachineInstancesMap.put(vm.getInternId(), vm));
+        virtualMachineInstances.forEach(vm -> virtualMachineInstancesMap.putIfAbsent(vm.getInternId(), vm));
+    }
+
+    public void cleanup() {
+        Set<UUID> usedContainer = processStepsMap.values().stream().map(processStep -> processStep.getContainer().getInternId()).collect(Collectors.toSet());
+        Set<UUID> usedVMs = processStepsMap.values().stream().map(processStep -> processStep.getContainer().getVirtualMachineInstance().getInternId()).collect(Collectors.toSet());
+
+        containersMap.entrySet().removeIf(entry -> !usedContainer.contains(entry.getKey()));
+        virtualMachineInstancesMap.entrySet().removeIf(entry -> !usedVMs.contains(entry.getKey()));
     }
 }

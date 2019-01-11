@@ -43,7 +43,7 @@ public class Chromosome {
     }
 
     public Chromosome clone() {
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(this);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(this, this.getClass().getSimpleName() + "_clone_1");
         List<List<Gene>> offspring = new ArrayList<>();
 
         Map<Gene, Gene> originalToCloneMap = new HashMap<>();
@@ -81,15 +81,18 @@ public class Chromosome {
             ContainerSchedulingUnit clonedContainerSchedulingUnit = originalToCloneContainerSchedulingMap.get(originalContainerSchedulingUnit);
             ProcessStepSchedulingUnit clonedProcessStepSchedulingUnit = originalToCloneProcessStepSchedulingMap.get(originalProcessStepSchedulingUnit);
 
+            clonedGene.setProcessStepSchedulingUnit(clonedProcessStepSchedulingUnit);
             clonedProcessStepSchedulingUnit.setContainerSchedulingUnit(clonedContainerSchedulingUnit);
             clonedContainerSchedulingUnit.setScheduledOnVm(clonedVirtualMachineSchedulingUnit);
-            clonedGene.setProcessStepSchedulingUnit(clonedProcessStepSchedulingUnit);
+
+//            clonedVirtualMachineSchedulingUnit.getScheduledContainers().remove(originalContainerSchedulingUnit);
+            clonedVirtualMachineSchedulingUnit.getScheduledContainers().add(clonedContainerSchedulingUnit);
+
+//            clonedContainerSchedulingUnit.getProcessStepGenes().remove(originalGene);
+            clonedContainerSchedulingUnit.getProcessStepGenes().add(clonedGene);
         }
 
-        originalToCloneVirtualMachineSchedulingMap.values().forEach(virtualMachineSchedulingUnit -> virtualMachineSchedulingUnit.getScheduledContainers().replaceAll(originalToCloneContainerSchedulingMap::get));
-        originalToCloneContainerSchedulingMap.values().forEach(containerSchedulingUnit -> containerSchedulingUnit.getProcessStepGenes().replaceAll(originalToCloneMap::get));
-
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(new Chromosome(offspring));
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(new Chromosome(offspring), this.getClass().getSimpleName() + "_clone_2");
         return new Chromosome(offspring);
     }
 

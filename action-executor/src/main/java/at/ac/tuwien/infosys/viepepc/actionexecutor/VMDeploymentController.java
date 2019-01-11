@@ -31,6 +31,7 @@ public class VMDeploymentController {
     @Async
     public String deploy(VirtualMachineInstance virtualMachineInstance) {
 
+        log.info("Deploy VM=" + virtualMachineInstance);
         virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYING);
 
         Object waitObject = vmDeployedWaitObjectMap.get(virtualMachineInstance);

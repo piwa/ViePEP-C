@@ -26,6 +26,9 @@ public class ContainerDeploymentController {
     @Async
     public void deploy(Container container) {
 
+        log.info("Deploy container=" + container);
+
+
         container.setContainerStatus(ContainerStatus.DEPLOYING);
 
         VirtualMachineInstance vm = container.getVirtualMachineInstance();
@@ -39,6 +42,8 @@ public class ContainerDeploymentController {
             dockerControllerService.startContainer(vm, container);
             ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.START);
             reportDaoService.save(report);
+
+            log.info("Container deployed=" + container);
             return;
 
         } catch (InterruptedException | DockerException e) {

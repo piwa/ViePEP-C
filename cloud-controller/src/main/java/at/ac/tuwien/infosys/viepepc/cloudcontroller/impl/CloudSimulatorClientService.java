@@ -54,10 +54,8 @@ public class CloudSimulatorClientService extends AbstractViePEPCloudService {
         virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYED);
         virtualMachineInstance.setStartTime(DateTime.now());
 
-        log.info("VM with id: " + virtualMachineInstance.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
-
-
-        log.debug("VM connection with id: " + virtualMachineInstance.getInstanceId() + " and IP " + uri + " established.");
+//        log.info("VM with id: " + virtualMachineInstance.getInstanceId() + " and IP " + uri + " was started. Waiting for connection...");
+//        log.debug("VM connection with id: " + virtualMachineInstance.getInstanceId() + " and IP " + uri + " established.");
 
 
         return virtualMachineInstance;

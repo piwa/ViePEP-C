@@ -15,17 +15,19 @@ public class ContainerSchedulingUnit implements Cloneable {
 
     private final UUID uid;
     private final long containerDeploymentDuration;
+    private final boolean fixed;
     private Container container;
     private VirtualMachineSchedulingUnit scheduledOnVm;
     private List<Chromosome.Gene> processStepGenes = new ArrayList<>();
 
-    private ContainerSchedulingUnit(UUID uid, long containerDeploymentDuration) {
+    private ContainerSchedulingUnit(UUID uid, long containerDeploymentDuration, boolean fixed) {
         this.containerDeploymentDuration = containerDeploymentDuration;
         this.uid = uid;
+        this.fixed = fixed;
     }
 
-    public ContainerSchedulingUnit(long containerDeploymentDuration) {
-        this(UUID.randomUUID(), containerDeploymentDuration);
+    public ContainerSchedulingUnit(long containerDeploymentDuration, boolean fixed) {
+        this(UUID.randomUUID(), containerDeploymentDuration, fixed);
     }
 
     public Chromosome.Gene getFirstGene() {
@@ -53,19 +55,49 @@ public class ContainerSchedulingUnit implements Cloneable {
 
     @Override
     public ContainerSchedulingUnit clone()  {
-        ContainerSchedulingUnit clone = new ContainerSchedulingUnit(this.uid, this.containerDeploymentDuration);
+        ContainerSchedulingUnit clone = new ContainerSchedulingUnit(this.uid, this.containerDeploymentDuration, this.fixed);
         clone.setContainer(this.container);
-        clone.setScheduledOnVm(this.scheduledOnVm);
-        clone.setProcessStepGenes(new ArrayList<>(this.processStepGenes));
+//        clone.setScheduledOnVm(this.scheduledOnVm);
+//        clone.setProcessStepGenes(new ArrayList<>(this.processStepGenes));
         return clone;
     }
 
     @Override
     public String toString() {
         return "ContainerSchedulingUnit{" +
-                "serviceAvailableTime=" + getServiceAvailableTime() +
-                ", container=" + container +
+                "internId=" + uid.toString() +
+                ", serviceAvailableTime=" + getServiceAvailableTime() +
+                ", fixed=" + fixed +
                 ", scheduledOnVm=" + scheduledOnVm +
+                ", container=" + container +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ContainerSchedulingUnit that = (ContainerSchedulingUnit) o;
+        return uid.equals(that.uid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uid);
+    }
+
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (o == null || getClass() != o.getClass()) return false;
+//        ContainerSchedulingUnit that = (ContainerSchedulingUnit) o;
+//        return containerDeploymentDuration == that.containerDeploymentDuration &&
+//                fixed == that.fixed &&
+//                uid.equals(that.uid);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(uid, containerDeploymentDuration, fixed);
+//    }
 }

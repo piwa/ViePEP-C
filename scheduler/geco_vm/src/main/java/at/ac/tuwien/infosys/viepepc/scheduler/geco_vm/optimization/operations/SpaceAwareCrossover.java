@@ -60,8 +60,8 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
     @Override
     protected List<Chromosome> mate(Chromosome parent1, Chromosome parent2, int numberOfCrossoverPoints, Random random) {
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(parent1);
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(parent2);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(parent1, this.getClass().getSimpleName() + "_spaceAwareCrossover_1");
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(parent2, this.getClass().getSimpleName() + "_spaceAwareCrossover_2");
 
         List<List<Chromosome.Gene>> clone1 = parent1.clone().getGenes();
         Chromosome offspring1Chromosome = new Chromosome(clone1);
@@ -117,14 +117,15 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
         result.add(offspring1Chromosome);
         result.add(offspring2Chromosome);
 
-        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring1Chromosome);
-        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring2Chromosome);
-
         vmSelectionHelper.mergeVirtualMachineSchedulingUnits(offspring1Chromosome);
         vmSelectionHelper.mergeVirtualMachineSchedulingUnits(offspring2Chromosome);
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(offspring1Chromosome);
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(offspring2Chromosome);
+        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring1Chromosome);
+        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring2Chromosome);
+
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(offspring1Chromosome, this.getClass().getSimpleName() + "_spaceAwareCrossover_3");
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(offspring2Chromosome, this.getClass().getSimpleName() + "_spaceAwareCrossover_4");
+
         return result;
     }
 

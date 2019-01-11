@@ -37,10 +37,9 @@ public class DeadlineAwareFactoryInitializer {
     @Getter
     @Setter
     private Chromosome.Gene lastGene;
-    private Map<ProcessStepSchedulingUnit, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap = new HashMap<>();
+    private Map<Container, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap = new HashMap<>();
 
     private DateTime optimizationEndTime;
-    private Map<ServiceType, ServiceType> clonedServiceTypes = new HashMap<>();
     private Map<VirtualMachineInstance, VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitMap = new HashMap<>();
 
     public void initialize(DateTime optimizationEndTime) {
@@ -49,7 +48,6 @@ public class DeadlineAwareFactoryInitializer {
         this.virtualMachineSchedulingUnitMap = new HashMap<>();
         this.firstGene = null;
         this.lastGene = null;
-        this.clonedServiceTypes = new HashMap<>();
         this.fixedContainerSchedulingUnitMap = new HashMap<>();
     }
 
@@ -186,15 +184,15 @@ public class DeadlineAwareFactoryInitializer {
             Container container = processStep.getContainer();
             ContainerSchedulingUnit containerSchedulingUnit = fixedContainerSchedulingUnitMap.get(container);
             if (containerSchedulingUnit == null) {
-                containerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime);
+                containerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime, true);
                 containerSchedulingUnit.setContainer(container);
-                fixedContainerSchedulingUnitMap.put(processStepSchedulingUnit, containerSchedulingUnit);
+                fixedContainerSchedulingUnitMap.put(container, containerSchedulingUnit);
             }
             processStepSchedulingUnit.setContainerSchedulingUnit(containerSchedulingUnit);
 
             VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());
             if (virtualMachineSchedulingUnit == null) {
-                virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(virtualMachineDeploymentTime);
+                virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(virtualMachineDeploymentTime, true);
                 virtualMachineSchedulingUnit.setVirtualMachineInstance(container.getVirtualMachineInstance());
                 virtualMachineSchedulingUnitMap.put(container.getVirtualMachineInstance(), virtualMachineSchedulingUnit);
             }

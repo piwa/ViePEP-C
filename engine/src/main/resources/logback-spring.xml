@@ -17,13 +17,13 @@
     <root>
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
-        <appender-ref ref="ASYNC_SLACK" />
+        <!--<appender-ref ref="ASYNC_SLACK" />-->
     </root>
 
     <logger name="at.ac.tuwien.infosys.viepepc" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
-        <appender-ref ref="ASYNC_SLACK" />
+        <!--<appender-ref ref="ASYNC_SLACK" />-->
     </logger>
 
 </configuration>

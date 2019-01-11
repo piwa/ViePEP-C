@@ -51,13 +51,13 @@ public class VMType implements Serializable {
     public String toString() {
         return "VMType{" +
 //                "tableId=" + tableId +
-                ", identifier=" + identifier +
-                ", name='" + name + '\'' +
+//                ", identifier=" + identifier +
+                "name='" + name + '\'' +
 //                ", costs=" + costs +
-                ", cores=" + cores +
-                ", flavorName='" + flavorName + '\'' +
-                ", ramPoints=" + ramPoints +
-                ", location='" + location + '\'' +
+//                ", cores=" + cores +
+//                ", flavorName='" + flavorName + '\'' +
+//                ", ramPoints=" + ramPoints +
+//                ", location='" + location + '\'' +
 //                ", storage=" + storage +
                 '}';
     }

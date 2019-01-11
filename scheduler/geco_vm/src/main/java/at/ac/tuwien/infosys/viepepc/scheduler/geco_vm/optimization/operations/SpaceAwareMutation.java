@@ -83,7 +83,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     }
 
     private Chromosome mutate(Chromosome candidate, Random random) {
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(candidate);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(candidate, this.getClass().getSimpleName() + "_spaceAwareMutation_1");
         List<List<Chromosome.Gene>> newCandidate = candidate.clone().getGenes();
 
         int mutationCount = Math.abs(mutationCountVariable.nextValue());
@@ -158,10 +158,10 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
 
         Chromosome newChromosome = new Chromosome(newCandidate);
 
-        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newChromosome);
         vmSelectionHelper.mergeVirtualMachineSchedulingUnits(newChromosome);
+        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newChromosome);
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(candidate, this.getClass().getSimpleName() + "_spaceAwareMutation_2");
         return newChromosome;
     }
 

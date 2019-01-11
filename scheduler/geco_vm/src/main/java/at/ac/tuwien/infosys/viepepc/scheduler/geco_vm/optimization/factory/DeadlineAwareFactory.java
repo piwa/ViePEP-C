@@ -76,7 +76,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
             subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStepSchedulingUnit().getInternId(), gene));
             fillProcessStepChain(workflowElement);
 
-            subChromosome.stream().filter(Chromosome.Gene::isFixed).forEach(gene -> setAllPrecedingFixed(gene));
+            subChromosome.stream().filter(Chromosome.Gene::isFixed).forEach(this::setAllPrecedingFixed);
 
             template.add(subChromosome);
             workflowDeadlines.put(workflowElement.getName(), workflowElement.getDeadlineDateTime());
@@ -123,17 +123,19 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         Chromosome newChromosome = new Chromosome(candidate);
 
         scheduleContainerAndVM(newChromosome);
-
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_1");
 
         considerFirstVMAndContainerStartTime(newChromosome);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_2");
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome);
+        vmSelectionHelper.mergeVirtualMachineSchedulingUnits(newChromosome);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_3");
+
+        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newChromosome);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_4");
 
         orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_2", slackWebhook);
 
-        vmSelectionHelper.mergeVirtualMachineSchedulingUnits(newChromosome);
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome);
         return newChromosome;
     }
 
@@ -174,13 +176,18 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
         List<ContainerSchedulingUnit> containerSchedulingUnits = optimizationUtility.createRequiredContainerSchedulingUnits(newChromosome, getFixedContainer(newChromosome));
 
+        Set<VirtualMachineSchedulingUnit> alreadyUsedVirtualMachineSchedulingUnits = containerSchedulingUnits.stream().map(ContainerSchedulingUnit::getScheduledOnVm).filter(Objects::nonNull).collect(Collectors.toSet());
+
         for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
             if (containerSchedulingUnit.getScheduledOnVm() == null) {
 
-                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = vmSelectionHelper.getVirtualMachineSchedulingUnit(containerSchedulingUnit);
+                List<ContainerSchedulingUnit> tempList = new ArrayList<>();
+                tempList.add(containerSchedulingUnit);
+                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = vmSelectionHelper.getVirtualMachineSchedulingUnit(alreadyUsedVirtualMachineSchedulingUnits, tempList);
 
                 containerSchedulingUnit.setScheduledOnVm(virtualMachineSchedulingUnit);
                 virtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
+                alreadyUsedVirtualMachineSchedulingUnits.add(virtualMachineSchedulingUnit);
             }
         }
     }
@@ -260,11 +267,11 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
                         scheduleContainerAndVM(newChromosome);
 
-                        for (Chromosome.Gene gene : newChromosome.getFlattenChromosome()) {
-                            if(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit() != null && gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getScheduledContainers().size() == 0) {
-                                log.error("Exception");
-                            }
-                        }
+//                        for (Chromosome.Gene gene : newChromosome.getFlattenChromosome()) {
+//                            if(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit() == null || gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getScheduledContainers().size() == 0) {
+//                                log.error("Exception");
+//                            }
+//                        }
 
                         break;
                     }
@@ -310,16 +317,21 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
                         originalToCloneContainerSchedulingMap.putIfAbsent(originalContainerSchedulingUnit, originalContainerSchedulingUnit.clone());
 
                         ContainerSchedulingUnit clonedContainerSchedulingUnit = originalToCloneContainerSchedulingMap.get(originalContainerSchedulingUnit);
-                        clonedProcessStepSchedulingUnit.setContainerSchedulingUnit(clonedContainerSchedulingUnit);
                         VirtualMachineSchedulingUnit clonedVirtualMachineSchedulingUnit = originalToCloneVirtualMachineSchedulingMap.get(originalContainerSchedulingUnit.getScheduledOnVm());
+
+                        clonedProcessStepSchedulingUnit.setContainerSchedulingUnit(clonedContainerSchedulingUnit);
+
+//                        clonedVirtualMachineSchedulingUnit.getScheduledContainers().remove(originalContainerSchedulingUnit);
+                        clonedVirtualMachineSchedulingUnit.getScheduledContainers().add(clonedContainerSchedulingUnit);
+
                         clonedContainerSchedulingUnit.setScheduledOnVm(clonedVirtualMachineSchedulingUnit);
+//                        clonedContainerSchedulingUnit.getProcessStepGenes().remove(originalGene);
+                        clonedContainerSchedulingUnit.getProcessStepGenes().add(clonedGene);
+
                     }
                 }
             }
         }
-
-        originalToCloneVirtualMachineSchedulingMap.values().forEach(virtualMachineSchedulingUnit -> virtualMachineSchedulingUnit.getScheduledContainers().replaceAll(originalToCloneContainerSchedulingMap::get));
-        originalToCloneContainerSchedulingMap.values().forEach(containerSchedulingUnit -> containerSchedulingUnit.getProcessStepGenes().replaceAll(originalToCloneMap::get));
 
         return newRow;
     }
