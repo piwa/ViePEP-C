@@ -172,45 +172,43 @@ public class VMSelectionHelper {
 
     public void distributeContainers(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ContainerSchedulingUnit> containerSchedulingUnits) {
 
-        log.debug("distributeContainers 1: virtualMachineSchedulingUnit="+virtualMachineSchedulingUnit.toString());
-        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
-            log.debug("distributeContainers 1: containerSchedulingUnit="+containerSchedulingUnit.toString());
-        }
+//        log.debug("distributeContainers 1: virtualMachineSchedulingUnit="+virtualMachineSchedulingUnit.toString());
+//        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
+//            log.debug("distributeContainers 1: containerSchedulingUnit="+containerSchedulingUnit.toString());
+//        }
 
         List<VirtualMachineSchedulingUnit> usedVirtualMachineSchedulingUnits = new ArrayList<>();
         List<ContainerSchedulingUnit> fixed = containerSchedulingUnits.stream().filter(ContainerSchedulingUnit::isFixed).collect(Collectors.toList());
         List<ContainerSchedulingUnit> notFixed = containerSchedulingUnits.stream().filter(unit -> !unit.isFixed()).collect(Collectors.toList());
 
         virtualMachineSchedulingUnit.getScheduledContainers().removeAll(containerSchedulingUnits);
-        containerSchedulingUnits.stream().forEach(unit -> unit.setScheduledOnVm(null));
+        containerSchedulingUnits.forEach(unit -> unit.setScheduledOnVm(null));
 
         if(!fixed.isEmpty()) {
             virtualMachineSchedulingUnit.getScheduledContainers().addAll(fixed);
             fixed.forEach(unit -> unit.setScheduledOnVm(virtualMachineSchedulingUnit));
         }
 
-        fillVirtualMachine(notFixed, virtualMachineSchedulingUnit);
-
-        usedVirtualMachineSchedulingUnits.add(virtualMachineSchedulingUnit);
+        VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = virtualMachineSchedulingUnit;
+        usedVirtualMachineSchedulingUnits.add(newVirtualMachineSchedulingUnit);
         while (!notFixed.isEmpty()) {
 
-            ContainerSchedulingUnit lastContainerSchedulingUnit = notFixed.remove(0);
-            VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit;
-            do {
-                newVirtualMachineSchedulingUnit = getVirtualMachineSchedulingUnit(lastContainerSchedulingUnit);
-            } while(usedVirtualMachineSchedulingUnits.contains(newVirtualMachineSchedulingUnit) || newVirtualMachineSchedulingUnit.isFixed());
+            fillVirtualMachine(notFixed, newVirtualMachineSchedulingUnit);
 
             if (!notFixed.isEmpty()) {
-                fillVirtualMachine(notFixed, newVirtualMachineSchedulingUnit);
+                do {
+                    newVirtualMachineSchedulingUnit = getVirtualMachineSchedulingUnit(notFixed.get(0));
+                } while (usedVirtualMachineSchedulingUnits.contains(newVirtualMachineSchedulingUnit) || newVirtualMachineSchedulingUnit.isFixed());
+                usedVirtualMachineSchedulingUnits.add(newVirtualMachineSchedulingUnit);
             }
         }
 
-        for (VirtualMachineSchedulingUnit usedVirtualMachineSchedulingUnit : usedVirtualMachineSchedulingUnits) {
-            log.debug("distributeContainers 2: usedVirtualMachineSchedulingUnit="+usedVirtualMachineSchedulingUnit.toString());
-        }
-        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
-            log.debug("distributeContainers 2: containerSchedulingUnit="+containerSchedulingUnit.toString());
-        }
+//        for (VirtualMachineSchedulingUnit usedVirtualMachineSchedulingUnit : usedVirtualMachineSchedulingUnits) {
+//            log.debug("distributeContainers 2: usedVirtualMachineSchedulingUnit="+usedVirtualMachineSchedulingUnit.toString());
+//        }
+//        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
+//            log.debug("distributeContainers 2: containerSchedulingUnit="+containerSchedulingUnit.toString());
+//        }
 
     }
 
@@ -226,7 +224,7 @@ public class VMSelectionHelper {
                 newVirtualMachineSchedulingUnit.getScheduledContainers().add(lastContainerSchedulingUnit);
                 lastContainerSchedulingUnit.setScheduledOnVm(newVirtualMachineSchedulingUnit);
             }
-        } while (enoughSpace);
+        } while (enoughSpace && !notFixed.isEmpty());
 
     }
 
