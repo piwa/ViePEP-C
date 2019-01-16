@@ -2,10 +2,9 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations;
 
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContext;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.OrderMaintainer;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.VMSelectionHelper;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -120,8 +119,8 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
         vmSelectionHelper.mergeVirtualMachineSchedulingUnits(offspring1Chromosome);
         vmSelectionHelper.mergeVirtualMachineSchedulingUnits(offspring2Chromosome);
 
-        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring1Chromosome);
-        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring2Chromosome);
+//        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring1Chromosome);       // is done in mergeVirtualMachineSchedulingUnits
+//        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring2Chromosome);       // is done in mergeVirtualMachineSchedulingUnits
 
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(offspring1Chromosome, this.getClass().getSimpleName() + "_spaceAwareCrossover_3");
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(offspring2Chromosome, this.getClass().getSimpleName() + "_spaceAwareCrossover_4");

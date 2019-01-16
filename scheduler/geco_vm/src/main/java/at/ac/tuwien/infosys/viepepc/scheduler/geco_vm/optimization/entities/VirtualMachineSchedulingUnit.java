@@ -49,17 +49,16 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
     public VirtualMachineSchedulingUnit clone() {
         VirtualMachineSchedulingUnit clone = new VirtualMachineSchedulingUnit(this.uid, this.virtualMachineDeploymentDuration, this.fixed);
         clone.setVirtualMachineInstance(this.virtualMachineInstance);
-//        clone.setScheduledContainers(new HashSet<>(this.scheduledContainers));
         return clone;
     }
 
     @Override
     public String toString() {
 
-        String containerIds = scheduledContainers.stream().map(unit -> unit.getUid().toString() + ", ").collect(Collectors.joining());
+        String containerIds = scheduledContainers.stream().map(unit -> unit.getUid().toString().substring(0,8) + ", ").collect(Collectors.joining());
 
         return "VirtualMachineSchedulingUnit{" +
-                "internId=" + uid.toString() +
+                "internId=" + uid.toString().substring(0,8) +
                 ", fixed=" + fixed +
                 ", availableTimes=" + getVmAvailableInterval() +
                 ", deploymentTimes=" + getDeploymentStartTime() +
@@ -68,6 +67,7 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
                 ", virtualMachineInstance=" + virtualMachineInstance +
                 '}';
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -82,20 +82,5 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
         return Objects.hash(uid);
     }
 
-
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//        VirtualMachineSchedulingUnit that = (VirtualMachineSchedulingUnit) o;
-//        return virtualMachineDeploymentDuration == that.virtualMachineDeploymentDuration &&
-//                fixed == that.fixed &&
-//                uid.equals(that.uid);
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return Objects.hash(uid, virtualMachineDeploymentDuration, fixed);
-//    }
 }
 

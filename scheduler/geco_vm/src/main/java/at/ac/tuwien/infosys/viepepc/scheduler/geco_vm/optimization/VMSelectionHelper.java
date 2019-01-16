@@ -6,6 +6,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContext;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VMTypeNotFoundException;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
@@ -33,25 +34,16 @@ public class VMSelectionHelper {
 
     public void mergeVirtualMachineSchedulingUnits(Chromosome chromosome) {
 
-//        log.debug("mergeVirtualMachineSchedulingUnits 1: chromosome=" + chromosome.toString());
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_mergeVirtualMachineSchedulingUnit1_1");
-
         Map<VirtualMachineInstance, VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitMap = new HashMap<>();
-//        log.debug("mergeVirtualMachineSchedulingUnits 2: chromosome=" + chromosome.toString());
+
         for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
             ContainerSchedulingUnit containerSchedulingUnit = gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit();
             VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = containerSchedulingUnit.getScheduledOnVm();
 
-            if (virtualMachineSchedulingUnitMap.containsKey(virtualMachineSchedulingUnit.getVirtualMachineInstance())
-//                    && !containerSchedulingUnit.isFixed()
-//                  && !gene.isFixed()
-                    && virtualMachineSchedulingUnitMap.get(virtualMachineSchedulingUnit.getVirtualMachineInstance()) != virtualMachineSchedulingUnit
-            ) {
+            if (virtualMachineSchedulingUnitMap.containsKey(virtualMachineSchedulingUnit.getVirtualMachineInstance()) && virtualMachineSchedulingUnitMap.get(virtualMachineSchedulingUnit.getVirtualMachineInstance()) != virtualMachineSchedulingUnit) {
 
                 VirtualMachineSchedulingUnit otherSchedulingUnit = virtualMachineSchedulingUnitMap.get(virtualMachineSchedulingUnit.getVirtualMachineInstance());
-
                 otherSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
-
                 virtualMachineSchedulingUnit.getScheduledContainers().remove(containerSchedulingUnit);
 
                 containerSchedulingUnit.setScheduledOnVm(otherSchedulingUnit);
@@ -60,12 +52,38 @@ public class VMSelectionHelper {
             }
         }
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_mergeVirtualMachineSchedulingUnit_2");
+
+//        mergeByTime(chromosome);
+
+
 
         checkVmSizeAndSolveSpaceIssues(chromosome);
 
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_mergeVirtualMachineSchedulingUnit_3");
     }
+
+//    private void mergeByTime(Chromosome chromosome) {
+//        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitSet = chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
+//        List<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new ArrayList<>(virtualMachineSchedulingUnitSet);
+//        virtualMachineSchedulingUnits.sort(Comparator.comparing(virtualMachineSchedulingUnit -> virtualMachineSchedulingUnit.getCloudResourceUsageInterval().getStart()));
+//
+//        for (int i = 0; i < virtualMachineSchedulingUnits.size(); i++) {
+//            if(i + 1 < virtualMachineSchedulingUnits.size()) {
+//                VirtualMachineSchedulingUnit currentSchedulingUnit = virtualMachineSchedulingUnits.get(i);
+//                VirtualMachineSchedulingUnit nextSchedulingUnit = virtualMachineSchedulingUnits.get(i+1);
+//
+//                if(currentSchedulingUnit.getVirtualMachineInstance().getVmType() == nextSchedulingUnit.getVirtualMachineInstance().getVmType()) {
+//
+//                    if(currentSchedulingUnit.getCloudResourceUsageInterval().overlaps(nextSchedulingUnit.getCloudResourceUsageInterval())) {
+//
+//                    }
+//
+//                }
+//
+//            }
+//        }
+//
+//    }
 
     public void checkVmSizeAndSolveSpaceIssues(Chromosome chromosome) {
         List<Chromosome.Gene> genes = chromosome.getFlattenChromosome();
@@ -79,21 +97,14 @@ public class VMSelectionHelper {
                 boolean fitsOnVM = checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit, holder.getContainerSchedulingUnits());
                 if (!fitsOnVM) {
                     if (virtualMachineSchedulingUnit.isFixed()) {
-                        log.debug("distributed containers 1");
-                        log.debug("chromosome=" + chromosome.toString());
-                        if(chromosome != null) {
-                            SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_checkVmSizeAndSolveSpaceIssues_1");
-                        }
+//                        log.debug("distributed containers 1");
                         distributeContainers(virtualMachineSchedulingUnit, holder.getContainerSchedulingUnits());
-                        if(chromosome != null) {
-                            SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_checkVmSizeAndSolveSpaceIssues_2");
-                        }
                     } else {
                         try {
-                            log.debug("resize vm");
+//                            log.debug("resize vm");
                             resizeVM(virtualMachineSchedulingUnit, holder.getContainerSchedulingUnits());
                         } catch (VMTypeNotFoundException e) {
-                            log.debug("distributed containers 2");
+//                            log.debug("distributed containers 2");
                             distributeContainers(virtualMachineSchedulingUnit, holder.getContainerSchedulingUnits());
                         }
                     }
@@ -114,7 +125,7 @@ public class VMSelectionHelper {
         boolean vmFound = false;
         VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
         do {
-            virtualMachineSchedulingUnit = createVMSchedulingUnit(new HashSet<>(), new HashSet<>(containerSchedulingUnits));
+            virtualMachineSchedulingUnit = createVMSchedulingUnit(new HashSet<>(), new HashSet<>(containerSchedulingUnits), this.random);
 
             vmFound = false;
 
@@ -133,7 +144,7 @@ public class VMSelectionHelper {
         boolean vmFound = false;
         VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
         do {
-            virtualMachineSchedulingUnit = createVMSchedulingUnit(virtualMachineSchedulingUnits, new HashSet<>(containerSchedulingUnits));
+            virtualMachineSchedulingUnit = createVMSchedulingUnit(virtualMachineSchedulingUnits, new HashSet<>(containerSchedulingUnits), this.random);
 
             vmFound = false;
 
@@ -150,10 +161,10 @@ public class VMSelectionHelper {
 
 
     public void resizeVM(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ContainerSchedulingUnit> containerSchedulingUnits) throws VMTypeNotFoundException {
-        VirtualMachineInstance vm = virtualMachineSchedulingUnit.getVirtualMachineInstance();
-        List<Container> containerOnVm = new ArrayList<>();
-        containerOnVm.addAll(containerSchedulingUnits.stream().map(ContainerSchedulingUnit::getContainer).collect(Collectors.toList()));
-        containerOnVm.addAll(virtualMachineSchedulingUnit.getScheduledContainers().stream().map(ContainerSchedulingUnit::getContainer).collect(Collectors.toList()));
+
+        Set<Container> containerOnVm = new HashSet<>();
+        containerOnVm.addAll(containerSchedulingUnits.stream().map(ContainerSchedulingUnit::getContainer).collect(Collectors.toSet()));
+        containerOnVm.addAll(virtualMachineSchedulingUnit.getScheduledContainers().stream().map(ContainerSchedulingUnit::getContainer).collect(Collectors.toSet()));
 
         double scheduledCPUUsage = containerOnVm.stream().mapToDouble(c -> c.getContainerConfiguration().getCPUPoints()).sum();
         double scheduledRAMUsage = containerOnVm.stream().mapToDouble(c -> c.getContainerConfiguration().getRam()).sum();
@@ -170,12 +181,8 @@ public class VMSelectionHelper {
         throw new VMTypeNotFoundException("Could not find big enough VMType");
     }
 
-    public void distributeContainers(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ContainerSchedulingUnit> containerSchedulingUnits) {
 
-//        log.debug("distributeContainers 1: virtualMachineSchedulingUnit="+virtualMachineSchedulingUnit.toString());
-//        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
-//            log.debug("distributeContainers 1: containerSchedulingUnit="+containerSchedulingUnit.toString());
-//        }
+    public void distributeContainers(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ContainerSchedulingUnit> containerSchedulingUnits) {
 
         List<VirtualMachineSchedulingUnit> usedVirtualMachineSchedulingUnits = new ArrayList<>();
         List<ContainerSchedulingUnit> fixed = containerSchedulingUnits.stream().filter(ContainerSchedulingUnit::isFixed).collect(Collectors.toList());
@@ -202,13 +209,6 @@ public class VMSelectionHelper {
                 usedVirtualMachineSchedulingUnits.add(newVirtualMachineSchedulingUnit);
             }
         }
-
-//        for (VirtualMachineSchedulingUnit usedVirtualMachineSchedulingUnit : usedVirtualMachineSchedulingUnits) {
-//            log.debug("distributeContainers 2: usedVirtualMachineSchedulingUnit="+usedVirtualMachineSchedulingUnit.toString());
-//        }
-//        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
-//            log.debug("distributeContainers 2: containerSchedulingUnit="+containerSchedulingUnit.toString());
-//        }
 
     }
 
@@ -255,17 +255,18 @@ public class VMSelectionHelper {
         return true;
     }
 
-    public VirtualMachineSchedulingUnit createVMSchedulingUnit(Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines, Set<ContainerSchedulingUnit> containerSchedulingUnits) {
+    public VirtualMachineSchedulingUnit createVMSchedulingUnit(Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines, Set<ContainerSchedulingUnit> containerSchedulingUnits, Random random) {
         VirtualMachineInstance randomVM;
 
         List<VirtualMachineInstance> noSchedulingUnitAvailable = cacheVirtualMachineService.getScheduledAndDeployingAndDeployedVMInstances();
         List<VirtualMachineInstance> availableVMs = new ArrayList<>(noSchedulingUnitAvailable);
         availableVMs.addAll(alreadyScheduledVirtualMachines.stream().map(VirtualMachineSchedulingUnit::getVirtualMachineInstance).collect(Collectors.toList()));
 
+//        int fromAvailableVM = random.nextInt(5);
+//        if (fromAvailableVM < 3 && availableVMs.size() > 0) {
         boolean fromAvailableVM = random.nextBoolean();
-        Random rand = new Random();
         if (fromAvailableVM && availableVMs.size() > 0) {
-            int randomPosition = rand.nextInt(availableVMs.size());
+            int randomPosition = random.nextInt(availableVMs.size());
             randomVM = availableVMs.get(randomPosition);
 
             VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
@@ -285,36 +286,37 @@ public class VMSelectionHelper {
 
             List<VMType> vmTypes = new ArrayList<>(cacheVirtualMachineService.getVMTypes());
 
-            vmTypes = prepareVMTypeList(vmTypes, containerSchedulingUnits);
+            VMType vmType = null;
+//            try {
+//                vmType = getFittingVMType(vmTypes, containerSchedulingUnits);
+//            } catch (VMTypeNotFoundException e) {
+                int randomPosition = random.nextInt(vmTypes.size());
+                vmType = vmTypes.get(randomPosition);
+//            }
 
-            int randomPosition = rand.nextInt(vmTypes.size());
-            randomVM = new VirtualMachineInstance(vmTypes.get(randomPosition));
+            randomVM = new VirtualMachineInstance(vmType);
 
             VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(virtualMachineDeploymentTime, false);
             virtualMachineSchedulingUnit.setVirtualMachineInstance(randomVM);
 
             return virtualMachineSchedulingUnit;
         }
-
     }
 
-    private List<VMType> prepareVMTypeList(List<VMType> vmTypes, Set<ContainerSchedulingUnit> containerSchedulingUnits) {
+    private VMType getFittingVMType(List<VMType> allVMTypes, Set<ContainerSchedulingUnit> containerSchedulingUnits) throws VMTypeNotFoundException {
 
         double scheduledCPUUsage = containerSchedulingUnits.stream().mapToDouble(c -> c.getContainer().getContainerConfiguration().getCPUPoints()).sum();
         double scheduledRAMUsage = containerSchedulingUnits.stream().mapToDouble(c -> c.getContainer().getContainerConfiguration().getRam()).sum();
 
-        for (Iterator<VMType> iterator = vmTypes.iterator(); iterator.hasNext(); ) {
-            VMType vmType = iterator.next();
-            if (vmType.getCpuPoints() < scheduledCPUUsage || vmType.getRamPoints() < scheduledRAMUsage) {
-                iterator.remove();
+        allVMTypes.sort(Comparator.comparing(VMType::getCores).thenComparing(VMType::getRamPoints));
+
+        for (VMType vmType : allVMTypes) {
+            if (vmType.getCpuPoints() >= scheduledCPUUsage && vmType.getRamPoints() >= scheduledRAMUsage) {
+                return vmType;
             }
         }
 
-        if (vmTypes.size() == 0) {
-            log.error("no fitting vmtype found");
-        }
-
-        return vmTypes;
+        throw new VMTypeNotFoundException("Could not find big enough VMType");
     }
 
     private List<IntervalContainerSchedulingUnitHolder> createIntervalContainerSchedulingList(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit) {
@@ -351,10 +353,6 @@ public class VMSelectionHelper {
                 holders.add(holder);
             }
         }
-
-//        for (IntervalContainerSchedulingUnitHolder holder : holders) {
-//            log.debug("createIntervalContainerSchedulingList: holder=" + holder.toString());
-//        }
 
         return holders;
     }

@@ -148,10 +148,10 @@ public class ProcessStep extends Element implements Cloneable {
     public String toString() {
 
         String containerId = "";
-        if(container != null) containerId = container.getInternId().toString();
+        if(container != null) containerId = container.getInternId().toString().substring(0,8);
 
         return "ProcessStep{" +
-                "internId=" + internId +
+                "internId=" + internId.toString().substring(0,8) +
                 ", workflowName='" + workflowName + '\'' +
                 ", scheduledStartDate=" + scheduledStartDate +
                 ", startDate=" + startDate +

@@ -10,7 +10,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.service.ServiceTypeNotFoundException;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.GeCoVmApplication;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.TestSchedulerGecoConfiguration;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.OrderMaintainer;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;

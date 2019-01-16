@@ -1,10 +1,9 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory.DeadlineAwareFactory;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations.SpaceAwareCrossover;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations.SpaceAwareDeploymentMutation;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations.SpaceAwareMutation;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations.*;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.SchedulerAlgorithm;
@@ -23,7 +22,9 @@ import org.uncommons.maths.random.PoissonGenerator;
 import org.uncommons.maths.random.Probability;
 import org.uncommons.watchmaker.framework.*;
 import org.uncommons.watchmaker.framework.operators.EvolutionPipeline;
+import org.uncommons.watchmaker.framework.selection.RankSelection;
 import org.uncommons.watchmaker.framework.selection.TournamentSelection;
+import org.uncommons.watchmaker.framework.selection.TruncationSelection;
 import org.uncommons.watchmaker.framework.termination.ElapsedTime;
 
 import java.util.*;
@@ -44,27 +45,25 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
     private int populationSize = 400;
     @Value("${population.elite.count}")
     private double eliteCountNumber = 0.05;
-    @Value("${stagnation.generation.limit}")
-    private int stagnationGenerationLimit = 15;
+//    @Value("${stagnation.generation.limit}")
+//    private int stagnationGenerationLimit = 15;
 
-    @Value("${use.single.shift.with.moving.mutation.min.value}")
-    private int singleShiftWithMovingMutationMin = 60000;
-    @Value("${use.single.shift.with.moving.mutation.max.value}")
-    private int singleShiftWithMovingMutationMax = 60000;
-    @Value("${use.single.shift.if.possible.mutation.min.value}")
-    private int singleShiftIfPossibleMutationMin = 60000;
-    @Value("${use.single.shift.if.possible.mutation.max.value}")
-    private int singleShiftIfPossibleMutationMax = 60000;
+//    @Value("${use.single.shift.with.moving.mutation.min.value}")
+//    private int singleShiftWithMovingMutationMin = 60000;
+//    @Value("${use.single.shift.with.moving.mutation.max.value}")
+//    private int singleShiftWithMovingMutationMax = 60000;
+//    @Value("${use.single.shift.if.possible.mutation.min.value}")
+//    private int singleShiftIfPossibleMutationMin = 60000;
+//    @Value("${use.single.shift.if.possible.mutation.max.value}")
+//    private int singleShiftIfPossibleMutationMax = 60000;
 
-    @Value("${container.default.deploy.time}")
-    private long containerDeploymentTime;
+//    @Value("${container.default.deploy.time}")
+//    private long containerDeploymentTime;
 
     @Autowired
     private DeadlineAwareFactory chromosomeFactory;
 
     private AdjustableNumberGenerator<Probability> numberGenerator = new AdjustableNumberGenerator<>(new Probability(0.85d));
-
-    private Map<String, DateTime> maxTimeAfterDeadline = new HashMap<>();
 
     @Async
     public Future<OptimizationResult> asyncOptimize(DateTime tau_t) throws ProblemNotSolvedException {
@@ -88,29 +87,29 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         this.optimizationEndTime = this.optimizationEndTime.plus(maxOptimizationDuration).plus(additionalOptimizationTime);
 
 
-        int eliteCount = (int) Math.round(populationSize * eliteCountNumber);
         SelectionStrategy<Object> selectionStrategy = new TournamentSelection(numberGenerator);
+//        SelectionStrategy<Object> selectionStrategy = new RankSelection();
+//        SelectionStrategy<Object> selectionStrategy = new TruncationSelection(0.85d);
 
 
         chromosomeFactory.initialize(workflowElements, this.optimizationEndTime);
-        maxTimeAfterDeadline = chromosomeFactory.getMaxTimeAfterDeadline();
-
+        Map<String, DateTime> maxTimeAfterDeadline = chromosomeFactory.getMaxTimeAfterDeadline();
 
         Random rng = new MersenneTwisterRNG();
-        List<EvolutionaryOperator<Chromosome>> operators = new ArrayList<>(2);
+        List<EvolutionaryOperator<Chromosome>> operators = new ArrayList<>();
 
-
-        // TODO build a mutation function that changes the VMs
-        // TODO build a crossover function that changes the VMs
-        operators.add(new SpaceAwareDeploymentMutation(new PoissonGenerator(4, rng), optimizationEndTime));
         operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationEndTime, maxTimeAfterDeadline));
         operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));
+        operators.add(new SpaceAwareDeploymentMutation(new PoissonGenerator(4, rng), optimizationEndTime));
+        operators.add(new SpaceAwareDeploymentCrossover(maxTimeAfterDeadline));
+        operators.add(new SpaceAwareVMSizeMutation(new PoissonGenerator(4, rng), optimizationEndTime));
 
+        int eliteCount = (int) Math.round(populationSize * eliteCountNumber);
         this.fitnessFunction.setOptimizationEndTime(this.optimizationEndTime);
 
         EvolutionaryOperator<Chromosome> pipeline = new EvolutionPipeline<>(operators);
         EvolutionEngine<Chromosome> engine = new GenerationalEvolutionEngine<>(chromosomeFactory, pipeline, fitnessFunction, selectionStrategy, rng);
-        EvolutionLogger evolutionLogger = new EvolutionLogger<>();
+        EvolutionLogger evolutionLogger = new EvolutionLogger();
         engine.addEvolutionObserver(evolutionLogger);
 
         stopwatch.stop();

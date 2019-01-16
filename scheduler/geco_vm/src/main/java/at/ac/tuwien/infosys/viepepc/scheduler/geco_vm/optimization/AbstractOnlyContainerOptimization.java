@@ -11,6 +11,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStepStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ProcessStepSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
@@ -60,18 +61,25 @@ public abstract class AbstractOnlyContainerOptimization {
         builder.append("Penalty=").append(fitnessFunction.getPenaltyCost()).append("\n");
         builder.append("Early Enactment=").append(fitnessFunction.getEarlyEnactmentCost()).append("\n");
         builder.append("Total Fitness=").append(fitnessFunction.getLeasingCost() + fitnessFunction.getPenaltyCost() + fitnessFunction.getEarlyEnactmentCost()).append("\n");
-        builder.append("----------------------------- Algorithm Stats -----------------------------\n");
-        builder.append("Generation Amount=" + evolutionLogger.getAmountOfGenerations());
-        log.info(builder.toString());
-
+        builder.append("----------------------------- Algorithm Stats ----------------------------\n");
+        builder.append("Generation Amount=").append(evolutionLogger.getAmountOfGenerations()).append("\n");
+        builder.append("----------------------------- Chromosome Checks --------------------------\n");
+        boolean notEnoughSpace = false;
         Set<VirtualMachineSchedulingUnit> temp = winner.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
         for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : temp) {
             if(!vmSelectionHelper.checkEnoughResourcesLeftOnVM(virtualMachineSchedulingUnit)) {
                 log.error("not enough space after the optimization on VM=" + virtualMachineSchedulingUnit);
+                notEnoughSpace = true;
             }
         }
+        if(!notEnoughSpace) {
+            builder.append("Space is ok").append("\n");
+        }
+        orderMaintainer.checkRowAndPrintError(winner, this.getClass().getSimpleName(), "createOptimizationResult");
+        builder.append("Order is ok").append("\n");
 
-        orderMaintainer.checkRowAndPrintError(winner, this.getClass().getSimpleName(), slackWebhook);
+        log.info(builder.toString());
+
 
         OptimizationResult optimizationResult = new OptimizationResult();
 
@@ -82,6 +90,7 @@ public abstract class AbstractOnlyContainerOptimization {
                 ProcessStep processStep = gene.getProcessStepSchedulingUnit().getProcessStep();
                 Container container = gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer();
                 processStep.setScheduledStartDate(gene.getExecutionInterval().getStart());
+                if(processStep.getProcessStepStatus().equals(ProcessStepStatus.UNUSED))
                 processStep.setProcessStepStatus(ProcessStepStatus.SCHEDULED);
                 processStep.setContainer(container);
 

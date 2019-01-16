@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.hibernate.annotations.Columns;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -43,9 +44,12 @@ public class Container implements Cloneable {
 
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime startDate;
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+
+    @Columns(columns={@Column(name="sCloudUsageStartTime"),@Column(name="sCloudUsageEndTime")})
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentInterval")
     private Interval scheduledCloudResourceUsage;
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Columns(columns={@Column(name="sAvailableStartTime"),@Column(name="sAvailableEndTime")})
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentInterval")
     private Interval scheduledAvailableInterval;
 
     private ContainerStatus containerStatus;
@@ -70,7 +74,7 @@ public class Container implements Cloneable {
     public void shutdownContainer() {
         if (virtualMachineInstance != null) {
             virtualMachineInstance.undeployContainer(this);
-            virtualMachineInstance = null;
+//            virtualMachineInstance = null;
         }
         containerStatus = ContainerStatus.TERMINATED;
         bareMetal = false;
@@ -87,14 +91,14 @@ public class Container implements Cloneable {
     public String toString() {
 
         String virtualMachineInstanceId = "";
-        if(virtualMachineInstance != null) virtualMachineInstanceId = virtualMachineInstance.getInternId().toString();
+        if(virtualMachineInstance != null) virtualMachineInstanceId = virtualMachineInstance.getInternId().toString().substring(0,8);
 
 //        String virtualMachineInstanceId = "";
 //        if(virtualMachineInstance != null) virtualMachineInstanceId = virtualMachineInstance.getInternId().toString();
 
         return "Container{" +
 //                "id=" + id +
-                "internId=" + internId +
+                "internId=" + internId.toString().substring(0,8) +
 //                ", containerID='" + containerID + '\'' +
 //                ", containerImage=" + containerImage +
                 ", startDate=" + startDate +

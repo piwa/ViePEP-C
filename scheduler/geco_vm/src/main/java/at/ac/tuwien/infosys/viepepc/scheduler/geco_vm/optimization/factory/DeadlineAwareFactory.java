@@ -3,7 +3,7 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContext;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.OrderMaintainer;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.VMSelectionHelper;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
@@ -68,7 +68,6 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
             stepGeneMap = new HashMap<>();
 
             List<Chromosome.Gene> subChromosome = deadlineAwareFactoryInitializer.createStartChromosome(workflowElement);
-
             if (subChromosome.size() == 0) {
                 continue;
             }
@@ -81,9 +80,14 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
             template.add(subChromosome);
             workflowDeadlines.put(workflowElement.getName(), workflowElement.getDeadlineDateTime());
             calculateMaxTimeAfterDeadline(workflowElement, subChromosome);
+
         }
 
-        orderMaintainer.checkRowAndPrintError(new Chromosome(template), this.getClass().getSimpleName() + "_constructor", slackWebhook);
+
+        orderMaintainer.checkAndMaintainOrder(new Chromosome(template));
+
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkIfFixedGeneHasContainerSchedulingUnit(new Chromosome(template), this.getClass().getSimpleName() + "_initialize_3");
+
     }
 
     /***
@@ -134,7 +138,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newChromosome);
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_4");
 
-        orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_2", slackWebhook);
+        orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_2", "generateRandomCandidate");
 
         return newChromosome;
     }
@@ -283,6 +287,11 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     }
 
     private List<Chromosome.Gene> createClonedRow(List<Chromosome.Gene> row) {
+
+
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkIfFixedGeneHasContainerSchedulingUnit(row, this.getClass().getSimpleName() + "_cloneRow_1");
+
+
         List<Chromosome.Gene> newRow = new ArrayList<>();
         Map<Chromosome.Gene, Chromosome.Gene> originalToCloneMap = new HashMap<>();
 
@@ -333,6 +342,9 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
             }
         }
 
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkIfFixedGeneHasContainerSchedulingUnit(newRow, this.getClass().getSimpleName() + "_cloneRow_2");
+
+
         return newRow;
     }
 
@@ -376,6 +388,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     private void setAllPrecedingFixed(Chromosome.Gene gene) {
         gene.getPreviousGenes().forEach(prevGene -> {
             prevGene.setFixed(true);
+            deadlineAwareFactoryInitializer.setContainerAndVMSchedulingUnit(prevGene.getProcessStepSchedulingUnit());
             setAllPrecedingFixed(prevGene);
         });
     }

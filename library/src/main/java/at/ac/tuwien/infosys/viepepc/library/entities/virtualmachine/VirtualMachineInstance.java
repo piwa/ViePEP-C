@@ -5,6 +5,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Columns;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -38,9 +39,11 @@ public class VirtualMachineInstance implements Serializable {
 
     private String ipAddress;
 
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Columns(columns={@Column(name="sCloudUsageStartTime"),@Column(name="sCloudUsageEndTime")})
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentInterval")
     private Interval scheduledCloudResourceUsage;
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Columns(columns={@Column(name="sAvailableStartTime"),@Column(name="sAvailableEndTime")})
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentInterval")
     private Interval scheduledAvailableInterval;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private DateTime deploymentStartTime;
@@ -59,12 +62,19 @@ public class VirtualMachineInstance implements Serializable {
     @ElementCollection
     private List<String> usedPorts = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy="virtualMachineInstance")
+    @Transient
+//    @OneToMany(cascade = CascadeType.ALL, mappedBy="virtualMachineInstance")
     private Set<Container> deployedContainers = new HashSet<>();
 
-    @OneToMany
+    @Transient
+//    @OneToMany
     private Set<ContainerImage> availableContainerImages = new HashSet<>();
 
+    public VirtualMachineInstance() {this.internId = UUID.randomUUID();
+
+        this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
+        this.virtualMachineStatus = VirtualMachineStatus.UNUSED;
+    }
 
     public VirtualMachineInstance(VMType vmType) {
         this.internId = UUID.randomUUID();
@@ -92,7 +102,7 @@ public class VirtualMachineInstance implements Serializable {
     public String toString() {
         return "VirtualMachineInstance{" +
 //                "id=" + id +
-                "internId=" + internId +
+                "internId=" + internId.toString().substring(0,8) +
 //                ", instanceId='" + instanceId + '\'' +
 //                ", googleName='" + googleName + '\'' +
 //                ", ipAddress='" + ipAddress + '\'' +

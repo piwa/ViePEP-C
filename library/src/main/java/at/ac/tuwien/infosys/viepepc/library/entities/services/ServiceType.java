@@ -41,22 +41,14 @@ public class ServiceType implements Cloneable {
     @JoinColumn(name="serviceTypeResourcesId")
     private ServiceTypeResources serviceTypeResources;
 
-    @ElementCollection
-    @MapKeyColumn(name="time")
-    @Column(name="value")
-    @CollectionTable(name="monitored_resource_usages", joinColumns=@JoinColumn(name="monitored_resource_usage"))
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Transient
+//    @ElementCollection
+//    @MapKeyColumn(name="time")
+//    @Column(name="value")
+//    @CollectionTable(name="monitored_resource_usages", joinColumns=@JoinColumn(name="monitored_resource_usage"))
+//    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     private Map<DateTime, ServiceTypeResources> monitoredServiceTypeResources = new HashMap<>();
-//
-//    public void addMonitoredServiceTypeResourceInformation(ServiceTypeResources serviceTypeResources) {
-//        monitoredServiceTypeResources.put(new DateTime(), serviceTypeResources);
-//    }
-//
-//    public static ServiceType fromValue(String serviceTypeName) {
-//        ServiceType serviceType1 = new ServiceType();
-//        serviceType1.name = serviceTypeName;
-//        return serviceType1;
-//    }
+
 
     @Override
     public String toString() {

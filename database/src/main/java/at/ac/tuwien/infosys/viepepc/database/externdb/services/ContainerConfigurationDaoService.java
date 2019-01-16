@@ -22,7 +22,7 @@ public class ContainerConfigurationDaoService {
 
     public ContainerConfiguration getContainerConfiguration(ContainerConfiguration containerConfiguration) {
         if(containerConfiguration.getId() != null) {
-            return containerConfigurationRepository.findById(containerConfiguration.getId()).orElseThrow(EntityNotFoundException::new);
+            return containerConfigurationRepository.findById(containerConfiguration.getId()).orElse(null);
         }
         return null;
     }

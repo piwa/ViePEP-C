@@ -8,7 +8,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachi
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.GeCoVmApplication;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.TestSchedulerGecoConfiguration;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory.DeadlineAwareFactory;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory.WorkflowGenerationHelper;

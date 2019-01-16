@@ -7,7 +7,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.library.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.container.ContainerImageNotFoundException;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.VMSelectionHelper;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ProcessStepSchedulingUnit;
@@ -35,11 +35,62 @@ public class OptimizationUtility {
 
     @Value("${container.default.deploy.time}")
     private long containerDeploymentTime;
+    @Value("${perform.correctnes.checks}")
     private boolean performChecks = true;
+
+    public void checkIfFixedGeneHasContainerSchedulingUnit(Chromosome chromosome, String position) {
+        if (performChecks) {
+            for (List<Chromosome.Gene> row : chromosome.getGenes()) {
+                checkIfFixedGeneHasContainerSchedulingUnit(row, position);
+            }
+        }
+    }
+
+    public void checkIfFixedGeneHasContainerSchedulingUnit(List<Chromosome.Gene> row, String position) {
+        if (performChecks) {
+            for (Chromosome.Gene gene : row) {
+                if (gene.isFixed()) {
+                    if (gene.getProcessStepSchedulingUnit() == null) {
+                        log.error("processStepSchedulingUnit is null (at=" + position + ") gene=" + gene);
+                    } else if (gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit() == null) {
+                        log.error("ContainerSchedulingUnit is null (at=" + position + ") gene=" + gene);
+                    } else if (gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm() == null) {
+                        log.error("scheduledOnVm is null (at=" + position + ") gene=" + gene);
+                    } else {
+                        for (ContainerSchedulingUnit scheduledContainer : gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getScheduledContainers()) {
+                            if (scheduledContainer == null) {
+                                log.error("one element of ScheduledContainers is null (at=" + position + ") gene=" + gene);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     public void checkContainerSchedulingUnits(Chromosome chromosome, String position) {
 
-        if(performChecks) {
+        if (performChecks) {
+
+            for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
+                if(gene.getProcessStepSchedulingUnit() == null) {
+                    log.debug("processStepSchedulingUnit is null (at=" + position + ") gene="+ gene);
+                }
+                else if(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit() == null) {
+                    log.debug("ContainerSchedulingUnit is null (at=" + position + ") gene="+ gene);
+                }
+                else if(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm() == null) {
+                    log.debug("scheduledOnVm is null (at=" + position + ") gene="+ gene);
+                }
+                else {
+                    for (ContainerSchedulingUnit scheduledContainer : gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getScheduledContainers()) {
+                        if(scheduledContainer == null) {
+                            log.debug("one element of ScheduledContainers is null (at=" + position + ") gene="+ gene);
+                        }
+                    }
+                }
+            }
+
             List<ContainerSchedulingUnit> containerSchedulingUnits1 = new ArrayList<>();
             List<ContainerSchedulingUnit> containerSchedulingUnits2 = new ArrayList<>();
             for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
@@ -48,7 +99,7 @@ public class OptimizationUtility {
             }
             for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits2) {
                 if (!containerSchedulingUnits1.contains(containerSchedulingUnit)) {
-                    log.error("A container is on a VM but not used by a Gene at=" + position);
+                    log.debug("A container is on a VM but not used by a Gene (at=" + position + ")");
                 }
             }
 
@@ -57,7 +108,7 @@ public class OptimizationUtility {
                 List<ContainerSchedulingUnit> list = new ArrayList<>(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getScheduledContainers());
                 Set<ContainerSchedulingUnit> set = new HashSet<>(list);
                 if (set.size() < list.size()) {
-                    log.error("Something is wrong at=" + position);
+                    log.debug("Something is wrong (at=" + position + ")");
                 }
             }
 
@@ -68,12 +119,12 @@ public class OptimizationUtility {
                 set2.addAll(gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getScheduledContainers());
             }
             if (!set1.equals(set2)) {
-                log.error("Missmatch of gene container and VM container at=" + position);
+                log.debug("Missmatch of gene container and VM container (at=" + position + ")");
             }
 
             for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
                 if (gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm().getScheduledContainers().size() == 0) {
-                    log.error("No container on VM at=" + position);
+                    log.debug("No container on VM (at=" + position + ")");
                 }
             }
 
@@ -81,14 +132,14 @@ public class OptimizationUtility {
                 ContainerSchedulingUnit containerSchedulingUnit = gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit();
                 Set<ContainerSchedulingUnit> containerSchedulingUnitFromVM = containerSchedulingUnit.getScheduledOnVm().getScheduledContainers();
                 if (!containerSchedulingUnitFromVM.contains(containerSchedulingUnit)) {
-                    log.error("Container is not on VM at=" + position);
+                    log.debug("Container is not on VM (at=" + position + ")");
                 }
             }
 
             Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
             for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
                 if (!vmSelectionHelper.checkEnoughResourcesLeftOnVM(virtualMachineSchedulingUnit)) {
-                    log.error("not enough space on at=" + position + ", VM=" + virtualMachineSchedulingUnit);
+                    log.debug("not enough space (at=" + position + ") on VM=" + virtualMachineSchedulingUnit);
                 }
             }
         }

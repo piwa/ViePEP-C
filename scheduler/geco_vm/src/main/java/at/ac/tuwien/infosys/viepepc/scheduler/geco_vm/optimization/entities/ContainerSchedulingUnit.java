@@ -1,7 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.Chromosome;
 import lombok.Data;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -57,15 +56,14 @@ public class ContainerSchedulingUnit implements Cloneable {
     public ContainerSchedulingUnit clone()  {
         ContainerSchedulingUnit clone = new ContainerSchedulingUnit(this.uid, this.containerDeploymentDuration, this.fixed);
         clone.setContainer(this.container);
-//        clone.setScheduledOnVm(this.scheduledOnVm);
-//        clone.setProcessStepGenes(new ArrayList<>(this.processStepGenes));
+
         return clone;
     }
 
     @Override
     public String toString() {
         return "ContainerSchedulingUnit{" +
-                "internId=" + uid.toString() +
+                "internId=" + uid.toString().substring(0,8) +
                 ", serviceAvailableTime=" + getServiceAvailableTime() +
                 ", fixed=" + fixed +
                 ", scheduledOnVm=" + scheduledOnVm +
@@ -86,18 +84,4 @@ public class ContainerSchedulingUnit implements Cloneable {
         return Objects.hash(uid);
     }
 
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//        ContainerSchedulingUnit that = (ContainerSchedulingUnit) o;
-//        return containerDeploymentDuration == that.containerDeploymentDuration &&
-//                fixed == that.fixed &&
-//                uid.equals(that.uid);
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return Objects.hash(uid, containerDeploymentDuration, fixed);
-//    }
 }

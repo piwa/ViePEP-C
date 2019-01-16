@@ -1,10 +1,7 @@
-package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization;
+package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities;
 
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContext;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ProcessStepSchedulingUnit;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -84,12 +81,8 @@ public class Chromosome {
             clonedGene.setProcessStepSchedulingUnit(clonedProcessStepSchedulingUnit);
             clonedProcessStepSchedulingUnit.setContainerSchedulingUnit(clonedContainerSchedulingUnit);
             clonedContainerSchedulingUnit.setScheduledOnVm(clonedVirtualMachineSchedulingUnit);
-
-//            clonedVirtualMachineSchedulingUnit.getScheduledContainers().remove(originalContainerSchedulingUnit);
-            clonedVirtualMachineSchedulingUnit.getScheduledContainers().add(clonedContainerSchedulingUnit);
-
-//            clonedContainerSchedulingUnit.getProcessStepGenes().remove(originalGene);
             clonedContainerSchedulingUnit.getProcessStepGenes().add(clonedGene);
+            clonedVirtualMachineSchedulingUnit.getScheduledContainers().add(clonedContainerSchedulingUnit);
         }
 
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(new Chromosome(offspring), this.getClass().getSimpleName() + "_clone_2");

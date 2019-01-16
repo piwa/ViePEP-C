@@ -2,11 +2,10 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
-import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ProcessStepSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
@@ -181,25 +180,30 @@ public class DeadlineAwareFactoryInitializer {
         ProcessStepSchedulingUnit processStepSchedulingUnit = new ProcessStepSchedulingUnit(processStep);
 
         if (isFixed) {
-            Container container = processStep.getContainer();
-            ContainerSchedulingUnit containerSchedulingUnit = fixedContainerSchedulingUnitMap.get(container);
-            if (containerSchedulingUnit == null) {
-                containerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime, true);
-                containerSchedulingUnit.setContainer(container);
-                fixedContainerSchedulingUnitMap.put(container, containerSchedulingUnit);
-            }
-            processStepSchedulingUnit.setContainerSchedulingUnit(containerSchedulingUnit);
-
-            VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());
-            if (virtualMachineSchedulingUnit == null) {
-                virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(virtualMachineDeploymentTime, true);
-                virtualMachineSchedulingUnit.setVirtualMachineInstance(container.getVirtualMachineInstance());
-                virtualMachineSchedulingUnitMap.put(container.getVirtualMachineInstance(), virtualMachineSchedulingUnit);
-            }
-            virtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
-            containerSchedulingUnit.setScheduledOnVm(virtualMachineSchedulingUnit);
+            setContainerAndVMSchedulingUnit(processStepSchedulingUnit);
         }
 
         return processStepSchedulingUnit;
+    }
+
+    public void setContainerAndVMSchedulingUnit(ProcessStepSchedulingUnit processStepSchedulingUnit) {
+        ProcessStep processStep = processStepSchedulingUnit.getProcessStep();
+        Container container = processStep.getContainer();
+        ContainerSchedulingUnit containerSchedulingUnit = fixedContainerSchedulingUnitMap.get(container);
+        if (containerSchedulingUnit == null) {
+            containerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime, true);
+            containerSchedulingUnit.setContainer(container);
+            fixedContainerSchedulingUnitMap.put(container, containerSchedulingUnit);
+        }
+        processStepSchedulingUnit.setContainerSchedulingUnit(containerSchedulingUnit);
+
+        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());
+        if (virtualMachineSchedulingUnit == null) {
+            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(virtualMachineDeploymentTime, true);
+            virtualMachineSchedulingUnit.setVirtualMachineInstance(container.getVirtualMachineInstance());
+            virtualMachineSchedulingUnitMap.put(container.getVirtualMachineInstance(), virtualMachineSchedulingUnit);
+        }
+        virtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
+        containerSchedulingUnit.setScheduledOnVm(virtualMachineSchedulingUnit);
     }
 }

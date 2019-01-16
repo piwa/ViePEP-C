@@ -1,10 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization;
 
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.gpedro.integrations.slack.SlackApi;
-import net.gpedro.integrations.slack.SlackMessage;
-import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
@@ -88,19 +86,12 @@ public class OrderMaintainer {
         return true;
     }
 
-    public void checkRowAndPrintError(Chromosome newChromosome, String className, String slackWebhook) {
-        int rowCounter = 0;
-        for (List<Chromosome.Gene> row : newChromosome.getGenes()) {
-            if (!rowOrderIsOk(row)) {
-                if(StringUtils.isNotEmpty(slackWebhook)) {
-                    SlackApi api = new SlackApi(slackWebhook);
-                    api.call(new SlackMessage("Problem with the order! class=" + className + "; process=" + newChromosome.toString(rowCounter)));
-                }
-                log.error("Problem with the order! process=" + newChromosome.toString(rowCounter));
-
+    public void checkRowAndPrintError(Chromosome newChromosome, String className, String methodName) {
+        for (int i = 0; i < newChromosome.getGenes().size(); i++) {
+            if (!rowOrderIsOk(newChromosome.getRow(i))) {
+                log.error("Problem with the order in class=" + className + ", methodName=" + methodName + ", process=" + newChromosome.toString(i) + ", chromosome=" + newChromosome.toString());
                 System.exit(1);
             }
-            rowCounter++;
         }
     }
 }

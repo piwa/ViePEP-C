@@ -3,7 +3,7 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContext;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.OrderMaintainer;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.VMSelectionHelper;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
@@ -29,7 +29,6 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     private final DateTime optimizationEndTime;
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
     private Map<String, DateTime> maxTimeAfterDeadline;
-    private OptimizationUtility optimizationUtility;
     private VMSelectionHelper vmSelectionHelper;
 
     /**
@@ -40,7 +39,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
      * @param maxTimeAfterDeadline
      */
     public SpaceAwareMutation(PoissonGenerator poissonGenerator, DateTime optimizationEndTime, Map<String, DateTime> maxTimeAfterDeadline) {
-        this(1, optimizationEndTime, maxTimeAfterDeadline);
+        this(poissonGenerator.nextValue(), optimizationEndTime, maxTimeAfterDeadline);
     }
 
     /**
@@ -63,12 +62,14 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
      *                      of mutations that will be applied to each row in an individual.
      */
     public SpaceAwareMutation(NumberGenerator<Integer> mutationCount, DateTime optimizationEndTime, Map<String, DateTime> maxTimeAfterDeadline) {
+        if(mutationCount.nextValue() < 1) {
+            mutationCount = new ConstantGenerator<>(1);
+        }
         this.mutationCountVariable = mutationCount;
         this.optimizationEndTime = optimizationEndTime;
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
 
         ApplicationContext context = SpringContext.getApplicationContext();
-        this.optimizationUtility = context.getBean(OptimizationUtility.class);
         this.vmSelectionHelper = context.getBean(VMSelectionHelper.class);
     }
 
@@ -159,7 +160,6 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
         Chromosome newChromosome = new Chromosome(newCandidate);
 
         vmSelectionHelper.mergeVirtualMachineSchedulingUnits(newChromosome);
-        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newChromosome);
 
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(candidate, this.getClass().getSimpleName() + "_spaceAwareMutation_2");
         return newChromosome;

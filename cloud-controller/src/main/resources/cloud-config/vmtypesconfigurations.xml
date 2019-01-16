@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <VirtualMachineTypes>
+   <!--
    <VMType>
       <identifier>1</identifier>
       <name>SINGLE_CORE</name>
@@ -88,7 +89,7 @@
       <leasingDuration>300000</leasingDuration>
       <deployTime>170000</deployTime>
    </VMType>
-
+-->
    <VMType>
       <identifier>9</identifier>
       <name>GCLOUD_SINGLE_CORE</name>

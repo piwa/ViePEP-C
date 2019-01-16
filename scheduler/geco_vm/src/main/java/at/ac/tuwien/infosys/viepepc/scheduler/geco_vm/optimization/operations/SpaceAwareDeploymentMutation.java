@@ -1,18 +1,16 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations;
 
-import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContext;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.OrderMaintainer;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.VMSelectionHelper;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VMTypeNotFoundException;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.joda.time.Duration;
-import org.joda.time.Interval;
 import org.springframework.context.ApplicationContext;
 import org.uncommons.maths.number.ConstantGenerator;
 import org.uncommons.maths.number.NumberGenerator;
@@ -38,7 +36,7 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
      * @param optimizationEndTime
      */
     public SpaceAwareDeploymentMutation(PoissonGenerator poissonGenerator, DateTime optimizationEndTime) {
-        this(1, optimizationEndTime);
+        this(poissonGenerator.nextValue(), optimizationEndTime);
     }
 
     /**
@@ -47,9 +45,9 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
      */
     public SpaceAwareDeploymentMutation(int mutationCount, DateTime optimizationEndTime) {
         this(new ConstantGenerator<>(mutationCount), optimizationEndTime);
-        if (mutationCount < 1) {
-            throw new IllegalArgumentException("Mutation count must be at least 1.");
-        }
+//        if (mutationCount < 1) {
+//            throw new IllegalArgumentException("Mutation count must be at least 1.");
+//        }
     }
 
     /**
@@ -61,6 +59,9 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
      *                      of mutations that will be applied to each row in an individual.
      */
     public SpaceAwareDeploymentMutation(NumberGenerator<Integer> mutationCount, DateTime optimizationEndTime) {
+        if(mutationCount.nextValue() < 1) {
+            mutationCount = new ConstantGenerator<>(1);
+        }
         this.mutationCountVariable = mutationCount;
         this.optimizationEndTime = optimizationEndTime;
 
@@ -83,10 +84,12 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
 
         Chromosome newCandidate = candidate.clone();
 
-        vmSelectionHelper.mergeVirtualMachineSchedulingUnits(newCandidate);
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_2");
+        List<ContainerSchedulingUnit> containerSchedulingUnits = new ArrayList<>(newCandidate.getFlattenChromosome().stream()
+                .map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit()).filter(unit -> !unit.isFixed()).collect(Collectors.toSet()));
 
-        List<ContainerSchedulingUnit> containerSchedulingUnits = newCandidate.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit()).collect(Collectors.toList());
+        if(containerSchedulingUnits.size() == 0) {
+            return newCandidate;
+        }
 
         int mutationCount = Math.abs(mutationCountVariable.nextValue());
         int counter = 0;
@@ -96,48 +99,46 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
 
             VirtualMachineSchedulingUnit oldVirtualMachineSchedulingUnit = containerSchedulingUnit.getScheduledOnVm();
 
-            if (!containerSchedulingUnit.isFixed()) {
+            Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines = newCandidate.getFlattenChromosome().stream().map(g -> g.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
 
-                Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines = new HashSet<>();
-                for (Chromosome.Gene g : newCandidate.getFlattenChromosome()) {
-                    alreadyScheduledVirtualMachines.add(g.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm());
-                }
+            SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_3");
+            VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = vmSelectionHelper.createVMSchedulingUnit(alreadyScheduledVirtualMachines, containerSchedulingUnit.getScheduledOnVm().getScheduledContainers(), random);
 
-                SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_3");
-                VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = vmSelectionHelper.createVMSchedulingUnit(alreadyScheduledVirtualMachines, containerSchedulingUnit.getScheduledOnVm().getScheduledContainers());
+            if (oldVirtualMachineSchedulingUnit != newVirtualMachineSchedulingUnit) {
 
+                oldVirtualMachineSchedulingUnit.getScheduledContainers().remove(containerSchedulingUnit);
+                newVirtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
+                containerSchedulingUnit.setScheduledOnVm(newVirtualMachineSchedulingUnit);
 
-                if(oldVirtualMachineSchedulingUnit != newVirtualMachineSchedulingUnit) {
+                boolean orderIsOk = orderMaintainer.orderIsOk(newCandidate.getGenes());
+                boolean enoughTimeToDeploy = considerFirstContainerStartTime(containerSchedulingUnit);
+                boolean enoughSpace = vmSelectionHelper.checkEnoughResourcesLeftOnVM(newVirtualMachineSchedulingUnit);
 
-                    oldVirtualMachineSchedulingUnit.getScheduledContainers().remove(containerSchedulingUnit);
-                    newVirtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
-                    containerSchedulingUnit.setScheduledOnVm(newVirtualMachineSchedulingUnit);
-//                    SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_4");
-
-                    boolean orderIsOk = orderMaintainer.orderIsOk(newCandidate.getGenes());
-                    boolean enoughTimeToDeploy = considerFirstContainerStartTime(containerSchedulingUnit);
-                    boolean enoughSpace = vmSelectionHelper.checkEnoughResourcesLeftOnVM(newVirtualMachineSchedulingUnit);
-
-                    if (orderIsOk && enoughSpace && enoughTimeToDeploy) {
-                        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_5");
-                        mutationCount = mutationCount - 1;
-                    } else {
-//                        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_6");
-
-                        newVirtualMachineSchedulingUnit.getScheduledContainers().remove(containerSchedulingUnit);
-                        oldVirtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
-                        containerSchedulingUnit.setScheduledOnVm(oldVirtualMachineSchedulingUnit);
-                        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_7");
-
+                if (orderIsOk && enoughTimeToDeploy && !enoughSpace) {
+                    try {
+                        vmSelectionHelper.resizeVM(newVirtualMachineSchedulingUnit, new ArrayList<>());
+                        enoughSpace = true;
+                    } catch (VMTypeNotFoundException e) {
+                        log.error("could not resize VM");
+                        enoughSpace = false;
                     }
                 }
+
+                if (orderIsOk && enoughSpace && enoughTimeToDeploy) {
+                    SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_5");
+                    mutationCount = mutationCount - 1;
+                } else {
+                    newVirtualMachineSchedulingUnit.getScheduledContainers().remove(containerSchedulingUnit);
+                    oldVirtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
+                    containerSchedulingUnit.setScheduledOnVm(oldVirtualMachineSchedulingUnit);
+                    SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_7");
+                }
+
             }
             counter = counter + 1;
         }
 
         vmSelectionHelper.mergeVirtualMachineSchedulingUnits(newCandidate);
-        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newCandidate);
-
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_6");
 
         return newCandidate;
