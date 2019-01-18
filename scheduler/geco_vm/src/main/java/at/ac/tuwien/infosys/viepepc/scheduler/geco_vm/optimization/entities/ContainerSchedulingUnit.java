@@ -17,7 +17,7 @@ public class ContainerSchedulingUnit implements Cloneable {
     private final boolean fixed;
     private Container container;
     private VirtualMachineSchedulingUnit scheduledOnVm;
-    private List<Chromosome.Gene> processStepGenes = new ArrayList<>();
+    private Set<Chromosome.Gene> processStepGenes = new HashSet<>();
 
     private ContainerSchedulingUnit(UUID uid, long containerDeploymentDuration, boolean fixed) {
         this.containerDeploymentDuration = containerDeploymentDuration;

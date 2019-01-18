@@ -88,6 +88,7 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
                 .map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit()).filter(unit -> !unit.isFixed()).collect(Collectors.toSet()));
 
         if(containerSchedulingUnits.size() == 0) {
+            SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_2");
             return newCandidate;
         }
 
@@ -101,7 +102,6 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
 
             Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines = newCandidate.getFlattenChromosome().stream().map(g -> g.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
 
-            SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_3");
             VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = vmSelectionHelper.createVMSchedulingUnit(alreadyScheduledVirtualMachines, containerSchedulingUnit.getScheduledOnVm().getScheduledContainers(), random);
 
             if (oldVirtualMachineSchedulingUnit != newVirtualMachineSchedulingUnit) {
@@ -114,24 +114,22 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
                 boolean enoughTimeToDeploy = considerFirstContainerStartTime(containerSchedulingUnit);
                 boolean enoughSpace = vmSelectionHelper.checkEnoughResourcesLeftOnVM(newVirtualMachineSchedulingUnit);
 
-                if (orderIsOk && enoughTimeToDeploy && !enoughSpace) {
-                    try {
-                        vmSelectionHelper.resizeVM(newVirtualMachineSchedulingUnit, new ArrayList<>());
-                        enoughSpace = true;
-                    } catch (VMTypeNotFoundException e) {
-                        log.error("could not resize VM");
-                        enoughSpace = false;
-                    }
-                }
+//                if (orderIsOk && enoughTimeToDeploy && !enoughSpace) {
+//                    try {
+//                        vmSelectionHelper.resizeVM(newVirtualMachineSchedulingUnit, new ArrayList<>());
+//                        enoughSpace = true;
+//                    } catch (VMTypeNotFoundException e) {
+//                        log.error("could not resize VM");
+//                        enoughSpace = false;
+//                    }
+//                }
 
                 if (orderIsOk && enoughSpace && enoughTimeToDeploy) {
-                    SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_5");
                     mutationCount = mutationCount - 1;
                 } else {
                     newVirtualMachineSchedulingUnit.getScheduledContainers().remove(containerSchedulingUnit);
                     oldVirtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
                     containerSchedulingUnit.setScheduledOnVm(oldVirtualMachineSchedulingUnit);
-                    SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_7");
                 }
 
             }

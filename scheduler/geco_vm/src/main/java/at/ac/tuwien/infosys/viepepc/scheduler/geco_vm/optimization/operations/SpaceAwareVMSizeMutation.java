@@ -89,6 +89,7 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
                 .map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).filter(unit -> !unit.isFixed()).collect(Collectors.toSet()));
 
         if(virtualMachineSchedulingUnits.size() == 0) {
+            SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareVMSizeMutation_6");
             return newCandidate;
         }
 
@@ -110,7 +111,7 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
 
 //        vmSelectionHelper.mergeVirtualMachineSchedulingUnits(newCandidate);
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_6");
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareVMSizeMutation_6");
 
         return newCandidate;
     }

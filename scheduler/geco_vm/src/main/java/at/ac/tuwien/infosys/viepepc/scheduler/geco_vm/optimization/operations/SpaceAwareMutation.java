@@ -161,7 +161,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
 
         vmSelectionHelper.mergeVirtualMachineSchedulingUnits(newChromosome);
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(candidate, this.getClass().getSimpleName() + "_spaceAwareMutation_2");
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_spaceAwareMutation_2");
         return newChromosome;
     }
 

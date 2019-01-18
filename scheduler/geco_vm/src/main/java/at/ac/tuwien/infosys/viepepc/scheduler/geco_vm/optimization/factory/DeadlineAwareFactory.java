@@ -127,18 +127,13 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         Chromosome newChromosome = new Chromosome(candidate);
 
         scheduleContainerAndVM(newChromosome);
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_1");
-
         considerFirstVMAndContainerStartTime(newChromosome);
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_2");
 
         vmSelectionHelper.mergeVirtualMachineSchedulingUnits(newChromosome);
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_3");
-
-        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newChromosome);
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_4");
-
+//        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newChromosome);
         orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_2", "generateRandomCandidate");
+
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_4");
 
         return newChromosome;
     }

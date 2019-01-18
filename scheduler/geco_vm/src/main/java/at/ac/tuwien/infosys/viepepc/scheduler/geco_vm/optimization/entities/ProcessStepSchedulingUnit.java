@@ -9,10 +9,10 @@ import java.util.UUID;
 @Data
 public class ProcessStepSchedulingUnit implements Cloneable {
 
-    private ProcessStep processStep;
-    private String name;
-    private UUID internId;
-    private String workflowName;
+    private final ProcessStep processStep;
+    private final String name;
+    private final UUID internId;
+    private final String workflowName;
     private ContainerSchedulingUnit containerSchedulingUnit;
 
     public ProcessStepSchedulingUnit(ProcessStep processStep) {
@@ -26,9 +26,9 @@ public class ProcessStepSchedulingUnit implements Cloneable {
     @Override
     public ProcessStepSchedulingUnit clone() {
         ProcessStepSchedulingUnit clone = new ProcessStepSchedulingUnit(this.processStep);
-        clone.setName(this.name);
-        clone.setInternId(this.internId);
-        clone.setWorkflowName(this.workflowName);
+//        clone.setName(this.name);
+//        clone.setInternId(this.internId);
+//        clone.setWorkflowName(this.workflowName);
 //        clone.setContainerSchedulingUnit(this.containerSchedulingUnit);
         return clone;
     }

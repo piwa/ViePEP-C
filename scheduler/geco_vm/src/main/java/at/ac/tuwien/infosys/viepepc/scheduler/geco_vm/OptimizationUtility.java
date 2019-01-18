@@ -5,6 +5,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerConfiguration;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.registry.ContainerImageRegistryReader;
 import at.ac.tuwien.infosys.viepepc.library.registry.impl.container.ContainerImageNotFoundException;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
@@ -174,7 +175,7 @@ public class OptimizationUtility {
         containerSchedulingUnits.forEach(schedulingUnit -> {
             if (!fixedContainerSchedulingUnits.contains(schedulingUnit)) {
                 try {
-                    Container container = getContainer(schedulingUnit.getProcessStepGenes().get(0).getProcessStepSchedulingUnit().getProcessStep().getServiceType(), schedulingUnit.getProcessStepGenes().size());
+                    Container container = getContainer(new ArrayList<Chromosome.Gene>(schedulingUnit.getProcessStepGenes()).get(0).getProcessStepSchedulingUnit().getProcessStep().getServiceType(), schedulingUnit.getProcessStepGenes().size());
                     schedulingUnit.setContainer(container);
                     schedulingUnit.getProcessStepGenes().forEach(gene -> gene.getProcessStepSchedulingUnit().setContainerSchedulingUnit(schedulingUnit));
                 } catch (ContainerImageNotFoundException e) {

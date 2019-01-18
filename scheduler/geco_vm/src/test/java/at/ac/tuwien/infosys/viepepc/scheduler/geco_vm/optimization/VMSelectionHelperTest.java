@@ -24,9 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -263,7 +261,7 @@ public class VMSelectionHelperTest {
             processStepSchedulingUnit.getProcessStep().getServiceType().getServiceTypeResources().setMakeSpan(executionDuration);
         }
         Chromosome.Gene gene = new Chromosome.Gene(processStepSchedulingUnit, startTime, false);
-        List<Chromosome.Gene> processStepGenes = new ArrayList<>();
+        Set<Chromosome.Gene> processStepGenes = new HashSet<>();
         processStepGenes.add(gene);
 
 

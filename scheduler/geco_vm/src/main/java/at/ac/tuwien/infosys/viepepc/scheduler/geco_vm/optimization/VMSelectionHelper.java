@@ -12,6 +12,7 @@ import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VMTy
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,38 +53,11 @@ public class VMSelectionHelper {
             }
         }
 
-
-//        mergeByTime(chromosome);
-
-
-
         checkVmSizeAndSolveSpaceIssues(chromosome);
 
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_mergeVirtualMachineSchedulingUnit_3");
     }
 
-//    private void mergeByTime(Chromosome chromosome) {
-//        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitSet = chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
-//        List<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new ArrayList<>(virtualMachineSchedulingUnitSet);
-//        virtualMachineSchedulingUnits.sort(Comparator.comparing(virtualMachineSchedulingUnit -> virtualMachineSchedulingUnit.getCloudResourceUsageInterval().getStart()));
-//
-//        for (int i = 0; i < virtualMachineSchedulingUnits.size(); i++) {
-//            if(i + 1 < virtualMachineSchedulingUnits.size()) {
-//                VirtualMachineSchedulingUnit currentSchedulingUnit = virtualMachineSchedulingUnits.get(i);
-//                VirtualMachineSchedulingUnit nextSchedulingUnit = virtualMachineSchedulingUnits.get(i+1);
-//
-//                if(currentSchedulingUnit.getVirtualMachineInstance().getVmType() == nextSchedulingUnit.getVirtualMachineInstance().getVmType()) {
-//
-//                    if(currentSchedulingUnit.getCloudResourceUsageInterval().overlaps(nextSchedulingUnit.getCloudResourceUsageInterval())) {
-//
-//                    }
-//
-//                }
-//
-//            }
-//        }
-//
-//    }
 
     public void checkVmSizeAndSolveSpaceIssues(Chromosome chromosome) {
         List<Chromosome.Gene> genes = chromosome.getFlattenChromosome();
@@ -91,23 +65,26 @@ public class VMSelectionHelper {
 
         for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
 
-            List<IntervalContainerSchedulingUnitHolder> holders = createIntervalContainerSchedulingList(virtualMachineSchedulingUnit);
-            for (IntervalContainerSchedulingUnitHolder holder : holders) {
+            List<ContainerSchedulingUnit> holders = createIntervalContainerSchedulingList(virtualMachineSchedulingUnit, new ArrayList<>());
 
-                boolean fitsOnVM = checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit, holder.getContainerSchedulingUnits());
-                if (!fitsOnVM) {
-                    if (virtualMachineSchedulingUnit.isFixed()) {
+
+            boolean fitsOnVM = checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVirtualMachineInstance(), holders);
+            if (!fitsOnVM) {
+                if (virtualMachineSchedulingUnit.isFixed()) {
 //                        log.debug("distributed containers 1");
-                        distributeContainers(virtualMachineSchedulingUnit, holder.getContainerSchedulingUnits());
-                    } else {
-                        try {
-//                            log.debug("resize vm");
-                            resizeVM(virtualMachineSchedulingUnit, holder.getContainerSchedulingUnits());
-                        } catch (VMTypeNotFoundException e) {
-//                            log.debug("distributed containers 2");
-                            distributeContainers(virtualMachineSchedulingUnit, holder.getContainerSchedulingUnits());
-                        }
+                    distributeContainers(virtualMachineSchedulingUnit, holders);
+                    if (chromosome != null) {
+                        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_checkVmSizeAndSolveSpaceIssues");
                     }
+                } else {
+                    try {
+//                            log.debug("resize vm");
+                        resizeVM(virtualMachineSchedulingUnit, holders);
+                    } catch (VMTypeNotFoundException e) {
+//                            log.debug("distributed containers 2");
+                        distributeContainers(virtualMachineSchedulingUnit, holders);
+                    }
+
                 }
             }
         }
@@ -122,22 +99,7 @@ public class VMSelectionHelper {
 
 
     public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnit(List<ContainerSchedulingUnit> containerSchedulingUnits) {
-        boolean vmFound = false;
-        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
-        do {
-            virtualMachineSchedulingUnit = createVMSchedulingUnit(new HashSet<>(), new HashSet<>(containerSchedulingUnits), this.random);
-
-            vmFound = false;
-
-            if (virtualMachineSchedulingUnit.getScheduledContainers().containsAll(containerSchedulingUnits)) {
-                vmFound = true;
-            } else if (checkEnoughResourcesLeftOnVM(virtualMachineSchedulingUnit, containerSchedulingUnits)) {
-                vmFound = true;
-            }
-
-        } while (!vmFound);
-
-        return virtualMachineSchedulingUnit;
+        return getVirtualMachineSchedulingUnit(new HashSet<>(), containerSchedulingUnits);
     }
 
     public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnit(Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits, List<ContainerSchedulingUnit> containerSchedulingUnits) {
@@ -170,7 +132,8 @@ public class VMSelectionHelper {
         double scheduledRAMUsage = containerOnVm.stream().mapToDouble(c -> c.getContainerConfiguration().getRam()).sum();
 
         List<VMType> allVMTypes = cacheVirtualMachineService.getVMTypes();
-        allVMTypes.sort(Comparator.comparing(VMType::getCores).thenComparing(VMType::getRamPoints));
+//        allVMTypes.sort(Comparator.comparing(VMType::getCores).thenComparing(VMType::getRamPoints));
+        allVMTypes.sort(Comparator.comparing(VMType::getCores));
 
         for (VMType vmType : allVMTypes) {
             if (vmType.getCpuPoints() >= scheduledCPUUsage && vmType.getRamPoints() >= scheduledRAMUsage) {
@@ -182,18 +145,29 @@ public class VMSelectionHelper {
     }
 
 
-    public void distributeContainers(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ContainerSchedulingUnit> containerSchedulingUnits) {
+    public void distributeContainers(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ContainerSchedulingUnit> tempSchedulingUnits) {
+
+        Set<ContainerSchedulingUnit> containerSchedulingUnits = new HashSet<>(tempSchedulingUnits);
+        containerSchedulingUnits.addAll(virtualMachineSchedulingUnit.getScheduledContainers());
 
         List<VirtualMachineSchedulingUnit> usedVirtualMachineSchedulingUnits = new ArrayList<>();
         List<ContainerSchedulingUnit> fixed = containerSchedulingUnits.stream().filter(ContainerSchedulingUnit::isFixed).collect(Collectors.toList());
         List<ContainerSchedulingUnit> notFixed = containerSchedulingUnits.stream().filter(unit -> !unit.isFixed()).collect(Collectors.toList());
 
         virtualMachineSchedulingUnit.getScheduledContainers().removeAll(containerSchedulingUnits);
+        if( virtualMachineSchedulingUnit.getScheduledContainers().size() != 0) {
+            log.error("aha");
+        }
         containerSchedulingUnits.forEach(unit -> unit.setScheduledOnVm(null));
 
-        if(!fixed.isEmpty()) {
+        if (!fixed.isEmpty()) {
             virtualMachineSchedulingUnit.getScheduledContainers().addAll(fixed);
             fixed.forEach(unit -> unit.setScheduledOnVm(virtualMachineSchedulingUnit));
+        }
+
+
+        if (!checkEnoughResourcesLeftOnVM(virtualMachineSchedulingUnit, new ArrayList<>())) {
+            log.error("problem");
         }
 
         VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = virtualMachineSchedulingUnit;
@@ -219,7 +193,7 @@ public class VMSelectionHelper {
             List<ContainerSchedulingUnit> tempList = new ArrayList<>();
             tempList.add(notFixed.get(0));
             enoughSpace = checkEnoughResourcesLeftOnVM(newVirtualMachineSchedulingUnit, tempList);
-            if(enoughSpace) {
+            if (enoughSpace) {
                 lastContainerSchedulingUnit = notFixed.remove(0);
                 newVirtualMachineSchedulingUnit.getScheduledContainers().add(lastContainerSchedulingUnit);
                 lastContainerSchedulingUnit.setScheduledOnVm(newVirtualMachineSchedulingUnit);
@@ -233,19 +207,12 @@ public class VMSelectionHelper {
     }
 
     public boolean checkEnoughResourcesLeftOnVM(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ContainerSchedulingUnit> containerSchedulingUnits) {
-        List<IntervalContainerSchedulingUnitHolder> holders = createIntervalContainerSchedulingList(virtualMachineSchedulingUnit, containerSchedulingUnits);
-        for (IntervalContainerSchedulingUnitHolder holder : holders) {
-            boolean result = checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit, holder.getContainerSchedulingUnits());
-            if (!result) {
-                return false;
-            }
-        }
-        return true;
+        List<ContainerSchedulingUnit> maxOverlappingContainers = createIntervalContainerSchedulingList(virtualMachineSchedulingUnit, containerSchedulingUnits);
+        return checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVirtualMachineInstance(), maxOverlappingContainers);
     }
 
-    public boolean checkEnoughResourcesLeftOnVMForOneInterval(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ContainerSchedulingUnit> containerSchedulingUnits) {
+    public boolean checkEnoughResourcesLeftOnVMForOneInterval(VirtualMachineInstance vm, List<ContainerSchedulingUnit> containerSchedulingUnits) {
 
-        VirtualMachineInstance vm = virtualMachineSchedulingUnit.getVirtualMachineInstance();
         double scheduledCPUUsage = containerSchedulingUnits.stream().mapToDouble(c -> c.getContainer().getContainerConfiguration().getCPUPoints()).sum();
         double scheduledRAMUsage = containerSchedulingUnits.stream().mapToDouble(c -> c.getContainer().getContainerConfiguration().getRam()).sum();
 
@@ -290,8 +257,8 @@ public class VMSelectionHelper {
 //            try {
 //                vmType = getFittingVMType(vmTypes, containerSchedulingUnits);
 //            } catch (VMTypeNotFoundException e) {
-                int randomPosition = random.nextInt(vmTypes.size());
-                vmType = vmTypes.get(randomPosition);
+            int randomPosition = random.nextInt(vmTypes.size());
+            vmType = vmTypes.get(randomPosition);
 //            }
 
             randomVM = new VirtualMachineInstance(vmType);
@@ -319,42 +286,171 @@ public class VMSelectionHelper {
         throw new VMTypeNotFoundException("Could not find big enough VMType");
     }
 
-    private List<IntervalContainerSchedulingUnitHolder> createIntervalContainerSchedulingList(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit) {
-        return createIntervalContainerSchedulingList(virtualMachineSchedulingUnit, new ArrayList<>());
-    }
-
-    private List<IntervalContainerSchedulingUnitHolder> createIntervalContainerSchedulingList(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ContainerSchedulingUnit> containerSchedulingUnits) {
+    private List<ContainerSchedulingUnit> createIntervalContainerSchedulingList(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ContainerSchedulingUnit> containerSchedulingUnits) {
         Set<ContainerSchedulingUnit> tempSchedulingUnits = new HashSet<>(virtualMachineSchedulingUnit.getScheduledContainers());
         tempSchedulingUnits.addAll(containerSchedulingUnits);
         return createIntervalContainerSchedulingList(tempSchedulingUnits);
     }
 
 
-    private List<IntervalContainerSchedulingUnitHolder> createIntervalContainerSchedulingList(Set<ContainerSchedulingUnit> tempSchedulingUnits) {
+    private Set<Interval> getOverlap(List<Interval> intervals) {
+        if (intervals == null) {
+            throw new NullPointerException("Input list cannot be null.");
+        }
 
-        List<IntervalContainerSchedulingUnitHolder> holders = new ArrayList<>();
+        final Set<Interval> overlaps = new HashSet<>();
 
-        for (ContainerSchedulingUnit scheduledContainer : tempSchedulingUnits) {
-            Interval resourceRequirementInterval = scheduledContainer.getCloudResourceUsage();
+        for (int i = 0; i < intervals.size() - 1; i++) {
+            final Interval lowerInterval = intervals.get(i);
 
-            boolean found = false;
-            for (IntervalContainerSchedulingUnitHolder holder : holders) {
-                if (holder.getInterval().overlaps(resourceRequirementInterval)) {
-                    long startTime = Math.min(resourceRequirementInterval.getStartMillis(), holder.getInterval().getStartMillis());
-                    long endTime = Math.max(resourceRequirementInterval.getEndMillis(), holder.getInterval().getEndMillis());
-                    holder.setInterval(new Interval(startTime, endTime));
-                    holder.getContainerSchedulingUnits().add(scheduledContainer);
-                    found = true;
-                    break;
+            for (int j = i + 1; j < intervals.size(); j++) {
+                final Interval upperInterval = intervals.get(j);
+
+                if (upperInterval.getStartMillis() < lowerInterval.getEndMillis()) {
+                    overlaps.add(new Interval(upperInterval.getStartMillis(), Math.min(lowerInterval.getEndMillis(), upperInterval.getEndMillis())));
                 }
-            }
-            if (!found) {
-                IntervalContainerSchedulingUnitHolder holder = new IntervalContainerSchedulingUnitHolder(scheduledContainer.getCloudResourceUsage(), scheduledContainer);
-                holders.add(holder);
             }
         }
 
-        return holders;
+        return overlaps;
+    }
+
+    private List<ContainerSchedulingUnit> createIntervalContainerSchedulingList(Set<ContainerSchedulingUnit> tempSchedulingUnits) {
+
+
+        List<ContainerEvent> deployEvents = new ArrayList<>();
+        List<ContainerEvent> undeployEvents = new ArrayList<>();
+
+        tempSchedulingUnits.forEach(unit -> {
+            Interval cloudResource = unit.getCloudResourceUsage();
+            deployEvents.add(new ContainerEvent(cloudResource.getStart(), unit));
+            undeployEvents.add(new ContainerEvent(cloudResource.getEnd(), unit));
+        });
+
+        deployEvents.sort(Comparator.comparing(ContainerEvent::getTime));
+        undeployEvents.sort(Comparator.comparing(ContainerEvent::getTime));
+
+        int i = 1;
+        int j = 0;
+
+        List<ContainerSchedulingUnit> maxContainerList = new ArrayList<>();
+        List<ContainerSchedulingUnit> containerList = new ArrayList<>();
+        DateTime overlapTime = deployEvents.get(0).getTime();
+        containerList.add(deployEvents.get(0).getContainerSchedulingUnit());
+        maxContainerList.add(deployEvents.get(0).getContainerSchedulingUnit());
+
+        while (i < tempSchedulingUnits.size() && j < tempSchedulingUnits.size()) {
+            // If next event in sorted order is arrival,
+            // increment count of container
+            if (deployEvents.get(i).getTime().getMillis() <= undeployEvents.get(j).getTime().getMillis()) {
+                containerList.add(deployEvents.get(i).getContainerSchedulingUnit());
+                if (containerList.size() > maxContainerList.size()) {
+                    maxContainerList.clear();
+                    maxContainerList.addAll(containerList);
+                    overlapTime = deployEvents.get(i).getTime();
+                }
+                i++; //increment index of arrival array
+            } else // If event is exit, decrement count
+            {
+                containerList.remove(undeployEvents.get(j).getContainerSchedulingUnit());
+                j++;
+            }
+        }
+
+        return maxContainerList;
+
+//        List<ContainerSchedulingUnit> schedulingUnitList = new ArrayList<>(tempSchedulingUnits);
+//        schedulingUnitList.sort(Comparator.comparing(containerSchedulingUnit -> containerSchedulingUnit.getCloudResourceUsage().getStartMillis()));
+
+//        List<Interval> intervals = schedulingUnitList.stream().map(containerSchedulingUnit -> containerSchedulingUnit.getCloudResourceUsage()).collect(Collectors.toList());
+//        Set<Interval> overlappings = getOverlap(intervals);
+//
+//        List<IntervalContainerSchedulingUnitHolder> holders = new ArrayList<>();
+//        overlappings.forEach(interval -> holders.add(new IntervalContainerSchedulingUnitHolder(interval)));
+//
+//        IntervalContainerSchedulingUnitHolder biggestHolder = null;
+//        if(overlappings.size() == 0) {
+//            biggestHolder = new IntervalContainerSchedulingUnitHolder(schedulingUnitList.get(0).getCloudResourceUsage(), schedulingUnitList.get(0));
+//        }
+//        else {
+//            for (ContainerSchedulingUnit scheduledContainer : tempSchedulingUnits) {
+//                Interval cloudResource = scheduledContainer.getCloudResourceUsage();
+//                for (IntervalContainerSchedulingUnitHolder holder : holders) {
+//                    if (holder.getInterval().overlaps(cloudResource)) {
+//                        holder.getContainerSchedulingUnits().add(scheduledContainer);
+//                    }
+//                }
+//            }
+//
+//            holders.removeIf(holder -> holder.getContainerSchedulingUnits().size() == 0);
+//            biggestHolder = holders.stream().max(Comparator.comparing(holder -> holder.getContainerSchedulingUnits().size())).get();
+//        }
+//        List<IntervalContainerSchedulingUnitHolder> returnList = new ArrayList<>();
+//        returnList.add(biggestHolder);
+//        return returnList;
+
+
+//
+//        List<ContainerSchedulingUnit> schedulingUnitList = new ArrayList<>(tempSchedulingUnits);
+//        schedulingUnitList.sort(Comparator.comparing(containerSchedulingUnit -> containerSchedulingUnit.getCloudResourceUsage().getStartMillis()));
+//
+//        long startTimeMillis = schedulingUnitList.get(0).getCloudResourceUsage().getStartMillis();
+//        long endTimeMillis = schedulingUnitList.get(0).getCloudResourceUsage().getEndMillis();
+//
+//        Map<ContainerSchedulingUnit, Interval> cloudResourceUsageMap = new HashMap<>();
+//
+//        for (ContainerSchedulingUnit scheduledContainer : schedulingUnitList) {
+//            cloudResourceUsageMap.put(scheduledContainer, scheduledContainer.getCloudResourceUsage());
+//            startTimeMillis = Math.min(startTimeMillis, cloudResourceUsageMap.get(scheduledContainer).getStartMillis());
+//            endTimeMillis = Math.max(endTimeMillis, cloudResourceUsageMap.get(scheduledContainer).getEndMillis());
+//        }
+//
+//        long currentStartMillis = startTimeMillis;
+//        long currentEndMillis = startTimeMillis;
+//        List<IntervalContainerSchedulingUnitHolder> holders = new ArrayList<>();
+//        while(currentEndMillis < endTimeMillis) {
+//            currentEndMillis = currentStartMillis + 1000;
+//            holders.add(new IntervalContainerSchedulingUnitHolder(new Interval(currentStartMillis, currentEndMillis)));
+//            currentStartMillis = currentStartMillis + 1000;
+//        }
+//
+//        for (ContainerSchedulingUnit scheduledContainer : tempSchedulingUnits) {
+//            for (IntervalContainerSchedulingUnitHolder holder : holders) {
+//                if (holder.getInterval().overlaps(cloudResourceUsageMap.get(scheduledContainer))) {
+//                    holder.getContainerSchedulingUnits().add(scheduledContainer);
+//                }
+//            }
+//        }
+//
+//        holders.removeIf(holder -> holder.getContainerSchedulingUnits().size() == 0);
+//        Optional<IntervalContainerSchedulingUnitHolder> biggestHolder = holders.stream().max(Comparator.comparing(holder -> holder.getContainerSchedulingUnits().size()));
+//
+//        List<IntervalContainerSchedulingUnitHolder> returnList = new ArrayList<>();
+//        returnList.add(biggestHolder.get());
+//        return returnList;
+
+//
+//        List<IntervalContainerSchedulingUnitHolder> holders = new ArrayList<>();
+//
+//        for (ContainerSchedulingUnit scheduledContainer : tempSchedulingUnits) {
+//            Interval resourceRequirementInterval = scheduledContainer.getCloudResourceUsage();
+//
+//            boolean found = false;
+//            for (IntervalContainerSchedulingUnitHolder holder : holders) {
+//                if (holder.getInterval().overlaps(resourceRequirementInterval)) {
+//                    long startTime = Math.min(resourceRequirementInterval.getStartMillis(), holder.getInterval().getStartMillis());
+//                    long endTime = Math.max(resourceRequirementInterval.getEndMillis(), holder.getInterval().getEndMillis());
+//                    holder.setInterval(new Interval(startTime, endTime));
+//                    holder.getContainerSchedulingUnits().add(scheduledContainer);
+//                    found = true;
+//                }
+//            }
+//            if (!found) {
+//                IntervalContainerSchedulingUnitHolder holder = new IntervalContainerSchedulingUnitHolder(scheduledContainer.getCloudResourceUsage(), scheduledContainer);
+//                holders.add(holder);
+//            }
+//        }
+//        return holders;
     }
 
 
@@ -362,6 +458,10 @@ public class VMSelectionHelper {
     private class IntervalContainerSchedulingUnitHolder {
         private Interval interval;
         private List<ContainerSchedulingUnit> containerSchedulingUnits = new ArrayList<>();
+
+        public IntervalContainerSchedulingUnitHolder(Interval interval) {
+            this.interval = interval;
+        }
 
         public IntervalContainerSchedulingUnitHolder(Interval interval, ContainerSchedulingUnit scheduledContainer) {
             this.interval = interval;
@@ -380,4 +480,11 @@ public class VMSelectionHelper {
         }
     }
 
+    @Data
+    private class ContainerEvent {
+        private final DateTime time;
+        private final ContainerSchedulingUnit containerSchedulingUnit;
+
+
+    }
 }

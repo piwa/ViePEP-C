@@ -55,37 +55,40 @@ public class Chromosome {
             offspring.add(newSubChromosome);
         }
 
-        Map<ProcessStepSchedulingUnit, ProcessStepSchedulingUnit> originalToCloneProcessStepSchedulingMap = new HashMap<>();
+//        Map<ProcessStepSchedulingUnit, ProcessStepSchedulingUnit> originalToCloneProcessStepSchedulingMap = new HashMap<>();
         Map<ContainerSchedulingUnit, ContainerSchedulingUnit> originalToCloneContainerSchedulingMap = new HashMap<>();
         Map<VirtualMachineSchedulingUnit, VirtualMachineSchedulingUnit> originalToCloneVirtualMachineSchedulingMap = new HashMap<>();
         for (Gene originalGene : this.getFlattenChromosome()) {
             Gene clonedGene = originalToCloneMap.get(originalGene);
-            Set<Gene> originalNextGenes = originalGene.getNextGenes();
-            Set<Gene> originalPreviousGenes = originalGene.getPreviousGenes();
 
-            originalNextGenes.stream().map(originalToCloneMap::get).forEach(clonedGene::addNextGene);
-            originalPreviousGenes.stream().map(originalToCloneMap::get).forEach(clonedGene::addPreviousGene);
+            originalGene.getNextGenes().stream().map(originalToCloneMap::get).forEach(clonedGene::addNextGene);
+            originalGene.getPreviousGenes().stream().map(originalToCloneMap::get).forEach(clonedGene::addPreviousGene);
 
 
-            ProcessStepSchedulingUnit originalProcessStepSchedulingUnit = originalGene.getProcessStepSchedulingUnit();
-            ContainerSchedulingUnit originalContainerSchedulingUnit = originalProcessStepSchedulingUnit.getContainerSchedulingUnit();
+            ContainerSchedulingUnit originalContainerSchedulingUnit = originalGene.getProcessStepSchedulingUnit().getContainerSchedulingUnit();
 
-            originalToCloneVirtualMachineSchedulingMap.putIfAbsent(originalContainerSchedulingUnit.getScheduledOnVm(), originalContainerSchedulingUnit.getScheduledOnVm().clone());
-            originalToCloneContainerSchedulingMap.putIfAbsent(originalContainerSchedulingUnit, originalContainerSchedulingUnit.clone());
-            originalToCloneProcessStepSchedulingMap.putIfAbsent(originalProcessStepSchedulingUnit, originalProcessStepSchedulingUnit.clone());
-
+            ProcessStepSchedulingUnit clonedProcessStepSchedulingUnit = clonedGene.getProcessStepSchedulingUnit();
             VirtualMachineSchedulingUnit clonedVirtualMachineSchedulingUnit = originalToCloneVirtualMachineSchedulingMap.get(originalContainerSchedulingUnit.getScheduledOnVm());
             ContainerSchedulingUnit clonedContainerSchedulingUnit = originalToCloneContainerSchedulingMap.get(originalContainerSchedulingUnit);
-            ProcessStepSchedulingUnit clonedProcessStepSchedulingUnit = originalToCloneProcessStepSchedulingMap.get(originalProcessStepSchedulingUnit);
 
-            clonedGene.setProcessStepSchedulingUnit(clonedProcessStepSchedulingUnit);
+            if(clonedVirtualMachineSchedulingUnit == null) {
+                clonedVirtualMachineSchedulingUnit = originalContainerSchedulingUnit.getScheduledOnVm().clone();
+                originalToCloneVirtualMachineSchedulingMap.put(originalContainerSchedulingUnit.getScheduledOnVm(), clonedVirtualMachineSchedulingUnit);
+            }
+            if(clonedContainerSchedulingUnit == null) {
+                clonedContainerSchedulingUnit = originalContainerSchedulingUnit.clone();
+                originalToCloneContainerSchedulingMap.put(originalContainerSchedulingUnit, clonedContainerSchedulingUnit);
+            }
+
+//            clonedGene.setProcessStepSchedulingUnit(clonedProcessStepSchedulingUnit);
             clonedProcessStepSchedulingUnit.setContainerSchedulingUnit(clonedContainerSchedulingUnit);
             clonedContainerSchedulingUnit.setScheduledOnVm(clonedVirtualMachineSchedulingUnit);
             clonedContainerSchedulingUnit.getProcessStepGenes().add(clonedGene);
             clonedVirtualMachineSchedulingUnit.getScheduledContainers().add(clonedContainerSchedulingUnit);
         }
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(new Chromosome(offspring), this.getClass().getSimpleName() + "_clone_2");
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(this, this.getClass().getSimpleName() + "_clone_2");
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(new Chromosome(offspring), this.getClass().getSimpleName() + "_clone_3");
         return new Chromosome(offspring);
     }
 
@@ -161,7 +164,7 @@ public class Chromosome {
         }
 
         public Gene clone() {
-            Gene clonedGene = new Gene(this.getProcessStepSchedulingUnit(), this.getExecutionInterval().getStart(), this.isFixed());
+            Gene clonedGene = new Gene(this.processStepSchedulingUnit.clone(), new DateTime(this.getExecutionInterval().getStartMillis()), this.isFixed());
             return clonedGene;
         }
 
