@@ -76,6 +76,10 @@ public class OrderMaintainer {
         return true;
     }
 
+    public boolean orderIsOk(Chromosome chromosome) {
+        return orderIsOk(chromosome.getGenes());
+    }
+
     public boolean orderIsOk(List<List<Chromosome.Gene>> chromosome) {
 
         for (List<Chromosome.Gene> row : chromosome) {

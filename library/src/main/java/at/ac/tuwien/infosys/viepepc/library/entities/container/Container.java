@@ -77,7 +77,7 @@ public class Container implements Cloneable {
 //            virtualMachineInstance = null;
         }
         containerStatus = ContainerStatus.TERMINATED;
-        bareMetal = false;
+//        bareMetal = false;
     }
 
     public Container clone(ServiceType serviceType) throws CloneNotSupportedException {

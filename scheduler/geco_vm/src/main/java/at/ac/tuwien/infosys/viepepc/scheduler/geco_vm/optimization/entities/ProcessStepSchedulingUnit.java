@@ -2,6 +2,7 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import lombok.Data;
+import org.joda.time.Interval;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -11,35 +12,36 @@ public class ProcessStepSchedulingUnit implements Cloneable {
 
     private final ProcessStep processStep;
     private final String name;
-    private final UUID internId;
+    private final UUID uid;
     private final String workflowName;
-    private ContainerSchedulingUnit containerSchedulingUnit;
+    private VirtualMachineSchedulingUnit virtualMachineSchedulingUnit;
+    private Chromosome.Gene gene;
 
     public ProcessStepSchedulingUnit(ProcessStep processStep) {
         this.processStep = processStep;
         this.name = processStep.getName();
-        this.internId = processStep.getInternId();
+        this.uid = processStep.getInternId();
         this.workflowName = processStep.getWorkflowName();
 
+    }
+
+    public Interval getServiceAvailableTime() {
+        return gene.getExecutionInterval();
     }
 
     @Override
     public ProcessStepSchedulingUnit clone() {
         ProcessStepSchedulingUnit clone = new ProcessStepSchedulingUnit(this.processStep);
-//        clone.setName(this.name);
-//        clone.setInternId(this.internId);
-//        clone.setWorkflowName(this.workflowName);
-//        clone.setContainerSchedulingUnit(this.containerSchedulingUnit);
         return clone;
     }
 
     @Override
     public String toString() {
         return "ProcessStepSchedulingUnit{" +
-                "internId=" + internId.toString().substring(0,8) +
+                "uid=" + uid.toString().substring(0,8) +
                 ", name='" + name + '\'' +
                 ", workflowName='" + workflowName + '\'' +
-                ", containerSchedulingUnits=" + containerSchedulingUnit +
+                ", containerSchedulingUnits=" + virtualMachineSchedulingUnit +
                 ", processStep=" + processStep +
                 '}';
     }
@@ -49,11 +51,11 @@ public class ProcessStepSchedulingUnit implements Cloneable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ProcessStepSchedulingUnit that = (ProcessStepSchedulingUnit) o;
-        return Objects.equals(internId, that.internId);
+        return Objects.equals(uid, that.uid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(internId);
+        return Objects.hash(uid);
     }
 }

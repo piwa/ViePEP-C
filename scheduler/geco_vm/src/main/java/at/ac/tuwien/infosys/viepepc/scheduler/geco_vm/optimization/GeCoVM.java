@@ -36,6 +36,9 @@ import java.util.concurrent.Future;
 @SuppressWarnings("Duplicates")
 public class GeCoVM extends AbstractOnlyContainerOptimization implements SchedulerAlgorithm {
 
+    @Autowired
+    private VMSelectionHelper vmSelectionHelper;
+
     @Value("${max.optimization.duration}")
     private long maxOptimizationDuration = 60000;
     @Value("${additional.optimization.time}")
@@ -91,6 +94,7 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
 //        SelectionStrategy<Object> selectionStrategy = new RankSelection();
 //        SelectionStrategy<Object> selectionStrategy = new TruncationSelection(0.85d);
 
+        vmSelectionHelper.setOptimizationEndTime(optimizationEndTime);
 
         chromosomeFactory.initialize(workflowElements, this.optimizationEndTime);
         Map<String, DateTime> maxTimeAfterDeadline = chromosomeFactory.getMaxTimeAfterDeadline();
@@ -101,8 +105,9 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         operators.add(new SpaceAwareMutation(1, optimizationEndTime, maxTimeAfterDeadline));
         operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));
         operators.add(new SpaceAwareDeploymentMutation(1, optimizationEndTime));
+        operators.add(new SpaceAwareVMSizeMutation(new PoissonGenerator(4, rng), optimizationEndTime));
 //        operators.add(new SpaceAwareDeploymentCrossover(maxTimeAfterDeadline));
-//        operators.add(new SpaceAwareVMSizeMutation(new PoissonGenerator(4, rng), optimizationEndTime));
+
 
         int eliteCount = (int) Math.round(populationSize * eliteCountNumber);
         this.fitnessFunction.setOptimizationEndTime(this.optimizationEndTime);

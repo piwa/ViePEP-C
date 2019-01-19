@@ -18,7 +18,6 @@ import org.uncommons.watchmaker.framework.EvolutionaryOperator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -86,7 +85,7 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
         Chromosome newCandidate = candidate.clone();
 
         List<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new ArrayList<>(newCandidate.getFlattenChromosome().stream()
-                .map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).filter(unit -> !unit.isFixed()).collect(Collectors.toSet()));
+                .map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).filter(unit -> !unit.isFixed()).collect(Collectors.toSet()));
 
         if(virtualMachineSchedulingUnits.size() == 0) {
             SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareVMSizeMutation_6");
@@ -100,7 +99,7 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
             VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnits.get(index);
 
             try {
-                vmSelectionHelper.resizeVM(virtualMachineSchedulingUnit, new ArrayList<>());
+                vmSelectionHelper.resizeVM(virtualMachineSchedulingUnit);
                 mutationCount = mutationCount - 1;
             } catch (VMTypeNotFoundException e) {
                 log.error("could not resize VM");

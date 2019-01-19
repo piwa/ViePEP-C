@@ -6,7 +6,6 @@ import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachi
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ProcessStepSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
 import lombok.Getter;
@@ -36,7 +35,6 @@ public class DeadlineAwareFactoryInitializer {
     @Getter
     @Setter
     private Chromosome.Gene lastGene;
-    private Map<Container, ContainerSchedulingUnit> fixedContainerSchedulingUnitMap = new HashMap<>();
 
     private DateTime optimizationEndTime;
     private Map<VirtualMachineInstance, VirtualMachineSchedulingUnit> virtualMachineSchedulingUnitMap = new HashMap<>();
@@ -47,7 +45,6 @@ public class DeadlineAwareFactoryInitializer {
         this.virtualMachineSchedulingUnitMap = new HashMap<>();
         this.firstGene = null;
         this.lastGene = null;
-        this.fixedContainerSchedulingUnitMap = new HashMap<>();
     }
 
     public List<Chromosome.Gene> createStartChromosome(Element currentElement) {
@@ -70,8 +67,8 @@ public class DeadlineAwareFactoryInitializer {
                 if (processStep.getStartDate() != null && processStep.getFinishedAt() == null &&
                         processStep.getScheduledStartDate().isBefore(this.optimizationEndTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isAfter(this.optimizationEndTime)) {
                     isRunning = true;
-                } else if (processStep.getStartDate() != null && processStep.getFinishedAt() != null &&
-                        processStep.getScheduledStartDate().isBefore(this.optimizationEndTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationEndTime)) {
+                } else if ((processStep.getStartDate() != null && processStep.getFinishedAt() != null) ||
+                        (processStep.getScheduledStartDate().isBefore(this.optimizationEndTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationEndTime))) {
                     isDone = true;
                 }
             }
@@ -144,6 +141,7 @@ public class DeadlineAwareFactoryInitializer {
             }
 
             Chromosome.Gene gene = new Chromosome.Gene(getProcessStepSchedulingUnit(processStep, false), startTime, false);
+            gene.getProcessStepSchedulingUnit().setGene(gene);
             chromosome.add(gene);
 
             checkFirstAndLastGene(gene);
@@ -156,7 +154,7 @@ public class DeadlineAwareFactoryInitializer {
             }
 
             Chromosome.Gene gene = new Chromosome.Gene(getProcessStepSchedulingUnit(processStep, true), realStartTime, true);
-            gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getProcessStepGenes().add(gene);
+            gene.getProcessStepSchedulingUnit().setGene(gene);
             chromosome.add(gene);
 
             checkFirstAndLastGene(gene);
@@ -189,21 +187,13 @@ public class DeadlineAwareFactoryInitializer {
     public void setContainerAndVMSchedulingUnit(ProcessStepSchedulingUnit processStepSchedulingUnit) {
         ProcessStep processStep = processStepSchedulingUnit.getProcessStep();
         Container container = processStep.getContainer();
-        ContainerSchedulingUnit containerSchedulingUnit = fixedContainerSchedulingUnitMap.get(container);
-        if (containerSchedulingUnit == null) {
-            containerSchedulingUnit = new ContainerSchedulingUnit(containerDeploymentTime, true);
-            containerSchedulingUnit.setContainer(container);
-            fixedContainerSchedulingUnitMap.put(container, containerSchedulingUnit);
-        }
-        processStepSchedulingUnit.setContainerSchedulingUnit(containerSchedulingUnit);
 
         VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());
         if (virtualMachineSchedulingUnit == null) {
-            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(virtualMachineDeploymentTime, true);
-            virtualMachineSchedulingUnit.setVirtualMachineInstance(container.getVirtualMachineInstance());
+            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit( true, virtualMachineDeploymentTime, containerDeploymentTime, container.getVirtualMachineInstance());
             virtualMachineSchedulingUnitMap.put(container.getVirtualMachineInstance(), virtualMachineSchedulingUnit);
         }
-        virtualMachineSchedulingUnit.getScheduledContainers().add(containerSchedulingUnit);
-        containerSchedulingUnit.setScheduledOnVm(virtualMachineSchedulingUnit);
+        processStepSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineSchedulingUnit);
+        virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().add(processStepSchedulingUnit);
     }
 }

@@ -56,9 +56,9 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
     }
 
 
+
     @Override
     protected List<Chromosome> mate(Chromosome parent1, Chromosome parent2, int numberOfCrossoverPoints, Random random) {
-
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(parent1, this.getClass().getSimpleName() + "_spaceAwareCrossover_1");
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(parent2, this.getClass().getSimpleName() + "_spaceAwareCrossover_2");
 
@@ -68,6 +68,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
         List<List<Chromosome.Gene>> clone2 = parent2.clone().getGenes();
         Chromosome offspring2Chromosome = new Chromosome(clone2);
 
+
         int amountOfRows = clone1.size();
         boolean rowClone1Changed = false;
         boolean rowClone2Changed = false;
@@ -75,6 +76,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
         Map<String, Chromosome.Gene> processStepNameToCloneMap1 = fillMap(offspring1Chromosome);
         Map<String, Chromosome.Gene> processStepNameToCloneMap2 = fillMap(offspring2Chromosome);
 
+//        for (int i = 0; i < numberOfCrossoverPoints; i++)
         for (int i = 0; i < 100; i++) {
             int rowIndex = random.nextInt(amountOfRows);
             List<Chromosome.Gene> rowClone1 = offspring1Chromosome.getRow(rowIndex);
@@ -116,15 +118,11 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
         result.add(offspring1Chromosome);
         result.add(offspring2Chromosome);
 
-        vmSelectionHelper.mergeVirtualMachineSchedulingUnits(offspring1Chromosome);
-        vmSelectionHelper.mergeVirtualMachineSchedulingUnits(offspring2Chromosome);
-
-//        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring1Chromosome);       // is done in mergeVirtualMachineSchedulingUnits
-//        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring2Chromosome);       // is done in mergeVirtualMachineSchedulingUnits
+        this.vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring1Chromosome);
+        this.vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring2Chromosome);
 
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(offspring1Chromosome, this.getClass().getSimpleName() + "_spaceAwareCrossover_3");
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(offspring2Chromosome, this.getClass().getSimpleName() + "_spaceAwareCrossover_4");
-
         return result;
     }
 
@@ -143,6 +141,9 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
             }
 
             rowClone2Changed = true;
+//                if(!orderMaintainer.rowOrderIsOk(rowClone2)) {
+//                    log.error("problem");
+//                }
         }
         return rowClone2Changed;
     }
@@ -159,8 +160,11 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
     }
 
     private Map<String, Chromosome.Gene> fillMap(Chromosome chromosome) {
+
         Map<String, Chromosome.Gene> map = new HashMap<>();
+
         chromosome.getGenes().forEach(row -> row.forEach(gene -> map.put(gene.getProcessStepSchedulingUnit().getName(), gene)));
+
         return map;
     }
 
@@ -187,12 +191,15 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
     }
 
     private boolean checkIfInDeadline(List<Chromosome.Gene> row, DateTime maxDeadlineExtension) {
+
         Chromosome.Gene lastGene = null;
+
         for (Chromosome.Gene gene : row) {
             if (lastGene == null || gene.getExecutionInterval().getEnd().isAfter(lastGene.getExecutionInterval().getEnd())) {
                 lastGene = gene;
             }
         }
+
         return lastGene.getExecutionInterval().getEnd().isBefore(maxDeadlineExtension);
 
     }

@@ -6,7 +6,7 @@ import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContex
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.OrderMaintainer;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.VMSelectionHelper;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ContainerSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ServiceTypeSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -30,6 +30,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
     private Map<String, DateTime> maxTimeAfterDeadline;
     private VMSelectionHelper vmSelectionHelper;
+    private OptimizationUtility optimizationUtility;
 
     /**
      * Default is one mutation per candidate.
@@ -71,6 +72,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
 
         ApplicationContext context = SpringContext.getApplicationContext();
         this.vmSelectionHelper = context.getBean(VMSelectionHelper.class);
+        this.optimizationUtility = context.getBean(OptimizationUtility.class);
     }
 
     @Override
@@ -84,14 +86,28 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     }
 
     private Chromosome mutate(Chromosome candidate, Random random) {
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(candidate, this.getClass().getSimpleName() + "_spaceAwareMutation_1");
-        List<List<Chromosome.Gene>> newCandidate = candidate.clone().getGenes();
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(candidate, this.getClass().getSimpleName() + "_mutate_2");
+
+        Chromosome newCandidate = candidate.clone();
+//
+//        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = this.optimizationUtility.getRequiredServiceTypes(candidate);
+//
+//        Map<ServiceType, ServiceTypeSchedulingUnit> atTheBeginningRunningServiceTypes = new HashMap<>();
+//        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
+//            DateTime deploymentStartTime = serviceTypeSchedulingUnit.getServiceAvailableTime().getStart();
+//            DateTime deploymentEndTime = serviceTypeSchedulingUnit.getServiceAvailableTime().getEnd();
+//            DateTime deploymentStartTime2 = serviceTypeSchedulingUnit.getDeployStartTime();
+//            if((deploymentStartTime.isBefore(this.optimizationTime) || deploymentStartTime2.isBefore(this.optimizationTime)) && deploymentEndTime.isAfter(this.optimizationTime)) {
+//                atTheBeginningRunningServiceTypes.put(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit);
+//            }
+//        }
+
 
         int mutationCount = Math.abs(mutationCountVariable.nextValue());
         int counter = 0;
         while (mutationCount > 0 && counter < 100) {
-            int rowIndex = random.nextInt(newCandidate.size());
-            List<Chromosome.Gene> row = newCandidate.get(rowIndex);
+            int rowIndex = random.nextInt(newCandidate.getGenes().size());
+            List<Chromosome.Gene> row = newCandidate.getGenes().get(rowIndex);
 
             int geneIndex = random.nextInt(row.size());
             Chromosome.Gene gene = row.get(geneIndex);
@@ -130,14 +146,14 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                 Duration previousDuration = new Duration(endTimePreviousGene, oldInterval.getStart());
                 Duration nextDuration = new Duration(oldInterval.getEnd(), startTimeNextGene);
 
-
                 try {
                     int deltaTime = getRandomNumber((int) previousDuration.getMillis(), (int) nextDuration.getMillis(), random);
+
 
                     Interval newInterval = new Interval(oldInterval.getStartMillis() + deltaTime, oldInterval.getEndMillis() + deltaTime);
 
                     gene.setExecutionInterval(newInterval);
-                    boolean result = considerFirstContainerStartTime(new Chromosome(newCandidate), gene);
+                    boolean result = considerFirstContainerStartTime(newCandidate, gene);
 
                     if (!orderMaintainer.orderIsOk(newCandidate)) {
                         result = false;
@@ -157,16 +173,17 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
             counter = counter + 1;
         }
 
-        Chromosome newChromosome = new Chromosome(newCandidate);
+        this.vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newCandidate);
 
-        vmSelectionHelper.mergeVirtualMachineSchedulingUnits(newChromosome);
+        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_mutate_2");
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_spaceAwareMutation_2");
-        return newChromosome;
+        return newCandidate;
     }
 
     private int getRandomNumber(int minimumValue, int maximumValue, Random random) throws Exception {
+
         return random.nextInt(maximumValue + 1 + minimumValue) - minimumValue;
+
     }
 
     private Chromosome.Gene getLastProcessStep(List<Chromosome.Gene> row) {
@@ -181,22 +198,30 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     }
 
     private boolean considerFirstContainerStartTime(Chromosome newChromosome, Chromosome.Gene movedGene) {
-//        List<ContainerSchedulingUnit> containerSchedulingUnits = this.optimizationUtility.createRequiredContainerSchedulingUnits(newChromosome);
-        List<ContainerSchedulingUnit> containerSchedulingUnits = newChromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit()).collect(Collectors.toList());
-        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
-            if (containerSchedulingUnit.getProcessStepGenes().contains(movedGene)) {
+        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = this.optimizationUtility.getRequiredServiceTypes(newChromosome);
+        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
+            if (serviceTypeSchedulingUnit.getGenes().contains(movedGene)) {
 
-                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = containerSchedulingUnit.getScheduledOnVm();
+                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = serviceTypeSchedulingUnit.getVirtualMachineSchedulingUnit();
                 VirtualMachineStatus virtualMachineStatus = virtualMachineSchedulingUnit.getVirtualMachineInstance().getVirtualMachineStatus();
-                DateTime deploymentStartTime = containerSchedulingUnit.getDeployStartTime();        // TODO is it ok not to consider the vm?
+                DateTime deploymentStartTime = serviceTypeSchedulingUnit.getDeployStartTime();        // TODO is it ok not to consider the vm?
                 if ((virtualMachineStatus.equals(VirtualMachineStatus.UNUSED) || virtualMachineStatus.equals(VirtualMachineStatus.SCHEDULED)) &&
                         virtualMachineSchedulingUnit.getDeploymentStartTime().isBefore(this.optimizationEndTime)) {
                     return false;
-                } else if (deploymentStartTime.isBefore(this.optimizationEndTime) && containerSchedulingUnit.getFirstGene() == movedGene) {
+                } else if (deploymentStartTime.isBefore(this.optimizationEndTime) && serviceTypeSchedulingUnit.getFirstGene() == movedGene) {
                     return false;
                 } else {
                     return true;
                 }
+
+
+//                DateTime deploymentStartTime = serviceTypeSchedulingUnit.getDeployStartTime();
+//
+//                if (deploymentStartTime.isBefore(this.optimizationEndTime) && serviceTypeSchedulingUnit.getFirstGene() == movedGene) {
+//                    return false;
+//                } else {
+//                    return true;
+//                }
             }
         }
         return true;

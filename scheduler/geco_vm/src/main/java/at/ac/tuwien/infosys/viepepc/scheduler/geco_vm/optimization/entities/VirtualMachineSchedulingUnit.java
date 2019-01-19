@@ -1,6 +1,8 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities;
 
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import lombok.Data;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -13,23 +15,29 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
 
     private final UUID uid;
     private final long virtualMachineDeploymentDuration;
+    private final long containerDeploymentDuration;
     private final boolean fixed;
-    private VirtualMachineInstance virtualMachineInstance;
-    private Set<ContainerSchedulingUnit> scheduledContainers = new HashSet<>();
+    private final VirtualMachineInstance virtualMachineInstance;
+    private VMType vmType;
+    private Set<ProcessStepSchedulingUnit> processStepSchedulingUnits = new HashSet<>();
 
-    private VirtualMachineSchedulingUnit(UUID uid, long virtualMachineDeploymentDuration, boolean fixed) {
+    private VirtualMachineSchedulingUnit(UUID uid, boolean fixed, long virtualMachineDeploymentDuration, long containerDeploymentDuration, VirtualMachineInstance virtualMachineInstance) {
         this.uid = uid;
         this.virtualMachineDeploymentDuration = virtualMachineDeploymentDuration;
+        this.containerDeploymentDuration = containerDeploymentDuration;
         this.fixed = fixed;
+        this.virtualMachineInstance = virtualMachineInstance;
+        this.vmType = virtualMachineInstance.getVmType();
     }
 
-    public VirtualMachineSchedulingUnit(long virtualMachineDeploymentDuration, boolean fixed) {
-        this(UUID.randomUUID(), virtualMachineDeploymentDuration, fixed);
+    public VirtualMachineSchedulingUnit(boolean fixed, long virtualMachineDeploymentDuration, long containerDeploymentDuration, VirtualMachineInstance virtualMachineInstance) {
+        this(UUID.randomUUID(), fixed, virtualMachineDeploymentDuration, containerDeploymentDuration, virtualMachineInstance);
     }
 
     public Interval getVmAvailableInterval() {
-        List<Interval> containerIntervals = scheduledContainers.stream().map(ContainerSchedulingUnit::getCloudResourceUsage).collect(Collectors.toList());
-        return IntervalMergeHelper.mergeIntervals(containerIntervals);
+        List<Interval> intervals = processStepSchedulingUnits.stream().map(ProcessStepSchedulingUnit::getServiceAvailableTime).collect(Collectors.toList());
+        List<Interval> processStepIntervals = intervals.stream().map(interval -> interval.withStart(interval.getStart().minus(containerDeploymentDuration))).collect(Collectors.toList());
+        return IntervalMergeHelper.mergeIntervals(processStepIntervals);
     }
 
     public Interval getCloudResourceUsageInterval() {
@@ -41,29 +49,29 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
         return getCloudResourceUsageInterval().getStart();
     }
 
-    public DateTime getDeploymentTimes(Interval interval) {
-        return interval.getStart().minus(virtualMachineDeploymentDuration);
-    }
+//    public DateTime getDeploymentTimes(Interval interval) {
+//        return interval.getStart().minus(virtualMachineDeploymentDuration);
+//    }
 
     @Override
     public VirtualMachineSchedulingUnit clone() {
-        VirtualMachineSchedulingUnit clone = new VirtualMachineSchedulingUnit(this.uid, this.virtualMachineDeploymentDuration, this.fixed);
-        clone.setVirtualMachineInstance(this.virtualMachineInstance);
+        VirtualMachineSchedulingUnit clone = new VirtualMachineSchedulingUnit(this.uid, this.fixed, this.virtualMachineDeploymentDuration, this.containerDeploymentDuration, this.virtualMachineInstance);
+        clone.setVmType(this.vmType);
         return clone;
     }
 
     @Override
     public String toString() {
 
-        String containerIds = scheduledContainers.stream().map(unit -> unit.getUid().toString().substring(0,8) + ", ").collect(Collectors.joining());
+        String processStepIds = processStepSchedulingUnits.stream().map(unit -> unit.getUid().toString().substring(0,8) + ", ").collect(Collectors.joining());
 
         return "VirtualMachineSchedulingUnit{" +
                 "internId=" + uid.toString().substring(0,8) +
                 ", fixed=" + fixed +
                 ", availableTimes=" + getVmAvailableInterval() +
                 ", deploymentTimes=" + getDeploymentStartTime() +
-                ", containerAmount=" + scheduledContainers.size() +
-                ", containerIds=" + containerIds +
+                ", containerAmount=" + processStepSchedulingUnits.size() +
+                ", containerIds=" + processStepIds +
                 ", virtualMachineInstance=" + virtualMachineInstance +
                 '}';
     }
