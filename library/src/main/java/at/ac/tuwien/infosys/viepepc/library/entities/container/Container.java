@@ -59,7 +59,7 @@ public class Container implements Cloneable {
     private String ipAddress;
     private String providerContainerId = "";
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne()
     private VirtualMachineInstance virtualMachineInstance;
 
     public Container() {
