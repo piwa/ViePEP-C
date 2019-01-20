@@ -19,14 +19,12 @@ import org.springframework.stereotype.Component;
  * Created by philippwaibel on 18/05/16.
  */
 @Component
-@Scope("prototype")
+//@Scope("prototype")
 @Slf4j
 public class ServiceExecution {
 
     @Autowired
     private ServiceInvoker serviceInvoker;
-    @Autowired
-    private CacheProcessStepService cacheProcessStepService;
 
     @Value("${simulate}")
     private boolean simulate;

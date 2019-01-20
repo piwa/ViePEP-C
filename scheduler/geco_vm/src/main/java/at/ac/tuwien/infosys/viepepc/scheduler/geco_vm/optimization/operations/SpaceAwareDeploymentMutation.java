@@ -46,9 +46,6 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
      */
     public SpaceAwareDeploymentMutation(int mutationCount, DateTime optimizationEndTime) {
         this(new ConstantGenerator<>(mutationCount), optimizationEndTime);
-//        if (mutationCount < 1) {
-//            throw new IllegalArgumentException("Mutation count must be at least 1.");
-//        }
     }
 
     /**

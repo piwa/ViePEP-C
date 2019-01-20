@@ -51,11 +51,7 @@ public class VMSelectionHelper {
             boolean fitsOnVM = checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes);
             if (!fitsOnVM) {
                 if (virtualMachineSchedulingUnit.isFixed()) {
-//                        log.debug("distributed containers 1");
-                    distributeContainers(virtualMachineSchedulingUnit, alreadyScheduledVirtualMachines);
-                    if (chromosome != null) {
-                        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_checkVmSizeAndSolveSpaceIssues");
-                    }
+                    List<VirtualMachineSchedulingUnit> changedVMs = distributeContainers(virtualMachineSchedulingUnit, alreadyScheduledVirtualMachines);
                 } else {
                     try {
                         resizeVM(virtualMachineSchedulingUnit, maxOverlappingServiceTypes);
@@ -66,9 +62,12 @@ public class VMSelectionHelper {
                 }
             }
         }
+        if (chromosome != null) {
+            SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_checkVmSizeAndSolveSpaceIssues");
+        }
     }
 
-    public void distributeContainers(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines) {
+    public List<VirtualMachineSchedulingUnit> distributeContainers(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines) {
 
         List<ProcessStepSchedulingUnit> notFixed = virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().stream().filter(unit -> !unit.getGene().isFixed()).collect(Collectors.toList());
 
@@ -95,7 +94,7 @@ public class VMSelectionHelper {
                 alreadyScheduledVirtualMachines.add(newVirtualMachineSchedulingUnit);
             }
         }
-
+        return usedVirtualMachineSchedulingUnits;
     }
 
     private void fillVirtualMachine(List<ProcessStepSchedulingUnit> notFixed, VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit) {
@@ -212,9 +211,12 @@ public class VMSelectionHelper {
         VirtualMachineInstance randomVM;
 
         List<VirtualMachineInstance> noSchedulingUnitAvailable = cacheVirtualMachineService.getScheduledAndDeployingAndDeployedVMInstances().stream().filter(vm -> vm.getScheduledCloudResourceUsage().getEnd().isAfter(this.optimizationEndTime)).collect(Collectors.toList());
+        noSchedulingUnitAvailable = noSchedulingUnitAvailable.stream().filter(vm -> vm.getScheduledCloudResourceUsage().getEnd().isAfter(this.optimizationEndTime)).collect(Collectors.toList());
         List<VirtualMachineInstance> availableVMs = new ArrayList<>(noSchedulingUnitAvailable);
         Set<VirtualMachineSchedulingUnit> afterOptimizationEndAvailableVMs = alreadyScheduledVirtualMachines.stream().filter(unit -> unit.getCloudResourceUsageInterval().getEnd().isAfter(this.optimizationEndTime)).collect(Collectors.toSet());
         availableVMs.addAll(afterOptimizationEndAvailableVMs.stream().map(VirtualMachineSchedulingUnit::getVirtualMachineInstance).collect(Collectors.toList()));
+
+
 
         boolean fromAvailableVM = random.nextBoolean();
         if (fromAvailableVM && availableVMs.size() > 0) {

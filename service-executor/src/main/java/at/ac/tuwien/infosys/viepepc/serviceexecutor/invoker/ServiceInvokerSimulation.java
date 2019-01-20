@@ -24,6 +24,11 @@ public class ServiceInvokerSimulation implements ServiceInvoker {
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler;
 
+    @Override
+    public void invoke(Container container, ProcessStep processStep) throws ServiceInvokeException {
+        invoke(processStep);
+    }
+
     private void invoke(ProcessStep processStep) throws ServiceInvokeException {
         try {
 
@@ -43,12 +48,5 @@ public class ServiceInvokerSimulation implements ServiceInvoker {
             throw new ServiceInvokeException(e);
         }
     }
-
-    @Override
-    public void invoke(Container container, ProcessStep processStep) throws ServiceInvokeException {
-        invoke(processStep);
-    }
-
-
 
 }

@@ -70,8 +70,8 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
                 ", fixed=" + fixed +
                 ", availableTimes=" + getVmAvailableInterval() +
                 ", deploymentTimes=" + getDeploymentStartTime() +
-                ", containerAmount=" + processStepSchedulingUnits.size() +
-                ", containerIds=" + processStepIds +
+                ", processStepAmount=" + processStepSchedulingUnits.size() +
+                ", processStepIds=" + processStepIds +
                 ", virtualMachineInstance=" + virtualMachineInstance +
                 '}';
     }

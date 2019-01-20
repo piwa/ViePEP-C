@@ -12,6 +12,8 @@ import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStepStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import com.google.common.collect.Lists;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +47,19 @@ public class ActionExecutor {
     @Autowired
     private WorkflowUtilities workflowUtilities;
 
+    private boolean pauseTermination = false;
+
     @Value("${only.container.deploy.time}")
     private long onlyContainerDeploymentTime = 45000;
 
+    public void pauseTermination() {
+        pauseTermination = true;
+    }
+    public void unpauseTermination() {
+        pauseTermination = false;
+    }
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 1000)        // fixedRate
+    @Scheduled(initialDelay = 2000, fixedDelay = 2000)        // fixedRate
     public void processProvisioningSchedule() {
 
         synchronized (provisioningSchedule) {
@@ -97,25 +107,27 @@ public class ActionExecutor {
                 }
             }
 
-            for (Iterator<Map.Entry<UUID, Container>> iterator = provisioningSchedule.getContainersMap().entrySet().iterator(); iterator.hasNext(); ) {
-                Map.Entry<UUID, Container> entry = iterator.next();
-                Container container = entry.getValue();
-                DateTime scheduledDeploymentEndTime = container.getScheduledCloudResourceUsage().getEnd();
+            if(!pauseTermination) {
+                for (Iterator<Map.Entry<UUID, Container>> iterator = provisioningSchedule.getContainersMap().entrySet().iterator(); iterator.hasNext(); ) {
+                    Map.Entry<UUID, Container> entry = iterator.next();
+                    Container container = entry.getValue();
+                    DateTime scheduledDeploymentEndTime = container.getScheduledCloudResourceUsage().getEnd();
 
-                if (scheduledDeploymentEndTime.isBeforeNow() && !containerStillNeeded(container)) {
-                    containerDeploymentController.terminate(container);
-                    iterator.remove();
+                    if (scheduledDeploymentEndTime.isBeforeNow() && !containerStillNeeded(container)) {
+                        containerDeploymentController.terminate(container);
+                        iterator.remove();
+                    }
                 }
-            }
 
-            for (Iterator<Map.Entry<UUID, VirtualMachineInstance>> iterator = provisioningSchedule.getVirtualMachineInstancesMap().entrySet().iterator(); iterator.hasNext(); ) {
-                Map.Entry<UUID, VirtualMachineInstance> entry = iterator.next();
-                VirtualMachineInstance virtualMachineInstance = entry.getValue();
-                DateTime scheduledDeploymentEndTime = virtualMachineInstance.getScheduledCloudResourceUsage().getEnd();
+                for (Iterator<Map.Entry<UUID, VirtualMachineInstance>> iterator = provisioningSchedule.getVirtualMachineInstancesMap().entrySet().iterator(); iterator.hasNext(); ) {
+                    Map.Entry<UUID, VirtualMachineInstance> entry = iterator.next();
+                    VirtualMachineInstance virtualMachineInstance = entry.getValue();
+                    DateTime scheduledDeploymentEndTime = virtualMachineInstance.getScheduledCloudResourceUsage().getEnd();
 
-                if (scheduledDeploymentEndTime.isBeforeNow() && !vmStillNeeded(virtualMachineInstance)) {
-                    vmDeploymentController.terminate(virtualMachineInstance);
-                    iterator.remove();
+                    if (scheduledDeploymentEndTime.isBeforeNow() && !vmStillNeeded(virtualMachineInstance)) {
+                        vmDeploymentController.terminate(virtualMachineInstance);
+                        iterator.remove();
+                    }
                 }
             }
         }

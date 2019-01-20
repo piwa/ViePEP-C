@@ -70,8 +70,8 @@ public class VirtualMachineInstance implements Serializable {
 //    @OneToMany
     private Set<ContainerImage> availableContainerImages = new HashSet<>();
 
-    public VirtualMachineInstance() {this.internId = UUID.randomUUID();
-
+    public VirtualMachineInstance() {
+        this.internId = UUID.randomUUID();
         this.instanceId = UUID.randomUUID().toString().substring(0, 8) + "_temp";         // create temp id
         this.virtualMachineStatus = VirtualMachineStatus.UNUSED;
     }

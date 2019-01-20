@@ -67,8 +67,12 @@ public class DeadlineAwareFactoryInitializer {
                 if (processStep.getStartDate() != null && processStep.getFinishedAt() == null &&
                         processStep.getScheduledStartDate().isBefore(this.optimizationEndTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isAfter(this.optimizationEndTime)) {
                     isRunning = true;
-                } else if ((processStep.getStartDate() != null && processStep.getFinishedAt() != null) ||
-                        (processStep.getScheduledStartDate().isBefore(this.optimizationEndTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationEndTime))) {
+//                } else if ((processStep.getStartDate() != null && processStep.getFinishedAt() != null) ||
+//                           (processStep.getStartDate() != null && processStep.getFinishedAt() == null && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationEndTime))) {
+//                    isDone = true;
+//                } else if (processStep.getStartDate() == null && processStep.getFinishedAt() == null && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationEndTime)) {
+//                    isDone = true;
+                } else if ((processStep.getStartDate() != null && processStep.getFinishedAt() != null) || processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationEndTime)) {
                     isDone = true;
                 }
             }

@@ -45,9 +45,6 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
      */
     public SpaceAwareVMSizeMutation(int mutationCount, DateTime optimizationEndTime) {
         this(new ConstantGenerator<>(mutationCount), optimizationEndTime);
-        if (mutationCount < 1) {
-            throw new IllegalArgumentException("Mutation count must be at least 1.");
-        }
     }
 
     /**
@@ -84,8 +81,8 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
 
         Chromosome newCandidate = candidate.clone();
 
-        List<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new ArrayList<>(newCandidate.getFlattenChromosome().stream()
-                .map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).filter(unit -> !unit.isFixed()).collect(Collectors.toSet()));
+        List<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = newCandidate.getFlattenChromosome().stream()
+                .map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).filter(unit -> !unit.isFixed()).distinct().collect(Collectors.toList());
 
         if(virtualMachineSchedulingUnits.size() == 0) {
             SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareVMSizeMutation_6");

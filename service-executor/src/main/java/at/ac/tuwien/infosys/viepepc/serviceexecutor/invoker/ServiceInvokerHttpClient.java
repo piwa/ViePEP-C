@@ -15,7 +15,7 @@ import org.springframework.web.client.AsyncRestTemplate;
 @Slf4j
 public class ServiceInvokerHttpClient {
 
-    @Retryable(value = Exception.class, maxAttempts = 30, backoff = @Backoff(delay = 1000, maxDelay = 5000))
+//    @Retryable(value = Exception.class, maxAttempts = 30, backoff = @Backoff(delay = 1000, maxDelay = 5000))
     public HttpStatus retryHttpGet(String url, Stopwatch stopWatch) throws Exception {
 
         if (stopWatch.isRunning()) {
@@ -27,7 +27,7 @@ public class ServiceInvokerHttpClient {
 //        RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_HTML);
-        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 //        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
         ListenableFuture<ResponseEntity<String>> responseEntityFuture = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
         ResponseEntity<String> responseEntity = responseEntityFuture.get();

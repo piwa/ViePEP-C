@@ -1,5 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ActionExecutor;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory.DeadlineAwareFactory;
@@ -38,6 +40,8 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
 
     @Autowired
     private VMSelectionHelper vmSelectionHelper;
+    @Autowired
+    private ActionExecutor actionExecutor;
 
     @Value("${max.optimization.duration}")
     private long maxOptimizationDuration = 60000;
@@ -120,6 +124,8 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         stopwatch.stop();
         log.debug("optimization preparation time=" + stopwatch.getTotalTimeMillis());
 
+        actionExecutor.pauseTermination();
+
         stopwatch = new StopWatch();
         stopwatch.start("optimization time");
         Chromosome winner = engine.evolve(populationSize, eliteCount, new ElapsedTime(maxOptimizationDuration));
@@ -132,6 +138,9 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         OptimizationResult optimizationResult = createOptimizationResult(winner, workflowElements, evolutionLogger);
         stopwatch.stop();
         log.debug("optimization post time=" + stopwatch.getTotalTimeMillis());
+
+        actionExecutor.unpauseTermination();
+
         return optimizationResult;
 
     }

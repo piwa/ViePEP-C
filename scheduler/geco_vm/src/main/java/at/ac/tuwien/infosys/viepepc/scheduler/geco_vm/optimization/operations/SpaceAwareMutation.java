@@ -49,9 +49,6 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
      */
     public SpaceAwareMutation(int mutationCount, DateTime optimizationEndTime, Map<String, DateTime> maxTimeAfterDeadline) {
         this(new ConstantGenerator<>(mutationCount), optimizationEndTime, maxTimeAfterDeadline);
-        if (mutationCount < 1) {
-            throw new IllegalArgumentException("Mutation count must be at least 1.");
-        }
     }
 
     /**
