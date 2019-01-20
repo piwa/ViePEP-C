@@ -49,7 +49,7 @@ public class VMDeploymentController {
                 reset(virtualMachineInstance, "VM could not be started");
             }
 
-            log.info("VM up and running with ip: " + virtualMachineInstance.getIpAddress() + " vm: " + virtualMachineInstance);
+            log.debug("VM up and running with ip: " + virtualMachineInstance.getIpAddress() + " vm: " + virtualMachineInstance);
             VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachineInstance.getStartTime(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.START);
             reportDaoService.save(report);
 
@@ -78,7 +78,7 @@ public class VMDeploymentController {
         VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
         reportDaoService.save(reportVM);
 
-        log.info("Terminate: " + virtualMachineInstance);
+        log.debug("Terminate: " + virtualMachineInstance);
 
         cloudControllerService.stopVirtualMachine(virtualMachineInstance);
         virtualMachineInstance.terminate();

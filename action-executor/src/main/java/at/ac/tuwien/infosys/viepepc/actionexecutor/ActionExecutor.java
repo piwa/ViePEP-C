@@ -113,7 +113,7 @@ public class ActionExecutor {
                     Container container = entry.getValue();
                     DateTime scheduledDeploymentEndTime = container.getScheduledCloudResourceUsage().getEnd();
 
-                    if (scheduledDeploymentEndTime.isBeforeNow() && !containerStillNeeded(container)) {
+                    if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED) && scheduledDeploymentEndTime.isBeforeNow() && !containerStillNeeded(container)) {
                         containerDeploymentController.terminate(container);
                         iterator.remove();
                     }
@@ -124,7 +124,7 @@ public class ActionExecutor {
                     VirtualMachineInstance virtualMachineInstance = entry.getValue();
                     DateTime scheduledDeploymentEndTime = virtualMachineInstance.getScheduledCloudResourceUsage().getEnd();
 
-                    if (scheduledDeploymentEndTime.isBeforeNow() && !vmStillNeeded(virtualMachineInstance)) {
+                    if (virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED) && scheduledDeploymentEndTime.isBeforeNow() && !vmStillNeeded(virtualMachineInstance)) {
                         vmDeploymentController.terminate(virtualMachineInstance);
                         iterator.remove();
                     }

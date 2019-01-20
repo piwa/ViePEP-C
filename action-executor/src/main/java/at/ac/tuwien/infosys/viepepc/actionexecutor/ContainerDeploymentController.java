@@ -34,7 +34,7 @@ public class ContainerDeploymentController {
         VirtualMachineInstance vm = container.getVirtualMachineInstance();
 
         if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
-            log.info(container + " already running on vm " + container.getVirtualMachineInstance());
+            log.debug(container + " already running on vm " + container.getVirtualMachineInstance());
             return;
         }
 
@@ -43,7 +43,7 @@ public class ContainerDeploymentController {
             ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.START);
             reportDaoService.save(report);
 
-            log.info("Container deployed=" + container);
+            log.debug("Container deployed=" + container);
             return;
 
         } catch (InterruptedException | DockerException e) {

@@ -56,7 +56,7 @@ public class OnlyContainerDeploymentController implements Runnable {
 
         if (success) {
             stopWatch.stop();
-            log.debug("Container deploy duration: " + container.toString() + ": " + stopWatch.getTotalTimeMillis());
+//            log.debug("Container deploy duration: " + container.toString() + ": " + stopWatch.getTotalTimeMillis());
 
 
             if (processStep.getScheduledStartDate() != null && DateTime.now().isBefore(processStep.getScheduledStartDate().minusSeconds(2))) {

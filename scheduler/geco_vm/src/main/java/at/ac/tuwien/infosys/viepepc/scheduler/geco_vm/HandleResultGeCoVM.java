@@ -11,19 +11,18 @@ import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStepStatus;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.HandleOptimizationResult;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.PrintRunningInfoVmContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +56,7 @@ public class HandleResultGeCoVM implements HandleOptimizationResult {
             cacheContainerService.getAllContainerInstances().addAll(optimize.getContainers());
             processStepService.getAllProcessSteps().addAll(optimize.getProcessSteps());
 
-//            cleanup();
+            cleanup(optimize.getProcessSteps());
         }
         return true;
     }
@@ -97,7 +96,56 @@ public class HandleResultGeCoVM implements HandleOptimizationResult {
         }
     }
 
-    private void cleanup() {
+    private void cleanup(List<ProcessStep> processSteps) {
+
+        Set<UUID> usedProcessSteps = processSteps.stream().map(ps -> ps.getInternId()).collect(Collectors.toSet());
+        Set<UUID> usedContainer = processSteps.stream().map(ps -> ps.getContainer().getInternId()).collect(Collectors.toSet());
+        Set<UUID> usedVMs = processSteps.stream().map(ps -> ps.getContainer().getVirtualMachineInstance().getInternId()).collect(Collectors.toSet());
+
+
+        List<ProcessStep> notUsedProcessSteps = provisioningSchedule.getProcessStepsMap().values().stream().filter(ps -> !usedProcessSteps.contains(ps.getInternId())).collect(Collectors.toList());
+        Set<UUID> psToRemove = new HashSet<>();
+        for (ProcessStep processStep : notUsedProcessSteps) {
+            if (processStep.getProcessStepStatus().equals(ProcessStepStatus.SCHEDULED)) {
+                psToRemove.add(processStep.getInternId());
+            }
+        }
+        psToRemove.forEach(id -> provisioningSchedule.getProcessStepsMap().remove(id));
+
+
+        List<Container> notUsedContainers = provisioningSchedule.getContainersMap().values().stream().filter(c -> !usedContainer.contains(c.getInternId())).collect(Collectors.toList());
+        Set<UUID> containerToRemove = new HashSet<>();
+        for (Container container : notUsedContainers) {
+            if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED)) {
+                containerToRemove.add(container.getInternId());
+                cacheContainerService.getAllContainerInstances().remove(container);
+            } else {
+                Container containerFromSchedule = provisioningSchedule.getContainersMap().get(container.getInternId());
+                Interval scheduleInterval = containerFromSchedule.getScheduledCloudResourceUsage();
+                Interval newScheduleInterval = scheduleInterval.withEnd(scheduleInterval.getStart().plusSeconds(2));
+                containerFromSchedule.setScheduledCloudResourceUsage(newScheduleInterval);
+            }
+        }
+        containerToRemove.forEach(id -> provisioningSchedule.getContainersMap().remove(id));
+
+        List<VirtualMachineInstance> notUsedVMs = provisioningSchedule.getVirtualMachineInstancesMap().values().stream().filter(vm -> !usedVMs.contains(vm.getInternId())).collect(Collectors.toList());
+        Set<UUID> vmToRemove = new HashSet<>();
+        for (VirtualMachineInstance vm : notUsedVMs) {
+            if (vm.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED)) {
+                vmToRemove.add(vm.getInternId());
+                cacheVirtualMachineService.getAllVMInstancesFromInMemory().remove(vm);
+            } else {
+                VirtualMachineInstance vmFromSchedule = provisioningSchedule.getVirtualMachineInstancesMap().get(vm.getInternId());
+                Interval scheduleInterval = vmFromSchedule.getScheduledCloudResourceUsage();
+                Interval newScheduleInterval = scheduleInterval.withEnd(scheduleInterval.getStart().plusSeconds(2));
+                vmFromSchedule.setScheduledCloudResourceUsage(newScheduleInterval);
+            }
+        }
+        vmToRemove.forEach(id -> provisioningSchedule.getVirtualMachineInstancesMap().remove(id));
+
+//        Set<UUID> usedContainer = provisioningSchedule.getContainersMap().keySet();//processStepService.getAllProcessSteps().stream().map(processStep -> processStep.getContainer().getUid()).collect(Collectors.toSet());
+//        Set<UUID> usedVMs = provisioningSchedule.getVirtualMachineInstancesMap().keySet();//processStepService.getAllProcessSteps().stream().map(processStep -> processStep.getContainer().getVirtualMachineInstance().getUid()).collect(Collectors.toSet());
+
 //        provisioningSchedule.cleanup();
 //
 //        Set<UUID> usedContainer = provisioningSchedule.getContainersMap().keySet();//processStepService.getAllProcessSteps().stream().map(processStep -> processStep.getContainer().getUid()).collect(Collectors.toSet());
