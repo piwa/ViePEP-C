@@ -22,7 +22,7 @@ import java.io.Serializable;
 public class VMType implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     protected Long tableId;
 
     @XmlElement

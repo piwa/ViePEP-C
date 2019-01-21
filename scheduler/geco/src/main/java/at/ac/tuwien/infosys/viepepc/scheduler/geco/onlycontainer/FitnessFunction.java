@@ -60,7 +60,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
             try {
                 Duration deploymentDuration = serviceTypeSchedulingUnit.getServiceAvailableTime().toDuration();
-//                List<Container> containers = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
+//                List<Container> containers = optimizationUtility.get(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
                 Container container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
 
 //                List<Container> containers2 = containers.stream().distinct().collect(Collectors.toList());

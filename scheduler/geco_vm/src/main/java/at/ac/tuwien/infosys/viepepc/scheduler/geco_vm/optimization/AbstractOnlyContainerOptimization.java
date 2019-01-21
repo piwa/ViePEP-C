@@ -121,7 +121,7 @@ public abstract class AbstractOnlyContainerOptimization {
             if(virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.UNUSED)) {
                 virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.SCHEDULED);
             }
-//            virtualMachineSchedulingUnit.getScheduledContainers().forEach(container -> virtualMachineInstance.getDeployedContainers().add(container.getContainer()));
+//            virtualMachineSchedulingUnit.getScheduledContainers().forEach(container -> virtualMachineInstance.getDeployedContainers().add(container.get()));
 
             optimizationResult.getVirtualMachineInstances().add(virtualMachineInstance);
         }
@@ -136,7 +136,7 @@ public abstract class AbstractOnlyContainerOptimization {
 ////            if(!gene.isFixed()) {
 //                processStepSchedulingUnits.add(gene.getProcessStepSchedulingUnit());
 //                ProcessStep processStep = gene.getProcessStepSchedulingUnit().getProcessStep();
-//                Container container = gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getContainer();
+//                Container container = gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().get();
 //                processStep.setScheduledStartDate(gene.getExecutionInterval().getStart());
 //                if(processStep.getProcessStepStatus().equals(ProcessStepStatus.UNUSED))
 //                processStep.setProcessStepStatus(ProcessStepStatus.SCHEDULED);
@@ -148,7 +148,7 @@ public abstract class AbstractOnlyContainerOptimization {
 
 //        Set<ContainerSchedulingUnit> containerSchedulingUnits = processStepSchedulingUnits.stream().map(ProcessStepSchedulingUnit::getContainerSchedulingUnit).collect(Collectors.toSet());
 //        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
-//            Container container = containerSchedulingUnit.getContainer();
+//            Container container = containerSchedulingUnit.get();
 //            container.setScheduledCloudResourceUsage(containerSchedulingUnit.getCloudResourceUsage());
 //            container.setScheduledAvailableInterval(containerSchedulingUnit.getServiceAvailableTime());
 //            if(container.getContainerStatus().equals(ContainerStatus.UNUSED)) {

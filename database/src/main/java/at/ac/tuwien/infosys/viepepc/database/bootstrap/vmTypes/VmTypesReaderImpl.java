@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database.bootstrap.vmTypes;
 
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,11 +12,13 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * Created by philippwaibel on 18/10/2016.
  */
 @Component
+@Slf4j
 public class VmTypesReaderImpl {
 
     @Autowired
@@ -28,13 +31,11 @@ public class VmTypesReaderImpl {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( VirtualMachineTypes.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File file = Paths.get(this.getClass().getClassLoader().getResource(vmTypesPath).toURI()).toFile();
+            File file = Paths.get(Objects.requireNonNull(this.getClass().getClassLoader().getResource(vmTypesPath)).toURI()).toFile();
             VirtualMachineTypes virtualMachineTypes = (VirtualMachineTypes) jaxbUnmarshaller.unmarshal(file);
             inMemoryCache.getVmTypes().addAll(virtualMachineTypes.getVmTypes());
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        } catch (JAXBException | NullPointerException | URISyntaxException e) {
+            log.error("Exception", e);
         }
 
     }

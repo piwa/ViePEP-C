@@ -56,7 +56,7 @@ public class VirtualMachineInstance implements Serializable {
 
     private VirtualMachineStatus virtualMachineStatus;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne()
     private VMType vmType;
 
     @ElementCollection

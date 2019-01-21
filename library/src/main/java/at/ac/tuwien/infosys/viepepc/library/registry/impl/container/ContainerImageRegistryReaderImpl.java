@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.library.registry.impl.container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.library.registry.ContainerImageRegistryReader;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
@@ -14,11 +15,13 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * Created by philippwaibel on 18/10/2016.
  */
 @Component
+@Slf4j
 @DependsOn("serviceRegistryReaderImpl")
 public class ContainerImageRegistryReaderImpl implements ContainerImageRegistryReader {
 
@@ -32,12 +35,10 @@ public class ContainerImageRegistryReaderImpl implements ContainerImageRegistryR
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( ContainerImageRegistry.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File file = Paths.get(this.getClass().getClassLoader().getResource(containerImageRegistryPath).toURI()).toFile();
+            File file = Paths.get(Objects.requireNonNull(this.getClass().getClassLoader().getResource(containerImageRegistryPath)).toURI()).toFile();
             this.containerImageRegistry = (ContainerImageRegistry) jaxbUnmarshaller.unmarshal(file);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        } catch (JAXBException | NullPointerException | URISyntaxException e) {
+            log.error("Exception", e);
         }
 
     }

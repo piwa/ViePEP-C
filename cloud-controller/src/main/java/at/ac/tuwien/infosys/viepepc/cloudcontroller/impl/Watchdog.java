@@ -110,7 +110,7 @@ public class Watchdog {
                     if (processStep.getStartDate().plus(maxDuration).isBeforeNow()) {
                         log.warn("Reset process step due to unexpected long execution: " + processStep.toString());
                         resetContainerAndProcessStep(processStep.getContainer().getVirtualMachineInstance(), processStep, "Service");
-//                            resetVM(processStep.getContainer().getVirtualMachineInstance(), "Service");
+//                            resetVM(processStep.get().getVirtualMachineInstance(), "Service");
                     }
                 }
             }

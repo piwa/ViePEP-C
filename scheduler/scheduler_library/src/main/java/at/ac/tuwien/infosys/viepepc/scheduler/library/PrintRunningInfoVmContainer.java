@@ -98,7 +98,7 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
 //        for (Element workflow : allWorkflowInstances) {
 //            List<ProcessStep> runningSteps = workflowUtilities.getRunningProcessSteps(workflow.getName());
 //            for (ProcessStep runningStep : runningSteps) {
-//                if ((runningStep.getContainer() != null && runningStep.getContainer().getContainerStatus().equals(ContainerStatus.DEPLOYED)) && runningStep.getStartDate() != null) {
+//                if ((runningStep.get() != null && runningStep.get().getContainerStatus().equals(ContainerStatus.DEPLOYED)) && runningStep.getStartDate() != null) {
 //                    stringBuilder.append(runningStep).append("\n");
 //                }
 //            }

@@ -64,37 +64,33 @@ public class ActionExecutor {
 
         synchronized (provisioningSchedule) {
 
-            for (Map.Entry<UUID, VirtualMachineInstance> entry : provisioningSchedule.getVirtualMachineInstancesMap().entrySet()) {
-                VirtualMachineInstance virtualMachineInstance = entry.getValue();
+            // Perform start events
+            for (VirtualMachineInstance virtualMachineInstance : provisioningSchedule.getVirtualMachineInstancesMap().values()) {
                 DateTime scheduledDeploymentStartTime = virtualMachineInstance.getScheduledCloudResourceUsage().getStart();
                 if (scheduledDeploymentStartTime.minusSeconds(3).isBeforeNow() && virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED)) {
                     vmDeploymentController.deploy(virtualMachineInstance);
                 }
             }
 
-            for (Map.Entry<UUID, Container> entry : provisioningSchedule.getContainersMap().entrySet()) {
-                Container container = entry.getValue();
+            for (Container container : provisioningSchedule.getContainersMap().values()) {
                 DateTime scheduledDeploymentStartTime = container.getScheduledCloudResourceUsage().getStart();
                 VirtualMachineInstance virtualMachineInstance = container.getVirtualMachineInstance();
                 if (scheduledDeploymentStartTime.minusSeconds(3).isBeforeNow() &&
-                        container.getContainerStatus().equals(ContainerStatus.SCHEDULED) &&
-                        virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
+                        container.getContainerStatus().equals(ContainerStatus.SCHEDULED) && virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
                     containerDeploymentController.deploy(container);
                 }
             }
 
-            for (Map.Entry<UUID, ProcessStep> entry : provisioningSchedule.getProcessStepsMap().entrySet()) {
-                ProcessStep processStep = entry.getValue();
+            for (ProcessStep processStep : provisioningSchedule.getProcessStepsMap().values()) {
                 DateTime scheduledStartTime = processStep.getScheduledStartDate();
                 Container container = processStep.getContainer();
                 if (scheduledStartTime.minusSeconds(3).isBeforeNow() &&
-                        processStep.getProcessStepStatus().equals(ProcessStepStatus.SCHEDULED) &&
-                        container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
+                        processStep.getProcessStepStatus().equals(ProcessStepStatus.SCHEDULED) && container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
                     processStepExecutorController.startProcessStepExecution(processStep);
                 }
             }
 
-
+            // Perform termination events
             for (Iterator<Map.Entry<UUID, ProcessStep>> iterator = provisioningSchedule.getProcessStepsMap().entrySet().iterator(); iterator.hasNext(); ) {
                 Map.Entry<UUID, ProcessStep> entry = iterator.next();
                 ProcessStep processStep = entry.getValue();

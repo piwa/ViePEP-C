@@ -70,7 +70,7 @@ public abstract class AbstractOnlyContainerOptimization {
                 Container container = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
                 container.setBareMetal(true);
 
-//                List<Container> containers = optimizationUtility.getContainer(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
+//                List<Container> containers = optimizationUtility.get(serviceTypeSchedulingUnit.getServiceType(), serviceTypeSchedulingUnit.getProcessSteps().size());
 //                containers.forEach(c -> c.setBareMetal(true));
 
                 for (Chromosome.Gene processStepGene : serviceTypeSchedulingUnit.getProcessSteps()) {

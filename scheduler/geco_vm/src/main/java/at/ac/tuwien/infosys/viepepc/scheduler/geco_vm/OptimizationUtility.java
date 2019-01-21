@@ -126,7 +126,6 @@ public class OptimizationUtility {
         double ram = serviceType.getServiceTypeResources().getMemory() + serviceType.getServiceTypeResources().getMemory() * (amount - 1) * 2 / 3;
 
         ContainerConfiguration bestContainerConfig = new ContainerConfiguration();
-        bestContainerConfig.setId(0L);
         bestContainerConfig.setName(cpuLoad + "_" + ram);
         bestContainerConfig.setCores(cpuLoad / 100);
         bestContainerConfig.setRam(ram);

@@ -29,11 +29,6 @@ public class CacheContainerService {
     @Autowired
     private ServiceRegistryReader serviceRegistryReader;
 
-    @Value("${docker.repo.name}")
-    private String repoName;
-    @Value("${docker.image.name}")
-    private String imageNamePrefix;
-
     private Integer serviceTypeAmount = 10; // how many docker images (mapping one service types)
     private Integer containerConfigurationAmount = 4; //different configurations per Image/Service Type
     
@@ -48,7 +43,7 @@ public class CacheContainerService {
     }
 
     public List<Container> getDeployingContainers() {
-        return inMemoryCache.getContainerInstances().stream().filter(container -> container.getContainerStatus().equals(VirtualMachineStatus.DEPLOYING)).collect(Collectors.toList());
+        return inMemoryCache.getContainerInstances().stream().filter(container -> container.getContainerStatus().equals(ContainerStatus.DEPLOYING)).collect(Collectors.toList());
     }
 
     public List<Container> getDeployingAndDeployedContainers() {

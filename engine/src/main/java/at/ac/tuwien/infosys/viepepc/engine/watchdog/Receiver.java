@@ -81,22 +81,22 @@ public class Receiver {
 
         log.info("Task-Done: " + processStep);
 //        workflowDoneTaskExecutor.execute(() -> {
-////            if (processStep.getContainer() != null) {
-//////            synchronized (processStep.getContainer()) {
+////            if (processStep.get() != null) {
+//////            synchronized (processStep.get()) {
 ////                List<ProcessStep> processSteps = new ArrayList<>();
 ////                workflowUtilities.getRunningSteps().stream().filter(ele -> ((ProcessStep) ele) != processStep).forEach(element -> processSteps.add((ProcessStep) element));
-////                processSteps.addAll(workflowUtilities.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.getContainer() != null).collect(Collectors.toList()));
+////                processSteps.addAll(workflowUtilities.getNotStartedUnfinishedSteps().stream().filter(ps -> ps.get() != null).collect(Collectors.toList()));
 ////
 ////                boolean stillNeeded = false;
 ////                for (ProcessStep tmp : processSteps) {
-////                    if (tmp.getContainer() != null && tmp != processStep && tmp.getContainer().getContainerID().equals(processStep.getContainer().getContainerID())) {
+////                    if (tmp.get() != null && tmp != processStep && tmp.get().getContainerID().equals(processStep.get().getContainerID())) {
 ////                        stillNeeded = true;
 ////                        break;
 ////                    }
 ////                }
 ////
 ////                if (!stillNeeded) {
-////                    actionExecutorUtilities.stopContainer(processStep.getContainer());
+////                    actionExecutorUtilities.stopContainer(processStep.get());
 ////                }
 //////            }
 ////            }

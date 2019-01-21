@@ -43,7 +43,7 @@ public class HandleResultVmContainer implements HandleOptimizationResult {
 
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
 //        optimize.getProcessSteps().stream().filter(ps -> ps.getScheduledAtVM() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getScheduledAtVM()));
-//        optimize.getProcessSteps().stream().filter(ps -> ps.getContainer().getVirtualMachineInstance() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.getContainer().getVirtualMachineInstance()));
+//        optimize.getProcessSteps().stream().filter(ps -> ps.get().getVirtualMachineInstance() != null).forEach(ps -> waitingForExecutingVirtualMachines.add(ps.get().getVirtualMachineInstance()));
 
         actionExecutor.startInvocationViaContainersOnVms(optimize.getProcessSteps());
 

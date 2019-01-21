@@ -37,7 +37,7 @@ public class HandleResultGeco implements HandleOptimizationResult {
     public Boolean processResults(OptimizationResult optimize, DateTime tau_t) {
 
         inMemoryCache.getWaitingForExecutingProcessSteps().addAll(optimize.getProcessSteps());
-//        optimize.getProcessSteps().stream().filter(ps -> ps.getContainer() != null).forEach(ps -> waitingForExecutingContainers.add(ps.getContainer()));
+//        optimize.getProcessSteps().stream().filter(ps -> ps.get() != null).forEach(ps -> waitingForExecutingContainers.add(ps.get()));
 
         actionExecutor.startTimedInvocationViaContainers(optimize.getProcessSteps());
 

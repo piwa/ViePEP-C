@@ -50,8 +50,8 @@ public class ProvisioningSchedule {
     }
 
     public void cleanup() {
-//        Set<UUID> usedContainer = processStepsMap.values().stream().map(processStep -> processStep.getContainer().getInternId()).collect(Collectors.toSet());
-//        Set<UUID> usedVMs = processStepsMap.values().stream().map(processStep -> processStep.getContainer().getVirtualMachineInstance().getInternId()).collect(Collectors.toSet());
+//        Set<UUID> usedContainer = processStepsMap.values().stream().map(processStep -> processStep.get().getInternId()).collect(Collectors.toSet());
+//        Set<UUID> usedVMs = processStepsMap.values().stream().map(processStep -> processStep.get().getVirtualMachineInstance().getInternId()).collect(Collectors.toSet());
 //
 //        containersMap.entrySet().removeIf(entry -> !usedContainer.contains(entry.getKey()) && (entry.getValue().getContainerStatus().equals(ContainerStatus.SCHEDULED) || entry.getValue().getContainerStatus().equals(ContainerStatus.UNUSED)));
 //        virtualMachineInstancesMap.entrySet().removeIf(entry -> !usedVMs.contains(entry.getKey()) && (entry.getValue().getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED) || entry.getValue().getVirtualMachineStatus().equals(VirtualMachineStatus.UNUSED)));
