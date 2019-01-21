@@ -29,7 +29,7 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
     @Value("${container.default.deploy.time}")
     private long defaultContainerDeployTime;
 
-    @Value("${only.container.deploy.time}")
+    @Value("${container.deploy.time}")
     private long onlyContainerDeploymentTime = 40000;
 
     @Value("${deadline.aware.factory.allowed.penalty.points}")

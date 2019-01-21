@@ -37,7 +37,7 @@ public class OptimizationUtility {
 
     @Value("${container.default.deploy.time}")
     private long containerDeploymentTime;
-    @Value("${perform.correctnes.checks}")
+    @Value("${perform.correctness.checks}")
     private boolean performChecks = true;
 
 //    public void checkIfFixedGeneHasContainerSchedulingUnit(Chromosome chromosome, String position) {
