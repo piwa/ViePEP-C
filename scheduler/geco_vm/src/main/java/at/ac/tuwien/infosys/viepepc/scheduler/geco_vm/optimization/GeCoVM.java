@@ -110,7 +110,7 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));
         operators.add(new SpaceAwareDeploymentMutation(1, optimizationEndTime));
         operators.add(new SpaceAwareVMSizeMutation(new PoissonGenerator(4, rng), optimizationEndTime));
-//        operators.add(new SpaceAwareDeploymentCrossover(maxTimeAfterDeadline));
+        operators.add(new SpaceAwareDeploymentCrossover(maxTimeAfterDeadline));
 
 
         int eliteCount = (int) Math.round(populationSize * eliteCountNumber);

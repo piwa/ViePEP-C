@@ -40,7 +40,8 @@ public class ContainerDeploymentController {
 
         try {
             dockerControllerService.startContainer(vm, container);
-            ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.START);
+//            ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.START);
+            ContainerReportingAction report = new ContainerReportingAction(container.getScheduledCloudResourceUsage().getStart(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.START);
             reportDaoService.save(report);
 
             log.debug("Container deployed=" + container);
@@ -56,7 +57,8 @@ public class ContainerDeploymentController {
     public void reset(Container container, String failureReason) {
         if (container != null) {
             VirtualMachineInstance vm = container.getVirtualMachineInstance();
-            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, failureReason);
+//            ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, failureReason);
+            ContainerReportingAction reportContainer = new ContainerReportingAction(container.getScheduledCloudResourceUsage().getEnd(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, failureReason);
             reportDaoService.save(reportContainer);
             container.shutdownContainer();
         }
@@ -71,14 +73,16 @@ public class ContainerDeploymentController {
                     VirtualMachineInstance vm = container.getVirtualMachineInstance();
                     log.info("Stop Container: " + container + " on VM: " + vm);
 
-                    ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.STOPPED);
+//                    ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.STOPPED);
+                    ContainerReportingAction report = new ContainerReportingAction(container.getScheduledCloudResourceUsage().getEnd(), container.getName(), container.getContainerConfiguration().getName(), vm.getInstanceId(), Action.STOPPED);
                     reportDaoService.save(report);
 
                     dockerControllerService.removeContainer(container);
                 } else {
                     log.info("Stop Container: " + container);
 
-                    ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), null, Action.STOPPED);
+//                    ContainerReportingAction report = new ContainerReportingAction(DateTime.now(), container.getName(), container.getContainerConfiguration().getName(), null, Action.STOPPED);
+                    ContainerReportingAction report = new ContainerReportingAction(container.getScheduledCloudResourceUsage().getEnd(), container.getName(), container.getContainerConfiguration().getName(), null, Action.STOPPED);
                     reportDaoService.save(report);
 
                     dockerControllerService.removeContainer(container);

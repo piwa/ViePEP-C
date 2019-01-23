@@ -50,7 +50,8 @@ public class VMDeploymentController {
             }
 
             log.debug("VM up and running with ip: " + virtualMachineInstance.getIpAddress() + " vm: " + virtualMachineInstance);
-            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachineInstance.getStartTime(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.START);
+//            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachineInstance.getStartTime(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.START);
+            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachineInstance.getScheduledCloudResourceUsage().getStart(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.START);
             reportDaoService.save(report);
 
             synchronized (waitObject) {
@@ -75,7 +76,8 @@ public class VMDeploymentController {
     }
 
     private void reset(VirtualMachineInstance virtualMachineInstance, String failureReason) {
-        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
+//        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
+        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(virtualMachineInstance.getScheduledCloudResourceUsage().getEnd(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
         reportDaoService.save(reportVM);
 
         log.debug("Terminate: " + virtualMachineInstance);
@@ -89,15 +91,12 @@ public class VMDeploymentController {
 
         virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.TERMINATED);
 
-//        if (virtualMachineInstance.getDeployedContainers().size() > 0) {
-//            virtualMachineInstance.getDeployedContainers().forEach(container -> stopContainer(container));
-//        }
-
         cloudControllerService.stopVirtualMachine(virtualMachineInstance);
 
         virtualMachineInstance.terminate();
 
-        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.STOPPED);
+//        VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.STOPPED);
+        VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachineInstance.getScheduledCloudResourceUsage().getEnd(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.STOPPED);
         reportDaoService.save(report);
     }
 }

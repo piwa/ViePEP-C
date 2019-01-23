@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.database.bootstrap.vmTypes;
 
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.Objects;
 
 /**
@@ -34,6 +36,7 @@ public class VmTypesReaderImpl {
             File file = Paths.get(Objects.requireNonNull(this.getClass().getClassLoader().getResource(vmTypesPath)).toURI()).toFile();
             VirtualMachineTypes virtualMachineTypes = (VirtualMachineTypes) jaxbUnmarshaller.unmarshal(file);
             inMemoryCache.getVmTypes().addAll(virtualMachineTypes.getVmTypes());
+            inMemoryCache.getVmTypes().sort(Comparator.comparing(VMType::getCores));//.thenComparing(VMType::getRamPoints));
         } catch (JAXBException | NullPointerException | URISyntaxException e) {
             log.error("Exception", e);
         }

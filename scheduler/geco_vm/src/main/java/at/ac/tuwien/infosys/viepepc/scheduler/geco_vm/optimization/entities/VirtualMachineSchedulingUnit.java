@@ -20,6 +20,7 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
     private final VirtualMachineInstance virtualMachineInstance;
     private VMType vmType;
     private Set<ProcessStepSchedulingUnit> processStepSchedulingUnits = new HashSet<>();
+    private String origin = "unknown";
 
     private VirtualMachineSchedulingUnit(UUID uid, boolean fixed, long virtualMachineDeploymentDuration, long containerDeploymentDuration, VirtualMachineInstance virtualMachineInstance) {
         this.uid = uid;
@@ -32,6 +33,10 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
 
     public VirtualMachineSchedulingUnit(boolean fixed, long virtualMachineDeploymentDuration, long containerDeploymentDuration, VirtualMachineInstance virtualMachineInstance) {
         this(UUID.randomUUID(), fixed, virtualMachineDeploymentDuration, containerDeploymentDuration, virtualMachineInstance);
+    }
+    public VirtualMachineSchedulingUnit(boolean fixed, long virtualMachineDeploymentDuration, long containerDeploymentDuration, VirtualMachineInstance virtualMachineInstance, String origin) {
+        this(UUID.randomUUID(), fixed, virtualMachineDeploymentDuration, containerDeploymentDuration, virtualMachineInstance);
+        this.origin = origin;
     }
 
     public Interval getVmAvailableInterval() {
@@ -48,10 +53,6 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
     public DateTime getDeploymentStartTime() {
         return getCloudResourceUsageInterval().getStart();
     }
-
-//    public DateTime getDeploymentTimes(Interval interval) {
-//        return interval.getStart().minus(virtualMachineDeploymentDuration);
-//    }
 
     @Override
     public VirtualMachineSchedulingUnit clone() {
@@ -73,6 +74,7 @@ public class VirtualMachineSchedulingUnit implements Cloneable {
                 ", processStepAmount=" + processStepSchedulingUnits.size() +
                 ", processStepIds=" + processStepIds +
                 ", virtualMachineInstance=" + virtualMachineInstance +
+                ", origin=" + origin +
                 '}';
     }
 

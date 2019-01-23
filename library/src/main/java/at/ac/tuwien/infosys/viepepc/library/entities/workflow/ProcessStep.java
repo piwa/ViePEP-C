@@ -152,7 +152,8 @@ public class ProcessStep extends Element implements Cloneable {
 
         return "ProcessStep{" +
                 "internId=" + internId.toString().substring(0,8) +
-                ", workflowName='" + workflowName + '\'' +
+                ", workflowName=" + workflowName +
+                ", name=" + name +
                 ", scheduledStartDate=" + scheduledStartDate +
                 ", startDate=" + startDate +
                 ", finishedAt=" + finishedAt +

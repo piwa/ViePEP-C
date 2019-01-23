@@ -72,14 +72,14 @@ public class SpaceAwareDeploymentCrossover extends AbstractCrossover<Chromosome>
         Chromosome offspring2Chromosome = parent2.clone();
 
         List<VirtualMachineSchedulingUnit> clone1VirtualMachinesTemp = offspring1Chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toList());
-        List<VirtualMachineSchedulingUnit> clone2VirtualMachinesTemp = offspring1Chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toList());
+        List<VirtualMachineSchedulingUnit> clone2VirtualMachinesTemp = offspring2Chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toList());
         Map<UUID, VirtualMachineSchedulingUnit> clone1VirtualMachines = new HashMap<>();
         Map<UUID, VirtualMachineSchedulingUnit> clone2VirtualMachines = new HashMap<>();
         clone1VirtualMachinesTemp.forEach(element -> clone1VirtualMachines.put(element.getUid(), element));
         clone2VirtualMachinesTemp.forEach(element -> clone2VirtualMachines.put(element.getUid(), element));
 
-        Map<String, Chromosome.Gene> processStepNameToCloneMap1 = fillMap(offspring1Chromosome);
-        Map<String, Chromosome.Gene> processStepNameToCloneMap2 = fillMap(offspring2Chromosome);
+        Map<UUID, Chromosome.Gene> processStepNameToCloneMap1 = fillMap(offspring1Chromosome);
+        Map<UUID, Chromosome.Gene> processStepNameToCloneMap2 = fillMap(offspring2Chromosome);
 
         int amountOfRows = offspring1Chromosome.getGenes().size();
         boolean rowClone1Changed = false;
@@ -101,35 +101,24 @@ public class SpaceAwareDeploymentCrossover extends AbstractCrossover<Chromosome>
 
             Chromosome.Gene parent2Gene = rowParent2.get(crossoverStartIndex);
             Chromosome.Gene clone1Gene = rowClone1.get(crossoverStartIndex);
-
             VirtualMachineSchedulingUnit parent2VirtualMachineSchedulingUnit = parent2Gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit();
             VirtualMachineSchedulingUnit clone1VirtualMachineSchedulingUnit = clone1Gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit();
-
-            if(!clone1VirtualMachineSchedulingUnit.isFixed()) {
-                UUID parent2VirtualMachine = parent2VirtualMachineSchedulingUnit.getUid();
-                UUID clone1VirtualMachine = clone1VirtualMachineSchedulingUnit.getUid();
-                if (parent2VirtualMachine != clone1VirtualMachine) {
-                    rowClone1Changed = performCrossover(parent2Gene, clone1VirtualMachines, rowParent2, clone1Gene.getLatestPreviousGene(), processStepNameToCloneMap1);
-                }
+            if (!clone1VirtualMachineSchedulingUnit.isFixed() && parent2VirtualMachineSchedulingUnit.getUid() != clone1VirtualMachineSchedulingUnit.getUid()) {
+                rowClone1Changed = performCrossover(parent2Gene, clone1VirtualMachines, rowParent2, clone1Gene.getLatestPreviousGene(), processStepNameToCloneMap1);
             }
 
             Chromosome.Gene parent1Gene = rowParent1.get(crossoverStartIndex);
             Chromosome.Gene clone2Gene = rowClone2.get(crossoverStartIndex);
-
             VirtualMachineSchedulingUnit parent1VirtualMachineSchedulingUnit = parent1Gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit();
             VirtualMachineSchedulingUnit clone2VirtualMachineSchedulingUnit = clone2Gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit();
-
-            if(!clone2VirtualMachineSchedulingUnit.isFixed()) {
-                UUID parent1VirtualMachine = parent1VirtualMachineSchedulingUnit.getUid();
-                UUID clone2VirtualMachine = clone2VirtualMachineSchedulingUnit.getUid();
-                if (parent1VirtualMachine != clone2VirtualMachine) {
-                    rowClone2Changed = performCrossover(parent1Gene, clone2VirtualMachines, rowParent1, clone2Gene.getLatestPreviousGene(), processStepNameToCloneMap2);
-                }
+            if (!clone2VirtualMachineSchedulingUnit.isFixed() && parent1VirtualMachineSchedulingUnit.getUid() != clone2VirtualMachineSchedulingUnit.getUid()) {
+                rowClone2Changed = performCrossover(parent1Gene, clone2VirtualMachines, rowParent1, clone2Gene.getLatestPreviousGene(), processStepNameToCloneMap2);
             }
             if (rowClone1Changed || rowClone2Changed) {
                 break;
             }
         }
+
 
         orderMaintainer.orderIsOk(offspring1Chromosome.getGenes());
         orderMaintainer.orderIsOk(offspring2Chromosome.getGenes());
@@ -137,9 +126,6 @@ public class SpaceAwareDeploymentCrossover extends AbstractCrossover<Chromosome>
         List<Chromosome> result = new ArrayList<>();
         result.add(offspring1Chromosome);
         result.add(offspring2Chromosome);
-
-//        vmSelectionHelper.mergeVirtualMachineSchedulingUnits(offspring1Chromosome);
-//        vmSelectionHelper.mergeVirtualMachineSchedulingUnits(offspring2Chromosome);
 
         vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring1Chromosome);
         vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring2Chromosome);
@@ -150,9 +136,9 @@ public class SpaceAwareDeploymentCrossover extends AbstractCrossover<Chromosome>
         return result;
     }
 
-    private boolean performCrossover(Chromosome.Gene parentGene, Map<UUID, VirtualMachineSchedulingUnit> cloneVirtualMachines, List<Chromosome.Gene> rowParent, Chromosome.Gene clonePreviousGene, Map<String, Chromosome.Gene> processStepNameToCloneMap) {
+    private boolean performCrossover(Chromosome.Gene parentGene, Map<UUID, VirtualMachineSchedulingUnit> cloneVirtualMachines, List<Chromosome.Gene> rowParent, Chromosome.Gene clonePreviousGene, Map<UUID, Chromosome.Gene> processStepNameToCloneMap) {
         boolean rowCloneChanged = false;
-        if (clonePreviousGene == null || (checkIfCrossoverPossible(clonePreviousGene, parentGene.getLatestPreviousGene().getNextGenes()))) {
+        if (clonePreviousGene == null || checkIfCrossoverPossible(clonePreviousGene, parentGene.getLatestPreviousGene().getNextGenes())) {
 
             Set<Chromosome.Gene> currentParentGenes = null;
             if (parentGene.getLatestPreviousGene() == null) {
@@ -162,7 +148,7 @@ public class SpaceAwareDeploymentCrossover extends AbstractCrossover<Chromosome>
             }
 
             for (Chromosome.Gene currentParentGene : currentParentGenes) {
-                performCrossoverRec(currentParentGene, processStepNameToCloneMap.get(currentParentGene.getProcessStepSchedulingUnit().getName()), processStepNameToCloneMap, cloneVirtualMachines);
+                performCrossoverRec(currentParentGene, processStepNameToCloneMap.get(currentParentGene.getProcessStepSchedulingUnit().getUid()), processStepNameToCloneMap, cloneVirtualMachines);
             }
 
             rowCloneChanged = true;
@@ -170,25 +156,26 @@ public class SpaceAwareDeploymentCrossover extends AbstractCrossover<Chromosome>
         return rowCloneChanged;
     }
 
-    private void performCrossoverRec(Chromosome.Gene parentGene, Chromosome.Gene currentClone, Map<String, Chromosome.Gene> processStepNameToCloneMap, Map<UUID, VirtualMachineSchedulingUnit>  cloneVirtualMachines) {
-        Interval newInterval = parentGene.getExecutionInterval();
-        currentClone.setExecutionInterval(new Interval(newInterval.getStart().getMillis(), newInterval.getEnd().getMillis()));
-
+    private void performCrossoverRec(Chromosome.Gene parentGene, Chromosome.Gene currentClone, Map<UUID, Chromosome.Gene> processStepNameToCloneMap, Map<UUID, VirtualMachineSchedulingUnit> cloneVirtualMachines) {
         VirtualMachineSchedulingUnit parentVirtualMachine = parentGene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit();
         VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = cloneVirtualMachines.get(parentVirtualMachine.getUid());
         VirtualMachineSchedulingUnit oldVirtualMachineSchedulingUnit = currentClone.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit();
 
-        if(newVirtualMachineSchedulingUnit == null ) {
-            newVirtualMachineSchedulingUnit = parentVirtualMachine.clone();
-            cloneVirtualMachines.put(newVirtualMachineSchedulingUnit.getUid(), newVirtualMachineSchedulingUnit);
+//        if (newVirtualMachineSchedulingUnit == null) {
+//            newVirtualMachineSchedulingUnit = parentVirtualMachine.clone();
+//            cloneVirtualMachines.put(newVirtualMachineSchedulingUnit.getUid(), newVirtualMachineSchedulingUnit);
+//        }
+
+        if (newVirtualMachineSchedulingUnit != null && !newVirtualMachineSchedulingUnit.getUid().equals(oldVirtualMachineSchedulingUnit.getUid())) {
+            oldVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().remove(currentClone.getProcessStepSchedulingUnit());
+            newVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().add(currentClone.getProcessStepSchedulingUnit());
+            currentClone.getProcessStepSchedulingUnit().setVirtualMachineSchedulingUnit(newVirtualMachineSchedulingUnit);
         }
-        oldVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().remove(currentClone.getProcessStepSchedulingUnit());
-        newVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().add(currentClone.getProcessStepSchedulingUnit());
-        currentClone.getProcessStepSchedulingUnit().setVirtualMachineSchedulingUnit(newVirtualMachineSchedulingUnit);
+
 
         for (Chromosome.Gene nextGene : parentGene.getNextGenes()) {
             if (nextGene != null) {
-                performCrossoverRec(nextGene, processStepNameToCloneMap.get(nextGene.getProcessStepSchedulingUnit().getName()), processStepNameToCloneMap, cloneVirtualMachines);
+                performCrossoverRec(nextGene, processStepNameToCloneMap.get(nextGene.getProcessStepSchedulingUnit().getUid()), processStepNameToCloneMap, cloneVirtualMachines);
             }
         }
     }
@@ -204,21 +191,20 @@ public class SpaceAwareDeploymentCrossover extends AbstractCrossover<Chromosome>
         return startGenes;
     }
 
-    private Map<String, Chromosome.Gene> fillMap(Chromosome chromosome) {
-        Map<String, Chromosome.Gene> map = new HashMap<>();
-        chromosome.getGenes().forEach(row -> row.forEach(gene -> map.put(gene.getProcessStepSchedulingUnit().getName(), gene)));
+    private Map<UUID, Chromosome.Gene> fillMap(Chromosome chromosome) {
+        Map<UUID, Chromosome.Gene> map = new HashMap<>();
+        chromosome.getFlattenChromosome().forEach(gene -> map.put(gene.getProcessStepSchedulingUnit().getUid(), gene));
         return map;
     }
 
-    private boolean checkIfCrossoverPossible(Chromosome.Gene clone1PreviousGene, Set<Chromosome.Gene> parent2Genes) {
+    private boolean checkIfCrossoverPossible(Chromosome.Gene clonePreviousGene, Set<Chromosome.Gene> parentGenes) {
 
-        for (Chromosome.Gene parent2Gene : parent2Genes) {
-            if (clone1PreviousGene.getExecutionInterval().getEnd().isAfter(parent2Gene.getExecutionInterval().getStart())) {
+        for (Chromosome.Gene parentGene : parentGenes) {
+            if (clonePreviousGene.getExecutionInterval().getEnd().isAfter(parentGene.getExecutionInterval().getStart())) {
                 return false;
             }
         }
         return true;
-
     }
 
 }

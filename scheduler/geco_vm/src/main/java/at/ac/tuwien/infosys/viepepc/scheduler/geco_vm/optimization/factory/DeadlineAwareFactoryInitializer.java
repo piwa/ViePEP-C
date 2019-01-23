@@ -67,11 +67,6 @@ public class DeadlineAwareFactoryInitializer {
                 if (processStep.getStartDate() != null && processStep.getFinishedAt() == null &&
                         processStep.getScheduledStartDate().isBefore(this.optimizationEndTime) && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isAfter(this.optimizationEndTime)) {
                     isRunning = true;
-//                } else if ((processStep.getStartDate() != null && processStep.getFinishedAt() != null) ||
-//                           (processStep.getStartDate() != null && processStep.getFinishedAt() == null && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationEndTime))) {
-//                    isDone = true;
-//                } else if (processStep.getStartDate() == null && processStep.getFinishedAt() == null && processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationEndTime)) {
-//                    isDone = true;
                 } else if ((processStep.getStartDate() != null && processStep.getFinishedAt() != null) || processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBefore(this.optimizationEndTime)) {
                     isDone = true;
                 }
@@ -178,13 +173,10 @@ public class DeadlineAwareFactoryInitializer {
     }
 
     private ProcessStepSchedulingUnit getProcessStepSchedulingUnit(ProcessStep processStep, boolean isFixed) {
-
         ProcessStepSchedulingUnit processStepSchedulingUnit = new ProcessStepSchedulingUnit(processStep);
-
         if (isFixed) {
             setContainerAndVMSchedulingUnit(processStepSchedulingUnit);
         }
-
         return processStepSchedulingUnit;
     }
 
@@ -192,9 +184,9 @@ public class DeadlineAwareFactoryInitializer {
         ProcessStep processStep = processStepSchedulingUnit.getProcessStep();
         Container container = processStep.getContainer();
 
-        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());
+        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());     // TODO NullPointer because of XOR?
         if (virtualMachineSchedulingUnit == null) {
-            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit( true, virtualMachineDeploymentTime, containerDeploymentTime, container.getVirtualMachineInstance());
+            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit( true, virtualMachineDeploymentTime, containerDeploymentTime, container.getVirtualMachineInstance(), "setContainerAndVMSchedulingUnit");
             virtualMachineSchedulingUnitMap.put(container.getVirtualMachineInstance(), virtualMachineSchedulingUnit);
         }
         processStepSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineSchedulingUnit);

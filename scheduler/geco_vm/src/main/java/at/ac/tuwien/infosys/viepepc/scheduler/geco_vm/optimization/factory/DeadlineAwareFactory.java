@@ -258,7 +258,9 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     private void setAllPrecedingFixed(Chromosome.Gene gene) {
         gene.getPreviousGenes().forEach(prevGene -> {
             prevGene.setFixed(true);
-            deadlineAwareFactoryInitializer.setContainerAndVMSchedulingUnit(prevGene.getProcessStepSchedulingUnit());
+            if(prevGene.getProcessStepSchedulingUnit().getProcessStep().isHasToBeExecuted()) {
+                deadlineAwareFactoryInitializer.setContainerAndVMSchedulingUnit(prevGene.getProcessStepSchedulingUnit());
+            }
             setAllPrecedingFixed(prevGene);
         });
     }

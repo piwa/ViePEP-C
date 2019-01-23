@@ -80,6 +80,13 @@ public abstract class AbstractOnlyContainerOptimization {
 
         log.info(builder.toString());
 
+        List<ProcessStepSchedulingUnit> processStepSchedulingUnit1s = winner.getFlattenChromosome().stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).collect(Collectors.toList());
+        for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnit1s) {
+            VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = processStepSchedulingUnit.getVirtualMachineSchedulingUnit();
+            if(!virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().contains(processStepSchedulingUnit)) {
+                log.error("A ProcessStep is defined for a VM but the VM does not contain it! (at=end); processStepSchedulingUnit=" + processStepSchedulingUnit + ", " + virtualMachineSchedulingUnit);
+            }
+        }
 
         OptimizationResult optimizationResult = new OptimizationResult();
 
@@ -121,46 +128,10 @@ public abstract class AbstractOnlyContainerOptimization {
             if(virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.UNUSED)) {
                 virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.SCHEDULED);
             }
-//            virtualMachineSchedulingUnit.getScheduledContainers().forEach(container -> virtualMachineInstance.getDeployedContainers().add(container.get()));
-
             optimizationResult.getVirtualMachineInstances().add(virtualMachineInstance);
         }
 
 
-//
-//
-//
-//
-//        List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>();
-//        for (Chromosome.Gene gene : winner.getFlattenChromosome()) {
-////            if(!gene.isFixed()) {
-//                processStepSchedulingUnits.add(gene.getProcessStepSchedulingUnit());
-//                ProcessStep processStep = gene.getProcessStepSchedulingUnit().getProcessStep();
-//                Container container = gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().get();
-//                processStep.setScheduledStartDate(gene.getExecutionInterval().getStart());
-//                if(processStep.getProcessStepStatus().equals(ProcessStepStatus.UNUSED))
-//                processStep.setProcessStepStatus(ProcessStepStatus.SCHEDULED);
-//                processStep.setContainer(container);
-//
-//                optimizationResult.getProcessSteps().add(processStep);
-////            }
-//        }
-
-//        Set<ContainerSchedulingUnit> containerSchedulingUnits = processStepSchedulingUnits.stream().map(ProcessStepSchedulingUnit::getContainerSchedulingUnit).collect(Collectors.toSet());
-//        for (ContainerSchedulingUnit containerSchedulingUnit : containerSchedulingUnits) {
-//            Container container = containerSchedulingUnit.get();
-//            container.setScheduledCloudResourceUsage(containerSchedulingUnit.getCloudResourceUsage());
-//            container.setScheduledAvailableInterval(containerSchedulingUnit.getServiceAvailableTime());
-//            if(container.getContainerStatus().equals(ContainerStatus.UNUSED)) {
-//                container.setContainerStatus(ContainerStatus.SCHEDULED);
-//            }
-//            container.setVirtualMachineInstance(containerSchedulingUnit.getScheduledOnVm().getVirtualMachineInstance());
-//
-//            optimizationResult.getContainers().add(container);
-//        }
-//
-//        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = containerSchedulingUnits.stream().map(ContainerSchedulingUnit::getScheduledOnVm).collect(Collectors.toSet());
-//
 
         return optimizationResult;
     }
