@@ -203,13 +203,13 @@ public class VMSelectionHelper {
 
         VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
         do {
-            virtualMachineSchedulingUnit = getVirtualMachineSchedulingUnit(availableVirtualMachineSchedulingUnits, random);
+            virtualMachineSchedulingUnit = getVirtualMachineSchedulingUnit(availableVirtualMachineSchedulingUnits, processStepSchedulingUnit, random);
         } while (!checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(virtualMachineSchedulingUnit, processStepSchedulingUnits));
 
         return virtualMachineSchedulingUnit;
     }
 
-    private VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnit(Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines, Random random) {
+    private VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnit(Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines, ProcessStepSchedulingUnit processStepSchedulingUnit, Random random) {
         VirtualMachineInstance randomVM;
 
         boolean fromAvailableVM = random.nextBoolean();
@@ -242,15 +242,30 @@ public class VMSelectionHelper {
 
         } else {
 
-            List<VMType> vmTypes = new ArrayList<>(cacheVirtualMachineService.getVMTypes());
-
-            int randomPosition = random.nextInt(vmTypes.size());
-            VMType vmType = vmTypes.get(randomPosition);
-
-            randomVM = new VirtualMachineInstance(vmType);
-
-            return new VirtualMachineSchedulingUnit(false, virtualMachineDeploymentTime, containerDeploymentTime, randomVM);
+            try {
+                VMType vmType = getFittingVMType(new ArrayList<>(cacheVirtualMachineService.getVMTypes()), processStepSchedulingUnit);
+                return new VirtualMachineSchedulingUnit(false, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
+            } catch (Exception ex) {
+                List<VMType> vmTypes = new ArrayList<>(cacheVirtualMachineService.getVMTypes());
+                int randomPosition = random.nextInt(vmTypes.size());
+                VMType vmType = vmTypes.get(randomPosition);
+                return new VirtualMachineSchedulingUnit(false, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
+            }
         }
+    }
+
+    private VMType getFittingVMType(List<VMType> allVMTypes, ProcessStepSchedulingUnit processStepSchedulingUnit) throws VMTypeNotFoundException {
+
+        double scheduledCPUUsage = processStepSchedulingUnit.getProcessStep().getServiceType().getServiceTypeResources().getCpuLoad();
+        double scheduledRAMUsage = processStepSchedulingUnit.getProcessStep().getServiceType().getServiceTypeResources().getMemory();
+
+        for (VMType vmType : allVMTypes) {
+            if (vmType.getCpuPoints() >= scheduledCPUUsage && vmType.getRamPoints() >= scheduledRAMUsage) {
+                return vmType;
+            }
+        }
+
+        throw new VMTypeNotFoundException("Could not find big enough VMType");
     }
 
     @Data
