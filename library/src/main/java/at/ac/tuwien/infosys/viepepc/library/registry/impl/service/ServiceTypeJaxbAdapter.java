@@ -14,8 +14,7 @@ public class ServiceTypeJaxbAdapter extends XmlAdapter<String, ServiceType> {
 
     @Override
     public ServiceType unmarshal(String serviceTypeName) throws Exception {
-        ServiceType serviceType = serviceRegistryReader.findServiceType(serviceTypeName);
-        return serviceType;
+        return serviceRegistryReader.findServiceType(serviceTypeName);
     }
 
     @Override

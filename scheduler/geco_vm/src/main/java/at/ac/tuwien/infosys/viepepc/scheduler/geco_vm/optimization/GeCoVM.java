@@ -52,20 +52,6 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
     private int populationSize = 400;
     @Value("${population.elite.count}")
     private double eliteCountNumber = 0.05;
-//    @Value("${stagnation.generation.limit}")
-//    private int stagnationGenerationLimit = 15;
-
-//    @Value("${use.single.shift.with.moving.mutation.min.value}")
-//    private int singleShiftWithMovingMutationMin = 60000;
-//    @Value("${use.single.shift.with.moving.mutation.max.value}")
-//    private int singleShiftWithMovingMutationMax = 60000;
-//    @Value("${use.single.shift.if.possible.mutation.min.value}")
-//    private int singleShiftIfPossibleMutationMin = 60000;
-//    @Value("${use.single.shift.if.possible.mutation.max.value}")
-//    private int singleShiftIfPossibleMutationMax = 60000;
-
-//    @Value("${container.default.deploy.time}")
-//    private long containerDeploymentTime;
 
     @Autowired
     private DeadlineAwareFactory chromosomeFactory;
@@ -80,7 +66,6 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
     @Override
     public OptimizationResult optimize(DateTime tau_t) throws ProblemNotSolvedException {
 
-        this.optimizationEndTime = DateTime.now();
         List<WorkflowElement> workflowElements = getRunningWorkflowInstancesSorted();
 
         if (workflowElements.size() == 0) {
@@ -91,7 +76,7 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         stopwatch.start("pre optimization tasks");
 
 
-        this.optimizationEndTime = this.optimizationEndTime.plus(maxOptimizationDuration).plus(additionalOptimizationTime);
+        this.optimizationEndTime = DateTime.now().plus(maxOptimizationDuration).plus(additionalOptimizationTime);
 
 
         SelectionStrategy<Object> selectionStrategy = new TournamentSelection(numberGenerator);

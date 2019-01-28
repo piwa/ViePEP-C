@@ -46,8 +46,8 @@ public class OptimizationUtility {
         List<ProcessStepSchedulingUnit> processStepSchedulingUnits = chromosome.getFlattenChromosome().stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).collect(Collectors.toList());
         for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnits) {
             VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = processStepSchedulingUnit.getVirtualMachineSchedulingUnit();
-            if(!virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().contains(processStepSchedulingUnit)) {
-                log.error("A ProcessStep is defined for a VM but the VM does not contain it! (at="+ position + "); processStepSchedulingUnit=" + processStepSchedulingUnit + ", " + virtualMachineSchedulingUnit);
+            if (!virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().contains(processStepSchedulingUnit)) {
+                log.error("A ProcessStep is defined for a VM but the VM does not contain it! (at=" + position + "); processStepSchedulingUnit=" + processStepSchedulingUnit + ", " + virtualMachineSchedulingUnit);
             }
         }
 
@@ -105,7 +105,7 @@ public class OptimizationUtility {
     public Container getContainer(ServiceType serviceType, int amount) throws ContainerImageNotFoundException {
 
         double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad() + serviceType.getServiceTypeResources().getCpuLoad() * (amount - 1) * 2 / 3;
-        double ram = serviceType.getServiceTypeResources().getMemory() + serviceType.getServiceTypeResources().getMemory() * (amount - 1) * 2 / 3;
+        double ram = serviceType.getServiceTypeResources().getMemory() + serviceType.getServiceTypeResources().getMemory() * (amount - 1);// * 2 / 3;
 
         ContainerConfiguration bestContainerConfig = new ContainerConfiguration();
         bestContainerConfig.setName(cpuLoad + "_" + ram);
@@ -148,8 +148,10 @@ public class OptimizationUtility {
     @NotNull
     public List<ServiceTypeSchedulingUnit> getRequiredServiceTypesOneVM(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ProcessStepSchedulingUnit> additionalProcessSteps) {
 
-        Set<ProcessStepSchedulingUnit> processStepSchedulingUnits = new HashSet<>(virtualMachineSchedulingUnit.getProcessStepSchedulingUnits());
-        processStepSchedulingUnits.addAll(additionalProcessSteps);
+        Set<ProcessStepSchedulingUnit> processStepSchedulingUnitSet = new HashSet<>(virtualMachineSchedulingUnit.getProcessStepSchedulingUnits());
+        processStepSchedulingUnitSet.addAll(additionalProcessSteps);
+        List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>(processStepSchedulingUnitSet);
+        processStepSchedulingUnits.sort(Comparator.comparing(unit -> unit.getGene().getExecutionInterval().getStart()));
 
         Map<ServiceType, List<ServiceTypeSchedulingUnit>> requiredServiceTypeMap = new HashMap<>();
         for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnits) {
@@ -161,7 +163,7 @@ public class OptimizationUtility {
             for (ServiceTypeSchedulingUnit requiredServiceType : requiredServiceTypes) {
                 Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
                 if (overlap != null && requiredServiceType.isFixed() == gene.isFixed()) {
-                    if (!gene.isFixed() || requiredServiceType.getContainer().getInternId().equals(gene.getProcessStepSchedulingUnit().getProcessStep().getContainer().getInternId())) {
+                    if (!gene.isFixed() || requiredServiceType.getContainer().getInternId().equals(processStepSchedulingUnit.getProcessStep().getContainer().getInternId())) {
 
                         Interval deploymentInterval = requiredServiceType.getServiceAvailableTime();
                         Interval geneInterval = gene.getExecutionInterval();
@@ -199,7 +201,6 @@ public class OptimizationUtility {
                 log.error("Could not find a fitting container");
             }
         });
-
 
         return returnList;
     }

@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.uncommons.watchmaker.framework.EvolutionObserver;
 import org.uncommons.watchmaker.framework.PopulationData;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 public class EvolutionLogger implements EvolutionObserver<Chromosome>
 {
     @Getter
+    @Setter
     private int amountOfGenerations = 0;
 
     public void populationUpdate(PopulationData data)

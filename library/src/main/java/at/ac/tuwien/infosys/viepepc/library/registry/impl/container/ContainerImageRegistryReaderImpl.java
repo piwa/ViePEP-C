@@ -13,6 +13,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -35,9 +37,11 @@ public class ContainerImageRegistryReaderImpl implements ContainerImageRegistryR
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( ContainerImageRegistry.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File file = Paths.get(Objects.requireNonNull(this.getClass().getClassLoader().getResource(containerImageRegistryPath)).toURI()).toFile();
+//            File file = Paths.get(Objects.requireNonNull(this.getClass().getClassLoader().getResource(containerImageRegistryPath)).toURI()).toFile();
+            InputStream file = this.getClass().getResourceAsStream(containerImageRegistryPath);
             this.containerImageRegistry = (ContainerImageRegistry) jaxbUnmarshaller.unmarshal(file);
-        } catch (JAXBException | NullPointerException | URISyntaxException e) {
+//            this.containerImageRegistry = (ContainerImageRegistry) jaxbUnmarshaller.unmarshal(new StringReader(xmlString));
+        } catch (JAXBException | NullPointerException e) {
             log.error("Exception", e);
         }
 

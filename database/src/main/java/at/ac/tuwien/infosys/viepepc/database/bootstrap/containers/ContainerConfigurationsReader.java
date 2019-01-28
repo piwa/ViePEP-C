@@ -10,6 +10,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -31,10 +33,12 @@ public class ContainerConfigurationsReader {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( ContainerConfigurations.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File file = Paths.get(Objects.requireNonNull(this.getClass().getClassLoader().getResource(containerConfigurationPath)).toURI()).toFile();
+//            File file = Paths.get(Objects.requireNonNull(this.getClass().getClassLoader().getResource(containerConfigurationPath)).toURI()).toFile();
+            InputStream file = this.getClass().getResourceAsStream(containerConfigurationPath);
             ContainerConfigurations containerConfigurations = (ContainerConfigurations) jaxbUnmarshaller.unmarshal(file);
+//            ContainerConfigurations containerConfigurations = (ContainerConfigurations) jaxbUnmarshaller.unmarshal(new StringReader(xmlString));
             inMemoryCache.getContainerConfigurations().addAll(containerConfigurations.getConfiguration());
-        } catch (JAXBException | NullPointerException | URISyntaxException e) {
+        } catch (JAXBException | NullPointerException e) {
             log.error("Exception", e);
         }
 

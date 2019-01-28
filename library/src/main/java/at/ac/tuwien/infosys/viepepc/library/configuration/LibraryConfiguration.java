@@ -6,6 +6,7 @@ import org.springframework.context.annotation.PropertySources;
 
 @Configuration
 @PropertySources({
+        @PropertySource("classpath:container-config/container.properties"),
         @PropertySource("classpath:application_library.properties")
 })
 public class LibraryConfiguration {

@@ -174,19 +174,19 @@ public class DeadlineAwareFactoryInitializer {
 
     private ProcessStepSchedulingUnit getProcessStepSchedulingUnit(ProcessStep processStep, boolean isFixed) {
         ProcessStepSchedulingUnit processStepSchedulingUnit = new ProcessStepSchedulingUnit(processStep);
-        if (isFixed) {
-            setContainerAndVMSchedulingUnit(processStepSchedulingUnit);
+        if (processStep.getContainer() != null && processStep.getContainer().getVirtualMachineInstance() != null) {
+            setContainerAndVMSchedulingUnit(processStepSchedulingUnit, isFixed);
         }
         return processStepSchedulingUnit;
     }
 
-    public void setContainerAndVMSchedulingUnit(ProcessStepSchedulingUnit processStepSchedulingUnit) {
+    public void setContainerAndVMSchedulingUnit(ProcessStepSchedulingUnit processStepSchedulingUnit, boolean isFixed) {
         ProcessStep processStep = processStepSchedulingUnit.getProcessStep();
         Container container = processStep.getContainer();
 
-        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());     // TODO NullPointer because of XOR?
+        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());
         if (virtualMachineSchedulingUnit == null) {
-            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit( true, virtualMachineDeploymentTime, containerDeploymentTime, container.getVirtualMachineInstance(), "setContainerAndVMSchedulingUnit");
+            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit( isFixed, virtualMachineDeploymentTime, containerDeploymentTime, container.getVirtualMachineInstance(), "setContainerAndVMSchedulingUnit");
             virtualMachineSchedulingUnitMap.put(container.getVirtualMachineInstance(), virtualMachineSchedulingUnit);
         }
         processStepSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineSchedulingUnit);

@@ -12,11 +12,12 @@
     <groupId>at.ac.tuwien.infosys.viepep-c</groupId>
     <artifactId>cloud-controller</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>action-executor</name>
+    <name>cloud-executor</name>
     <description>ViePEP-C action executor</description>
     <packaging>jar</packaging>
 
     <properties>
+        <spotify.docker.version>8.11.7</spotify.docker.version>
         <openstack.version>3.0.3</openstack.version>
     </properties>
 
@@ -104,6 +105,15 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <type>pom</type>
+                <version>2.1.1.RELEASE</version>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-bom</artifactId>
@@ -120,6 +130,7 @@
                 <scope>import</scope>
             </dependency>
         </dependencies>
+
     </dependencyManagement>
 
 

@@ -12,6 +12,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
@@ -31,9 +32,10 @@ public class ServiceRegistryReaderImpl implements ServiceRegistryReader {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( ServiceRegistry.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File file = Paths.get(Thread.currentThread().getContextClassLoader().getResource(serviceRegistryPath).toURI()).toFile();
+//            File file = Paths.get(Thread.currentThread().getContextClassLoader().getResource(serviceRegistryPath).toURI()).toFile();
+            InputStream file = this.getClass().getResourceAsStream(serviceRegistryPath);
             this.serviceRegistry = (ServiceRegistry) jaxbUnmarshaller.unmarshal(file);
-        } catch (JAXBException | URISyntaxException e) {
+        } catch (JAXBException e) {
             log.error("Exception" , e);
         }
     }

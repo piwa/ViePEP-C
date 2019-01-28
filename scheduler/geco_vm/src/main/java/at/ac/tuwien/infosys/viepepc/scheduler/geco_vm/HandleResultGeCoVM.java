@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
-@Profile("GeCo_VM")
+@Profile({"GeCo_VM","GeCo_VM_Baseline"})
 public class HandleResultGeCoVM implements HandleOptimizationResult {
 
     @Autowired

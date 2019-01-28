@@ -11,6 +11,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Comparator;
@@ -33,11 +35,13 @@ public class VmTypesReaderImpl {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( VirtualMachineTypes.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File file = Paths.get(Objects.requireNonNull(this.getClass().getClassLoader().getResource(vmTypesPath)).toURI()).toFile();
+//            File file = Paths.get(Objects.requireNonNull(this.getClass().getClassLoader().getResource(vmTypesPath)).toURI()).toFile();
+            InputStream file = this.getClass().getResourceAsStream(vmTypesPath);
             VirtualMachineTypes virtualMachineTypes = (VirtualMachineTypes) jaxbUnmarshaller.unmarshal(file);
+//            VirtualMachineTypes virtualMachineTypes = (VirtualMachineTypes) jaxbUnmarshaller.unmarshal(new StringReader(xmlString));
             inMemoryCache.getVmTypes().addAll(virtualMachineTypes.getVmTypes());
             inMemoryCache.getVmTypes().sort(Comparator.comparing(VMType::getCores));//.thenComparing(VMType::getRamPoints));
-        } catch (JAXBException | NullPointerException | URISyntaxException e) {
+        } catch (JAXBException | NullPointerException e) {
             log.error("Exception", e);
         }
 

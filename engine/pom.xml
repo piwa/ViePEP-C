@@ -2,18 +2,39 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
-        <groupId>at.ac.tuwien.infosys</groupId>
-        <artifactId>viepep-c</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.1.RELEASE</version>
+        <relativePath/>
     </parent>
-    
+
+    <!--<parent>-->
+    <!--<groupId>at.ac.tuwien.infosys</groupId>-->
+    <!--<artifactId>viepep-c</artifactId>-->
+    <!--<version>0.0.1-SNAPSHOT</version>-->
+    <!--</parent>-->
+
     <groupId>at.ac.tuwien.infosys.viepep-c</groupId>
     <artifactId>engine</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>engine</name>
     <description>ViePEP-C engine</description>
     <packaging>jar</packaging>
+
+    <properties>
+
+        <skipTests>true</skipTests>
+
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
+
+        <apache.commons.io.version>2.5</apache.commons.io.version>
+    </properties>
+
 
     <dependencies>
         <dependency>
@@ -55,6 +76,11 @@
 
         <!-- 3d Party -->
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>com.github.maricn</groupId>
             <artifactId>logback-slack-appender</artifactId>
             <version>1.4.0</version>
@@ -81,14 +107,44 @@
 
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>spring-releases</id>
+            <url>https://repo.spring.io/libs-release</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-releases</id>
+            <url>https://repo.spring.io/libs-release</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+
     <build>
+
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../library/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../cloud-controller/src/main/resources</directory>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>at.ac.tuwien.infosys.viepepc.engine.EngineApplication</mainClass>
-                </configuration>
+                <!--<groupId>org.springframework.boot</groupId>-->
+                <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
+                <!--<configuration>-->
+                    <!--<mainClass>at.ac.tuwien.infosys.viepepc.engine.EngineApplication</mainClass>-->
+                <!--</configuration>-->
             </plugin>
         </plugins>
     </build>

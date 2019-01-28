@@ -31,8 +31,6 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     @Autowired
     private DeadlineAwareFactoryInitializer deadlineAwareFactoryInitializer;
     @Autowired
-    private OptimizationUtility optimizationUtility;
-    @Autowired
     private VMSelectionHelper vmSelectionHelper;
 
     @Value("${slack.webhook}")
@@ -81,9 +79,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
             template.add(subChromosome);
             workflowDeadlines.put(workflowElement.getName(), workflowElement.getDeadlineDateTime());
             calculateMaxTimeAfterDeadline(workflowElement, subChromosome);
-
         }
-
 
         orderMaintainer.checkAndMaintainOrder(new Chromosome(template));
 
@@ -178,7 +174,6 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     }
 
     private Chromosome.Gene getLastProcessStep(List<Chromosome.Gene> row) {
-
         Chromosome.Gene lastGene = null;
         for (Chromosome.Gene gene : row) {
             if (lastGene == null || lastGene.getExecutionInterval().getEnd().isBefore(gene.getExecutionInterval().getEnd())) {
@@ -211,7 +206,6 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
                     redo = true;
                     break;
-
                 }
             }
         }
@@ -223,35 +217,24 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         for (Chromosome.Gene gene : startGenes) {
 
             if (!gene.isFixed()) {
-
                 Chromosome.Gene latestPreviousGene = gene.getLatestPreviousGene();
-
                 if (latestPreviousGene != null) {
                     DateTime newStartTime = new DateTime(latestPreviousGene.getExecutionInterval().getEnd().getMillis() + 1);
                     DateTime newEndTime = newStartTime.plus(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType().getServiceTypeResources().getMakeSpan());
                     gene.setExecutionInterval(new Interval(newStartTime, newEndTime));
                 }
                 if (bufferBound > 0) {
-
                     int intervalDelta = random.nextInt(bufferBound - 1) + 1;
                     gene.moveIntervalPlus(intervalDelta);
                 }
             }
         }
 
-        for (Chromosome.Gene gene : startGenes) {
-            moveNewChromosomeRec(gene.getNextGenes(), bufferBound);
-        }
+        startGenes.forEach(gene -> moveNewChromosomeRec(gene.getNextGenes(), bufferBound));
     }
 
     private Set<Chromosome.Gene> findStartGene(List<Chromosome.Gene> rowParent2) {
-        Set<Chromosome.Gene> startGenes = new HashSet<>();
-        for (Chromosome.Gene gene : rowParent2) {
-            if (gene.getPreviousGenes() == null || gene.getPreviousGenes().isEmpty()) {
-                startGenes.add(gene);
-            }
-        }
-        return startGenes;
+        return rowParent2.stream().filter(gene -> gene.getPreviousGenes() == null || gene.getPreviousGenes().isEmpty()).collect(Collectors.toSet());
     }
 
 
@@ -259,7 +242,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         gene.getPreviousGenes().forEach(prevGene -> {
             prevGene.setFixed(true);
             if(prevGene.getProcessStepSchedulingUnit().getProcessStep().isHasToBeExecuted()) {
-                deadlineAwareFactoryInitializer.setContainerAndVMSchedulingUnit(prevGene.getProcessStepSchedulingUnit());
+                deadlineAwareFactoryInitializer.setContainerAndVMSchedulingUnit(prevGene.getProcessStepSchedulingUnit(), true);
             }
             setAllPrecedingFixed(prevGene);
         });
