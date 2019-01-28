@@ -2,7 +2,6 @@ package at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerImage;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
-import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Columns;
@@ -133,7 +132,7 @@ public class VirtualMachineInstance implements Serializable {
     }
 
     public String getGoogleName() {
-        if(Strings.isNullOrEmpty(googleName)) {
+        if(googleName == null || googleName.isEmpty()) {
             googleName = "eval-" + this.instanceId.substring(0,6) + "-" + UUID.randomUUID().toString().substring(0,6);
         }
         return googleName;
