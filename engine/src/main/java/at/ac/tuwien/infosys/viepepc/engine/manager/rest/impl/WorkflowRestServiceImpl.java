@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Random;
 
 /**
  * Created by philippwaibel on 17/05/16. edited by Gerta Sheganaku
@@ -31,6 +30,8 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
     private Reasoning reasoning;
     @Autowired
     private ServiceRegistryReader serviceRegistryReader;
+
+    private int totalProcessStepCounter = 0;
 
     private static Object SYNC_OBJECT = new Object();
 
@@ -50,6 +51,8 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
         cacheWorkflowService.addWorkflowInstance(workflowElement);
         log.info("Done: Add new WorkflowElement: " + workflowElement.toString());
         reasoning.setNextOptimizeTimeNow();
+
+        log.debug("Total amount of process steps to execute=" + totalProcessStepCounter);
     }
 
     @Override
@@ -73,6 +76,8 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
                 log.error("EXCEPTION", ex);
             }
         }
+
+        log.debug("Total amount of process steps to execute=" + totalProcessStepCounter);
     }
 
     private void preProcess(Element parent) throws ServiceTypeNotFoundException {
@@ -88,7 +93,7 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
             if (element instanceof XORConstruct) {
                 XORConstruct element2 = (XORConstruct) element;
                 int size = element2.getElements().size();
-                Random random = new Random();
+//                Random random = new Random();
 //                int i = random.nextInt(size);
                 int i = 0;
                 Element subelement1 = element2.getElements().get(i);
@@ -96,13 +101,18 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
                 element.getParent().setNextXOR(subelement1);
             } else if (element instanceof LoopConstruct) {
                 ((LoopConstruct) element).setNumberOfIterationsInWorstCase(3);
-                Random random = new Random();
+//                Random random = new Random();
 //                int i = random.nextInt(((LoopConstruct) element).getNumberOfIterationsInWorstCase()) + 1;
                 int i = ((LoopConstruct) element).getNumberOfIterationsInWorstCase();
                 ((LoopConstruct) element).setNumberOfIterationsToBeExecuted(i);
                 // ((LoopConstruct) element).setIterations(1);
             }  //TODO: CHECK just ignore loops?
             else if (element instanceof ProcessStep) {
+
+                if(((ProcessStep) element).hasBeenExecuted()) {
+                    totalProcessStepCounter = totalProcessStepCounter + 1;
+                }
+
                 ProcessStep processStep = (ProcessStep) element;
                 if (processStep.getServiceType().getServiceTypeResources() == null) {
                     processStep.setServiceType(serviceRegistryReader.findServiceType(processStep.getServiceType().getName()));
