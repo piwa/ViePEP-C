@@ -1,5 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations;
 
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.SpringContext;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.OrderMaintainer;
@@ -16,6 +18,7 @@ import org.uncommons.maths.random.PoissonGenerator;
 import org.uncommons.watchmaker.framework.EvolutionaryOperator;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -25,26 +28,24 @@ import java.util.stream.Collectors;
 public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome> {
 
     private final NumberGenerator<Integer> mutationCountVariable;
-    private final DateTime optimizationEndTime;
-    private OrderMaintainer orderMaintainer = new OrderMaintainer();
     private VMSelectionHelper vmSelectionHelper;
+    private CacheVirtualMachineService cacheVirtualMachineService;
 
     /**
      * Default is one mutation per candidate.
      *
      * @param poissonGenerator
-     * @param optimizationEndTime
      */
-    public SpaceAwareVMSizeMutation(PoissonGenerator poissonGenerator, DateTime optimizationEndTime) {
-        this(poissonGenerator.nextValue(), optimizationEndTime);
+    public SpaceAwareVMSizeMutation(PoissonGenerator poissonGenerator) {
+        this(poissonGenerator.nextValue());
     }
 
     /**
      * @param mutationCount The constant number of mutations
      *                      to apply to each row in a Sudoku solution.
      */
-    public SpaceAwareVMSizeMutation(int mutationCount, DateTime optimizationEndTime) {
-        this(new ConstantGenerator<>(mutationCount), optimizationEndTime);
+    public SpaceAwareVMSizeMutation(int mutationCount) {
+        this(new ConstantGenerator<>(mutationCount));
     }
 
     /**
@@ -55,15 +56,16 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
      * @param mutationCount A random variable that provides a number
      *                      of mutations that will be applied to each row in an individual.
      */
-    public SpaceAwareVMSizeMutation(NumberGenerator<Integer> mutationCount, DateTime optimizationEndTime) {
-        if(mutationCount.nextValue() < 1) {
+    public SpaceAwareVMSizeMutation(NumberGenerator<Integer> mutationCount) {
+        if (mutationCount.nextValue() < 1) {
             mutationCount = new ConstantGenerator<>(1);
         }
         this.mutationCountVariable = mutationCount;
-        this.optimizationEndTime = optimizationEndTime;
+//        this.optimizationEndTime = optimizationEndTime;
 
         ApplicationContext context = SpringContext.getApplicationContext();
         this.vmSelectionHelper = context.getBean(VMSelectionHelper.class);
+        this.cacheVirtualMachineService = context.getBean(CacheVirtualMachineService.class);
     }
 
     @Override
@@ -84,7 +86,7 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
         List<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = newCandidate.getFlattenChromosome().stream()
                 .map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).filter(unit -> !unit.isFixed()).distinct().collect(Collectors.toList());
 
-        if(virtualMachineSchedulingUnits.size() == 0) {
+        if (virtualMachineSchedulingUnits.size() == 0) {
             SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareVMSizeMutation_6");
             return newCandidate;
         }
@@ -96,7 +98,11 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
             VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnits.get(index);
 
             try {
-                vmSelectionHelper.resizeVM(virtualMachineSchedulingUnit);
+                if (random.nextBoolean()) {
+                    vmSelectionHelper.resizeVM(virtualMachineSchedulingUnit);
+                } else {
+                    makeItBigger(virtualMachineSchedulingUnit);
+                }
                 mutationCount = mutationCount - 1;
             } catch (VMTypeNotFoundException e) {
                 log.error("could not resize VM");
@@ -110,5 +116,19 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareVMSizeMutation_6");
 
         return newCandidate;
+    }
+
+    private void makeItBigger(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit) {
+        List<VMType> allVMTypes = cacheVirtualMachineService.getVMTypes();
+//        allVMTypes.sort(Comparator.comparing(VMType::getCores).thenComparing(VMType::getRamPoints));
+        allVMTypes.sort(Comparator.comparing(VMType::getCores));
+
+        for (int i = 0; i < allVMTypes.size(); i++) {
+            VMType vmType = allVMTypes.get(i);
+            if (vmType == virtualMachineSchedulingUnit.getVmType() && i + 1 < allVMTypes.size()) {
+                virtualMachineSchedulingUnit.setVmType(allVMTypes.get(i + 1));
+                return;
+            }
+        }
     }
 }
