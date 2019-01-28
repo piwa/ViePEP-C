@@ -2,7 +2,6 @@ package at.ac.tuwien.infosys.viepepc.serviceexecutor.invoker;
 
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
-import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -11,7 +10,6 @@ public class ServiceInvokerImpl implements ServiceInvoker {
 
     @Autowired
     private ServiceInvokerHttpClient serviceInvokerHttpClient;
-
 
     @Override
     public void invoke(Container container, ProcessStep processStep) throws ServiceInvokeException {
@@ -23,17 +21,8 @@ public class ServiceInvokerImpl implements ServiceInvoker {
         } else {
             uri = createURI(container.getIpAddress(), container.getExternPort(), task, processStep.getName());
         }
-        invoke(uri);
-    }
-
-    /**
-     * @param url to be invoked
-     * @return the http body as entity including the response time and http status code
-     */
-    private void invoke(String url) throws ServiceInvokeException {
-        Stopwatch stopWatch = Stopwatch.createUnstarted();
         try {
-            serviceInvokerHttpClient.retryHttpGet(url, stopWatch);
+            serviceInvokerHttpClient.retryHttpGet(uri);
         } catch (Exception e) {
             throw new ServiceInvokeException(e);
         }
