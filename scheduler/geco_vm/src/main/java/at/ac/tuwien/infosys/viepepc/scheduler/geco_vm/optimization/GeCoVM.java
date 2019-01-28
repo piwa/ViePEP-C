@@ -76,7 +76,7 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         stopwatch.start("pre optimization tasks");
 
 
-        this.optimizationEndTime = DateTime.now().plus(maxOptimizationDuration).plus(additionalOptimizationTime);
+        this.optimizationEndTime = DateTime.now().plus(additionalOptimizationTime);
 
 
         SelectionStrategy<Object> selectionStrategy = new TournamentSelection(numberGenerator);

@@ -98,11 +98,11 @@ public class SpaceAwareVMSizeMutation implements EvolutionaryOperator<Chromosome
             VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnits.get(index);
 
             try {
-                if (random.nextBoolean()) {
+//                if (random.nextBoolean()) {
                     vmSelectionHelper.resizeVM(virtualMachineSchedulingUnit);
-                } else {
-                    makeItBigger(virtualMachineSchedulingUnit);
-                }
+//                } else {
+//                    makeItBigger(virtualMachineSchedulingUnit);
+//                }
                 mutationCount = mutationCount - 1;
             } catch (VMTypeNotFoundException e) {
                 log.error("could not resize VM");
