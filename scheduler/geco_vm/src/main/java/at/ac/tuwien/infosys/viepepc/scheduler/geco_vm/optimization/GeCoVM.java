@@ -91,11 +91,12 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         Random rng = new MersenneTwisterRNG();
         List<EvolutionaryOperator<Chromosome>> operators = new ArrayList<>();
 
-        operators.add(new SpaceAwareMutation(1, optimizationEndTime, maxTimeAfterDeadline));
-        operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));
         operators.add(new SpaceAwareDeploymentMutation(1, optimizationEndTime));
         operators.add(new SpaceAwareDeploymentCrossover(maxTimeAfterDeadline));
-        operators.add(new SpaceAwareVMSizeMutation(new PoissonGenerator(4, rng)));
+        operators.add(new SpaceAwareMutation(1, optimizationEndTime, maxTimeAfterDeadline));
+        operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));
+
+//        operators.add(new SpaceAwareVMSizeMutation(new PoissonGenerator(4, rng)));
 
         int eliteCount = (int) Math.round(populationSize * eliteCountNumber);
         this.fitnessFunction.setOptimizationEndTime(this.optimizationEndTime);

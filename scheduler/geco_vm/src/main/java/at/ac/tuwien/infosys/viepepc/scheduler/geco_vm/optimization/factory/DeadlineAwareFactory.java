@@ -116,6 +116,9 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
         considerFirstVMStartTime(newChromosome);
         scheduleVMs(newChromosome, random);
+
+        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newChromosome);
+
         orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_2", "generateRandomCandidate");
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_6");
 
@@ -164,7 +167,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnits) {
             if (processStepSchedulingUnit.getVirtualMachineSchedulingUnit() == null) {
 
-                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = vmSelectionHelper.getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit, alreadyUsedVirtualMachineSchedulingUnits, random);
+                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = vmSelectionHelper.getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit, alreadyUsedVirtualMachineSchedulingUnits, random, false);
                 alreadyUsedVirtualMachineSchedulingUnits.add(virtualMachineSchedulingUnit);
 
                 processStepSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineSchedulingUnit);

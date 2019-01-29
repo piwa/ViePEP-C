@@ -99,7 +99,7 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
             VirtualMachineSchedulingUnit oldVirtualMachineSchedulingUnit = processStepSchedulingUnit.getVirtualMachineSchedulingUnit();
 
             Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines = newCandidate.getFlattenChromosome().stream().map(g -> g.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
-            VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = vmSelectionHelper.getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit, alreadyScheduledVirtualMachines, random);
+            VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = vmSelectionHelper.getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit, alreadyScheduledVirtualMachines, random, false);
 
             if (oldVirtualMachineSchedulingUnit != newVirtualMachineSchedulingUnit) {
 
@@ -110,6 +110,7 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
                 boolean enoughTimeToDeploy = considerFirstContainerStartTime(newVirtualMachineSchedulingUnit, processStepSchedulingUnit.getGene());
 
                 if (enoughTimeToDeploy) {
+                    vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newCandidate);
                     SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_5");
                     mutationCount = mutationCount - 1;
                 } else {
@@ -118,10 +119,12 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
                     processStepSchedulingUnit.setVirtualMachineSchedulingUnit(oldVirtualMachineSchedulingUnit);
                 }
 
+
             }
             counter = counter + 1;
         }
 
+//        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newCandidate);
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_6");
 
         return newCandidate;

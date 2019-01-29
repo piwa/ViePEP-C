@@ -48,17 +48,16 @@ public class VMSelectionHelper {
         for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
             List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
             List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = createIntervalContainerSchedulingList(allServiceTypeSchedulingUnits);
-            boolean fitsOnVM = checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes);
-            if (!fitsOnVM) {
-                if (virtualMachineSchedulingUnit.isFixed()) {
+            if (virtualMachineSchedulingUnit.isFixed()) {
+                boolean fitsOnVM = checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes);
+                if(!fitsOnVM) {
                     distributeContainers(virtualMachineSchedulingUnit, alreadyScheduledVirtualMachines);
-                } else {
-                    try {
-                        resizeVM(virtualMachineSchedulingUnit, maxOverlappingServiceTypes);
-                    } catch (VMTypeNotFoundException e) {
-                        distributeContainers(virtualMachineSchedulingUnit, alreadyScheduledVirtualMachines);
-                    }
-
+                }
+            } else {
+                try {
+                    resizeVM(virtualMachineSchedulingUnit, maxOverlappingServiceTypes);
+                } catch (VMTypeNotFoundException e) {
+                    distributeContainers(virtualMachineSchedulingUnit, alreadyScheduledVirtualMachines);
                 }
             }
         }
@@ -196,6 +195,10 @@ public class VMSelectionHelper {
     }
 
     public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnitForProcessStep(ProcessStepSchedulingUnit processStepSchedulingUnit, Set<VirtualMachineSchedulingUnit> availableVirtualMachineSchedulingUnits, Random random) {
+        return getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit, availableVirtualMachineSchedulingUnits, random, true);
+    }
+
+    public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnitForProcessStep(ProcessStepSchedulingUnit processStepSchedulingUnit, Set<VirtualMachineSchedulingUnit> availableVirtualMachineSchedulingUnits, Random random, boolean withCheck) {
         List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>();
         processStepSchedulingUnits.add(processStepSchedulingUnit);
 
@@ -209,10 +212,10 @@ public class VMSelectionHelper {
                     virtualMachineSchedulingUnit = availableVMSchedulingUnits.get(randomPosition);
                 }
             }
-            if(!fromAvailableVMs || virtualMachineSchedulingUnit == null) {
+            if (!fromAvailableVMs || virtualMachineSchedulingUnit == null) {
                 virtualMachineSchedulingUnit = createNewVirtualMachineSchedulingUnit(processStepSchedulingUnit, random);
             }
-        } while (!checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(virtualMachineSchedulingUnit, processStepSchedulingUnits));
+        } while (withCheck && !checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(virtualMachineSchedulingUnit, processStepSchedulingUnits));
 
         return virtualMachineSchedulingUnit;
     }
