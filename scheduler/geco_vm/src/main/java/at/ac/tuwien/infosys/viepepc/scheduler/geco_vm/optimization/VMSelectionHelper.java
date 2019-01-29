@@ -66,7 +66,7 @@ public class VMSelectionHelper {
 
     }
 
-    private List<VirtualMachineSchedulingUnit> distributeContainers(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines) {
+    public List<VirtualMachineSchedulingUnit> distributeContainers(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines) {
 
         List<ProcessStepSchedulingUnit> notFixed = virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().stream().filter(unit -> !unit.getGene().isFixed()).collect(Collectors.toList());
 

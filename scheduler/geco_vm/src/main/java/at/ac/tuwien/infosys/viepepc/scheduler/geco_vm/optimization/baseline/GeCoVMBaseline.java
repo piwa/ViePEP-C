@@ -9,10 +9,7 @@ import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.AbstractOnlyContainerOptimization;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.EvolutionLogger;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.VMSelectionHelper;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ProcessStepSchedulingUnit;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ServiceTypeSchedulingUnit;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.*;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory.DeadlineAwareFactory;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.ProblemNotSolvedException;
@@ -89,6 +86,17 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
 
         Chromosome baselineChromosome = new Chromosome(chromosomeFactory.getTemplate());
         scheduleVMs(baselineChromosome);
+
+        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = baselineChromosome.getFlattenChromosome().stream().map(unit -> unit.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
+        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
+            if(!vmSelectionHelper.checkIfVirtualMachineIsBigEnough(virtualMachineSchedulingUnit)) {
+                try {
+                    vmSelectionHelper.resizeVM(virtualMachineSchedulingUnit);
+                } catch (VMTypeNotFoundException e) {
+                    vmSelectionHelper.distributeContainers(virtualMachineSchedulingUnit, virtualMachineSchedulingUnits);
+                }
+            }
+        }
 
         return createOptimizationResult(baselineChromosome, workflowElements, evolutionLogger);
     }

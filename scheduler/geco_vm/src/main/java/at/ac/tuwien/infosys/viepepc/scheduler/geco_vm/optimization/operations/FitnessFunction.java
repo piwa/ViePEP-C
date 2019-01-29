@@ -60,39 +60,38 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
 
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_getFitness_1");
 
-        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypes((chromosome));
-        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new HashSet<>();
-        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
-            virtualMachineSchedulingUnits.addAll(serviceTypeSchedulingUnit.getGenes().stream().map(unit -> unit.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toList()));
-        }
-
-        List<VirtualMachineInstance> runningButNotUsedVirtualMachineInstances = cacheVirtualMachineService.getDeployingAndDeployedVMInstances().stream().filter(virtualMachine -> !virtualMachineSchedulingUnits.contains(virtualMachine)).collect(Collectors.toList());
-
+        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = chromosome.getFlattenChromosome().stream().map(unit -> unit.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
+//        Set<VirtualMachineInstance> usedVirtualMachineInstances = virtualMachineSchedulingUnits.stream().map(VirtualMachineSchedulingUnit::getVirtualMachineInstance).collect(Collectors.toSet());
+//        Set<VirtualMachineInstance> runningButNotUsedVirtualMachineInstances = cacheVirtualMachineService.getDeployingAndDeployedVMInstances().stream().filter(virtualMachine -> !usedVirtualMachineInstances.contains(virtualMachine)).collect(Collectors.toSet());
 
         // calculate the leasing cost
         double leasingCost = 0;
-
         for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
             VMType vmType = virtualMachineSchedulingUnit.getVmType();
-            Duration cloudResourceUsageDuration = new Duration(virtualMachineSchedulingUnit.getCloudResourceUsageInterval());
+            Duration cloudResourceUsageDuration;
+            if(virtualMachineSchedulingUnit.getCloudResourceUsageInterval().getStart().isBefore(optimizationEndTime)) {
+                cloudResourceUsageDuration = new Duration(optimizationEndTime, virtualMachineSchedulingUnit.getCloudResourceUsageInterval().getEnd());
+            }
+            else {
+                cloudResourceUsageDuration = new Duration(virtualMachineSchedulingUnit.getCloudResourceUsageInterval());
+            }
             leasingCost = leasingCost + (vmType.getCores() * cpuCost * cloudResourceUsageDuration.getStandardSeconds() + vmType.getRamPoints() / 1000 * ramCost * cloudResourceUsageDuration.getStandardSeconds()) * leasingCostFactor;
 
         }
-        for (VirtualMachineInstance runningButNotUsedVirtualMachineInstance : runningButNotUsedVirtualMachineInstances) {
-            VMType vmType = runningButNotUsedVirtualMachineInstance.getVmType();
-            Duration cloudResourceUsageDuration = new Duration(runningButNotUsedVirtualMachineInstance.getDeploymentStartTime(), this.optimizationEndTime);
-            leasingCost = leasingCost + (vmType.getCores() * cpuCost * cloudResourceUsageDuration.getStandardSeconds() + vmType.getRamPoints() / 1000 * ramCost * cloudResourceUsageDuration.getStandardSeconds()) * leasingCostFactor;
-        }
+//        for (VirtualMachineInstance runningButNotUsedVirtualMachineInstance : runningButNotUsedVirtualMachineInstances) {
+//            VMType vmType = runningButNotUsedVirtualMachineInstance.getVmType();
+//            Duration cloudResourceUsageDuration = new Duration(runningButNotUsedVirtualMachineInstance.getDeploymentStartTime(), this.optimizationEndTime);
+//            leasingCost = leasingCost + (vmType.getCores() * cpuCost * cloudResourceUsageDuration.getStandardSeconds() + vmType.getRamPoints() / 1000 * ramCost * cloudResourceUsageDuration.getStandardSeconds()) * leasingCostFactor;
+//        }
 
-        Map<String, Chromosome.Gene> lastGeneOfProcessList = optimizationUtility.getLastElements(chromosome);
+
         // calculate penalty cost
+        Map<String, Chromosome.Gene> lastGeneOfProcessList = optimizationUtility.getLastElements(chromosome);
         double penaltyCost = 0;
         for (Chromosome.Gene lastGeneOfProcess : lastGeneOfProcessList.values()) {
-            // get deadline of workflow
             WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(lastGeneOfProcess.getProcessStepSchedulingUnit().getWorkflowName());
             if (workflowElement != null) {
                 DateTime deadline = workflowElement.getDeadlineDateTime();
-//                deadline = deadline.minusSeconds(30);
                 if (lastGeneOfProcess.getExecutionInterval().getEnd().isAfter(deadline)) {
                     Duration duration = new Duration(deadline, lastGeneOfProcess.getExecutionInterval().getEnd());
                     penaltyCost = penaltyCost + workflowElement.getPenalty() * duration.getMillis() * penaltyTimeFactor;
@@ -107,53 +106,6 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
 
         return leasingCost + penaltyCost;// + earlyEnactmentCost;
     }
-
-
-//        Map<String, Chromosome.Gene> lastGeneOfProcessList = optimizationUtility.getLastElements(chromosome);
-//        List<Chromosome.Gene> genes = chromosome.getGenes().stream().flatMap(List::stream).collect(Collectors.toList());
-//        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = genes.stream().map(gene -> gene.getProcessStepSchedulingUnit().getContainerSchedulingUnit().getScheduledOnVm()).collect(Collectors.toSet());
-//        List<VirtualMachineInstance> runningButNotUsedVirtualMachineInstances;
-//        List<VirtualMachineInstance> scheduledVirtualMachineInstances = virtualMachineSchedulingUnits.stream().map(VirtualMachineSchedulingUnit::getVirtualMachineInstance).collect(Collectors.toList());
-//
-//        runningButNotUsedVirtualMachineInstances = cacheVirtualMachineService.getDeployingAndDeployedVMInstances().stream().filter(virtualMachine -> !scheduledVirtualMachineInstances.contains(virtualMachine)).collect(Collectors.toList());
-//
-//        // TODO prefer running VMs
-//        // calculate the leasing cost
-//        double leasingCost = 0;
-//        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
-//            VMType vmType = virtualMachineSchedulingUnit.getVirtualMachineInstance().getVmType();
-//            Duration cloudResourceUsageDuration = new Duration(virtualMachineSchedulingUnit.getCloudResourceUsageInterval());
-//            leasingCost = leasingCost + (vmType.getCores() * cpuCost * cloudResourceUsageDuration.getStandardSeconds() + vmType.getRamPoints() / 1000 * ramCost * cloudResourceUsageDuration.getStandardSeconds()) * leasingCostFactor;
-//
-//        }
-//        for (VirtualMachineInstance runningButNotUsedVirtualMachineInstance : runningButNotUsedVirtualMachineInstances) {
-//            VMType vmType = runningButNotUsedVirtualMachineInstance.getVmType();
-//            Duration cloudResourceUsageDuration = new Duration(runningButNotUsedVirtualMachineInstance.getDeploymentStartTime(), this.optimizationEndTime);
-//            leasingCost = leasingCost + (vmType.getCores() * cpuCost * cloudResourceUsageDuration.getStandardSeconds() + vmType.getRamPoints() / 1000 * ramCost * cloudResourceUsageDuration.getStandardSeconds()) * leasingCostFactor;
-//        }
-//
-//        // calculate penalty cost
-//        double penaltyCost = 0;
-//        for (Chromosome.Gene lastGeneOfProcess : lastGeneOfProcessList.values()) {
-//            // get deadline of workflow
-//            WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(lastGeneOfProcess.getProcessStepSchedulingUnit().getWorkflowName());
-//            if (workflowElement != null) {
-//                DateTime deadline = workflowElement.getDeadlineDateTime();
-//                if (lastGeneOfProcess.getExecutionInterval().getEnd().isAfter(deadline)) {
-//                    Duration duration = new Duration(deadline, lastGeneOfProcess.getExecutionInterval().getEnd());
-//                    penaltyCost = penaltyCost + workflowElement.getPenalty() * duration.getMillis() * penaltyTimeFactor;
-//                }
-//            }
-//        }
-//
-//
-//        this.leasingCost = leasingCost;
-//        this.penaltyCost = penaltyCost;
-//
-//        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_getFitness_2");
-//
-//        return leasingCost + penaltyCost;
-//    }
 
     @Override
     public boolean isNatural() {

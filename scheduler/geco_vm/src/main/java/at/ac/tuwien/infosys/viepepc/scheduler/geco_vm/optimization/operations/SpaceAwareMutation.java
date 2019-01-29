@@ -146,7 +146,6 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                 try {
                     int deltaTime = getRandomNumber((int) previousDuration.getMillis(), (int) nextDuration.getMillis(), random);
 
-
                     Interval newInterval = new Interval(oldInterval.getStartMillis() + deltaTime, oldInterval.getEndMillis() + deltaTime);
 
                     gene.setExecutionInterval(newInterval);
