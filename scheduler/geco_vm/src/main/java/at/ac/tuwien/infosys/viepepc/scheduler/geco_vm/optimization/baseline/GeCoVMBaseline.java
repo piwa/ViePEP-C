@@ -81,7 +81,7 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
         EvolutionLogger evolutionLogger = new EvolutionLogger();
         evolutionLogger.setAmountOfGenerations(1);
 
-        this.optimizationEndTime = DateTime.now().plus(maxOptimizationDuration).plus(additionalOptimizationTime);
+        this.optimizationEndTime = DateTime.now().plus(100);
         chromosomeFactory.initialize(workflowElements, this.optimizationEndTime);
 
         Chromosome baselineChromosome = new Chromosome(chromosomeFactory.getTemplate());
