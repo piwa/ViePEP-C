@@ -187,7 +187,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     }
 
 
-    private void considerFirstVMStartTime(Chromosome newChromosome) {
+    public void considerFirstVMStartTime(Chromosome newChromosome) {
 
         boolean redo = true;
 

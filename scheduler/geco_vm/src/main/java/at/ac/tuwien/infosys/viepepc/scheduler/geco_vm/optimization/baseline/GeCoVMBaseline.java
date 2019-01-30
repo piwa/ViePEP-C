@@ -85,6 +85,7 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
         chromosomeFactory.initialize(workflowElements, this.optimizationEndTime);
 
         Chromosome baselineChromosome = new Chromosome(chromosomeFactory.getTemplate());
+        chromosomeFactory.considerFirstVMStartTime(baselineChromosome);
         scheduleVMs(baselineChromosome);
 
         Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = baselineChromosome.getFlattenChromosome().stream().map(unit -> unit.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
@@ -97,6 +98,8 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
                 }
             }
         }
+
+
 
         return createOptimizationResult(baselineChromosome, workflowElements, evolutionLogger);
     }
