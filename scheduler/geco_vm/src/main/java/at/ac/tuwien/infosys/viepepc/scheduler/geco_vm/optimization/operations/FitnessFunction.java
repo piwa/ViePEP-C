@@ -61,8 +61,6 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_getFitness_1");
 
         Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = chromosome.getFlattenChromosome().stream().map(unit -> unit.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
-//        Set<VirtualMachineInstance> usedVirtualMachineInstances = virtualMachineSchedulingUnits.stream().map(VirtualMachineSchedulingUnit::getVirtualMachineInstance).collect(Collectors.toSet());
-//        Set<VirtualMachineInstance> runningButNotUsedVirtualMachineInstances = cacheVirtualMachineService.getDeployingAndDeployedVMInstances().stream().filter(virtualMachine -> !usedVirtualMachineInstances.contains(virtualMachine)).collect(Collectors.toSet());
 
         // calculate the leasing cost
         double leasingCost = 0;
@@ -78,12 +76,6 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
             leasingCost = leasingCost + (vmType.getCores() * cpuCost * cloudResourceUsageDuration.getStandardSeconds() + vmType.getRamPoints() / 1000 * ramCost * cloudResourceUsageDuration.getStandardSeconds()) * leasingCostFactor;
 
         }
-//        for (VirtualMachineInstance runningButNotUsedVirtualMachineInstance : runningButNotUsedVirtualMachineInstances) {
-//            VMType vmType = runningButNotUsedVirtualMachineInstance.getVmType();
-//            Duration cloudResourceUsageDuration = new Duration(runningButNotUsedVirtualMachineInstance.getDeploymentStartTime(), this.optimizationEndTime);
-//            leasingCost = leasingCost + (vmType.getCores() * cpuCost * cloudResourceUsageDuration.getStandardSeconds() + vmType.getRamPoints() / 1000 * ramCost * cloudResourceUsageDuration.getStandardSeconds()) * leasingCostFactor;
-//        }
-
 
         // calculate penalty cost
         Map<String, Chromosome.Gene> lastGeneOfProcessList = optimizationUtility.getLastElements(chromosome);
