@@ -32,6 +32,8 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
     private VMSelectionHelper vmSelectionHelper;
     private OptimizationUtility optimizationUtility;
 
+    private SpaceAwareDeploymentMutation spaceAwareDeploymentMutation;
+
     /**
      * Default is one mutation per candidate.
      *
@@ -70,6 +72,8 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
         ApplicationContext context = SpringContext.getApplicationContext();
         this.vmSelectionHelper = context.getBean(VMSelectionHelper.class);
         this.optimizationUtility = context.getBean(OptimizationUtility.class);
+
+        spaceAwareDeploymentMutation = new SpaceAwareDeploymentMutation(1, optimizationEndTime);
     }
 
     @Override
@@ -149,18 +153,17 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                     Interval newInterval = new Interval(oldInterval.getStartMillis() + deltaTime, oldInterval.getEndMillis() + deltaTime);
 
                     gene.setExecutionInterval(newInterval);
-                    boolean result = considerFirstContainerStartTime(newCandidate, gene);
+                    boolean performedTimeMutation = considerFirstContainerStartTime(newCandidate, gene);
 
                     if (!orderMaintainer.orderIsOk(newCandidate)) {
-                        result = false;
-                    }
-
-                    if (result) {
-                        mutationCount = mutationCount - 1;
-                    } else {
+                        performedTimeMutation = false;
                         gene.setExecutionInterval(oldInterval);
                     }
 
+                    boolean performedDeploymentMutation = spaceAwareDeploymentMutation.performDeploymentMutation(newCandidate, gene.getProcessStepSchedulingUnit(), random);
+                    if(performedTimeMutation  || performedDeploymentMutation) {
+                        mutationCount = mutationCount - 1;
+                    }
                 } catch (Exception ex) {
                     log.error("Exception try to continue. previousDuration=" + previousDuration.getMillis() + ", nextDuration=" + nextDuration, ex);
                 }

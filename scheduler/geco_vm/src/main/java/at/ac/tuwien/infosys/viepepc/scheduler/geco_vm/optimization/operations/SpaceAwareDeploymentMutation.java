@@ -96,30 +96,9 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
             int index = random.nextInt(processStepSchedulingUnits.size());
             ProcessStepSchedulingUnit processStepSchedulingUnit = processStepSchedulingUnits.get(index);
 
-            VirtualMachineSchedulingUnit oldVirtualMachineSchedulingUnit = processStepSchedulingUnit.getVirtualMachineSchedulingUnit();
-
-            Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines = newCandidate.getFlattenChromosome().stream().map(g -> g.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
-            VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = vmSelectionHelper.getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit, alreadyScheduledVirtualMachines, random, false);
-
-            if (oldVirtualMachineSchedulingUnit != newVirtualMachineSchedulingUnit) {
-
-                oldVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().remove(processStepSchedulingUnit);
-                newVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().add(processStepSchedulingUnit);
-                processStepSchedulingUnit.setVirtualMachineSchedulingUnit(newVirtualMachineSchedulingUnit);
-
-                boolean enoughTimeToDeploy = considerFirstContainerStartTime(newVirtualMachineSchedulingUnit, processStepSchedulingUnit.getGene());
-
-                if (enoughTimeToDeploy) {
-                    vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newCandidate);
-                    SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_5");
-                    mutationCount = mutationCount - 1;
-                } else {
-                    newVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().remove(processStepSchedulingUnit);
-                    oldVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().add(processStepSchedulingUnit);
-                    processStepSchedulingUnit.setVirtualMachineSchedulingUnit(oldVirtualMachineSchedulingUnit);
-                }
-
-
+            boolean mutationPerformed = performDeploymentMutation(newCandidate, processStepSchedulingUnit, random);
+            if(mutationPerformed) {
+                mutationCount = mutationCount - 1;
             }
             counter = counter + 1;
         }
@@ -130,6 +109,32 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
         return newCandidate;
     }
 
+    public boolean performDeploymentMutation(Chromosome newCandidate, ProcessStepSchedulingUnit processStepSchedulingUnit, Random random) {
+        VirtualMachineSchedulingUnit oldVirtualMachineSchedulingUnit = processStepSchedulingUnit.getVirtualMachineSchedulingUnit();
+
+        Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines = newCandidate.getFlattenChromosome().stream().map(g -> g.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
+        VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = vmSelectionHelper.getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit, alreadyScheduledVirtualMachines, random, true);
+
+        if (oldVirtualMachineSchedulingUnit != newVirtualMachineSchedulingUnit) {
+
+            oldVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().remove(processStepSchedulingUnit);
+            newVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().add(processStepSchedulingUnit);
+            processStepSchedulingUnit.setVirtualMachineSchedulingUnit(newVirtualMachineSchedulingUnit);
+
+            boolean enoughTimeToDeploy = considerFirstContainerStartTime(newVirtualMachineSchedulingUnit, processStepSchedulingUnit.getGene());
+
+            if (enoughTimeToDeploy) {
+                vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newCandidate);
+                SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newCandidate, this.getClass().getSimpleName() + "_spaceAwareDeploymentMutation_5");
+                return true;//mutationCount = mutationCount - 1;
+            } else {
+                newVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().remove(processStepSchedulingUnit);
+                oldVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().add(processStepSchedulingUnit);
+                processStepSchedulingUnit.setVirtualMachineSchedulingUnit(oldVirtualMachineSchedulingUnit);
+            }
+        }
+        return false;
+    }
 
     private boolean considerFirstContainerStartTime(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, Chromosome.Gene movedGene) {
         List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = this.optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);

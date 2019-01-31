@@ -91,7 +91,7 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         Random rng = new MersenneTwisterRNG();
         List<EvolutionaryOperator<Chromosome>> operators = new ArrayList<>();
 
-        operators.add(new SpaceAwareDeploymentMutation(1, optimizationEndTime));
+//        operators.add(new SpaceAwareDeploymentMutation(1, optimizationEndTime));
         operators.add(new SpaceAwareDeploymentCrossover(maxTimeAfterDeadline));
         operators.add(new SpaceAwareMutation(1, optimizationEndTime, maxTimeAfterDeadline));
         operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));

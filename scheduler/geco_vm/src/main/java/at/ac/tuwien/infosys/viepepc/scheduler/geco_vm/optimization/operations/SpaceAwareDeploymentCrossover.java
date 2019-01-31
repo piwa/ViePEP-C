@@ -161,11 +161,6 @@ public class SpaceAwareDeploymentCrossover extends AbstractCrossover<Chromosome>
         VirtualMachineSchedulingUnit newVirtualMachineSchedulingUnit = cloneVirtualMachines.get(parentVirtualMachine.getUid());
         VirtualMachineSchedulingUnit oldVirtualMachineSchedulingUnit = currentClone.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit();
 
-//        if (newVirtualMachineSchedulingUnit == null) {
-//            newVirtualMachineSchedulingUnit = parentVirtualMachine.clone();
-//            cloneVirtualMachines.put(newVirtualMachineSchedulingUnit.getUid(), newVirtualMachineSchedulingUnit);
-//        }
-
         if (newVirtualMachineSchedulingUnit != null && !newVirtualMachineSchedulingUnit.getUid().equals(oldVirtualMachineSchedulingUnit.getUid())) {
             oldVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().remove(currentClone.getProcessStepSchedulingUnit());
             newVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().add(currentClone.getProcessStepSchedulingUnit());

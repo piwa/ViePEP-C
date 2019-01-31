@@ -204,6 +204,8 @@ public class VMSelectionHelper {
 
         VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
         do {
+//            int randomValue = random.nextInt(10);
+//            boolean fromAvailableVMs = randomValue < 8;
             boolean fromAvailableVMs = random.nextBoolean();
             if (fromAvailableVMs) {
                 List<VirtualMachineSchedulingUnit> availableVMSchedulingUnits = createAvailableVMSchedulingUnitList(availableVirtualMachineSchedulingUnits);
