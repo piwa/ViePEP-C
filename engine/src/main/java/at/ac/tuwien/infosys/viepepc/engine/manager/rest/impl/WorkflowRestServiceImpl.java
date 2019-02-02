@@ -35,6 +35,11 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
 
     private static Object SYNC_OBJECT = new Object();
 
+    @RequestMapping(value = "/stop", method = RequestMethod.GET, consumes = MediaType.APPLICATION_XML_VALUE)
+    public void stopExecution()  {
+        reasoning.stop();
+    }
+
     @RequestMapping(value = "/", method = RequestMethod.GET, consumes = MediaType.APPLICATION_XML_VALUE)
     public List<WorkflowElement> getWorkflows() throws Exception {
         return cacheWorkflowService.getAllWorkflowElements();

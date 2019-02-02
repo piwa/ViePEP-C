@@ -29,4 +29,6 @@ public interface WorkflowRestService {
 
     void addWorkflow(@RequestBody WorkflowElements workflowElement) throws ServiceTypeNotFoundException;
 
+    void stopExecution();
+
 }
