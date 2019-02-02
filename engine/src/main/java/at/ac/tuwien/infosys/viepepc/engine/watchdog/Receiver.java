@@ -54,7 +54,6 @@ public class Receiver {
                 processStepOptional.ifPresent(processStep -> {
                     try {
                         finaliseSuccessfulExecution(processStep);
-                        processStep.setProcessStepStatus(ProcessStepStatus.DONE);
                     } catch (Exception ex) {
                         log.error("Exception in receive message method", ex);
                     }
@@ -77,6 +76,7 @@ public class Receiver {
 
     private void finaliseSuccessfulExecution(ProcessStep processStep) throws Exception {
         DateTime finishedAt = new DateTime();
+        processStep.setProcessStepStatus(ProcessStepStatus.DONE);
         processStep.setFinishedAt(finishedAt);
 
         log.info("Task-Done: " + processStep);

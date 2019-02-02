@@ -12,6 +12,7 @@ import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachi
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
+import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStepStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +89,10 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
         List<ProcessStep> processSteps = cacheProcessStepService.getScheduledProcessSteps();
         processSteps.addAll(cacheProcessStepService.getDeployingProcessSteps());
         for (ProcessStep processStep : processSteps) {
+            if(!containers.contains(processStep.getContainer()) || (processStep.getContainer().getVirtualMachineInstance()!= null && !vms.contains(processStep.getContainer().getVirtualMachineInstance()))){
+                processStep.setProcessStepStatus(ProcessStepStatus.DONE);
+                processStep.setFinishedAt(processStep.getScheduledStartDate().plus(processStep.getExecutionTime()));
+            }
             stringBuilder.append(processStep.toString()).append("\n");
         }
     }
