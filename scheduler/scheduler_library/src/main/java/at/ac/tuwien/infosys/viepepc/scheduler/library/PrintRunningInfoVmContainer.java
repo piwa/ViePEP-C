@@ -90,8 +90,9 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
         processSteps.addAll(cacheProcessStepService.getDeployingProcessSteps());
         for (ProcessStep processStep : processSteps) {
             if(!containers.contains(processStep.getContainer()) || (processStep.getContainer().getVirtualMachineInstance()!= null && !vms.contains(processStep.getContainer().getVirtualMachineInstance()))){
-                if(processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isAfterNow()) {
+                if(processStep.getScheduledStartDate().plus(processStep.getExecutionTime()).isBeforeNow()) {
                     processStep.setProcessStepStatus(ProcessStepStatus.DONE);
+                    processStep.setStartDate(processStep.getScheduledStartDate());
                     processStep.setFinishedAt(processStep.getScheduledStartDate().plus(processStep.getExecutionTime()));
                 }
             }
