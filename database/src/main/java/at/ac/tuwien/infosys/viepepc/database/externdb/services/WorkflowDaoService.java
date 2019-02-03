@@ -30,7 +30,7 @@ public class WorkflowDaoService {
     @Autowired
     private VirtualMachineDaoService virtualMachineDaoService;
     @Autowired
-    private VirtualMachineTypeDaoService virtualMachineTypeDaoService;
+    private ServiceTypeDaoService serviceTypeDaoService;
     @Autowired
     private ContainerDaoService containerDaoService;
     @Autowired
@@ -57,7 +57,7 @@ public class WorkflowDaoService {
 //                    serviceType = saveToDatabase(processStep);
                     saveToDatabase(processStep);
                 }
-//                ((ProcessStep) element).setServiceType(serviceType);
+                ((ProcessStep) element).setServiceType(null);       // TODO
             }
         }
         return workflowElementRepository.save(workflow);
@@ -78,6 +78,11 @@ public class WorkflowDaoService {
         Container containerFromDb = containerDaoService.get(container);
         if (containerFromDb == null) {
             containerDaoService.save(container);
+        }
+
+        ServiceType serviceTypeFromDb = serviceTypeDaoService.get(processStep.getServiceType());
+        if (serviceTypeFromDb == null) {
+            serviceTypeDaoService.save(processStep.getServiceType());
         }
 
         return container.getContainerImage().getServiceType();
