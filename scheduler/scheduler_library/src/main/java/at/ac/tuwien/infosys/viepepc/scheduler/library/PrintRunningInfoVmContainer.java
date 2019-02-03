@@ -71,8 +71,11 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
 
     private void printWaitingInformation(StringBuilder stringBuilder) {
 
+        List<VirtualMachineInstance> tempVms = cacheVirtualMachineService.getDeployedVMInstances();
+
         stringBuilder.append("------------------------ VMs waiting for starting ------------------------\n");
         List<VirtualMachineInstance> vms = cacheVirtualMachineService.getScheduledVMInstances();
+        tempVms.addAll(vms);
         vms.addAll(cacheVirtualMachineService.getDeployingVMInstances());
         for (VirtualMachineInstance vm : vms) {
             stringBuilder.append(vm.toString()).append("\n");
@@ -80,9 +83,9 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
         Set<Container> containers = cacheContainerService.getAllContainerInstances();
         for (Container container : containers) {
-            if(!vms.contains(container.getVirtualMachineInstance())){
+            if(!tempVms.contains(container.getVirtualMachineInstance())){
                 if(container.getScheduledCloudResourceUsage().getEnd().isBeforeNow()) {
-                    container.setContainerStatus(ContainerStatus.EXCEPTION);
+                    container.setContainerStatus(ContainerStatus.TERMINATED);
                 }
             }
             if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED) || container.getContainerStatus().equals(ContainerStatus.DEPLOYING)) {
