@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.library;
 
+import at.ac.tuwien.infosys.viepepc.actionexecutor.ActionExecutor;
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
@@ -29,15 +30,13 @@ import java.util.stream.Collectors;
 public class PrintRunningInfoVmContainer implements PrintRunningInfo {
 
     @Autowired
-    private WorkflowUtilities workflowUtilities;
-    @Autowired
     private CacheVirtualMachineService cacheVirtualMachineService;
     @Autowired
     private CacheContainerService cacheContainerService;
     @Autowired
-    private CacheWorkflowService cacheWorkflowService;
-    @Autowired
     private CacheProcessStepService cacheProcessStepService;
+    @Autowired
+    private ActionExecutor actionExecutor;
 
     @Override
     public void printRunningInformation() {
@@ -54,7 +53,7 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
 
     private void printRunningInformation(StringBuilder stringBuilder) {
         Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-        stringBuilder.append("\nRunning Threads: " + threadSet.size() + "\n");
+        stringBuilder.append("\nRunning Threads: ").append(threadSet.size()).append("\n");
 
 
         stringBuilder.append("\n------------------------------ VMs running -------------------------------\n");
@@ -81,6 +80,11 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
         Set<Container> containers = cacheContainerService.getAllContainerInstances();
         for (Container container : containers) {
+            if(!vms.contains(container.getVirtualMachineInstance())){
+                if(container.getScheduledCloudResourceUsage().getEnd().isBeforeNow()) {
+                    container.setContainerStatus(ContainerStatus.EXCEPTION);
+                }
+            }
             if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED) || container.getContainerStatus().equals(ContainerStatus.DEPLOYING)) {
                 stringBuilder.append(container.toString()).append("\n");
             }
@@ -94,29 +98,13 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
                     processStep.setProcessStepStatus(ProcessStepStatus.DONE);
                     processStep.setStartDate(processStep.getScheduledStartDate());
                     processStep.setFinishedAt(processStep.getScheduledStartDate().plus(processStep.getExecutionTime()));
+                    if (processStep.isLastElement()) {
+                        actionExecutor.checkIfWorkflowDone(processStep);
+                    }
                 }
             }
             stringBuilder.append(processStep.toString()).append("\n");
         }
     }
-
-//    private void getRunningTasks(StringBuilder stringBuilder) {
-//        List<WorkflowElement> allWorkflowInstances = cacheWorkflowService.getRunningWorkflowInstances();
-//        List<ProcessStep> nextSteps = workflowUtilities.getNotStartedUnfinishedSteps();
-//        for (Element workflow : allWorkflowInstances) {
-//            List<ProcessStep> runningSteps = workflowUtilities.getRunningProcessSteps(workflow.getName());
-//            for (ProcessStep runningStep : runningSteps) {
-//                if ((runningStep.get() != null && runningStep.get().getContainerStatus().equals(ContainerStatus.DEPLOYED)) && runningStep.getStartDate() != null) {
-//                    stringBuilder.append(runningStep).append("\n");
-//                }
-//            }
-//
-//            for (ProcessStep processStep : nextSteps) {
-//                if (!processStep.getWorkflowName().equals(workflow.getName())) {
-//                    continue;
-//                }
-//            }
-//        }
-//    }
 
 }

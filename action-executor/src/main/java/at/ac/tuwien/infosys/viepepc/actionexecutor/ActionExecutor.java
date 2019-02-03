@@ -129,7 +129,7 @@ public class ActionExecutor {
         }
     }
 
-    private void checkIfWorkflowDone(ProcessStep processStep) {
+    public void checkIfWorkflowDone(ProcessStep processStep) {
         WorkflowElement workflowElement = cacheWorkflowService.getWorkflowById(processStep.getWorkflowName());
 
         if (workflowElement == null || workflowElement.getFinishedAt() != null) {
@@ -146,10 +146,7 @@ public class ActionExecutor {
 
             cacheWorkflowService.deleteRunningWorkflowInstance(workflowElement);
             log.info("Workflow done. Workflow: " + workflowElement);
-            return;
         }
-
-
     }
 
     private boolean vmStillNeeded(VirtualMachineInstance virtualMachineInstance) {
