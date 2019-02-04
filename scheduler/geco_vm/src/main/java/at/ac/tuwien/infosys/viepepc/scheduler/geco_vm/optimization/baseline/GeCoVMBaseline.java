@@ -16,7 +16,9 @@ import at.ac.tuwien.infosys.viepepc.scheduler.library.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.SchedulerAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.math.RandomUtils;
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -81,6 +83,8 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
         EvolutionLogger evolutionLogger = new EvolutionLogger();
         evolutionLogger.setAmountOfGenerations(1);
 
+        // AllParExceed from Frincu
+
         this.optimizationEndTime = DateTime.now().plus(100);
         chromosomeFactory.initialize(workflowElements, this.optimizationEndTime);
 
@@ -88,18 +92,16 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
         chromosomeFactory.considerFirstVMStartTime(baselineChromosome);
         scheduleVMs(baselineChromosome);
 
-        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = baselineChromosome.getFlattenChromosome().stream().map(unit -> unit.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
-        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
-            if(!vmSelectionHelper.checkIfVirtualMachineIsBigEnough(virtualMachineSchedulingUnit)) {
-                try {
-                    vmSelectionHelper.resizeVM(virtualMachineSchedulingUnit);
-                } catch (VMTypeNotFoundException e) {
-                    vmSelectionHelper.distributeContainers(virtualMachineSchedulingUnit, virtualMachineSchedulingUnits);
-                }
-            }
-        }
-
-
+//        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = baselineChromosome.getFlattenChromosome().stream().map(unit -> unit.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
+//        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
+//            if(!vmSelectionHelper.checkIfVirtualMachineIsBigEnough(virtualMachineSchedulingUnit)) {
+//                try {
+//                    vmSelectionHelper.resizeVM(virtualMachineSchedulingUnit);
+//                } catch (VMTypeNotFoundException e) {
+//                    vmSelectionHelper.distributeContainers(virtualMachineSchedulingUnit, virtualMachineSchedulingUnits);
+//                }
+//            }
+//        }
 
         return createOptimizationResult(baselineChromosome, workflowElements, evolutionLogger);
     }
@@ -134,15 +136,45 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
 
         if (availableVMSchedulingUnits.size() > 0) {
             for (VirtualMachineSchedulingUnit availableVMSchedulingUnit : availableVMSchedulingUnits) {
-                Set<ServiceType> availableServiceTypes = availableVMSchedulingUnit.getProcessStepSchedulingUnits().stream().map(unit -> unit.getProcessStep().getServiceType()).collect(Collectors.toSet());
-                if ((availableServiceTypes.size() == 0 || availableServiceTypes.contains(processStepSchedulingUnit.getProcessStep().getServiceType())) &&
-                        vmSelectionHelper.checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(availableVMSchedulingUnit, processStepSchedulingUnits)) {
+
+                List<ProcessStepSchedulingUnit> processStepSchedulingUnitsOnVM = new ArrayList<>(availableVMSchedulingUnit.getProcessStepSchedulingUnits());
+                processStepSchedulingUnitsOnVM.sort(Comparator.comparing(unit -> unit.getServiceAvailableTime().getStart()));
+
+                boolean canBeUsed = false;
+                for (ProcessStepSchedulingUnit stepSchedulingUnit : processStepSchedulingUnitsOnVM) {
+                    Interval overlap = stepSchedulingUnit.getServiceAvailableTime().overlap(processStepSchedulingUnit.getServiceAvailableTime());
+                    if(overlap != null) {
+                        canBeUsed = stepSchedulingUnit.getProcessStep().getServiceType() == processStepSchedulingUnit.getProcessStep().getServiceType();
+                        break;
+                    }
+                }
+
+//                Set<ServiceType> availableServiceTypes = availableVMSchedulingUnit.getProcessStepSchedulingUnits().stream().map(unit -> unit.getProcessStep().getServiceType()).collect(Collectors.toSet());
+                if (canBeUsed && vmSelectionHelper.checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(availableVMSchedulingUnit, processStepSchedulingUnits)) {
                     return availableVMSchedulingUnit;
                 }
             }
         }
 
-        return vmSelectionHelper.createNewVirtualMachineSchedulingUnit(processStepSchedulingUnit, new Random());
+        return getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit);
+    }
+
+
+    private VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnitForProcessStep(ProcessStepSchedulingUnit processStepSchedulingUnit) {
+        List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>();
+        processStepSchedulingUnits.add(processStepSchedulingUnit);
+
+        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
+        List<VMType> vmTypes = new ArrayList<>(cacheVirtualMachineService.getVMTypes());
+        vmTypes.sort(Comparator.comparing(VMType::getCores));
+        int position = 0;
+        do {
+            VMType vmType = vmTypes.get(position);
+            position = position + 1;
+            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(false, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
+        } while (!vmSelectionHelper.checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(virtualMachineSchedulingUnit, processStepSchedulingUnits));
+
+        return virtualMachineSchedulingUnit;
     }
 
 }
