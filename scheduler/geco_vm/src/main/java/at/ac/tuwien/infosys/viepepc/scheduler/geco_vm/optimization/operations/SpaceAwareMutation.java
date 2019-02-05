@@ -160,7 +160,8 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                         gene.setExecutionInterval(oldInterval);
                     }
 
-                    boolean performedDeploymentMutation = spaceAwareDeploymentMutation.performDeploymentMutation(newCandidate, gene.getProcessStepSchedulingUnit(), random);
+                    boolean performedDeploymentMutation = false;
+//                    boolean performedDeploymentMutation = spaceAwareDeploymentMutation.performDeploymentMutation(newCandidate, gene.getProcessStepSchedulingUnit(), random);
                     if(performedTimeMutation  || performedDeploymentMutation) {
                         mutationCount = mutationCount - 1;
                     }
@@ -213,14 +214,6 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                     return true;
                 }
 
-
-//                DateTime deploymentStartTime = serviceTypeSchedulingUnit.getDeployStartTime();
-//
-//                if (deploymentStartTime.isBefore(this.optimizationEndTime) && serviceTypeSchedulingUnit.getFirstGene() == movedGene) {
-//                    return false;
-//                } else {
-//                    return true;
-//                }
             }
         }
         return true;

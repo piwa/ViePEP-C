@@ -114,12 +114,26 @@ public class OptimizationUtility {
         bestContainerConfig.setDisc(100);
 
         ContainerImage containerImage = containerImageRegistryReader.findContainerImage(serviceType);
+
         Container container = new Container();
         container.setContainerConfiguration(bestContainerConfig);
         container.setContainerImage(containerImage);
 
         return container;
 
+    }
+
+    public Container resizeContainer(Container container, int amount) {
+        ServiceType serviceType = container.getContainerImage().getServiceType();
+        double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad() + serviceType.getServiceTypeResources().getCpuLoad() * (amount - 1) * 2 / 3;
+        double ram = serviceType.getServiceTypeResources().getMemory() + serviceType.getServiceTypeResources().getMemory() * (amount - 1);// * 2 / 3;
+        ContainerConfiguration bestContainerConfig = new ContainerConfiguration();
+        bestContainerConfig.setName(cpuLoad + "_" + ram);
+        bestContainerConfig.setCores(cpuLoad / 100);
+        bestContainerConfig.setRam(ram);
+        bestContainerConfig.setDisc(100);
+        container.setContainerConfiguration(bestContainerConfig);
+        return container;
     }
 
     /**
@@ -159,10 +173,11 @@ public class OptimizationUtility {
             requiredServiceTypeMap.putIfAbsent(processStepSchedulingUnit.getProcessStep().getServiceType(), new ArrayList<>());
 
             boolean overlapFound = false;
-            List<ServiceTypeSchedulingUnit> requiredServiceTypes = requiredServiceTypeMap.get(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType());
-            for (ServiceTypeSchedulingUnit requiredServiceType : requiredServiceTypes) {
-                Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
-                if (overlap != null) {
+            if(!gene.isFixed()) {
+                List<ServiceTypeSchedulingUnit> requiredServiceTypes = requiredServiceTypeMap.get(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType());
+                for (ServiceTypeSchedulingUnit requiredServiceType : requiredServiceTypes) {
+                    Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
+                    if (overlap != null) {
 //                    && requiredServiceType.isFixed() == gene.isFixed()) {
 //                    if (!gene.isFixed() || requiredServiceType.getContainer().getInternId().equals(processStepSchedulingUnit.getProcessStep().getContainer().getInternId())) {
 
@@ -177,6 +192,7 @@ public class OptimizationUtility {
                         overlapFound = true;
                         break;
 //                    }
+                    }
                 }
             }
 
@@ -195,9 +211,13 @@ public class OptimizationUtility {
         List<ServiceTypeSchedulingUnit> returnList = new ArrayList<>();
         requiredServiceTypeMap.forEach((k, v) -> returnList.addAll(v));
 
-        returnList.stream().filter(unit -> !unit.isFixed()).forEach(unit -> {
+        returnList.forEach(unit -> {
             try {
-                unit.setContainer(getContainer(unit.getServiceType(), unit.getGenes().size()));
+                if(unit.getContainer() == null) {
+                    unit.setContainer(getContainer(unit.getServiceType(), unit.getGenes().size()));
+                } else {
+                    unit.setContainer(resizeContainer(unit.getContainer(), unit.getGenes().size()));
+                }
             } catch (ContainerImageNotFoundException e) {
                 log.error("Could not find a fitting container");
             }
