@@ -108,9 +108,9 @@ public class DeadlineAwareFactoryInitializer {
 
     private DateTime getStartTimeForProcessStep(ProcessStep processStep, DateTime startTime, List<Chromosome.Gene> chromosome, boolean isDone, boolean isRunning) {
 
-        boolean inProcessStepExecutionPrepartation = false;
+        boolean inProcessStepExecutionPreparation = false;
 
-        if (isDone) {
+        if (isDone || !processStep.isHasToBeExecuted()) {
             return startTime;
         }
 
@@ -124,19 +124,20 @@ public class DeadlineAwareFactoryInitializer {
             DateTime vmDeployStartTime = virtualMachineInstance.getScheduledCloudResourceUsage().getStart();
 
             if (containerStatus.equals(ContainerStatus.DEPLOYING) || containerStatus.equals(ContainerStatus.DEPLOYED) || containerDeployStartTime.isBefore(this.optimizationEndTime)) {
-                inProcessStepExecutionPrepartation = true;
-            } else if ((virtualMachineStatus.equals(VirtualMachineStatus.DEPLOYING) || virtualMachineStatus.equals(VirtualMachineStatus.DEPLOYED) || vmDeployStartTime.isBefore(this.optimizationEndTime)) &&
-                    virtualMachineInstance.getScheduledAvailableInterval().getStart().plus(10000).isAfter(container.getScheduledCloudResourceUsage().getStart())) {
-                inProcessStepExecutionPrepartation = true;
+                inProcessStepExecutionPreparation = true;
+            } else if ((virtualMachineStatus.equals(VirtualMachineStatus.DEPLOYING) || virtualMachineStatus.equals(VirtualMachineStatus.DEPLOYED) || vmDeployStartTime.isBefore(this.optimizationEndTime))
+//                    && vmDeployStartTime.plus(10000).isAfter(containerDeployStartTime)
+            ) {
+                inProcessStepExecutionPreparation = true;
             }
         }
 
-        if (processStep.isHasToBeExecuted() && !isRunning && !inProcessStepExecutionPrepartation) {
+        if (processStep.isHasToBeExecuted() && !isRunning && !inProcessStepExecutionPreparation) {
 
             if (processStep.getScheduledStartDate() != null) {
                 startTime = processStep.getScheduledStartDate();
             } else {
-                startTime = startTime.plus(containerDeploymentTime);
+//                startTime = startTime.plus(containerDeploymentTime);
             }
 
             Chromosome.Gene gene = new Chromosome.Gene(getProcessStepSchedulingUnit(processStep, false), startTime, false);
@@ -146,7 +147,7 @@ public class DeadlineAwareFactoryInitializer {
             checkFirstAndLastGene(gene);
 
             return gene.getExecutionInterval().getEnd();
-        } else if (isRunning || inProcessStepExecutionPrepartation) {
+        } else if (isRunning || inProcessStepExecutionPreparation) {
             DateTime realStartTime = processStep.getStartDate();
             if (realStartTime == null) {
                 realStartTime = processStep.getScheduledStartDate();

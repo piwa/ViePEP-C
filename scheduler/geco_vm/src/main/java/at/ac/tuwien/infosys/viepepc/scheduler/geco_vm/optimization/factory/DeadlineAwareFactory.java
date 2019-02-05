@@ -43,7 +43,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     private long containerDeploymentTime;
 
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
-    private Map<UUID, Chromosome.Gene> stepGeneMap = new HashMap<>();
+
     @Getter
     private List<List<Chromosome.Gene>> template = new ArrayList<>();
     @Getter
@@ -55,7 +55,6 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
 
     public void initialize(List<WorkflowElement> workflowElementList, DateTime optimizationEndTime) {
-        this.stepGeneMap = new HashMap<>();
         this.template = new ArrayList<>();
         this.maxTimeAfterDeadline = new HashMap<>();
         this.workflowDeadlines = new HashMap<>();
@@ -64,25 +63,33 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         this.deadlineAwareFactoryInitializer.initialize(optimizationEndTime);
 
         for (WorkflowElement workflowElement : workflowElementList) {
-            stepGeneMap = new HashMap<>();
-
+            log.info("new");
             List<Chromosome.Gene> subChromosome = deadlineAwareFactoryInitializer.createStartChromosome(workflowElement);
             if (subChromosome.size() == 0) {
                 continue;
             }
+            template.add(subChromosome);
 
-            subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStepSchedulingUnit().getUid(), gene));
-            fillProcessStepChain(workflowElement);
+            fillProcessStepChain(subChromosome, workflowElement);
 
             subChromosome.stream().filter(Chromosome.Gene::isFixed).forEach(this::setAllPrecedingFixed);
 
-            template.add(subChromosome);
             workflowDeadlines.put(workflowElement.getName(), workflowElement.getDeadlineDateTime());
             calculateMaxTimeAfterDeadline(workflowElement, subChromosome);
         }
 
         orderMaintainer.checkAndMaintainOrder(new Chromosome(template));
+    }
 
+    private void checkAndPrint(String text) {
+        log.info(text);
+        new Chromosome(template).getFlattenChromosome().forEach(g -> log.info(g.toString()));
+//        Chromosome chromosome = new Chromosome(template);
+//        for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
+//            if(gene.isFixed() && gene.getExecutionInterval().getStart().isAfter(this.optimizationEndTime)) {
+//                log.error("problem");
+//            }
+//        }
     }
 
     /***
@@ -252,11 +259,13 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     }
 
 
-    private void fillProcessStepChain(Element workflowElement) {
-        fillProcessStepChainRec(workflowElement, new ArrayList<>());
+    private void fillProcessStepChain(List<Chromosome.Gene> subChromosome, Element workflowElement) {
+        Map<UUID, Chromosome.Gene> stepGeneMap = new HashMap<>();
+        subChromosome.forEach(gene -> stepGeneMap.put(gene.getProcessStepSchedulingUnit().getUid(), gene));
+        fillProcessStepChainRec(stepGeneMap, workflowElement, new ArrayList<>());
     }
 
-    private List<ProcessStep> fillProcessStepChainRec(Element currentElement, List<ProcessStep> previousProcessSteps) {
+    private List<ProcessStep> fillProcessStepChainRec(Map<UUID, Chromosome.Gene> stepGeneMap, Element currentElement, List<ProcessStep> previousProcessSteps) {
         if (currentElement instanceof ProcessStep) {
             ProcessStep processStep = (ProcessStep) currentElement;
 
@@ -281,7 +290,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         } else {
             if (currentElement instanceof WorkflowElement || currentElement instanceof Sequence) {
                 for (Element element : currentElement.getElements()) {
-                    List<ProcessStep> ps = fillProcessStepChainRec(element, previousProcessSteps);
+                    List<ProcessStep> ps = fillProcessStepChainRec(stepGeneMap, element, previousProcessSteps);
                     if (ps != null) {
                         previousProcessSteps = new ArrayList<>();
                         previousProcessSteps.addAll(ps);
@@ -291,7 +300,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
                 List<ProcessStep> afterAnd = new ArrayList<>();
 
                 for (Element element1 : currentElement.getElements()) {
-                    List<ProcessStep> ps = fillProcessStepChainRec(element1, previousProcessSteps);
+                    List<ProcessStep> ps = fillProcessStepChainRec(stepGeneMap, element1, previousProcessSteps);
                     if (ps != null) {
                         afterAnd.addAll(ps);
                     }
@@ -303,7 +312,7 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
                 if ((currentElement.getNumberOfExecutions() < ((LoopConstruct) currentElement).getNumberOfIterationsToBeExecuted())) {
                     for (Element subElement : currentElement.getElements()) {
-                        List<ProcessStep> ps = fillProcessStepChainRec(subElement, previousProcessSteps);
+                        List<ProcessStep> ps = fillProcessStepChainRec(stepGeneMap, subElement, previousProcessSteps);
                         if (ps != null) {
                             previousProcessSteps = new ArrayList<>();
                             previousProcessSteps.addAll(ps);

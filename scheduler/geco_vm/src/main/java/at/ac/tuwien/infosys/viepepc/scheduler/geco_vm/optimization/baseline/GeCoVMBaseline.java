@@ -94,11 +94,15 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
 
 //        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = baselineChromosome.getFlattenChromosome().stream().map(unit -> unit.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
 //        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
-//            if(!vmSelectionHelper.checkIfVirtualMachineIsBigEnough(virtualMachineSchedulingUnit)) {
-//                try {
-//                    vmSelectionHelper.resizeVM(virtualMachineSchedulingUnit);
-//                } catch (VMTypeNotFoundException e) {
+//            if (!vmSelectionHelper.checkIfVirtualMachineIsBigEnough(virtualMachineSchedulingUnit)) {
+//                if (virtualMachineSchedulingUnit.isFixed()) {
 //                    vmSelectionHelper.distributeContainers(virtualMachineSchedulingUnit, virtualMachineSchedulingUnits);
+//                } else {
+//                    try {
+//                        vmSelectionHelper.resizeVM(virtualMachineSchedulingUnit);
+//                    } catch (VMTypeNotFoundException e) {
+//                        vmSelectionHelper.distributeContainers(virtualMachineSchedulingUnit, virtualMachineSchedulingUnits);
+//                    }
 //                }
 //            }
 //        }
@@ -143,13 +147,11 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
                 boolean canBeUsed = false;
                 for (ProcessStepSchedulingUnit stepSchedulingUnit : processStepSchedulingUnitsOnVM) {
                     Interval overlap = stepSchedulingUnit.getServiceAvailableTime().overlap(processStepSchedulingUnit.getServiceAvailableTime());
-                    if(overlap != null) {
+                    if (overlap != null) {
                         canBeUsed = stepSchedulingUnit.getProcessStep().getServiceType() == processStepSchedulingUnit.getProcessStep().getServiceType();
                         break;
                     }
                 }
-
-//                Set<ServiceType> availableServiceTypes = availableVMSchedulingUnit.getProcessStepSchedulingUnits().stream().map(unit -> unit.getProcessStep().getServiceType()).collect(Collectors.toSet());
                 if (canBeUsed && vmSelectionHelper.checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(availableVMSchedulingUnit, processStepSchedulingUnits)) {
                     return availableVMSchedulingUnit;
                 }

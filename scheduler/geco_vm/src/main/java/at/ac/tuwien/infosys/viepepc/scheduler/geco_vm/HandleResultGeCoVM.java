@@ -143,16 +143,6 @@ public class HandleResultGeCoVM implements HandleOptimizationResult {
         }
         vmToRemove.forEach(id -> provisioningSchedule.getVirtualMachineInstancesMap().remove(id));
 
-//        Set<UUID> usedContainer = provisioningSchedule.getContainersMap().keySet();//processStepService.getAllProcessSteps().stream().map(processStep -> processStep.get().getUid()).collect(Collectors.toSet());
-//        Set<UUID> usedVMs = provisioningSchedule.getVirtualMachineInstancesMap().keySet();//processStepService.getAllProcessSteps().stream().map(processStep -> processStep.get().getVirtualMachineInstance().getUid()).collect(Collectors.toSet());
-
-//        provisioningSchedule.cleanup();
-//
-//        Set<UUID> usedContainer = provisioningSchedule.getContainersMap().keySet();//processStepService.getAllProcessSteps().stream().map(processStep -> processStep.get().getUid()).collect(Collectors.toSet());
-//        Set<UUID> usedVMs = provisioningSchedule.getVirtualMachineInstancesMap().keySet();//processStepService.getAllProcessSteps().stream().map(processStep -> processStep.get().getVirtualMachineInstance().getUid()).collect(Collectors.toSet());
-//        cacheContainerService.getAllContainerInstances().removeIf(entry -> !usedContainer.contains(entry.getInternId()) && (entry.getContainerStatus().equals(ContainerStatus.SCHEDULED) || entry.getContainerStatus().equals(ContainerStatus.UNUSED)));
-//        cacheVirtualMachineService.getAllVMInstancesFromInMemory().removeIf(entry -> !usedVMs.contains(entry.getInternId()) && (entry.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED) || entry.getVirtualMachineStatus().equals(VirtualMachineStatus.UNUSED)));
-
     }
 
 }

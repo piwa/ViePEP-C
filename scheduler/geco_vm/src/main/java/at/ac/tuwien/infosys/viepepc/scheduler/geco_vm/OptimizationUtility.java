@@ -162,8 +162,9 @@ public class OptimizationUtility {
             List<ServiceTypeSchedulingUnit> requiredServiceTypes = requiredServiceTypeMap.get(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType());
             for (ServiceTypeSchedulingUnit requiredServiceType : requiredServiceTypes) {
                 Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
-                if (overlap != null && requiredServiceType.isFixed() == gene.isFixed()) {
-                    if (!gene.isFixed() || requiredServiceType.getContainer().getInternId().equals(processStepSchedulingUnit.getProcessStep().getContainer().getInternId())) {
+                if (overlap != null) {
+//                    && requiredServiceType.isFixed() == gene.isFixed()) {
+//                    if (!gene.isFixed() || requiredServiceType.getContainer().getInternId().equals(processStepSchedulingUnit.getProcessStep().getContainer().getInternId())) {
 
                         Interval deploymentInterval = requiredServiceType.getServiceAvailableTime();
                         Interval geneInterval = gene.getExecutionInterval();
@@ -175,7 +176,7 @@ public class OptimizationUtility {
 
                         overlapFound = true;
                         break;
-                    }
+//                    }
                 }
             }
 

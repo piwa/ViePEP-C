@@ -154,8 +154,7 @@ public class Chromosome {
         }
 
         public Gene clone() {
-            Gene clonedGene = new Gene(this.processStepSchedulingUnit.clone(), new DateTime(this.getExecutionInterval().getStartMillis()), this.isFixed());
-            return clonedGene;
+            return new Gene(this.processStepSchedulingUnit.clone(), new DateTime(this.getExecutionInterval().getStartMillis()), this.isFixed());
         }
 
         public void addNextGene(Gene nextGene) {
@@ -198,9 +197,15 @@ public class Chromosome {
 
         @Override
         public String toString() {
+
+            String prevGeneIds = previousGenes.stream().map(g -> g.getProcessStepSchedulingUnit().getUid().toString().substring(0,8) + ", ").collect(Collectors.joining());
+            String nextGeneIds = nextGenes.stream().map(g -> g.getProcessStepSchedulingUnit().getUid().toString().substring(0,8) + ", ").collect(Collectors.joining());
+
             return "Gene{" +
                     "executionInterval=" + executionInterval +
                     ", fixed=" + fixed +
+                    ", prevGenes=" + prevGeneIds +
+                    ", nextGenes=" + nextGeneIds +
                     ", processStepSchedulingUnit=" + processStepSchedulingUnit +
                     "}, ";
         }

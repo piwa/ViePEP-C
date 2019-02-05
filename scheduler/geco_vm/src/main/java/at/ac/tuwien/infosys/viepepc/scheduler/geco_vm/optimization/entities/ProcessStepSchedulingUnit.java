@@ -41,7 +41,7 @@ public class ProcessStepSchedulingUnit implements Cloneable {
                 "uid=" + uid.toString().substring(0,8) +
                 ", name='" + name + '\'' +
                 ", workflowName='" + workflowName + '\'' +
-                ", containerSchedulingUnits=" + virtualMachineSchedulingUnit +
+                ", vmSchedulingUnits=" + virtualMachineSchedulingUnit +
                 ", processStep=" + processStep +
                 '}';
     }
