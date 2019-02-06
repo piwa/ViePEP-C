@@ -19,7 +19,7 @@ public class ServiceTypeSchedulingUnit {
     @Setter private Interval serviceAvailableTime;
     private final ServiceType serviceType;
     private final long containerDeploymentDuration;
-    private final VirtualMachineSchedulingUnit virtualMachineSchedulingUnit;
+    @Setter private VirtualMachineSchedulingUnit virtualMachineSchedulingUnit;
     private final boolean isFixed;
     @Setter private Container container;
     private List<Chromosome.Gene> genes = new ArrayList<>();

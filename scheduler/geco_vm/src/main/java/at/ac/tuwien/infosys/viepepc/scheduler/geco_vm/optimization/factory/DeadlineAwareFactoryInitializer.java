@@ -136,8 +136,6 @@ public class DeadlineAwareFactoryInitializer {
 
             if (processStep.getScheduledStartDate() != null) {
                 startTime = processStep.getScheduledStartDate();
-            } else {
-//                startTime = startTime.plus(containerDeploymentTime);
             }
 
             Chromosome.Gene gene = new Chromosome.Gene(getProcessStepSchedulingUnit(processStep, false), startTime, false);
@@ -175,13 +173,13 @@ public class DeadlineAwareFactoryInitializer {
 
     private ProcessStepSchedulingUnit getProcessStepSchedulingUnit(ProcessStep processStep, boolean isFixed) {
         ProcessStepSchedulingUnit processStepSchedulingUnit = new ProcessStepSchedulingUnit(processStep);
-        if (processStep.getContainer() != null && processStep.getContainer().getVirtualMachineInstance() != null) {
+        if (isFixed && processStep.getContainer() != null && processStep.getContainer().getVirtualMachineInstance() != null) {
             setContainerAndVMSchedulingUnit(processStepSchedulingUnit, isFixed);
         }
         return processStepSchedulingUnit;
     }
 
-    public void setContainerAndVMSchedulingUnit(ProcessStepSchedulingUnit processStepSchedulingUnit, boolean isFixed) {
+    private void setContainerAndVMSchedulingUnit(ProcessStepSchedulingUnit processStepSchedulingUnit, boolean isFixed) {
         ProcessStep processStep = processStepSchedulingUnit.getProcessStep();
         Container container = processStep.getContainer();
 

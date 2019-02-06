@@ -42,16 +42,10 @@ public abstract class AbstractOnlyContainerOptimization {
     @Value("${slack.webhook}")
     private String slackWebhook;
 
-    private OrderMaintainer orderMaintainer = new OrderMaintainer();
+    protected OrderMaintainer orderMaintainer = new OrderMaintainer();
     protected DateTime optimizationEndTime;
 
-    protected OptimizationResult createOptimizationResult(Chromosome winner, List<WorkflowElement> workflowElements, EvolutionLogger evolutionLogger) {
-
-
-//        List<Element> flattenWorkflowList = new ArrayList<>();
-//        for (WorkflowElement workflowElement : workflowElements) {
-//            workflowUtilities.getFlattenWorkflow(flattenWorkflowList, workflowElement);
-//        }
+    protected OptimizationResult createOptimizationResult(Chromosome winner, List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits, EvolutionLogger evolutionLogger) {
 
         fitnessFunction.getFitness(winner, null);
         StringBuilder builder = new StringBuilder();
@@ -89,8 +83,6 @@ public abstract class AbstractOnlyContainerOptimization {
         }
 
         OptimizationResult optimizationResult = new OptimizationResult();
-
-        List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypes(winner);
 
         Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new HashSet<>();
         List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>();

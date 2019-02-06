@@ -19,7 +19,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
 
     private OrderMaintainer orderMaintainer = new OrderMaintainer();
     private Map<String, DateTime> maxTimeAfterDeadline;
-    private VMSelectionHelper vmSelectionHelper;
+//    private VMSelectionHelper vmSelectionHelper;
 
 
     /**
@@ -39,7 +39,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
     public SpaceAwareCrossover(int crossoverPoints, Map<String, DateTime> maxTimeAfterDeadline) {
         super(crossoverPoints);
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
-        this.vmSelectionHelper = SpringContext.getApplicationContext().getBean(VMSelectionHelper.class);
+//        this.vmSelectionHelper = SpringContext.getApplicationContext().getBean(VMSelectionHelper.class);
     }
 
 
@@ -52,15 +52,13 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
     public SpaceAwareCrossover(NumberGenerator<Integer> crossoverPointsVariable, Map<String, DateTime> maxTimeAfterDeadline) {
         super(crossoverPointsVariable);
         this.maxTimeAfterDeadline = maxTimeAfterDeadline;
-        this.vmSelectionHelper = SpringContext.getApplicationContext().getBean(VMSelectionHelper.class);
+//        this.vmSelectionHelper = SpringContext.getApplicationContext().getBean(VMSelectionHelper.class);
     }
 
 
 
     @Override
     protected List<Chromosome> mate(Chromosome parent1, Chromosome parent2, int numberOfCrossoverPoints, Random random) {
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(parent1, this.getClass().getSimpleName() + "_spaceAwareCrossover_1");
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(parent2, this.getClass().getSimpleName() + "_spaceAwareCrossover_2");
 
         List<List<Chromosome.Gene>> clone1 = parent1.clone().getGenes();
         Chromosome offspring1Chromosome = new Chromosome(clone1);
@@ -118,11 +116,6 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
         result.add(offspring1Chromosome);
         result.add(offspring2Chromosome);
 
-        this.vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring1Chromosome);
-        this.vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(offspring2Chromosome);
-
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(offspring1Chromosome, this.getClass().getSimpleName() + "_spaceAwareCrossover_3");
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(offspring2Chromosome, this.getClass().getSimpleName() + "_spaceAwareCrossover_4");
         return result;
     }
 
@@ -141,9 +134,7 @@ public class SpaceAwareCrossover extends AbstractCrossover<Chromosome> {
             }
 
             rowClone2Changed = true;
-//                if(!orderMaintainer.rowOrderIsOk(rowClone2)) {
-//                    log.error("problem");
-//                }
+
         }
         return rowClone2Changed;
     }

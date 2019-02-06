@@ -107,7 +107,9 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
 //            }
 //        }
 
-        return createOptimizationResult(baselineChromosome, workflowElements, evolutionLogger);
+        List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesVMSeparation(baselineChromosome);
+
+        return createOptimizationResult(baselineChromosome, allServiceTypeSchedulingUnits, evolutionLogger);
     }
 
 
@@ -168,6 +170,7 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
 
         VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
         List<VMType> vmTypes = new ArrayList<>(cacheVirtualMachineService.getVMTypes());
+        vmTypes.removeIf(type -> type.getCores() == 3);
         vmTypes.sort(Comparator.comparing(VMType::getCores));
         int position = 0;
         do {

@@ -134,6 +134,19 @@
       <leasingDuration>120000</leasingDuration>
       <deployTime>30000</deployTime>
    </VMType>
+
+
+   <VMType>
+      <identifier>13</identifier>
+      <name>GCLOUD_TRIPPLE_CORE</name>
+      <cores>3</cores>
+      <ram>11250</ram>
+      <costs>20</costs>
+      <flavor>n1-standard-3</flavor>
+      <location>gcloud</location>
+      <leasingDuration>120000</leasingDuration>
+      <deployTime>30000</deployTime>
+   </VMType>
 </VirtualMachineTypes>
 
 

@@ -41,67 +41,6 @@ public class OptimizationUtility {
     private boolean performChecks = true;
 
 
-    public void checkContainerSchedulingUnits(Chromosome chromosome, String position) {
-
-        List<ProcessStepSchedulingUnit> processStepSchedulingUnits = chromosome.getFlattenChromosome().stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).collect(Collectors.toList());
-        for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnits) {
-            VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = processStepSchedulingUnit.getVirtualMachineSchedulingUnit();
-            if (!virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().contains(processStepSchedulingUnit)) {
-                log.error("A ProcessStep is defined for a VM but the VM does not contain it! (at=" + position + "); processStepSchedulingUnit=" + processStepSchedulingUnit + ", " + virtualMachineSchedulingUnit);
-            }
-        }
-
-        if (performChecks) {
-
-            for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
-                if (gene.getProcessStepSchedulingUnit() == null) {
-                    log.error("processStepSchedulingUnit is null (at=" + position + ") gene=" + gene);
-                } else if (gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit() == null) {
-                    log.error("getVirtualMachineSchedulingUnit is null (at=" + position + ") gene=" + gene);
-                } else {
-                    for (ProcessStepSchedulingUnit scheduledProcessStep : gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit().getProcessStepSchedulingUnits()) {
-                        if (scheduledProcessStep == null) {
-                            log.error("one element of ProcessSteps on the VM is null (at=" + position + ") gene=" + gene);
-                        }
-                    }
-                }
-            }
-
-            List<ProcessStepSchedulingUnit> processStepSchedulingUnits1 = new ArrayList<>();
-            List<ProcessStepSchedulingUnit> processStepSchedulingUnits2 = new ArrayList<>();
-            for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
-                processStepSchedulingUnits1.add(gene.getProcessStepSchedulingUnit());
-                processStepSchedulingUnits2.addAll(gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit().getProcessStepSchedulingUnits());
-            }
-            for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnits2) {
-                if (!processStepSchedulingUnits1.contains(processStepSchedulingUnit)) {
-                    log.error("A container is on a VM but not used by a Gene (at=" + position + ")");
-                }
-            }
-
-            for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
-                if (gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit().getProcessStepSchedulingUnits().size() == 0) {
-                    log.error("No ProcessStep on VM (at=" + position + ")");
-                }
-            }
-
-            for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
-                ProcessStepSchedulingUnit processStepSchedulingUnit = gene.getProcessStepSchedulingUnit();
-                Set<ProcessStepSchedulingUnit> processStepSchedulingUnitsFromVM = processStepSchedulingUnit.getVirtualMachineSchedulingUnit().getProcessStepSchedulingUnits();
-                if (!processStepSchedulingUnitsFromVM.contains(processStepSchedulingUnit)) {
-                    log.error("ProcessStep is not on VM (at=" + position + ")");
-                }
-            }
-
-            Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
-            for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
-                if (!vmSelectionHelper.checkIfVirtualMachineIsBigEnough(virtualMachineSchedulingUnit)) {
-                    log.error("not enough space (at=" + position + ") on VM=" + virtualMachineSchedulingUnit);
-                }
-            }
-        }
-    }
-
     public Container getContainer(ServiceType serviceType, int amount) throws ContainerImageNotFoundException {
 
         double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad() + serviceType.getServiceTypeResources().getCpuLoad() * (amount - 1) * 2 / 3;
@@ -123,15 +62,16 @@ public class OptimizationUtility {
 
     }
 
-    public Container resizeContainer(Container container, int amount) {
-        ServiceType serviceType = container.getContainerImage().getServiceType();
+    public Container resizeContainer(Container container, ServiceType serviceType, int amount) {
         double cpuLoad = serviceType.getServiceTypeResources().getCpuLoad() + serviceType.getServiceTypeResources().getCpuLoad() * (amount - 1) * 2 / 3;
         double ram = serviceType.getServiceTypeResources().getMemory() + serviceType.getServiceTypeResources().getMemory() * (amount - 1);// * 2 / 3;
+
         ContainerConfiguration bestContainerConfig = new ContainerConfiguration();
         bestContainerConfig.setName(cpuLoad + "_" + ram);
         bestContainerConfig.setCores(cpuLoad / 100);
         bestContainerConfig.setRam(ram);
         bestContainerConfig.setDisc(100);
+
         container.setContainerConfiguration(bestContainerConfig);
         return container;
     }
@@ -141,13 +81,10 @@ public class OptimizationUtility {
      *
      * @param chromosome
      */
-    public List<ServiceTypeSchedulingUnit> getRequiredServiceTypes(Chromosome chromosome) {
+    public List<ServiceTypeSchedulingUnit> getRequiredServiceTypesVMSeparation(Chromosome chromosome) {
 
         List<ServiceTypeSchedulingUnit> returnList = new ArrayList<>();
         Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).filter(Objects::nonNull).collect(Collectors.toSet());
-        List<ProcessStepSchedulingUnit> testPSSize = new ArrayList<>();
-        virtualMachineSchedulingUnits.stream().map(VirtualMachineSchedulingUnit::getProcessStepSchedulingUnits).forEach(testPSSize::addAll);
-
         for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
             returnList.addAll(getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit));
         }
@@ -161,10 +98,19 @@ public class OptimizationUtility {
 
     @NotNull
     public List<ServiceTypeSchedulingUnit> getRequiredServiceTypesOneVM(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ProcessStepSchedulingUnit> additionalProcessSteps) {
-
         Set<ProcessStepSchedulingUnit> processStepSchedulingUnitSet = new HashSet<>(virtualMachineSchedulingUnit.getProcessStepSchedulingUnits());
         processStepSchedulingUnitSet.addAll(additionalProcessSteps);
         List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>(processStepSchedulingUnitSet);
+        return getRequiredServiceTypes(processStepSchedulingUnits, false);
+    }
+
+    public List<ServiceTypeSchedulingUnit> getRequiredServiceTypes(Chromosome chromosome, boolean withContainerResize) {
+        Set<ProcessStepSchedulingUnit> processStepSchedulingUnitSet = chromosome.getFlattenChromosome().stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).collect(Collectors.toSet());
+        List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>(processStepSchedulingUnitSet);
+        return getRequiredServiceTypes(processStepSchedulingUnits, withContainerResize);
+    }
+
+    private List<ServiceTypeSchedulingUnit> getRequiredServiceTypes(List<ProcessStepSchedulingUnit> processStepSchedulingUnits, boolean withContainerResize) {
         processStepSchedulingUnits.sort(Comparator.comparing(unit -> unit.getGene().getExecutionInterval().getStart()));
 
         Map<ServiceType, List<ServiceTypeSchedulingUnit>> requiredServiceTypeMap = new HashMap<>();
@@ -173,14 +119,11 @@ public class OptimizationUtility {
             requiredServiceTypeMap.putIfAbsent(processStepSchedulingUnit.getProcessStep().getServiceType(), new ArrayList<>());
 
             boolean overlapFound = false;
-            if(!gene.isFixed()) {
+            if (!gene.isFixed()) {
                 List<ServiceTypeSchedulingUnit> requiredServiceTypes = requiredServiceTypeMap.get(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType());
                 for (ServiceTypeSchedulingUnit requiredServiceType : requiredServiceTypes) {
                     Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
                     if (overlap != null) {
-//                    && requiredServiceType.isFixed() == gene.isFixed()) {
-//                    if (!gene.isFixed() || requiredServiceType.getContainer().getInternId().equals(processStepSchedulingUnit.getProcessStep().getContainer().getInternId())) {
-
                         Interval deploymentInterval = requiredServiceType.getServiceAvailableTime();
                         Interval geneInterval = gene.getExecutionInterval();
                         long newStartTime = Math.min(geneInterval.getStartMillis(), deploymentInterval.getStartMillis());
@@ -191,17 +134,17 @@ public class OptimizationUtility {
 
                         overlapFound = true;
                         break;
-//                    }
                     }
                 }
             }
 
             if (!overlapFound) {
-                ServiceTypeSchedulingUnit newServiceTypeSchedulingUnit = new ServiceTypeSchedulingUnit(processStepSchedulingUnit.getProcessStep().getServiceType(), this.containerDeploymentTime, gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit(), gene.isFixed());
+                ServiceTypeSchedulingUnit newServiceTypeSchedulingUnit = new ServiceTypeSchedulingUnit(processStepSchedulingUnit.getProcessStep().getServiceType(), this.containerDeploymentTime, gene.isFixed());
                 newServiceTypeSchedulingUnit.setServiceAvailableTime(gene.getExecutionInterval());
                 newServiceTypeSchedulingUnit.addProcessStep(gene);
                 if (newServiceTypeSchedulingUnit.isFixed()) {
                     newServiceTypeSchedulingUnit.setContainer(gene.getProcessStepSchedulingUnit().getProcessStep().getContainer());
+                    newServiceTypeSchedulingUnit.setVirtualMachineSchedulingUnit(gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit());
                 }
 
                 requiredServiceTypeMap.get(processStepSchedulingUnit.getProcessStep().getServiceType()).add(newServiceTypeSchedulingUnit);
@@ -213,10 +156,10 @@ public class OptimizationUtility {
 
         returnList.forEach(unit -> {
             try {
-                if(unit.getContainer() == null) {
+                if (!withContainerResize || unit.getContainer() == null) {
                     unit.setContainer(getContainer(unit.getServiceType(), unit.getGenes().size()));
                 } else {
-                    unit.setContainer(resizeContainer(unit.getContainer(), unit.getGenes().size()));
+                    unit.setContainer(resizeContainer(unit.getContainer(), unit.getServiceType(), unit.getGenes().size()));
                 }
             } catch (ContainerImageNotFoundException e) {
                 log.error("Could not find a fitting container");
@@ -225,6 +168,8 @@ public class OptimizationUtility {
 
         return returnList;
     }
+
+
 
     public Map<String, Chromosome.Gene> getLastElements(Chromosome chromosome) {
         Map<String, Chromosome.Gene> lastElements = new HashMap<>();

@@ -65,29 +65,14 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
     @Override
     public double getFitness(Chromosome chromosome, List<? extends Chromosome> list) {
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_getFitness_1");
-
         double leasingCost = 0;
 
-        // calculate the leasing cost
-        List<ServiceTypeSchedulingUnit> requiredServiceTypeList = getRequiredServiceTypes(chromosome);
+        // calculate Container leasing cost
+        List<ServiceTypeSchedulingUnit> requiredServiceTypeList = optimizationUtility.getRequiredServiceTypes(chromosome, false);
         for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
             Duration deploymentDuration = serviceTypeSchedulingUnit.getServiceAvailableTime().toDuration();
             ContainerConfiguration containerConfiguration = serviceTypeSchedulingUnit.getContainer().getContainerConfiguration();
             leasingCost = leasingCost + (containerConfiguration.getCores() * cpuCost * deploymentDuration.getStandardSeconds() + containerConfiguration.getRam() / 1000 * ramCost * deploymentDuration.getStandardSeconds()) * leasingCostFactor;
-        }
-
-        // calculate VM leasing cost
-        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = chromosome.getFlattenChromosome().stream().map(unit -> unit.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
-        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
-            VMType vmType = virtualMachineSchedulingUnit.getVmType();
-            Duration cloudResourceUsageDuration;
-            if (virtualMachineSchedulingUnit.getCloudResourceUsageInterval().getStart().isBefore(optimizationEndTime)) {
-                cloudResourceUsageDuration = new Duration(optimizationEndTime, virtualMachineSchedulingUnit.getCloudResourceUsageInterval().getEnd());
-            } else {
-                cloudResourceUsageDuration = new Duration(virtualMachineSchedulingUnit.getCloudResourceUsageInterval());
-            }
-            leasingCost = leasingCost + (vmType.getCores() * cpuCost * cloudResourceUsageDuration.getStandardSeconds() + vmType.getRamPoints() / 1000 * ramCost * cloudResourceUsageDuration.getStandardSeconds()) * leasingCostFactor / 100;
         }
 
         // calculate penalty cost
@@ -107,9 +92,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
         this.leasingCost = leasingCost;
         this.penaltyCost = penaltyCost;
 
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(chromosome, this.getClass().getSimpleName() + "_getFitness_2");
-
-        return leasingCost + penaltyCost;// + earlyEnactmentCost;
+        return leasingCost + penaltyCost;
     }
 
     @Override
@@ -122,80 +105,7 @@ public class FitnessFunction implements FitnessEvaluator<Chromosome> {
     }
 
 
-    private List<ServiceTypeSchedulingUnit> getRequiredServiceTypes(Chromosome chromosome) {
 
-        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = chromosome.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).filter(Objects::nonNull).collect(Collectors.toSet());
-        Set<ProcessStepSchedulingUnit> processStepSchedulingUnitSet = new HashSet<>();
-        virtualMachineSchedulingUnits.forEach(unit -> processStepSchedulingUnitSet.addAll(unit.getProcessStepSchedulingUnits()));
-
-        return getRequiredServiceTypesOneVM(processStepSchedulingUnitSet);
-    }
-
-    private List<ServiceTypeSchedulingUnit> getRequiredServiceTypesOneVM(Set<ProcessStepSchedulingUnit> processStepSchedulingUnitSet) {
-
-//        Set<ProcessStepSchedulingUnit> processStepSchedulingUnitSet = new HashSet<>(virtualMachineSchedulingUnit.getProcessStepSchedulingUnits());
-//        processStepSchedulingUnitSet.addAll(additionalProcessSteps);
-        List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>(processStepSchedulingUnitSet);
-        processStepSchedulingUnits.sort(Comparator.comparing(unit -> unit.getGene().getExecutionInterval().getStart()));
-
-        Map<ServiceType, List<ServiceTypeSchedulingUnit>> requiredServiceTypeMap = new HashMap<>();
-        for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnits) {
-            Chromosome.Gene gene = processStepSchedulingUnit.getGene();
-            requiredServiceTypeMap.putIfAbsent(processStepSchedulingUnit.getProcessStep().getServiceType(), new ArrayList<>());
-
-            boolean overlapFound = false;
-            if (!gene.isFixed()) {
-                List<ServiceTypeSchedulingUnit> requiredServiceTypes = requiredServiceTypeMap.get(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType());
-                for (ServiceTypeSchedulingUnit requiredServiceType : requiredServiceTypes) {
-                    Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
-                    if (overlap != null) {
-//                    && requiredServiceType.isFixed() == gene.isFixed()) {
-//                    if (!gene.isFixed() || requiredServiceType.getContainer().getInternId().equals(processStepSchedulingUnit.getProcessStep().getContainer().getInternId())) {
-
-                        Interval deploymentInterval = requiredServiceType.getServiceAvailableTime();
-                        Interval geneInterval = gene.getExecutionInterval();
-                        long newStartTime = Math.min(geneInterval.getStartMillis(), deploymentInterval.getStartMillis());
-                        long newEndTime = Math.max(geneInterval.getEndMillis(), deploymentInterval.getEndMillis());
-
-                        requiredServiceType.setServiceAvailableTime(new Interval(newStartTime, newEndTime));
-                        requiredServiceType.getGenes().add(gene);
-
-                        overlapFound = true;
-                        break;
-//                    }
-                    }
-                }
-            }
-
-            if (!overlapFound) {
-                ServiceTypeSchedulingUnit newServiceTypeSchedulingUnit = new ServiceTypeSchedulingUnit(processStepSchedulingUnit.getProcessStep().getServiceType(), this.containerDeploymentTime, gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit(), gene.isFixed());
-                newServiceTypeSchedulingUnit.setServiceAvailableTime(gene.getExecutionInterval());
-                newServiceTypeSchedulingUnit.addProcessStep(gene);
-                if (newServiceTypeSchedulingUnit.isFixed()) {
-                    newServiceTypeSchedulingUnit.setContainer(gene.getProcessStepSchedulingUnit().getProcessStep().getContainer());
-                }
-
-                requiredServiceTypeMap.get(processStepSchedulingUnit.getProcessStep().getServiceType()).add(newServiceTypeSchedulingUnit);
-            }
-        }
-
-        List<ServiceTypeSchedulingUnit> returnList = new ArrayList<>();
-        requiredServiceTypeMap.forEach((k, v) -> returnList.addAll(v));
-
-        returnList.forEach(unit -> {
-            try {
-                if (unit.getContainer() == null) {
-                    unit.setContainer(optimizationUtility.getContainer(unit.getServiceType(), unit.getGenes().size()));
-                } else {
-                    unit.setContainer(optimizationUtility.resizeContainer(unit.getContainer(), unit.getGenes().size()));
-                }
-            } catch (ContainerImageNotFoundException e) {
-                log.error("Could not find a fitting container");
-            }
-        });
-
-        return returnList;
-    }
 
 
 }

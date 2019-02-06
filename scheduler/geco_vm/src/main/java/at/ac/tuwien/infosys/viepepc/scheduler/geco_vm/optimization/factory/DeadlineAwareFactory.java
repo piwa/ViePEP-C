@@ -63,7 +63,6 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         this.deadlineAwareFactoryInitializer.initialize(optimizationEndTime);
 
         for (WorkflowElement workflowElement : workflowElementList) {
-            log.info("new");
             List<Chromosome.Gene> subChromosome = deadlineAwareFactoryInitializer.createStartChromosome(workflowElement);
             if (subChromosome.size() == 0) {
                 continue;
@@ -81,24 +80,13 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         orderMaintainer.checkAndMaintainOrder(new Chromosome(template));
     }
 
-    private void checkAndPrint(String text) {
-        log.info(text);
-        new Chromosome(template).getFlattenChromosome().forEach(g -> log.info(g.toString()));
-//        Chromosome chromosome = new Chromosome(template);
-//        for (Chromosome.Gene gene : chromosome.getFlattenChromosome()) {
-//            if(gene.isFixed() && gene.getExecutionInterval().getStart().isAfter(this.optimizationEndTime)) {
-//                log.error("problem");
-//            }
-//        }
-    }
-
     /***
      * Guarantee that the process step order is preserved and that there are no overlapping steps
      */
     @Override
     public Chromosome generateRandomCandidate(Random random) {
         this.random = random;
-        Chromosome newChromosome = new Chromosome(template).clone(false);
+        Chromosome newChromosome = new Chromosome(template).clone();
 
         for (List<Chromosome.Gene> newRow : newChromosome.getGenes()) {
 
@@ -122,12 +110,8 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
         }
 
         considerFirstVMStartTime(newChromosome);
-        scheduleVMs(newChromosome, random);
-
-        vmSelectionHelper.checkVmSizeAndSolveSpaceIssues(newChromosome);
 
         orderMaintainer.checkRowAndPrintError(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_2", "generateRandomCandidate");
-        SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(newChromosome, this.getClass().getSimpleName() + "_generateRandomCandidate_6");
 
         return newChromosome;
     }
@@ -163,24 +147,6 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
 
         maxTimeAfterDeadline.put(workflowElement.getName(), simulatedEnd.plus(2));      // plus 1 is needed (because of jodatime implementation?), plus 2 is better ;)
 
-    }
-
-    private void scheduleVMs(Chromosome newChromosome, Random random) {
-
-        List<ProcessStepSchedulingUnit> processStepSchedulingUnits = newChromosome.getFlattenChromosome().stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).collect(Collectors.toList());
-
-        Set<VirtualMachineSchedulingUnit> alreadyUsedVirtualMachineSchedulingUnits = processStepSchedulingUnits.stream().map(ProcessStepSchedulingUnit::getVirtualMachineSchedulingUnit).filter(Objects::nonNull).collect(Collectors.toSet());
-
-        for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnits) {
-            if (processStepSchedulingUnit.getVirtualMachineSchedulingUnit() == null) {
-
-                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = vmSelectionHelper.getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit, alreadyUsedVirtualMachineSchedulingUnits, random, false);
-                alreadyUsedVirtualMachineSchedulingUnits.add(virtualMachineSchedulingUnit);
-
-                processStepSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineSchedulingUnit);
-                virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().add(processStepSchedulingUnit);
-            }
-        }
     }
 
     private Chromosome.Gene getLastProcessStep(List<Chromosome.Gene> row) {
@@ -251,9 +217,6 @@ public class DeadlineAwareFactory extends AbstractCandidateFactory<Chromosome> {
     private void setAllPrecedingFixed(Chromosome.Gene gene) {
         gene.getPreviousGenes().forEach(prevGene -> {
             prevGene.setFixed(true);
-            if(prevGene.getProcessStepSchedulingUnit().getProcessStep().isHasToBeExecuted()) {
-                deadlineAwareFactoryInitializer.setContainerAndVMSchedulingUnit(prevGene.getProcessStepSchedulingUnit(), true);
-            }
             setAllPrecedingFixed(prevGene);
         });
     }

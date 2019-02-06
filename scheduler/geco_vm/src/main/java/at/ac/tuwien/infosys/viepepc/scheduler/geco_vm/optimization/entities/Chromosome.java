@@ -40,13 +40,7 @@ public class Chromosome {
     }
 
     public Chromosome clone() {
-        return clone(true);
-    }
 
-    public Chromosome clone(boolean performChecks) {
-        if(performChecks) {
-            SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(this, this.getClass().getSimpleName() + "_clone_1");
-        }
         List<List<Gene>> offspring = new ArrayList<>();
 
         Map<Gene, Gene> originalToCloneMap = new HashMap<>();
@@ -86,10 +80,6 @@ public class Chromosome {
             }
         }
 
-        if(performChecks) {
-            SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(this, this.getClass().getSimpleName() + "_clone_2");
-            SpringContext.getApplicationContext().getBean(OptimizationUtility.class).checkContainerSchedulingUnits(new Chromosome(offspring), this.getClass().getSimpleName() + "_clone_3");
-        }
         return new Chromosome(offspring);
     }
 

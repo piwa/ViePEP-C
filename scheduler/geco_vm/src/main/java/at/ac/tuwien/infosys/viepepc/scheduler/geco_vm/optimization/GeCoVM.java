@@ -1,9 +1,9 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization;
 
 import at.ac.tuwien.infosys.viepepc.actionexecutor.ActionExecutor;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.*;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory.DeadlineAwareFactory;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations.*;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
@@ -24,9 +24,7 @@ import org.uncommons.maths.random.PoissonGenerator;
 import org.uncommons.maths.random.Probability;
 import org.uncommons.watchmaker.framework.*;
 import org.uncommons.watchmaker.framework.operators.EvolutionPipeline;
-import org.uncommons.watchmaker.framework.selection.RankSelection;
 import org.uncommons.watchmaker.framework.selection.TournamentSelection;
-import org.uncommons.watchmaker.framework.selection.TruncationSelection;
 import org.uncommons.watchmaker.framework.termination.ElapsedTime;
 
 import java.util.*;
@@ -42,6 +40,11 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
     private VMSelectionHelper vmSelectionHelper;
     @Autowired
     private ActionExecutor actionExecutor;
+    
+    @Value("${virtual.machine.default.deploy.time}")
+    private long virtualMachineDeploymentTime;
+    @Value("${container.default.deploy.time}")
+    private long containerDeploymentTime;
 
     @Value("${max.optimization.duration}")
     private long maxOptimizationDuration = 60000;
@@ -91,12 +94,12 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         Random rng = new MersenneTwisterRNG();
         List<EvolutionaryOperator<Chromosome>> operators = new ArrayList<>();
 
-        operators.add(new SpaceAwareDeploymentMutation(new PoissonGenerator(4, rng), optimizationEndTime));
-        operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));
+
+//        operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));
         operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationEndTime, maxTimeAfterDeadline));
-        operators.add(new SpaceAwareDeploymentCrossover(maxTimeAfterDeadline));
 
-
+//        operators.add(new SpaceAwareDeploymentMutation(new PoissonGenerator(4, rng), optimizationEndTime));
+//        operators.add(new SpaceAwareDeploymentCrossover(maxTimeAfterDeadline));
 //        operators.add(new SpaceAwareVMSizeMutation(new PoissonGenerator(4, rng)));
 
         int eliteCount = (int) Math.round(populationSize * eliteCountNumber);
@@ -121,7 +124,11 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
 
         stopwatch = new StopWatch();
         stopwatch.start();
-        OptimizationResult optimizationResult = createOptimizationResult(winner, workflowElements, evolutionLogger);
+
+        List<ServiceTypeSchedulingUnit> requiredServiceTypeList = optimizationUtility.getRequiredServiceTypes(winner, true);
+        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = vmSelectionHelper.setVMsForServiceSchedulingUnit(requiredServiceTypeList);
+
+        OptimizationResult optimizationResult = createOptimizationResult(winner, serviceTypeSchedulingUnits, evolutionLogger);
         stopwatch.stop();
         log.debug("optimization post time=" + stopwatch.getTotalTimeMillis());
 
@@ -136,4 +143,6 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
     public void initializeParameters() {
 
     }
+
+
 }
