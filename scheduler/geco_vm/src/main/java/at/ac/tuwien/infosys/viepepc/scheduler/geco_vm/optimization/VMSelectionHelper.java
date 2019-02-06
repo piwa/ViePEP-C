@@ -119,6 +119,21 @@ public class VMSelectionHelper {
         }
     }
 
+    private VMType getFittingVMType(List<VMType> allVMTypes, ProcessStepSchedulingUnit processStepSchedulingUnit) throws VMTypeNotFoundException {
+
+        double scheduledCPUUsage = processStepSchedulingUnit.getProcessStep().getServiceType().getServiceTypeResources().getCpuLoad();
+        double scheduledRAMUsage = processStepSchedulingUnit.getProcessStep().getServiceType().getServiceTypeResources().getMemory();
+
+        allVMTypes.sort(Comparator.comparing(VMType::getCores));
+
+        for (VMType vmType : allVMTypes) {
+            if (vmType.getCpuPoints() >= scheduledCPUUsage && vmType.getRamPoints() >= scheduledRAMUsage) {
+                return vmType;
+            }
+        }
+
+        throw new VMTypeNotFoundException("Could not find big enough VMType");
+    }
 
     private VMType getFittingVMType(ServiceTypeSchedulingUnit serviceTypeSchedulingUnit) throws VMTypeNotFoundException {
 
@@ -204,6 +219,47 @@ public class VMSelectionHelper {
     @NotNull
     public List<VirtualMachineSchedulingUnit> createAvailableVMSchedulingUnitList(Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines) {
         return alreadyScheduledVirtualMachines.stream().filter(unit -> unit.getCloudResourceUsageInterval().getEnd().isAfter(this.optimizationEndTime)).distinct().collect(Collectors.toList());
+    }
+
+    public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnitForProcessStep(ProcessStepSchedulingUnit processStepSchedulingUnit, Set<VirtualMachineSchedulingUnit> availableVirtualMachineSchedulingUnits, Random random) {
+        return getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit, availableVirtualMachineSchedulingUnits, random, true);
+    }
+
+    public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnitForProcessStep(ProcessStepSchedulingUnit processStepSchedulingUnit, Set<VirtualMachineSchedulingUnit> availableVirtualMachineSchedulingUnits, Random random, boolean withCheck) {
+        List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>();
+        processStepSchedulingUnits.add(processStepSchedulingUnit);
+
+        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
+        do {
+//            int randomValue = random.nextInt(10);
+//            boolean fromAvailableVMs = randomValue < 8;
+            boolean fromAvailableVMs = random.nextBoolean();
+            if (fromAvailableVMs) {
+                List<VirtualMachineSchedulingUnit> availableVMSchedulingUnits = createAvailableVMSchedulingUnitList(availableVirtualMachineSchedulingUnits);
+                if (availableVMSchedulingUnits.size() > 0) {
+                    int randomPosition = random.nextInt(availableVMSchedulingUnits.size());
+                    virtualMachineSchedulingUnit = availableVMSchedulingUnits.get(randomPosition);
+                }
+            }
+            if (!fromAvailableVMs || virtualMachineSchedulingUnit == null) {
+                virtualMachineSchedulingUnit = createNewVirtualMachineSchedulingUnit(processStepSchedulingUnit, random);
+            }
+        } while (withCheck && !checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(virtualMachineSchedulingUnit, processStepSchedulingUnits));
+
+        return virtualMachineSchedulingUnit;
+    }
+
+    @NotNull
+    public VirtualMachineSchedulingUnit createNewVirtualMachineSchedulingUnit(ProcessStepSchedulingUnit processStepSchedulingUnit, Random random) {
+        try {
+            VMType vmType = getFittingVMType(new ArrayList<>(cacheVirtualMachineService.getVMTypes()), processStepSchedulingUnit);
+            return new VirtualMachineSchedulingUnit(false, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
+        } catch (Exception ex) {
+            List<VMType> vmTypes = new ArrayList<>(cacheVirtualMachineService.getVMTypes());
+            int randomPosition = random.nextInt(vmTypes.size());
+            VMType vmType = vmTypes.get(randomPosition);
+            return new VirtualMachineSchedulingUnit(false, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
+        }
     }
 
     @Data

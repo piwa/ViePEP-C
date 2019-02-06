@@ -1,30 +1,12 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations;
 
-import at.ac.tuwien.infosys.viepepc.library.registry.impl.service.ServiceTypeNotFoundException;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.GeCoVmApplication;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.configuration.TestSchedulerGecoConfiguration;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.OrderMaintainer;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.VMSelectionHelper;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory.DeadlineAwareFactory;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory.WorkflowGenerationHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import javax.xml.bind.JAXBException;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;

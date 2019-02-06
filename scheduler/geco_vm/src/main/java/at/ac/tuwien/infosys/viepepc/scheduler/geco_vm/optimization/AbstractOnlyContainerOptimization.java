@@ -15,7 +15,8 @@ import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chro
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ProcessStepSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ServiceTypeSchedulingUnit;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations.FitnessFunction;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations.FitnessFunctionStartTime;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations.FitnessFunctionVM;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -34,7 +35,9 @@ public abstract class AbstractOnlyContainerOptimization {
     @Autowired
     protected WorkflowUtilities workflowUtilities;
     @Autowired
-    protected FitnessFunction fitnessFunction;
+    protected FitnessFunctionStartTime fitnessFunctionStartTime;
+    @Autowired
+    protected FitnessFunctionVM fitnessFunctionVM;
     @Autowired
     protected OptimizationUtility optimizationUtility;
     @Autowired
@@ -47,14 +50,16 @@ public abstract class AbstractOnlyContainerOptimization {
 
     protected OptimizationResult createOptimizationResult(Chromosome winner, List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits, EvolutionLogger evolutionLogger) {
 
-        fitnessFunction.getFitness(winner, null);
+        fitnessFunctionStartTime.getFitness(winner, null);
+        fitnessFunctionVM.getFitness(winner, null);
         StringBuilder builder = new StringBuilder();
         builder.append("Optimization Result:\n--------------------------- Winner Chromosome ---------------------------- \n").append(winner.toString()).append("\n");
         builder.append("----------------------------- Winner Fitness -----------------------------\n");
-        builder.append("Leasing=").append(fitnessFunction.getLeasingCost()).append("\n");
-        builder.append("Penalty=").append(fitnessFunction.getPenaltyCost()).append("\n");
-        builder.append("Early Enactment=").append(fitnessFunction.getEarlyEnactmentCost()).append("\n");
-        builder.append("Total Fitness=").append(fitnessFunction.getLeasingCost() + fitnessFunction.getPenaltyCost() + fitnessFunction.getEarlyEnactmentCost()).append("\n");
+        builder.append("Leasing startTime=").append(fitnessFunctionStartTime.getLeasingCost()).append("\n");
+        builder.append("Leasing VM=").append(fitnessFunctionVM.getLeasingCost()).append("\n");
+        builder.append("Penalty=").append(fitnessFunctionStartTime.getPenaltyCost()).append("\n");
+//        builder.append("Early Enactment=").append(fitnessFunctionStartTime.getEarlyEnactmentCost()).append("\n");
+        builder.append("Total Fitness=").append(fitnessFunctionStartTime.getLeasingCost() + fitnessFunctionVM.getLeasingCost() + fitnessFunctionStartTime.getPenaltyCost() + fitnessFunctionStartTime.getEarlyEnactmentCost()).append("\n");
         builder.append("----------------------------- Algorithm Stats ----------------------------\n");
         builder.append("Generation Amount=").append(evolutionLogger.getAmountOfGenerations()).append("\n");
         builder.append("----------------------------- Chromosome Checks --------------------------\n");
@@ -74,13 +79,13 @@ public abstract class AbstractOnlyContainerOptimization {
 
         log.info(builder.toString());
 
-        List<ProcessStepSchedulingUnit> processStepSchedulingUnit1s = winner.getFlattenChromosome().stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).collect(Collectors.toList());
-        for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnit1s) {
-            VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = processStepSchedulingUnit.getVirtualMachineSchedulingUnit();
-            if(!virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().contains(processStepSchedulingUnit)) {
-                log.error("A ProcessStep is defined for a VM but the VM does not contain it! (at=end); processStepSchedulingUnit=" + processStepSchedulingUnit + ", " + virtualMachineSchedulingUnit);
-            }
-        }
+//        List<ProcessStepSchedulingUnit> processStepSchedulingUnit1s = winner.getFlattenChromosome().stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).collect(Collectors.toList());
+//        for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnit1s) {
+//            VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = processStepSchedulingUnit.getVirtualMachineSchedulingUnit();
+//            if(!virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().contains(processStepSchedulingUnit)) {
+//                log.error("A ProcessStep is defined for a VM but the VM does not contain it! (at=end); processStepSchedulingUnit=" + processStepSchedulingUnit + ", " + virtualMachineSchedulingUnit);
+//            }
+//        }
 
         OptimizationResult optimizationResult = new OptimizationResult();
 

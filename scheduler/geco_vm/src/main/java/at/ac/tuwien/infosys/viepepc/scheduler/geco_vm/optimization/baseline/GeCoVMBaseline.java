@@ -1,22 +1,18 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.baseline;
 
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
-import at.ac.tuwien.infosys.viepepc.library.entities.services.ServiceType;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.AbstractOnlyContainerOptimization;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.EvolutionLogger;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.VMSelectionHelper;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.*;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory.DeadlineAwareFactory;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.factory.DeadlineAwareFactoryStartTime;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.ProblemNotSolvedException;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.SchedulerAlgorithm;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.math.RandomUtils;
-import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +37,7 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
     @Autowired
     private VMSelectionHelper vmSelectionHelper;
     @Autowired
-    private DeadlineAwareFactory chromosomeFactory;
+    private DeadlineAwareFactoryStartTime chromosomeFactory;
 
     @Value("${max.optimization.duration}")
     private long maxOptimizationDuration = 60000;
