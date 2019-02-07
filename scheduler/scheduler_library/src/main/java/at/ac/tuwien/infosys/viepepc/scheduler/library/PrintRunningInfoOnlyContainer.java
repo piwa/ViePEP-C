@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -68,7 +69,7 @@ public class PrintRunningInfoOnlyContainer implements PrintRunningInfo {
 
     private void printWaitingInformation(StringBuilder stringBuilder) {
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
-        Set<Container> containers = cacheContainerService.getAllContainerInstances();
+        Set<Container> containers = new HashSet<>(cacheContainerService.getAllContainerInstances().values());
         for (Container container : containers) {
             if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED) || container.getContainerStatus().equals(ContainerStatus.DEPLOYING)) {
                 stringBuilder.append(container.toString()).append("\n");

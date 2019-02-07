@@ -14,6 +14,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -114,8 +115,20 @@ public class Container implements Cloneable {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Container container = (Container) o;
+        return internId.toString().equals(container.internId.toString());
+    }
 
-//    @Override
+    @Override
+    public int hashCode() {
+        return Objects.hash(internId.toString());
+    }
+
+    //    @Override
 //    public boolean equals(Object obj) {
 //        if (this == obj) {
 //            return true;

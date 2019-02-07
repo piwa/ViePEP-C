@@ -16,6 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 
@@ -166,7 +167,20 @@ public class ProcessStep extends Element implements Cloneable {
                 '}';
     }
 
-//    @Override
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ProcessStep that = (ProcessStep) o;
+        return internId.toString().equals(that.internId.toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(internId.toString());
+    }
+
+    //    @Override
 //    public String toString() {
 //        DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 //

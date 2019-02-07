@@ -22,23 +22,23 @@ public class CacheProcessStepService {
 
 
     public synchronized List<ProcessStep> getScheduledProcessSteps() {
-        return inMemoryCache.getAllProcessSteps().stream().filter(ps -> ps.getProcessStepStatus().equals(ProcessStepStatus.SCHEDULED)).collect(Collectors.toList());
+        return inMemoryCache.getAllProcessSteps().values().stream().filter(ps -> ps.getProcessStepStatus().equals(ProcessStepStatus.SCHEDULED)).collect(Collectors.toList());
     }
 
     public synchronized List<ProcessStep> getDeployingProcessSteps() {
-        return inMemoryCache.getAllProcessSteps().stream().filter(ps -> ps.getProcessStepStatus().equals(ProcessStepStatus.DEPLOYING)).collect(Collectors.toList());
+        return inMemoryCache.getAllProcessSteps().values().stream().filter(ps -> ps.getProcessStepStatus().equals(ProcessStepStatus.DEPLOYING)).collect(Collectors.toList());
     }
 
     public synchronized List<ProcessStep> getRunningProcessSteps() {
-        return inMemoryCache.getAllProcessSteps().stream().filter(ps -> ps.getProcessStepStatus().equals(ProcessStepStatus.RUNNING)).collect(Collectors.toList());
+        return inMemoryCache.getAllProcessSteps().values().stream().filter(ps -> ps.getProcessStepStatus().equals(ProcessStepStatus.RUNNING)).collect(Collectors.toList());
     }
 
     public synchronized List<Container> getTerminatedContainers() {
-        return inMemoryCache.getContainerInstances().stream().filter(container -> container.getContainerStatus().equals(VirtualMachineStatus.TERMINATED)).collect(Collectors.toList());
+        return inMemoryCache.getContainerInstances().values().stream().filter(container -> container.getContainerStatus().equals(VirtualMachineStatus.TERMINATED)).collect(Collectors.toList());
     }
 
     public synchronized Optional<ProcessStep> getRunningProcessStep(String processStepName) {
-        return inMemoryCache.getAllProcessSteps().stream().filter(ps -> ps.getProcessStepStatus().equals(ProcessStepStatus.RUNNING) && ps.getName().equals(processStepName)).findFirst();
+        return inMemoryCache.getAllProcessSteps().values().stream().filter(ps -> ps.getProcessStepStatus().equals(ProcessStepStatus.RUNNING) && ps.getName().equals(processStepName)).findFirst();
     }
 
 
@@ -48,7 +48,7 @@ public class CacheProcessStepService {
                 .collect(Collectors.toList());
     }
 
-    public Set<ProcessStep> getAllProcessSteps() {
+    public Map<UUID, ProcessStep> getAllProcessSteps() {
         return inMemoryCache.getAllProcessSteps();
     }
 

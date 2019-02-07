@@ -83,18 +83,16 @@ public class VirtualMachineInstance implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VirtualMachineInstance that = (VirtualMachineInstance) o;
+        return internId.toString().equals(that.internId.toString());
+    }
 
-        VirtualMachineInstance other = (VirtualMachineInstance) obj;
-
-        return (this.id != null) && (other.id != null) && (this.id.intValue() == other.id.intValue());
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(internId.toString());
     }
 
     @Override
@@ -141,5 +139,7 @@ public class VirtualMachineInstance implements Serializable {
     public void undeployContainer(Container container) {
         this.deployedContainers.remove(container);
     }
+
+
 
 }

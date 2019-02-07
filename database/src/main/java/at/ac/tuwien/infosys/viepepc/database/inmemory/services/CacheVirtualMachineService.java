@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
@@ -37,29 +39,29 @@ public class CacheVirtualMachineService {
         throw new Exception("TYPE not found");
     }
 
-    public Set<VirtualMachineInstance> getAllVMInstancesFromInMemory() {
+    public Map<UUID, VirtualMachineInstance> getAllVMInstancesFromInMemory() {
         return inMemoryCache.getVmInstances();
     }
 
     public List<VirtualMachineInstance> getDeployedVMInstances() {
-        return getAllVMInstancesFromInMemory().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)).collect(Collectors.toList());
+        return getAllVMInstancesFromInMemory().values().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)).collect(Collectors.toList());
     }
 
     public List<VirtualMachineInstance> getDeployingVMInstances() {
-        return getAllVMInstancesFromInMemory().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYING)).collect(Collectors.toList());
+        return getAllVMInstancesFromInMemory().values().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYING)).collect(Collectors.toList());
     }
 
     public List<VirtualMachineInstance> getScheduledVMInstances() {
-        return getAllVMInstancesFromInMemory().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED)).collect(Collectors.toList());
+        return getAllVMInstancesFromInMemory().values().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED)).collect(Collectors.toList());
     }
 
     public List<VirtualMachineInstance> getDeployingAndDeployedVMInstances() {
-        return getAllVMInstancesFromInMemory().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYING) ||
+        return getAllVMInstancesFromInMemory().values().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYING) ||
                 vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)).collect(Collectors.toList());
     }
 
     public List<VirtualMachineInstance> getScheduledAndDeployingAndDeployedVMInstances() {
-        return getAllVMInstancesFromInMemory().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED) ||
+        return getAllVMInstancesFromInMemory().values().stream().filter(vm -> vm.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED) ||
                 vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYING) ||
                 vm.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)).collect(Collectors.toList());
     }

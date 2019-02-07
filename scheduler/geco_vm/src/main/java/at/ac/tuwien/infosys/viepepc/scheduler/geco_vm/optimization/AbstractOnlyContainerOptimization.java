@@ -1,6 +1,9 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization;
 
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheContainerService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheProcessStepService;
+import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerStatus;
@@ -11,15 +14,13 @@ import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStepStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.OptimizationUtility;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Chromosome;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ProcessStepSchedulingUnit;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.ServiceTypeSchedulingUnit;
-import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
+import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.*;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations.FitnessFunctionStartTime;
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.operations.FitnessFunctionVM;
 import at.ac.tuwien.infosys.viepepc.scheduler.library.OptimizationResult;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -30,6 +31,12 @@ import java.util.stream.Collectors;
 @SuppressWarnings("Duplicates")
 public abstract class AbstractOnlyContainerOptimization {
 
+    @Autowired
+    private CacheVirtualMachineService cacheVirtualMachineService;
+    @Autowired
+    private CacheContainerService cacheContainerService;
+    @Autowired
+    private CacheProcessStepService processStepService;
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
     @Autowired
@@ -48,29 +55,20 @@ public abstract class AbstractOnlyContainerOptimization {
     protected OrderMaintainer orderMaintainer = new OrderMaintainer();
     protected DateTime optimizationEndTime;
 
-    protected OptimizationResult createOptimizationResult(Chromosome winner, List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits, EvolutionLogger evolutionLogger) {
+    protected OptimizationResult createOptimizationResult(Chromosome winner, List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits) {
 
         fitnessFunctionStartTime.getFitness(winner, null);
-        fitnessFunctionVM.getFitness(winner, null);
+        fitnessFunctionVM.getFitness(new Chromosome2(allServiceTypeSchedulingUnits), null);
         StringBuilder builder = new StringBuilder();
         builder.append("Optimization Result:\n--------------------------- Winner Chromosome ---------------------------- \n").append(winner.toString()).append("\n");
         builder.append("----------------------------- Winner Fitness -----------------------------\n");
         builder.append("Leasing startTime=").append(fitnessFunctionStartTime.getLeasingCost()).append("\n");
         builder.append("Leasing VM=").append(fitnessFunctionVM.getLeasingCost()).append("\n");
         builder.append("Penalty=").append(fitnessFunctionStartTime.getPenaltyCost()).append("\n");
-//        builder.append("Early Enactment=").append(fitnessFunctionStartTime.getEarlyEnactmentCost()).append("\n");
         builder.append("Total Fitness=").append(fitnessFunctionStartTime.getLeasingCost() + fitnessFunctionVM.getLeasingCost() + fitnessFunctionStartTime.getPenaltyCost() + fitnessFunctionStartTime.getEarlyEnactmentCost()).append("\n");
-        builder.append("----------------------------- Algorithm Stats ----------------------------\n");
-        builder.append("Generation Amount=").append(evolutionLogger.getAmountOfGenerations()).append("\n");
         builder.append("----------------------------- Chromosome Checks --------------------------\n");
-        boolean notEnoughSpace = false;
-        Set<VirtualMachineSchedulingUnit> temp = winner.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).collect(Collectors.toSet());
-        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : temp) {
-            if(!vmSelectionHelper.checkIfVirtualMachineIsBigEnough(virtualMachineSchedulingUnit)) {
-                log.error("not enough space after the optimization on VM=" + virtualMachineSchedulingUnit);
-                notEnoughSpace = true;
-            }
-        }
+        boolean notEnoughSpace = vmSelectionHelper.checkIfVMIsTooSmall(allServiceTypeSchedulingUnits, "createOptimizationResult");
+
         if(!notEnoughSpace) {
             builder.append("Space is ok").append("\n");
         }
@@ -78,14 +76,6 @@ public abstract class AbstractOnlyContainerOptimization {
         builder.append("Order is ok").append("\n");
 
         log.info(builder.toString());
-
-//        List<ProcessStepSchedulingUnit> processStepSchedulingUnit1s = winner.getFlattenChromosome().stream().map(Chromosome.Gene::getProcessStepSchedulingUnit).collect(Collectors.toList());
-//        for (ProcessStepSchedulingUnit processStepSchedulingUnit : processStepSchedulingUnit1s) {
-//            VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = processStepSchedulingUnit.getVirtualMachineSchedulingUnit();
-//            if(!virtualMachineSchedulingUnit.getProcessStepSchedulingUnits().contains(processStepSchedulingUnit)) {
-//                log.error("A ProcessStep is defined for a VM but the VM does not contain it! (at=end); processStepSchedulingUnit=" + processStepSchedulingUnit + ", " + virtualMachineSchedulingUnit);
-//            }
-//        }
 
         OptimizationResult optimizationResult = new OptimizationResult();
 
@@ -114,7 +104,9 @@ public abstract class AbstractOnlyContainerOptimization {
                 optimizationResult.getProcessSteps().add(processStep);
             }
 
-            virtualMachineSchedulingUnits.add(serviceTypeSchedulingUnit.getVirtualMachineSchedulingUnit());
+            VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = serviceTypeSchedulingUnit.getVirtualMachineSchedulingUnit();
+            virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits().add(serviceTypeSchedulingUnit);
+            virtualMachineSchedulingUnits.add(virtualMachineSchedulingUnit);
         }
 
         for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
@@ -128,9 +120,44 @@ public abstract class AbstractOnlyContainerOptimization {
             optimizationResult.getVirtualMachineInstances().add(virtualMachineInstance);
         }
 
-
+//        setTimesIfNeeded(optimizationResult);
 
         return optimizationResult;
+    }
+
+
+    private void setTimesIfNeeded(OptimizationResult optimizationResult) {
+        List<VirtualMachineInstance> fixedVirtualMachines = cacheVirtualMachineService.getDeployingAndDeployedVMInstances();
+        for (VirtualMachineInstance virtualMachineInstance : optimizationResult.getVirtualMachineInstances()) {
+            if(fixedVirtualMachines.contains(virtualMachineInstance)) {
+                VirtualMachineInstance fixedVM = fixedVirtualMachines.get(fixedVirtualMachines.indexOf(virtualMachineInstance));
+                Interval cloudInterval = virtualMachineInstance.getScheduledCloudResourceUsage().withStart(fixedVM.getScheduledCloudResourceUsage().getStart());
+                virtualMachineInstance.setScheduledCloudResourceUsage(cloudInterval);
+                Interval availableInterval = virtualMachineInstance.getScheduledAvailableInterval().withStart(fixedVM.getScheduledAvailableInterval().getStart());
+                virtualMachineInstance.setScheduledAvailableInterval(availableInterval);
+            }
+        }
+
+        List<Container> fixedContainers = cacheContainerService.getDeployingAndDeployedContainers();
+        for (Container container : optimizationResult.getContainers()) {
+            if(fixedContainers.contains(container)) {
+                Container fixedContainer = fixedContainers.get(fixedContainers.indexOf(container));
+                Interval cloudInterval = container.getScheduledCloudResourceUsage().withStart(fixedContainer.getScheduledCloudResourceUsage().getStart());
+                container.setScheduledCloudResourceUsage(cloudInterval);
+                Interval availableInterval = container.getScheduledAvailableInterval().withStart(fixedContainer.getScheduledAvailableInterval().getStart());
+                container.setScheduledAvailableInterval(availableInterval);
+            }
+        }
+
+        List<ProcessStep> fixedProcessSteps = processStepService.getDeployingProcessSteps();
+        fixedProcessSteps.addAll(processStepService.getRunningProcessSteps());
+        for (ProcessStep ps : optimizationResult.getProcessSteps()) {
+            if(fixedProcessSteps.contains(ps)) {
+                ProcessStep fixedPs = fixedProcessSteps.get(fixedProcessSteps.indexOf(ps));
+                ps.setScheduledStartDate(fixedPs.getScheduledStartDate());
+            }
+        }
+
     }
 
 

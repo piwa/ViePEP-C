@@ -38,7 +38,7 @@ public class AWSFargateSimulationServiceImpl {
 
         container.shutdownContainer();
 
-        log.debug("The container: " + container.getContainerID() + " was removed.");
+        log.debug("The container: " + container.getInternId() + " was removed.");
 
 
     }

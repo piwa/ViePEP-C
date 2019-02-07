@@ -52,9 +52,21 @@ public class HandleResultGeCoVM implements HandleOptimizationResult {
             provisioningSchedule.addAllContainers(optimize.getContainers());
             provisioningSchedule.addAllVirtualMachineInstances(optimize.getVirtualMachineInstances());
 
-            cacheVirtualMachineService.getAllVMInstancesFromInMemory().addAll(optimize.getVirtualMachineInstances());
-            cacheContainerService.getAllContainerInstances().addAll(optimize.getContainers());
-            processStepService.getAllProcessSteps().addAll(optimize.getProcessSteps());
+            optimize.getVirtualMachineInstances().forEach(virtualMachineInstance -> cacheVirtualMachineService.getAllVMInstancesFromInMemory().put(virtualMachineInstance.getInternId(), virtualMachineInstance));
+            optimize.getContainers().forEach(container -> cacheContainerService.getAllContainerInstances().put(container.getInternId(), container));
+            optimize.getProcessSteps().forEach(ps -> processStepService.getAllProcessSteps().put(ps.getInternId(), ps));
+
+//            HashMap
+//            Set<VirtualMachineInstance> vmSet = cacheVirtualMachineService.getAllVMInstancesFromInMemory();
+//            vmSet.forEach(vm -> );
+//
+//            cacheVirtualMachineService.getAllVMInstancesFromInMemory().removeAll(optimize.getVirtualMachineInstances());
+//            cacheContainerService.getAllContainerInstances().removeAll(optimize.getContainers());
+//            processStepService.getAllProcessSteps().removeAll(optimize.getProcessSteps());
+//
+//            cacheVirtualMachineService.getAllVMInstancesFromInMemory().addAll(optimize.getVirtualMachineInstances());
+//            cacheContainerService.getAllContainerInstances().addAll(optimize.getContainers());
+//            processStepService.getAllProcessSteps().addAll(optimize.getProcessSteps());
 
             cleanup(optimize.getProcessSteps());
         }
@@ -118,7 +130,7 @@ public class HandleResultGeCoVM implements HandleOptimizationResult {
         for (Container container : notUsedContainers) {
             if (container.getContainerStatus().equals(ContainerStatus.SCHEDULED)) {
                 containerToRemove.add(container.getInternId());
-                cacheContainerService.getAllContainerInstances().remove(container);
+                cacheContainerService.getAllContainerInstances().remove(container.getInternId());
             } else {
                 Container containerFromSchedule = provisioningSchedule.getContainersMap().get(container.getInternId());
                 Interval scheduleInterval = containerFromSchedule.getScheduledCloudResourceUsage();
@@ -133,7 +145,7 @@ public class HandleResultGeCoVM implements HandleOptimizationResult {
         for (VirtualMachineInstance vm : notUsedVMs) {
             if (vm.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED)) {
                 vmToRemove.add(vm.getInternId());
-                cacheVirtualMachineService.getAllVMInstancesFromInMemory().remove(vm);
+                cacheVirtualMachineService.getAllVMInstancesFromInMemory().remove(vm.getInternId());
             } else {
                 VirtualMachineInstance vmFromSchedule = provisioningSchedule.getVirtualMachineInstancesMap().get(vm.getInternId());
                 Interval scheduleInterval = vmFromSchedule.getScheduledCloudResourceUsage();

@@ -58,6 +58,7 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
     private double eliteCountNumber = 0.05;
 
     private EvolutionLogger evolutionLogger = new EvolutionLogger();
+    private EvolutionLogger2 evolutionLogger2 = new EvolutionLogger2();
 
     @Autowired
     private DeadlineAwareFactoryStartTime chromosomeFactoryStartTime;
@@ -88,7 +89,8 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         log.info("Start Time optimization");
         Chromosome tempResult = optimizeStartTime(workflowElements);
         log.info("Deployment optimization");
-        Chromosome winner = optimizeAssignedVM(tempResult);
+        List<ServiceTypeSchedulingUnit> requiredServiceTypeList = optimizationUtility.getRequiredServiceTypes(tempResult, true);
+        requiredServiceTypeList = optimizeAssignedVM(requiredServiceTypeList).getFlattenChromosome();
 
         stopwatch.stop();
         log.debug("optimization time=" + stopwatch.getTotalTimeMillis());
@@ -96,33 +98,22 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         stopwatch = new StopWatch();
         stopwatch.start();
 
-        List<ServiceTypeSchedulingUnit> requiredServiceTypeList = new ArrayList<>();
+//        List<ServiceTypeSchedulingUnit> requiredServiceTypeList = new ArrayList<>();
 
-        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = winner.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).filter(Objects::nonNull).collect(Collectors.toSet());
-
-        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
-            List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
-            for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
-                serviceTypeSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineSchedulingUnit);
-            }
-            requiredServiceTypeList.addAll(serviceTypeSchedulingUnits);
-        }
-
-//        List<ServiceTypeSchedulingUnit> requiredServiceTypeList = optimizationUtility.getRequiredServiceTypes(winner, true);
-//        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = vmSelectionHelper.setVMsForServiceSchedulingUnit(requiredServiceTypeList);
-
-//        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
-//            if (serviceTypeSchedulingUnit.getVirtualMachineSchedulingUnit() != null && serviceTypeSchedulingUnit.isFixed()) {
-//                VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = serviceTypeSchedulingUnit.getVirtualMachineSchedulingUnit();
-////                serviceTypeSchedulingUnit.getContainer().setVirtualMachineInstance(virtualMachineInstance.getVirtualMachineInstance());
-//                for (Chromosome.Gene gene : serviceTypeSchedulingUnit.getGenes()) {
-//                    gene.getProcessStepSchedulingUnit().setVirtualMachineSchedulingUnit(virtualMachineInstance);
-//                    virtualMachineInstance.getProcessStepSchedulingUnits().add(gene.getProcessStepSchedulingUnit());
-//                }
+//        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = winner.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).filter(Objects::nonNull).collect(Collectors.toSet());
+//
+//        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
+//            List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
+//            for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
+//                serviceTypeSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineSchedulingUnit);
 //            }
+//            requiredServiceTypeList.addAll(serviceTypeSchedulingUnits);
 //        }
 
-        OptimizationResult optimizationResult = createOptimizationResult(winner, requiredServiceTypeList, evolutionLogger);
+//        List<ServiceTypeSchedulingUnit> requiredServiceTypeList = optimizationUtility.getRequiredServiceTypes(winner, true);
+
+
+        OptimizationResult optimizationResult = createOptimizationResult(tempResult, requiredServiceTypeList);
         stopwatch.stop();
         log.debug("optimization post time=" + stopwatch.getTotalTimeMillis());
 
@@ -176,7 +167,7 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         return engine.evolve(populationSize, eliteCount, new ElapsedTime(maxOptimizationDuration / 2));
     }
 
-    private Chromosome optimizeAssignedVM(Chromosome chromosome)  {
+    private Chromosome2 optimizeAssignedVM(List<ServiceTypeSchedulingUnit> requiredServiceTypeList)  {
 
         StopWatch stopwatch = new StopWatch();
         stopwatch.start("pre optimization tasks");
@@ -187,11 +178,11 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
 
         vmSelectionHelper.setOptimizationEndTime(optimizationEndTime);
 
-        chromosomeFactoryVM.initialize(chromosome);
+        chromosomeFactoryVM.initialize(requiredServiceTypeList);
 
 
         Random rng = new MersenneTwisterRNG();
-        List<EvolutionaryOperator<Chromosome>> operators = new ArrayList<>();
+        List<EvolutionaryOperator<Chromosome2>> operators = new ArrayList<>();
 
 
         operators.add(new SpaceAwareDeploymentMutation(new PoissonGenerator(4, rng), optimizationEndTime));
@@ -201,10 +192,10 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         int eliteCount = (int) Math.round(populationSize * eliteCountNumber);
         this.fitnessFunctionVM.setOptimizationEndTime(this.optimizationEndTime);
 
-        EvolutionaryOperator<Chromosome> pipeline = new EvolutionPipeline<>(operators);
-        EvolutionEngine<Chromosome> engine = new GenerationalEvolutionEngine<>(chromosomeFactoryVM, pipeline, fitnessFunctionVM, selectionStrategy, rng);
+        EvolutionaryOperator<Chromosome2> pipeline = new EvolutionPipeline<>(operators);
+        EvolutionEngine<Chromosome2> engine = new GenerationalEvolutionEngine<>(chromosomeFactoryVM, pipeline, fitnessFunctionVM, selectionStrategy, rng);
 
-        engine.addEvolutionObserver(evolutionLogger);
+        engine.addEvolutionObserver(evolutionLogger2);
 
         stopwatch.stop();
         log.debug("optimization preparation time=" + stopwatch.getTotalTimeMillis());

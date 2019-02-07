@@ -1,6 +1,7 @@
 package at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.baseline;
 
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
+import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VMType;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
@@ -105,7 +106,12 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
 
         List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesVMSeparation(baselineChromosome);
 
-        return createOptimizationResult(baselineChromosome, allServiceTypeSchedulingUnits, evolutionLogger);
+        for (ServiceTypeSchedulingUnit allServiceTypeSchedulingUnit : allServiceTypeSchedulingUnits) {
+            VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = allServiceTypeSchedulingUnit.getGenes().get(0).getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit();
+            allServiceTypeSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineSchedulingUnit);
+        }
+
+        return createOptimizationResult(baselineChromosome, allServiceTypeSchedulingUnits);
     }
 
 
@@ -172,7 +178,7 @@ public class GeCoVMBaseline extends AbstractOnlyContainerOptimization implements
         do {
             VMType vmType = vmTypes.get(position);
             position = position + 1;
-            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(false, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
+            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(false, null, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
         } while (!vmSelectionHelper.checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(virtualMachineSchedulingUnit, processStepSchedulingUnits));
 
         return virtualMachineSchedulingUnit;

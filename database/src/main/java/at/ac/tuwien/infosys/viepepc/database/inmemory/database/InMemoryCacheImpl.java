@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 public class InMemoryCacheImpl {
 
     private List<VMType> vmTypes = new ArrayList<>();
-    private Set<VirtualMachineInstance> vmInstances = new HashSet<>();
+    private Map<UUID, VirtualMachineInstance> vmInstances = new HashMap<>();
 
 
     private List<WorkflowElement> allWorkflowInstances = new ArrayList<>();
@@ -27,11 +27,11 @@ public class InMemoryCacheImpl {
 
 //    private Map<String, ProcessStep> processStepsWaitingForServiceDone = new HashMap<>();
 //    private Set<ProcessStep> processStepsWaitingForExecution = new HashSet<>();
-    private Set<ProcessStep> allProcessSteps = new HashSet<>();
+    private Map<UUID, ProcessStep> allProcessSteps = new HashMap<>();
 
 
     private List<ContainerConfiguration> containerConfigurations = new ArrayList<>();
-    private Set<Container> containerInstances = new HashSet<>();
+    private Map<UUID, Container> containerInstances = new HashMap<>();
 
 
 }

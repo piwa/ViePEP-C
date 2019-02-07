@@ -185,7 +185,12 @@ public class DeadlineAwareFactoryInitializer {
 
         VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = virtualMachineSchedulingUnitMap.get(container.getVirtualMachineInstance());
         if (virtualMachineSchedulingUnit == null) {
-            virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit( isFixed, virtualMachineDeploymentTime, containerDeploymentTime, container.getVirtualMachineInstance(), "setContainerAndVMSchedulingUnit");
+            if(isFixed) {
+                virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(isFixed, container.getVirtualMachineInstance().getScheduledCloudResourceUsage().getStart(), virtualMachineDeploymentTime, containerDeploymentTime, container.getVirtualMachineInstance(), "setContainerAndVMSchedulingUnit");
+            }
+            else {
+                virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(isFixed, null, virtualMachineDeploymentTime, containerDeploymentTime, container.getVirtualMachineInstance(), "setContainerAndVMSchedulingUnit");
+            }
             virtualMachineSchedulingUnitMap.put(container.getVirtualMachineInstance(), virtualMachineSchedulingUnit);
         }
         processStepSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineSchedulingUnit);

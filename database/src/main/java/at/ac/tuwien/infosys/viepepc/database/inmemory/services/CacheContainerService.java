@@ -13,9 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,11 +37,11 @@ public class CacheContainerService {
     }
 
     public List<Container> getDeployedContainers() {
-        return inMemoryCache.getContainerInstances().stream().filter(container -> container.getContainerStatus().equals(ContainerStatus.DEPLOYED)).collect(Collectors.toList());
+        return inMemoryCache.getContainerInstances().values().stream().filter(container -> container.getContainerStatus().equals(ContainerStatus.DEPLOYED)).collect(Collectors.toList());
     }
 
     public List<Container> getDeployingContainers() {
-        return inMemoryCache.getContainerInstances().stream().filter(container -> container.getContainerStatus().equals(ContainerStatus.DEPLOYING)).collect(Collectors.toList());
+        return inMemoryCache.getContainerInstances().values().stream().filter(container -> container.getContainerStatus().equals(ContainerStatus.DEPLOYING)).collect(Collectors.toList());
     }
 
     public List<Container> getDeployingAndDeployedContainers() {
@@ -52,11 +50,11 @@ public class CacheContainerService {
         return returnSet;
     }
 
-    public void addRunningContainer(Container container) {
-        inMemoryCache.getContainerInstances().add(container);
-    }
+//    public void addRunningContainer(Container container) {
+//        inMemoryCache.getContainerInstances().add(container);
+//    }
 
-    public Set<Container> getAllContainerInstances() {
+    public Map<UUID, Container> getAllContainerInstances() {
         return inMemoryCache.getContainerInstances();
     }
 

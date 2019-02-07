@@ -66,9 +66,9 @@ public class DockerSimulationServiceImpl {
         container.shutdownContainer();
 
         if (container.getVirtualMachineInstance() != null) {
-            log.debug("The container: " + container.getContainerID() + " on the host: " + container.getVirtualMachineInstance() + " was removed.");
+            log.debug("The container: " + container.getInternId() + " on the host: " + container.getVirtualMachineInstance() + " was removed.");
         } else {
-            log.debug("The container: " + container.getContainerID() + " was removed.");
+            log.debug("The container: " + container.getInternId() + " was removed.");
         }
 
     }

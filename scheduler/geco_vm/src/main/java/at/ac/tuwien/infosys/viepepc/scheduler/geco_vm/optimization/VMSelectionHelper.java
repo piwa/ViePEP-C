@@ -41,100 +41,6 @@ public class VMSelectionHelper {
     @Value("${container.default.deploy.time}")
     private long containerDeploymentTime;
 
-
-    public List<ServiceTypeSchedulingUnit> setVMsForServiceSchedulingUnit(List<ServiceTypeSchedulingUnit> requiredServiceTypeList) {
-
-        requiredServiceTypeList.sort(Comparator.comparing(ServiceTypeSchedulingUnit::getDeployStartTime));
-
-        List<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new ArrayList<>();
-
-        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
-            if (serviceTypeSchedulingUnit.getVirtualMachineSchedulingUnit() != null && serviceTypeSchedulingUnit.isFixed()) {
-                virtualMachineSchedulingUnits.add(serviceTypeSchedulingUnit.getVirtualMachineSchedulingUnit());
-                assignVMToServiceTypeUnit(serviceTypeSchedulingUnit, serviceTypeSchedulingUnit.getVirtualMachineSchedulingUnit());
-            }
-        }
-
-        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : requiredServiceTypeList) {
-            if (serviceTypeSchedulingUnit.getVirtualMachineSchedulingUnit() == null || !serviceTypeSchedulingUnit.isFixed()) {
-                boolean vmAssigned = false;
-                List<VirtualMachineSchedulingUnit> tempVMList = virtualMachineSchedulingUnits.stream().distinct()
-                        .sorted(
-                                Comparator.comparing((VirtualMachineSchedulingUnit unit) -> unit.getVirtualMachineInstance().getVmType().getCores())
-                                        .thenComparing(Comparator.comparingInt((VirtualMachineSchedulingUnit unit) -> unit.getProcessStepSchedulingUnits().size()).reversed())
-//                                reverseOrder(Comparator.comparingInt((VirtualMachineSchedulingUnit unit) -> unit.getProcessStepSchedulingUnits().size()))
-//                                        .thenComparing((VirtualMachineSchedulingUnit unit) -> unit.getCloudResourceUsageInterval().getEnd())
-//                                        .thenComparing((VirtualMachineSchedulingUnit unit) -> unit.getVirtualMachineInstance().getVmType().getCores())
-                        )
-                        .collect(Collectors.toList());
-                virtualMachineSchedulingUnits = tempVMList;
-                for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : tempVMList) {
-                    if (virtualMachineSchedulingUnit.getCloudResourceUsageInterval().overlaps(serviceTypeSchedulingUnit.getCloudResourceUsage())) {
-                        List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
-                        allServiceTypeSchedulingUnits.add(serviceTypeSchedulingUnit);
-                        List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = createIntervalContainerSchedulingList(allServiceTypeSchedulingUnits);
-                        boolean result = checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes);
-                        if (result) {
-                            assignVMToServiceTypeUnit(serviceTypeSchedulingUnit, virtualMachineSchedulingUnit);
-                            vmAssigned = true;
-                            break;
-                        }
-                    } else {
-                        DateTime usageCostPlusDeployment = virtualMachineSchedulingUnit.getCloudResourceUsageInterval().getEnd().plus(virtualMachineDeploymentTime);
-                        try {
-                            VMType vmType = getFittingVMType(serviceTypeSchedulingUnit);
-                            if (usageCostPlusDeployment.isAfter(serviceTypeSchedulingUnit.getCloudResourceUsage().getStart()) && virtualMachineSchedulingUnit.getVirtualMachineInstance().getVmType() == vmType) {
-                                assignVMToServiceTypeUnit(serviceTypeSchedulingUnit, virtualMachineSchedulingUnit);
-                                vmAssigned = true;
-                                break;
-                            }
-                        } catch (Exception ex) {
-                            log.error("error");
-                        }
-
-                    }
-                }
-                if (!vmAssigned) {
-                    try {
-                        VMType vmType = getFittingVMType(serviceTypeSchedulingUnit);
-                        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = new VirtualMachineSchedulingUnit(false, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
-                        assignVMToServiceTypeUnit(serviceTypeSchedulingUnit, virtualMachineSchedulingUnit);
-                        virtualMachineSchedulingUnits.add(virtualMachineSchedulingUnit);
-                    } catch (Exception ex) {
-                        log.error("error");
-                    }
-                }
-            }
-        }
-
-        return requiredServiceTypeList;
-    }
-
-    private void assignVMToServiceTypeUnit(ServiceTypeSchedulingUnit serviceTypeSchedulingUnit, VirtualMachineSchedulingUnit virtualMachineInstance) {
-        serviceTypeSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineInstance);
-        serviceTypeSchedulingUnit.getContainer().setVirtualMachineInstance(virtualMachineInstance.getVirtualMachineInstance());
-        for (Chromosome.Gene gene : serviceTypeSchedulingUnit.getGenes()) {
-            gene.getProcessStepSchedulingUnit().setVirtualMachineSchedulingUnit(virtualMachineInstance);
-            virtualMachineInstance.getProcessStepSchedulingUnits().add(gene.getProcessStepSchedulingUnit());
-        }
-    }
-
-    private VMType getFittingVMType(List<VMType> allVMTypes, ProcessStepSchedulingUnit processStepSchedulingUnit) throws VMTypeNotFoundException {
-
-        double scheduledCPUUsage = processStepSchedulingUnit.getProcessStep().getServiceType().getServiceTypeResources().getCpuLoad();
-        double scheduledRAMUsage = processStepSchedulingUnit.getProcessStep().getServiceType().getServiceTypeResources().getMemory();
-
-        allVMTypes.sort(Comparator.comparing(VMType::getCores));
-
-        for (VMType vmType : allVMTypes) {
-            if (vmType.getCpuPoints() >= scheduledCPUUsage && vmType.getRamPoints() >= scheduledRAMUsage) {
-                return vmType;
-            }
-        }
-
-        throw new VMTypeNotFoundException("Could not find big enough VMType");
-    }
-
     private VMType getFittingVMType(ServiceTypeSchedulingUnit serviceTypeSchedulingUnit) throws VMTypeNotFoundException {
 
         double scheduledCPUUsage = serviceTypeSchedulingUnit.getContainer().getContainerConfiguration().getCPUPoints();
@@ -152,7 +58,7 @@ public class VMSelectionHelper {
         throw new VMTypeNotFoundException("Could not find big enough VMType");
     }
 
-    private List<ServiceTypeSchedulingUnit> createIntervalContainerSchedulingList(List<ServiceTypeSchedulingUnit> tempSchedulingUnits) {
+    public List<ServiceTypeSchedulingUnit> createIntervalContainerSchedulingList(List<ServiceTypeSchedulingUnit> tempSchedulingUnits) {
 
 
         List<ContainerEvent> deployEvents = new ArrayList<>();
@@ -211,7 +117,7 @@ public class VMSelectionHelper {
         return checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes);
     }
 
-    private boolean checkEnoughResourcesLeftOnVMForOneInterval(VMType vmType, List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits) {
+    public boolean checkEnoughResourcesLeftOnVMForOneInterval(VMType vmType, List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits) {
         CombinedContainerResources combinedContainerResources = new CombinedContainerResources(serviceTypeSchedulingUnits);
         return vmType.getCpuPoints() >= combinedContainerResources.getScheduledCPUUsage() && vmType.getRamPoints() >= combinedContainerResources.getScheduledRAMUsage();
     }
@@ -221,13 +127,11 @@ public class VMSelectionHelper {
         return alreadyScheduledVirtualMachines.stream().filter(unit -> unit.getCloudResourceUsageInterval().getEnd().isAfter(this.optimizationEndTime)).distinct().collect(Collectors.toList());
     }
 
-    public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnitForProcessStep(ProcessStepSchedulingUnit processStepSchedulingUnit, Set<VirtualMachineSchedulingUnit> availableVirtualMachineSchedulingUnits, Random random) {
-        return getVirtualMachineSchedulingUnitForProcessStep(processStepSchedulingUnit, availableVirtualMachineSchedulingUnits, random, true);
-    }
 
-    public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnitForProcessStep(ProcessStepSchedulingUnit processStepSchedulingUnit, Set<VirtualMachineSchedulingUnit> availableVirtualMachineSchedulingUnits, Random random, boolean withCheck) {
-        List<ProcessStepSchedulingUnit> processStepSchedulingUnits = new ArrayList<>();
-        processStepSchedulingUnits.add(processStepSchedulingUnit);
+    public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnitForProcessStep(ServiceTypeSchedulingUnit serviceTypeSchedulingUnit, Set<VirtualMachineSchedulingUnit> availableVirtualMachineSchedulingUnits, Random random, boolean withCheck) {
+
+
+        List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = null;
 
         VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
         do {
@@ -242,25 +146,58 @@ public class VMSelectionHelper {
                 }
             }
             if (!fromAvailableVMs || virtualMachineSchedulingUnit == null) {
-                virtualMachineSchedulingUnit = createNewVirtualMachineSchedulingUnit(processStepSchedulingUnit, random);
+                virtualMachineSchedulingUnit = createNewVirtualMachineSchedulingUnit(serviceTypeSchedulingUnit, random);
             }
-        } while (withCheck && !checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(virtualMachineSchedulingUnit, processStepSchedulingUnits));
+
+            List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits;
+            if(virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits().isEmpty()) {
+                allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
+            }
+            else {
+                allServiceTypeSchedulingUnits = new ArrayList<>(virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits());
+            }
+            allServiceTypeSchedulingUnits.add(serviceTypeSchedulingUnit);
+            maxOverlappingServiceTypes = createIntervalContainerSchedulingList(allServiceTypeSchedulingUnits);
+        } while (withCheck && !checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes));
 
         return virtualMachineSchedulingUnit;
     }
 
     @NotNull
-    public VirtualMachineSchedulingUnit createNewVirtualMachineSchedulingUnit(ProcessStepSchedulingUnit processStepSchedulingUnit, Random random) {
+    public VirtualMachineSchedulingUnit createNewVirtualMachineSchedulingUnit(ServiceTypeSchedulingUnit serviceTypeSchedulingUnit, Random random) {
         try {
-            VMType vmType = getFittingVMType(new ArrayList<>(cacheVirtualMachineService.getVMTypes()), processStepSchedulingUnit);
-            return new VirtualMachineSchedulingUnit(false, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
+            VMType vmType = getFittingVMType(serviceTypeSchedulingUnit);
+            return new VirtualMachineSchedulingUnit(false, null, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
         } catch (Exception ex) {
             List<VMType> vmTypes = new ArrayList<>(cacheVirtualMachineService.getVMTypes());
             int randomPosition = random.nextInt(vmTypes.size());
             VMType vmType = vmTypes.get(randomPosition);
-            return new VirtualMachineSchedulingUnit(false, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
+            return new VirtualMachineSchedulingUnit(false, null, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
         }
     }
+
+    public boolean checkIfVMIsTooSmall(List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits, String position) {
+
+        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new HashSet<>();
+        for (ServiceTypeSchedulingUnit typeSchedulingUnit : allServiceTypeSchedulingUnits) {
+            VirtualMachineSchedulingUnit machineSchedulingUnit = typeSchedulingUnit.getVirtualMachineSchedulingUnit();
+            if (machineSchedulingUnit != null) {
+                machineSchedulingUnit.getServiceTypeSchedulingUnits().add(typeSchedulingUnit);
+                virtualMachineSchedulingUnits.add(machineSchedulingUnit);
+            }
+        }
+
+        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
+            List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = createIntervalContainerSchedulingList(new ArrayList<>(virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits()));
+            if(!checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes)) {
+                log.error("not enough space after the optimization (at="+position+") on VM=" + virtualMachineSchedulingUnit);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     @Data
     private class ContainerEvent {

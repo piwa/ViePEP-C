@@ -80,10 +80,10 @@ public class WorkflowDaoService {
             containerDaoService.save(container);
         }
 
-        ServiceType serviceTypeFromDb = serviceTypeDaoService.get(processStep.getServiceType());
-        if (serviceTypeFromDb == null) {
-            serviceTypeDaoService.save(processStep.getServiceType());
-        }
+//        ServiceType serviceTypeFromDb = serviceTypeDaoService.get(processStep.getServiceType());
+//        if (serviceTypeFromDb == null) {
+//            serviceTypeDaoService.save(processStep.getServiceType());
+//        }
 
         return container.getContainerImage().getServiceType();
     }

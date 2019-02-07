@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,7 +64,6 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
         stringBuilder.append(cacheContainerService.getDeployedContainers().stream().map(container -> container + "\n").collect(Collectors.joining()));
 
         stringBuilder.append("----------------------------- Tasks running ------------------------------\n");
-
         stringBuilder.append(cacheProcessStepService.getRunningProcessSteps().stream().map(runningStep -> runningStep + "\n").collect(Collectors.joining()));
 
     }
@@ -81,7 +81,7 @@ public class PrintRunningInfoVmContainer implements PrintRunningInfo {
             stringBuilder.append(vm.toString()).append("\n");
         }
         stringBuilder.append("-------------------- Containers waiting for starting ---------------------\n");
-        Set<Container> containers = cacheContainerService.getAllContainerInstances();
+        Set<Container> containers = new HashSet<>(cacheContainerService.getAllContainerInstances().values());
         for (Container container : containers) {
             if(!tempVms.contains(container.getVirtualMachineInstance())){
                 if(container.getScheduledCloudResourceUsage().getEnd().isBeforeNow()) {

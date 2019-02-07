@@ -119,24 +119,24 @@ public class OptimizationUtility {
             requiredServiceTypeMap.putIfAbsent(processStepSchedulingUnit.getProcessStep().getServiceType(), new ArrayList<>());
 
             boolean overlapFound = false;
-            if (!gene.isFixed()) {
-                List<ServiceTypeSchedulingUnit> requiredServiceTypes = requiredServiceTypeMap.get(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType());
-                for (ServiceTypeSchedulingUnit requiredServiceType : requiredServiceTypes) {
-                    Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
-                    if (overlap != null) {
-                        Interval deploymentInterval = requiredServiceType.getServiceAvailableTime();
-                        Interval geneInterval = gene.getExecutionInterval();
-                        long newStartTime = Math.min(geneInterval.getStartMillis(), deploymentInterval.getStartMillis());
-                        long newEndTime = Math.max(geneInterval.getEndMillis(), deploymentInterval.getEndMillis());
+//            if (!gene.isFixed()) {
+            List<ServiceTypeSchedulingUnit> requiredServiceTypes = requiredServiceTypeMap.get(gene.getProcessStepSchedulingUnit().getProcessStep().getServiceType());
+            for (ServiceTypeSchedulingUnit requiredServiceType : requiredServiceTypes) {
+                Interval overlap = requiredServiceType.getServiceAvailableTime().overlap(gene.getExecutionInterval());
+                if (overlap != null) {
+                    Interval deploymentInterval = requiredServiceType.getServiceAvailableTime();
+                    Interval geneInterval = gene.getExecutionInterval();
+                    long newStartTime = Math.min(geneInterval.getStartMillis(), deploymentInterval.getStartMillis());
+                    long newEndTime = Math.max(geneInterval.getEndMillis(), deploymentInterval.getEndMillis());
 
-                        requiredServiceType.setServiceAvailableTime(new Interval(newStartTime, newEndTime));
-                        requiredServiceType.getGenes().add(gene);
+                    requiredServiceType.setServiceAvailableTime(new Interval(newStartTime, newEndTime));
+                    requiredServiceType.getGenes().add(gene);
 
-                        overlapFound = true;
-                        break;
-                    }
+                    overlapFound = true;
+                    break;
                 }
             }
+//            }
 
             if (!overlapFound) {
                 ServiceTypeSchedulingUnit newServiceTypeSchedulingUnit = new ServiceTypeSchedulingUnit(processStepSchedulingUnit.getProcessStep().getServiceType(), this.containerDeploymentTime, gene.isFixed());
@@ -156,6 +156,15 @@ public class OptimizationUtility {
 
         returnList.forEach(unit -> {
             try {
+
+                for (Chromosome.Gene gene : unit.getGenes()) {
+                    if (gene.isFixed()) {
+                        unit.setContainer(gene.getProcessStepSchedulingUnit().getProcessStep().getContainer());
+                        unit.setVirtualMachineSchedulingUnit(gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit());
+                        break;
+                    }
+                }
+
                 if (!withContainerResize || unit.getContainer() == null) {
                     unit.setContainer(getContainer(unit.getServiceType(), unit.getGenes().size()));
                 } else {
@@ -168,7 +177,6 @@ public class OptimizationUtility {
 
         return returnList;
     }
-
 
 
     public Map<String, Chromosome.Gene> getLastElements(Chromosome chromosome) {

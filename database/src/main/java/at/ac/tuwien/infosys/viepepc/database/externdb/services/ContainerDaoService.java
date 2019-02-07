@@ -32,6 +32,7 @@ public class ContainerDaoService {
     public Container save(Container container) {
 
         ContainerImage containerImage = container.getContainerImage();
+        containerImage.setServiceType(null);
         if(containerImage.getId() == null) {
             containerImageRepository.save(containerImage);
         } else {
