@@ -147,6 +147,41 @@
       <leasingDuration>120000</leasingDuration>
       <deployTime>30000</deployTime>
    </VMType>
+
+   <VMType>
+      <identifier>14</identifier>
+      <name>GCLOUD_FIVE_CORE</name>
+      <cores>5</cores>
+      <ram>11250</ram>
+      <costs>20</costs>
+      <flavor>n1-standard-3</flavor>
+      <location>gcloud</location>
+      <leasingDuration>120000</leasingDuration>
+      <deployTime>30000</deployTime>
+   </VMType>
+   <VMType>
+      <identifier>15</identifier>
+      <name>GCLOUD_SIX_CORE</name>
+      <cores>6</cores>
+      <ram>11250</ram>
+      <costs>20</costs>
+      <flavor>n1-standard-3</flavor>
+      <location>gcloud</location>
+      <leasingDuration>120000</leasingDuration>
+      <deployTime>30000</deployTime>
+   </VMType>
+   <VMType>
+      <identifier>16</identifier>
+      <name>GCLOUD_SEVEN_CORE</name>
+      <cores>7</cores>
+      <ram>11250</ram>
+      <costs>20</costs>
+      <flavor>n1-standard-3</flavor>
+      <location>gcloud</location>
+      <leasingDuration>120000</leasingDuration>
+      <deployTime>30000</deployTime>
+   </VMType>
+
 </VirtualMachineTypes>
 
 
