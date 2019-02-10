@@ -177,7 +177,7 @@ public class VMSelectionHelper {
         }
     }
 
-    public boolean checkIfVMIsTooSmall(List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits, String position) {
+    private boolean checkIfVMIsTooSmall(List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits, String position) {
 
         Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new HashSet<>();
         for (ServiceTypeSchedulingUnit typeSchedulingUnit : allServiceTypeSchedulingUnits) {
@@ -191,7 +191,7 @@ public class VMSelectionHelper {
         for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
             List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = createIntervalContainerSchedulingList(new ArrayList<>(virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits()));
             if(!checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes)) {
-                log.error("not enough space after the optimization (at="+position+") on VM=" + virtualMachineSchedulingUnit);
+//                log.error("not enough space after the optimization (at="+position+") on VM=" + virtualMachineSchedulingUnit);
                 return true;
             }
         }
