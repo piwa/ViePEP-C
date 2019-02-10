@@ -169,6 +169,7 @@ public class VMSelectionHelper {
             VMType vmType = getFittingVMType(serviceTypeSchedulingUnit);
             return new VirtualMachineSchedulingUnit(false, null, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
         } catch (Exception ex) {
+            log.error("could not create a VM. serviceTypeSchedulingUnit=" + serviceTypeSchedulingUnit);
             List<VMType> vmTypes = new ArrayList<>(cacheVirtualMachineService.getVMTypes());
             int randomPosition = random.nextInt(vmTypes.size());
             VMType vmType = vmTypes.get(randomPosition);

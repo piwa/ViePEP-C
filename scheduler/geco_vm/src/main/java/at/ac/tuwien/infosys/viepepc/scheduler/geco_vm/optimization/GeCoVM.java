@@ -86,7 +86,9 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         StopWatch stopwatch = new StopWatch();
         stopwatch.start();
 
-        log.info("Start Time optimization");
+        actionExecutor.pauseTermination();
+
+        log.info("StartTime optimization");
         Chromosome tempResult = optimizeStartTime(workflowElements);
         log.info("Deployment optimization");
         List<ServiceTypeSchedulingUnit> requiredServiceTypeList = optimizationUtility.getRequiredServiceTypes(tempResult, true);
@@ -98,27 +100,12 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         stopwatch = new StopWatch();
         stopwatch.start();
 
-//        List<ServiceTypeSchedulingUnit> requiredServiceTypeList = new ArrayList<>();
-
-//        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = winner.getFlattenChromosome().stream().map(gene -> gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit()).filter(Objects::nonNull).collect(Collectors.toSet());
-//
-//        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
-//            List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
-//            for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
-//                serviceTypeSchedulingUnit.setVirtualMachineSchedulingUnit(virtualMachineSchedulingUnit);
-//            }
-//            requiredServiceTypeList.addAll(serviceTypeSchedulingUnits);
-//        }
-
-//        List<ServiceTypeSchedulingUnit> requiredServiceTypeList = optimizationUtility.getRequiredServiceTypes(winner, true);
-
-
         OptimizationResult optimizationResult = createOptimizationResult(tempResult, requiredServiceTypeList);
         stopwatch.stop();
         log.debug("optimization post time=" + stopwatch.getTotalTimeMillis());
 
         actionExecutor.unpauseTermination();
-
+//        log.error("optimization done");
         return optimizationResult;
 
 
@@ -145,10 +132,6 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
         operators.add(new SpaceAwareCrossover(maxTimeAfterDeadline));
         operators.add(new SpaceAwareMutation(new PoissonGenerator(4, rng), optimizationEndTime, maxTimeAfterDeadline));
 
-//        operators.add(new SpaceAwareDeploymentMutation(new PoissonGenerator(4, rng), optimizationEndTime));
-//        operators.add(new SpaceAwareDeploymentCrossover(maxTimeAfterDeadline));
-//        operators.add(new SpaceAwareVMSizeMutation(new PoissonGenerator(4, rng)));
-
         int eliteCount = (int) Math.round(populationSize * eliteCountNumber);
         this.fitnessFunctionStartTime.setOptimizationEndTime(this.optimizationEndTime);
 
@@ -159,8 +142,6 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
 
         stopwatch.stop();
         log.debug("optimization preparation time=" + stopwatch.getTotalTimeMillis());
-
-        actionExecutor.pauseTermination();
 
         stopwatch = new StopWatch();
         stopwatch.start("optimization time");
@@ -199,8 +180,6 @@ public class GeCoVM extends AbstractOnlyContainerOptimization implements Schedul
 
         stopwatch.stop();
         log.debug("optimization preparation time=" + stopwatch.getTotalTimeMillis());
-
-        actionExecutor.pauseTermination();
 
         stopwatch = new StopWatch();
         stopwatch.start("optimization time");

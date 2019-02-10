@@ -5,7 +5,7 @@
       <serviceTypeResources>
          <cpuLoad>15</cpuLoad>
          <memory>1</memory>
-         <makeSpan>80000</makeSpan>
+         <makeSpan>40000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
@@ -17,7 +17,7 @@
       <serviceTypeResources>
          <cpuLoad>20</cpuLoad>
          <memory>1</memory>
-         <makeSpan>640000</makeSpan>
+         <makeSpan>320000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>4</dataToTransfer>
          <internPort>8080</internPort>
@@ -29,7 +29,7 @@
       <serviceTypeResources>
          <cpuLoad>25</cpuLoad>
          <memory>1</memory>
-         <makeSpan>960000</makeSpan>
+         <makeSpan>480000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>6</dataToTransfer>
          <internPort>8080</internPort>
@@ -41,7 +41,7 @@
       <serviceTypeResources>
          <cpuLoad>40</cpuLoad>
          <memory>1</memory>
-         <makeSpan>160000</makeSpan>
+         <makeSpan>80000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
@@ -53,7 +53,7 @@
       <serviceTypeResources>
          <cpuLoad>55</cpuLoad>
          <memory>1</memory>
-         <makeSpan>800000</makeSpan>
+         <makeSpan>400000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>4</dataToTransfer>
          <internPort>8080</internPort>
@@ -65,7 +65,7 @@
       <serviceTypeResources>
          <cpuLoad>65</cpuLoad>
          <memory>1</memory>
-         <makeSpan>240000</makeSpan>
+         <makeSpan>120000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>6</dataToTransfer>
          <internPort>8080</internPort>
@@ -77,7 +77,7 @@
       <serviceTypeResources>
          <cpuLoad>80</cpuLoad>
          <memory>1</memory>
-         <makeSpan>320000</makeSpan>
+         <makeSpan>160000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>2</dataToTransfer>
          <internPort>8080</internPort>
@@ -89,7 +89,7 @@
       <serviceTypeResources>
          <cpuLoad>135</cpuLoad>
          <memory>1</memory>
-         <makeSpan>160000</makeSpan>
+         <makeSpan>80000</makeSpan>
          <bootTime>3000</bootTime>
          <dataToTransfer>4</dataToTransfer>
          <internPort>8080</internPort>

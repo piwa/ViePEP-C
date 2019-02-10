@@ -55,55 +55,56 @@ public class ActionExecutor {
     public void pauseTermination() {
         pauseTermination = true;
     }
+
     public void unpauseTermination() {
         pauseTermination = false;
     }
 
-    @Scheduled(initialDelay = 2000, fixedDelay = 2000)        // fixedRate
+    @Scheduled(initialDelay = 2000, fixedDelay = 4000)        // fixedRate
     public void processProvisioningSchedule() {
 
         synchronized (provisioningSchedule) {
-
-            // Perform start events
-            for (VirtualMachineInstance virtualMachineInstance : provisioningSchedule.getVirtualMachineInstancesMap().values()) {
-                DateTime scheduledDeploymentStartTime = virtualMachineInstance.getScheduledCloudResourceUsage().getStart();
-                if (scheduledDeploymentStartTime.minusSeconds(3).isBeforeNow() && virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED)) {
-                    vmDeploymentController.deploy(virtualMachineInstance);
-                }
-            }
-
-            for (Container container : provisioningSchedule.getContainersMap().values()) {
-                DateTime scheduledDeploymentStartTime = container.getScheduledCloudResourceUsage().getStart();
-                VirtualMachineInstance virtualMachineInstance = container.getVirtualMachineInstance();
-                if (scheduledDeploymentStartTime.minusSeconds(3).isBeforeNow() &&
-                        container.getContainerStatus().equals(ContainerStatus.SCHEDULED) && virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
-                    containerDeploymentController.deploy(container);
-                }
-            }
-
-            for (ProcessStep processStep : provisioningSchedule.getProcessStepsMap().values()) {
-                DateTime scheduledStartTime = processStep.getScheduledStartDate();
-                Container container = processStep.getContainer();
-                if (scheduledStartTime.minusSeconds(3).isBeforeNow() &&
-                        processStep.getProcessStepStatus().equals(ProcessStepStatus.SCHEDULED) && container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
-                    processStepExecutorController.startProcessStepExecution(processStep);
-                }
-            }
-
-            // Perform termination events
-            for (Iterator<Map.Entry<UUID, ProcessStep>> iterator = provisioningSchedule.getProcessStepsMap().entrySet().iterator(); iterator.hasNext(); ) {
-                Map.Entry<UUID, ProcessStep> entry = iterator.next();
-                ProcessStep processStep = entry.getValue();
-
-                if (processStep.getFinishedAt() != null) {
-                    iterator.remove();
-                    if (processStep.isLastElement()) {
-                        checkIfWorkflowDone(processStep);
+            if (!pauseTermination) {
+                // Perform start events
+                for (VirtualMachineInstance virtualMachineInstance : provisioningSchedule.getVirtualMachineInstancesMap().values()) {
+                    DateTime scheduledDeploymentStartTime = virtualMachineInstance.getScheduledCloudResourceUsage().getStart();
+                    if (scheduledDeploymentStartTime.minusSeconds(5).isBeforeNow() && virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED)) {
+                        vmDeploymentController.deploy(virtualMachineInstance);
                     }
                 }
-            }
 
-            if(!pauseTermination) {
+                for (Container container : provisioningSchedule.getContainersMap().values()) {
+                    DateTime scheduledDeploymentStartTime = container.getScheduledCloudResourceUsage().getStart();
+                    VirtualMachineInstance virtualMachineInstance = container.getVirtualMachineInstance();
+                    if (scheduledDeploymentStartTime.minusSeconds(5).isBeforeNow() &&
+                            container.getContainerStatus().equals(ContainerStatus.SCHEDULED) && virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
+                        containerDeploymentController.deploy(container);
+                    }
+                }
+
+                for (ProcessStep processStep : provisioningSchedule.getProcessStepsMap().values()) {
+                    DateTime scheduledStartTime = processStep.getScheduledStartDate();
+                    Container container = processStep.getContainer();
+                    if (scheduledStartTime.minusSeconds(5).isBeforeNow() &&
+                            processStep.getProcessStepStatus().equals(ProcessStepStatus.SCHEDULED) && container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
+                        processStepExecutorController.startProcessStepExecution(processStep);
+                    }
+                }
+
+                // Perform termination events
+                for (Iterator<Map.Entry<UUID, ProcessStep>> iterator = provisioningSchedule.getProcessStepsMap().entrySet().iterator(); iterator.hasNext(); ) {
+                    Map.Entry<UUID, ProcessStep> entry = iterator.next();
+                    ProcessStep processStep = entry.getValue();
+
+                    if (processStep.getFinishedAt() != null) {
+                        iterator.remove();
+                        if (processStep.isLastElement()) {
+                            checkIfWorkflowDone(processStep);
+                        }
+                    }
+                }
+
+//            if(!pauseTermination) {
                 for (Iterator<Map.Entry<UUID, Container>> iterator = provisioningSchedule.getContainersMap().entrySet().iterator(); iterator.hasNext(); ) {
                     Map.Entry<UUID, Container> entry = iterator.next();
                     Container container = entry.getValue();
@@ -139,7 +140,8 @@ public class ActionExecutor {
         List<ProcessStep> nextSteps = workflowUtilities.getNextSteps(processStep.getWorkflowName());
         if ((nextSteps == null || nextSteps.isEmpty()) && (runningSteps == null || runningSteps.isEmpty())) {
             try {
-                workflowElement.setFinishedAt(DateTime.now());
+//                ProcessStep processStep1 = workflowElement.getLastExecutedElement();
+                workflowElement.setFinishedAt(processStep.getScheduledStartDate().plus(processStep.getExecutionTime()));
             } catch (Exception e) {
                 log.error("Exception while try to finish workflow: " + workflowElement, e);
             }

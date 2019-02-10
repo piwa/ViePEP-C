@@ -50,20 +50,29 @@ public class ServiceTypeSchedulingUnit {
     public ServiceTypeSchedulingUnit clone() {
         ServiceTypeSchedulingUnit clone = new ServiceTypeSchedulingUnit(serviceType, containerDeploymentDuration, isFixed);
         clone.setServiceAvailableTime(new Interval(this.serviceAvailableTime));
-//        if(this.virtualMachineSchedulingUnit != null) {
-//            clone.setVirtualMachineSchedulingUnit(this.virtualMachineSchedulingUnit.clone());
-//        }
-//        if(this.container != null) {
-//            try {
-//                clone.setContainer(this.container.clone(serviceType));
-//            } catch (CloneNotSupportedException e) {
-//                e.printStackTrace();
-//            }
-//        }
         for (Chromosome.Gene gene : genes) {
             clone.getGenes().add(gene.clone());
         }
         return clone;
     }
 
+    @Override
+    public String toString() {
+        String containerString = "";
+        if(container != null) {
+            containerString = container.toString();
+        }
+        String vmString = "";
+        if(virtualMachineSchedulingUnit != null) {
+            vmString = virtualMachineSchedulingUnit.toString();
+        }
+        return "ServiceTypeSchedulingUnit{" +
+                "serviceAvailableTime=" + serviceAvailableTime +
+                ", serviceType=" + serviceType +
+                ", container=" + containerString +
+                ", virtualMachineSchedulingUnit=" + vmString +
+                ", isFixed=" + isFixed +
+//                ", genes=" + genes +
+                '}';
+    }
 }
