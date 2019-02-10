@@ -177,7 +177,7 @@ public class VMSelectionHelper {
         }
     }
 
-    private boolean checkIfVMIsTooSmall(List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits, String position) {
+    public boolean checkIfVMIsTooSmall(List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits, String position) {
 
         Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new HashSet<>();
         for (ServiceTypeSchedulingUnit typeSchedulingUnit : allServiceTypeSchedulingUnits) {
