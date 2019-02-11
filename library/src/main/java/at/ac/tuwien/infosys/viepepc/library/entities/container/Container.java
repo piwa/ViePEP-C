@@ -69,7 +69,11 @@ public class Container implements Cloneable {
     }
 
     public String getName() {
-        return containerConfiguration.getName() + "_" + this.containerImage.getServiceType().getName() + "_" + containerID;
+        try {
+            return containerConfiguration.getName() + "_" + this.containerImage.getServiceType().getName() + "_" + containerID;
+        } catch (Exception ex) {
+            return containerID;
+        }
     }
 
     public void shutdownContainer() {
