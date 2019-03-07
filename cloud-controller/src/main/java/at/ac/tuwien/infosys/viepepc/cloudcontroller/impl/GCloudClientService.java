@@ -5,10 +5,12 @@ import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.exceptions.VmCouldNotBe
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineInstance;
 import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachineStatus;
-import com.google.api.gax.paging.Page;
-import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.WaitForOption;
-import com.google.cloud.compute.*;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.compute.Compute;
+import com.google.api.services.compute.ComputeScopes;
+import com.google.api.services.compute.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
@@ -16,9 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -26,6 +30,8 @@ public class GCloudClientService extends AbstractViePEPCloudService {
 
     @Autowired
     private CacheVirtualMachineService cacheVirtualMachineService;
+
+    String APPLICATION_NAME = "ViePEP-C/2.0";
 
     @Value("${gcloud.default.project.id}")
     private String gcloudProjectId;
@@ -52,13 +58,15 @@ public class GCloudClientService extends AbstractViePEPCloudService {
             }
 
             Instance instance = startInstance(compute, virtualMachineInstance);
+            instance = compute.instances().get(gcloudProjectId, gcloudDefaultRegion, instance.getName()).execute();
 
             virtualMachineInstance.setResourcepool("gcloud");
-            virtualMachineInstance.setInstanceId(instance.getGeneratedId());
+            virtualMachineInstance.setInstanceId(instance.getId().toString());
+
             if (gcloudUsePublicIp) {
-                virtualMachineInstance.setIpAddress(instance.getNetworkInterfaces().get(0).getAccessConfigurations().get(0).getNatIp());
+                virtualMachineInstance.setIpAddress(instance.getNetworkInterfaces().get(0).getAccessConfigs().get(0).getNatIP());
             } else {
-                virtualMachineInstance.setIpAddress(instance.getNetworkInterfaces().get(0).getNetworkIp());
+                virtualMachineInstance.setIpAddress(instance.getNetworkInterfaces().get(0).getNetworkIP());
             }
 
             log.info("VM with id: " + virtualMachineInstance.getInstanceId() + " and IP " + virtualMachineInstance.getIpAddress() + " was started. Waiting for connection...");
@@ -95,35 +103,69 @@ public class GCloudClientService extends AbstractViePEPCloudService {
     }
 
     private Compute setup() throws Exception {
-        return ComputeOptions.newBuilder().setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream(gcloudCredentials))).build().getService();
-    }
+        // Authenticate using Google Application Default Credentials.
+        GoogleCredential credential = GoogleCredential.getApplicationDefault();
+        if (credential.createScopedRequired()) {
+            List<String> scopes = new ArrayList<>();
+            // Set Google Cloud Storage scope to Full Control.
+            scopes.add(ComputeScopes.DEVSTORAGE_FULL_CONTROL);
+            // Set Google Compute Engine scope to Read-write.
+            scopes.add(ComputeScopes.COMPUTE);
+            credential = credential.createScoped(scopes);
+        }
 
-    public Page<Instance> listAllInstances() throws Exception {
-        return listAllInstances(setup());
-    }
-
-    public Page<Instance> listAllInstances(Compute compute) {
-//        Compute.InstanceFilter instanceFilter = Compute.InstanceFilter.equals(Compute.InstanceField.TAGS,"viepep-eval");
-//        Compute.InstanceListOption instanceListOption = Compute.InstanceListOption.filter(instanceFilter);
-        Compute.InstanceListOption instanceListOption = Compute.InstanceListOption.pageSize(100);
-        Page<Instance> instances = compute.listInstances(gcloudDefaultRegion, instanceListOption);
-        return instances;
+        // Create Compute Engine object for listing instances.
+        return new Compute.Builder(GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(), credential).setApplicationName(APPLICATION_NAME).build();
     }
 
     private Instance startInstance(Compute compute, VirtualMachineInstance virtualMachineInstance) throws Exception {
 
-        ImageId imageId = ImageId.of(gcloudImageProject, gcloudImageId);
-        NetworkId networkId = NetworkId.of("default");
-        AttachedDisk attachedDisk = AttachedDisk.newBuilder(AttachedDisk.CreateDiskConfiguration.newBuilder(imageId).setAutoDelete(true).build()).build();
+        // Create VM Instance object with the required properties.
+        Instance instance = new Instance();
+        instance.setName(virtualMachineInstance.getGoogleName());
+        instance.setMachineType("https://www.googleapis.com/compute/v1/projects/" + gcloudProjectId + "/zones/" + gcloudDefaultRegion + "/machineTypes/" + virtualMachineInstance.getVmType().getFlavorName());
 
-        NetworkInterface networkInterface;
+        // Add Network Interface to be used by VM Instance.
+        NetworkInterface ifc = new NetworkInterface();
+        ifc.setNetwork("https://www.googleapis.com/compute/v1/projects/" + gcloudProjectId + "/global/networks/default");
+        List<AccessConfig> configs = new ArrayList<>();
         if (gcloudUsePublicIp) {
-            networkInterface = NetworkInterface.newBuilder(networkId).setAccessConfigurations(NetworkInterface.AccessConfig.newBuilder().setName("external-nat").build()).build();
-        } else {
-            networkInterface = NetworkInterface.newBuilder(networkId).build();
+            AccessConfig config = new AccessConfig();
+            config.setType("ONE_TO_ONE_NAT");
+            config.setName("External NAT");
+            configs.add(config);
         }
-        InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, virtualMachineInstance.getGoogleName());
-        MachineTypeId machineTypeId = MachineTypeId.of(gcloudDefaultRegion, virtualMachineInstance.getVmType().getFlavorName());
+        ifc.setAccessConfigs(configs);
+        instance.setNetworkInterfaces(Collections.singletonList(ifc));
+
+        // Add attached Persistent Disk to be used by VM Instance.
+        AttachedDisk disk = new AttachedDisk();
+        disk.setBoot(true);
+        disk.setAutoDelete(true);
+        disk.setType("PERSISTENT");
+        AttachedDiskInitializeParams params = new AttachedDiskInitializeParams();
+        // Assign the Persistent Disk the same name as the VM Instance.
+        params.setDiskName(virtualMachineInstance.getGoogleName());
+        // Specify the source operating system machine image to be used by the VM Instance.
+        params.setSourceImage("projects/" + gcloudImageProject + "/global/images/" + gcloudImageId);
+        // Specify the disk type as Standard Persistent Disk
+        params.setDiskType("https://www.googleapis.com/compute/v1/projects/" + gcloudProjectId + "/zones/" + gcloudDefaultRegion + "/diskTypes/pd-standard");
+        disk.setInitializeParams(params);
+        instance.setDisks(Collections.singletonList(disk));
+
+        // Initialize the service account to be used by the VM Instance and set the API access scopes.
+        ServiceAccount account = new ServiceAccount();
+        account.setEmail("default");
+        List<String> scopes = new ArrayList<>();
+        scopes.add("https://www.googleapis.com/auth/devstorage.full_control");
+        scopes.add("https://www.googleapis.com/auth/compute");
+        account.setScopes(scopes);
+        instance.setServiceAccounts(Collections.singletonList(account));
+
+        // Optional - Add a startup script to be used by the VM Instance.
+        Metadata meta = new Metadata();
+        Metadata.Items item = new Metadata.Items();
+        item.setKey("user-data");
 
         String cloudInit = "";
         try {
@@ -132,56 +174,73 @@ public class GCloudClientService extends AbstractViePEPCloudService {
             log.error("Could not load cloud init file");
         }
 
-        Metadata metadata = Metadata.newBuilder().add("user-data", cloudInit).build();
-        SchedulingOptions schedulingOptions = SchedulingOptions.preemptible();
+        item.setValue(cloudInit);
+        meta.setItems(Collections.singletonList(item));
+        instance.setMetadata(meta);
 
-        InstanceInfo instanceInfo = InstanceInfo.of(instanceId, machineTypeId, attachedDisk, networkInterface);
-
-        if (!gcloudUsePublicIp) {
-            Tags tags = Tags.newBuilder().setValues("private-nat").build();
-            instanceInfo = instanceInfo.toBuilder().setTags(tags).build();
-        }
-
-        instanceInfo = instanceInfo.toBuilder().setMetadata(metadata).setSchedulingOptions(schedulingOptions).build();
-        Operation operation = compute.create(instanceInfo);
+        System.out.println(instance.toPrettyString());
+        Compute.Instances.Insert insert = compute.instances().insert(gcloudProjectId, gcloudDefaultRegion, instance);
+        Operation operation = insert.execute();
 
 
-        Operation completedOperation = operation.waitFor(WaitForOption.checkEvery(10, TimeUnit.SECONDS), WaitForOption.timeout(5, TimeUnit.MINUTES));
-        Instance instance = null;
-        if (completedOperation == null) {
-            // operation no longer exists
-            throw new VmCouldNotBeStartedException("Exception during VM booting: operation no longer exists");
-        } else if (completedOperation.getErrors() != null) {
-            // operation failed, handle error
-            StringBuilder builder = new StringBuilder();
-            completedOperation.getErrors().forEach(operationError -> builder.append(operationError.getCode()).append(": ").append(operationError.getMessage()).append("\n"));
-            throw new VmCouldNotBeStartedException("Exception during VM booting:  operation failed, " + builder.toString());
+        System.out.println("Waiting for operation completion...");
+        Operation.Error error = blockUntilComplete(compute, operation, 60 * 1000);
+        if (error == null) {
+            System.out.println("Success!");
         } else {
-            instance = compute.getInstance(instanceId);
+            System.out.println(error.toPrettyString());
         }
-
         return instance;
     }
 
 
     private boolean deleteInstance(Compute compute, String instanceName) throws Exception {
-        InstanceId instanceId = InstanceId.of(gcloudDefaultRegion, instanceName);
-        Operation operation = compute.deleteInstance(instanceId);
-
-//        Operation completedOperation = operation.waitFor(WaitForOption.checkEvery(10, TimeUnit.SECONDS), WaitForOption.timeout(5, TimeUnit.MINUTES));
-
-//        if (completedOperation == null) {
-//            // operation no longer exists
-//            throw new VmCouldNotBeStartedException("Exception during VM deleting: operation no longer exists");
-//        } else if (completedOperation.getErrors() != null) {
-//            // operation failed, handle error
-//            StringBuilder builder = new StringBuilder();
-//            completedOperation.getErrors().forEach(operationError -> builder.append(operationError.getCode()).append(": ").append(operationError.getMessage()).append("\n"));
-//            throw new VmCouldNotBeStartedException("Exception during VM deleting:  operation failed, " + builder.toString());
-//        }
+        Compute.Instances.Delete delete = compute.instances().delete(gcloudProjectId, gcloudDefaultRegion, instanceName);
+//        delete.execute();
 
         return true;
 
+    }
+
+    /**
+     * Wait until {@code operation} is completed.
+     *
+     * @param compute   the {@code Compute} object
+     * @param operation the operation returned by the original request
+     * @param timeout   the timeout, in millis
+     * @return the error, if any, else {@code null} if there was no error
+     * @throws InterruptedException if we timed out waiting for the operation to complete
+     * @throws IOException          if we had trouble connecting
+     */
+    public Operation.Error blockUntilComplete(Compute compute, Operation operation, long timeout) throws Exception {
+        long start = System.currentTimeMillis();
+        final long pollInterval = 5 * 1000;
+        String zone = operation.getZone();  // null for global/regional operations
+        if (zone != null) {
+            String[] bits = zone.split("/");
+            zone = bits[bits.length - 1];
+        }
+        String status = operation.getStatus();
+        String opId = operation.getName();
+        while (operation != null && !status.equals("DONE")) {
+            Thread.sleep(pollInterval);
+            long elapsed = System.currentTimeMillis() - start;
+            if (elapsed >= timeout) {
+                throw new InterruptedException("Timed out waiting for operation to complete");
+            }
+            System.out.println("waiting...");
+            if (zone != null) {
+                Compute.ZoneOperations.Get get = compute.zoneOperations().get(gcloudProjectId, zone, opId);
+                operation = get.execute();
+            } else {
+                Compute.GlobalOperations.Get get = compute.globalOperations().get(gcloudProjectId, opId);
+                operation = get.execute();
+            }
+            if (operation != null) {
+                status = operation.getStatus();
+            }
+        }
+        return operation == null ? null : operation.getError();
     }
 
 }

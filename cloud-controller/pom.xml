@@ -17,8 +17,8 @@
     <packaging>jar</packaging>
 
     <properties>
-        <spotify.docker.version>8.11.7</spotify.docker.version>
-        <openstack.version>3.0.3</openstack.version>
+        <spotify.docker.version>8.15.1</spotify.docker.version>
+        <openstack.version>3.2.0</openstack.version>
     </properties>
 
     <dependencies>
@@ -49,11 +49,23 @@
             <groupId>org.pacesys</groupId>
             <artifactId>openstack4j-core</artifactId>
             <version>${openstack.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.pacesys.openstack4j.connectors</groupId>
             <artifactId>openstack4j-httpclient</artifactId>
             <version>${openstack.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- AWS -->
@@ -84,6 +96,10 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-simple</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -91,7 +107,13 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud</artifactId>
-            <version>0.21.1-alpha</version>
+            <version>0.47.0-alpha</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Docker -->
@@ -99,7 +121,19 @@
             <groupId>com.spotify</groupId>
             <artifactId>docker-client</artifactId>
             <version>${spotify.docker.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>jackson-datatype-guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
+
 
     </dependencies>
 
@@ -125,7 +159,7 @@
             <dependency>
                 <groupId>com.google.cloud</groupId>
                 <artifactId>google-cloud-pom</artifactId>
-                <version>0.21.1-alpha</version>
+                <version>0.47.0-alpha</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
