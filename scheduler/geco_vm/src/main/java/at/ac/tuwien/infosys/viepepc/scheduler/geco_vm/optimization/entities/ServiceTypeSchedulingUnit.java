@@ -25,8 +25,8 @@ public class ServiceTypeSchedulingUnit {
     private List<Chromosome.Gene> genes = new ArrayList<>();
 
 
-    public void addProcessStep(Chromosome.Gene processStep) {
-        genes.add(processStep);
+    public void addProcessStepGene(Chromosome.Gene processStepGene) {
+        genes.add(processStepGene);
     }
 
     public Chromosome.Gene getFirstGene() {

@@ -101,10 +101,8 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
         return newCandidate;
     }
 
-    public boolean performDeploymentMutation(Chromosome2 newCandidate, ServiceTypeSchedulingUnit serviceTypeSchedulingUnit, Random random) {
+    private boolean performDeploymentMutation(Chromosome2 newCandidate, ServiceTypeSchedulingUnit serviceTypeSchedulingUnit, Random random) {
         VirtualMachineSchedulingUnit oldVirtualMachineSchedulingUnit = serviceTypeSchedulingUnit.getVirtualMachineSchedulingUnit();
-
-//        Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines = newCandidate.getFlattenChromosome().stream().map(ServiceTypeSchedulingUnit::getVirtualMachineSchedulingUnit).collect(Collectors.toSet());
 
         Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines = new HashSet<>();
         for (ServiceTypeSchedulingUnit typeSchedulingUnit : newCandidate.getFlattenChromosome()) {
@@ -119,17 +117,7 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
 
         if (oldVirtualMachineSchedulingUnit != newVirtualMachineSchedulingUnit) {
 
-//            oldVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().remove(processStepSchedulingUnit);
-//            newVirtualMachineSchedulingUnit.getProcessStepSchedulingUnits().add(processStepSchedulingUnit);
             serviceTypeSchedulingUnit.setVirtualMachineSchedulingUnit(newVirtualMachineSchedulingUnit);
-//            vmSelectionHelper.checkIfVMIsTooSmall(newCandidate.getFlattenChromosome(), "performDeploymentMutation");
-//            boolean enoughTimeToDeploy = considerFirstContainerStartTime(newVirtualMachineSchedulingUnit, processStepSchedulingUnit.getGene());
-
-//            if (enoughTimeToDeploy) {
-//                return true;//mutationCount = mutationCount - 1;
-//            } else {
-//                serviceTypeSchedulingUnit.setVirtualMachineSchedulingUnit(oldVirtualMachineSchedulingUnit);
-//            }
             for (VirtualMachineSchedulingUnit alreadyUsedVirtualMachineSchedulingUnit : alreadyScheduledVirtualMachines) {
                 alreadyUsedVirtualMachineSchedulingUnit.getServiceTypeSchedulingUnits().clear();
             }
@@ -138,23 +126,5 @@ public class SpaceAwareDeploymentMutation implements EvolutionaryOperator<Chromo
         }
         return false;
     }
-
-//    private boolean considerFirstContainerStartTime(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, Chromosome.Gene movedGene) {
-//        List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits = this.optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
-//        for (ServiceTypeSchedulingUnit serviceTypeSchedulingUnit : serviceTypeSchedulingUnits) {
-//            if (serviceTypeSchedulingUnit.getGenes().contains(movedGene)) {
-//                VirtualMachineStatus virtualMachineStatus = virtualMachineSchedulingUnit.getVirtualMachineInstance().getVirtualMachineStatus();
-//                DateTime deploymentStartTime = serviceTypeSchedulingUnit.getDeployStartTime();        // TODO is it ok not to consider the vm?
-//                if ((virtualMachineStatus.equals(VirtualMachineStatus.UNUSED) || virtualMachineStatus.equals(VirtualMachineStatus.SCHEDULED)) && virtualMachineSchedulingUnit.getDeploymentStartTime().isBefore(this.optimizationEndTime)) {
-//                    return false;
-//                } else if (deploymentStartTime.isBefore(this.optimizationEndTime)) {
-//                    return false;
-//                } else {
-//                    return true;
-//                }
-//            }
-//        }
-//        return true;
-//    }
 
 }

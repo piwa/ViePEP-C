@@ -24,3 +24,4 @@ target
 src/main/resources/cloud-config/*.json 
 src/test/resources/cloud-config/*.json
 containerimages.xml
+gcloud_credentials.json

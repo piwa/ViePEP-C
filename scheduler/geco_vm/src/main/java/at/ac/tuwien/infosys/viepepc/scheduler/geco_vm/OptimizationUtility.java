@@ -14,7 +14,6 @@ import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.Serv
 import at.ac.tuwien.infosys.viepepc.scheduler.geco_vm.optimization.entities.VirtualMachineSchedulingUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -141,7 +140,7 @@ public class OptimizationUtility {
             if (!overlapFound) {
                 ServiceTypeSchedulingUnit newServiceTypeSchedulingUnit = new ServiceTypeSchedulingUnit(processStepSchedulingUnit.getProcessStep().getServiceType(), this.containerDeploymentTime, gene.isFixed());
                 newServiceTypeSchedulingUnit.setServiceAvailableTime(gene.getExecutionInterval());
-                newServiceTypeSchedulingUnit.addProcessStep(gene);
+                newServiceTypeSchedulingUnit.addProcessStepGene(gene);
                 if (newServiceTypeSchedulingUnit.isFixed()) {
                     newServiceTypeSchedulingUnit.setContainer(gene.getProcessStepSchedulingUnit().getProcessStep().getContainer());
                     newServiceTypeSchedulingUnit.setVirtualMachineSchedulingUnit(gene.getProcessStepSchedulingUnit().getVirtualMachineSchedulingUnit());

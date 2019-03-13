@@ -43,6 +43,103 @@ public class VMSelectionHelper {
     @Value("${container.default.deploy.time}")
     private long containerDeploymentTime;
 
+
+
+    public boolean checkIfVirtualMachineIsBigEnough(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit) {
+        List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
+        List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = createIntervalContainerSchedulingList(allServiceTypeSchedulingUnits);
+        return checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes);
+    }
+
+    public boolean checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ProcessStepSchedulingUnit> processStepSchedulingUnits) {
+        List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit, processStepSchedulingUnits);
+        List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = createIntervalContainerSchedulingList(allServiceTypeSchedulingUnits);
+        return checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes);
+    }
+
+    @NotNull
+    public List<VirtualMachineSchedulingUnit> createAvailableVMSchedulingUnitList(Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines) {
+        return alreadyScheduledVirtualMachines.stream().filter(unit -> unit.getCloudResourceUsageInterval().getEnd().isAfter(this.optimizationEndTime)).distinct().collect(Collectors.toList());
+    }
+
+    public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnitForProcessStep(ServiceTypeSchedulingUnit serviceTypeSchedulingUnit, Set<VirtualMachineSchedulingUnit> availableVirtualMachineSchedulingUnits, Random random, boolean withCheck) {
+
+        List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = null;
+
+        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
+        do {
+//            int randomValue = random.nextInt(10);
+//            boolean fromAvailableVMs = randomValue < 8;
+            boolean fromAvailableVMs = random.nextBoolean();
+            if (fromAvailableVMs) {
+                List<VirtualMachineSchedulingUnit> availableVMSchedulingUnits = createAvailableVMSchedulingUnitList(availableVirtualMachineSchedulingUnits);
+                if (availableVMSchedulingUnits.size() > 0) {
+                    int randomPosition = random.nextInt(availableVMSchedulingUnits.size());
+                    virtualMachineSchedulingUnit = availableVMSchedulingUnits.get(randomPosition);
+                }
+            }
+            if (!fromAvailableVMs || virtualMachineSchedulingUnit == null) {
+                virtualMachineSchedulingUnit = createNewVirtualMachineSchedulingUnit(serviceTypeSchedulingUnit, random);
+            }
+
+            List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits;
+            if(virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits().isEmpty()) {
+                allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
+            }
+            else {
+                allServiceTypeSchedulingUnits = new ArrayList<>(virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits());
+            }
+            allServiceTypeSchedulingUnits.add(serviceTypeSchedulingUnit);
+            maxOverlappingServiceTypes = createIntervalContainerSchedulingList(allServiceTypeSchedulingUnits);
+        } while (withCheck && !checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes));
+
+        return virtualMachineSchedulingUnit;
+    }
+
+    public boolean checkIfVMIsTooSmall(List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits, String position) {
+
+        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new HashSet<>();
+        for (ServiceTypeSchedulingUnit typeSchedulingUnit : allServiceTypeSchedulingUnits) {
+            VirtualMachineSchedulingUnit machineSchedulingUnit = typeSchedulingUnit.getVirtualMachineSchedulingUnit();
+            if (machineSchedulingUnit != null) {
+                machineSchedulingUnit.getServiceTypeSchedulingUnits().add(typeSchedulingUnit);
+                virtualMachineSchedulingUnits.add(machineSchedulingUnit);
+            }
+        }
+
+        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
+            List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = createIntervalContainerSchedulingList(new ArrayList<>(virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits()));
+            if(!checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes)) {
+//                log.error("not enough space after the optimization (at="+position+") on VM=" + virtualMachineSchedulingUnit);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    private boolean checkEnoughResourcesLeftOnVMForOneInterval(VMType vmType, List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits) {
+        CombinedContainerResources combinedContainerResources = new CombinedContainerResources(serviceTypeSchedulingUnits);
+        return vmType.getCpuPoints() >= combinedContainerResources.getScheduledCPUUsage() && vmType.getRamPoints() >= combinedContainerResources.getScheduledRAMUsage();
+    }
+
+    @NotNull
+    private VirtualMachineSchedulingUnit createNewVirtualMachineSchedulingUnit(ServiceTypeSchedulingUnit serviceTypeSchedulingUnit, Random random) {
+        try {
+            VMType vmType = getFittingVMType(serviceTypeSchedulingUnit);
+            return new VirtualMachineSchedulingUnit(false, null, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
+        } catch (Exception ex) {
+            log.error("could not create a VM. serviceTypeSchedulingUnit=" + serviceTypeSchedulingUnit);
+            List<VMType> vmTypes = new ArrayList<>(cacheVirtualMachineService.getVMTypes());
+            int randomPosition = random.nextInt(vmTypes.size());
+            VMType vmType = vmTypes.get(randomPosition);
+            return new VirtualMachineSchedulingUnit(false, null, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
+        }
+    }
+
+
+
     private VMType getFittingVMType(ServiceTypeSchedulingUnit serviceTypeSchedulingUnit) throws VMTypeNotFoundException {
 
         double scheduledCPUUsage = serviceTypeSchedulingUnit.getContainer().getContainerConfiguration().getCPUPoints();
@@ -60,9 +157,7 @@ public class VMSelectionHelper {
         throw new VMTypeNotFoundException("Could not find big enough VMType");
     }
 
-    public List<ServiceTypeSchedulingUnit> createIntervalContainerSchedulingList(List<ServiceTypeSchedulingUnit> tempSchedulingUnits) {
-
-
+    private List<ServiceTypeSchedulingUnit> createIntervalContainerSchedulingList(List<ServiceTypeSchedulingUnit> tempSchedulingUnits) {
         List<ContainerEvent> deployEvents = new ArrayList<>();
         List<ContainerEvent> undeployEvents = new ArrayList<>();
 
@@ -106,101 +201,6 @@ public class VMSelectionHelper {
 
         return maxContainerList;
     }
-
-    public boolean checkIfVirtualMachineIsBigEnough(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit) {
-        List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
-        List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = createIntervalContainerSchedulingList(allServiceTypeSchedulingUnits);
-        return checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes);
-    }
-
-    public boolean checkIfVirtualMachineHasEnoughSpaceForNewProcessSteps(VirtualMachineSchedulingUnit virtualMachineSchedulingUnit, List<ProcessStepSchedulingUnit> processStepSchedulingUnits) {
-        List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit, processStepSchedulingUnits);
-        List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = createIntervalContainerSchedulingList(allServiceTypeSchedulingUnits);
-        return checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes);
-    }
-
-    public boolean checkEnoughResourcesLeftOnVMForOneInterval(VMType vmType, List<ServiceTypeSchedulingUnit> serviceTypeSchedulingUnits) {
-        CombinedContainerResources combinedContainerResources = new CombinedContainerResources(serviceTypeSchedulingUnits);
-        return vmType.getCpuPoints() >= combinedContainerResources.getScheduledCPUUsage() && vmType.getRamPoints() >= combinedContainerResources.getScheduledRAMUsage();
-    }
-
-    @NotNull
-    public List<VirtualMachineSchedulingUnit> createAvailableVMSchedulingUnitList(Set<VirtualMachineSchedulingUnit> alreadyScheduledVirtualMachines) {
-        return alreadyScheduledVirtualMachines.stream().filter(unit -> unit.getCloudResourceUsageInterval().getEnd().isAfter(this.optimizationEndTime)).distinct().collect(Collectors.toList());
-    }
-
-
-    public VirtualMachineSchedulingUnit getVirtualMachineSchedulingUnitForProcessStep(ServiceTypeSchedulingUnit serviceTypeSchedulingUnit, Set<VirtualMachineSchedulingUnit> availableVirtualMachineSchedulingUnits, Random random, boolean withCheck) {
-
-
-        List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = null;
-
-        VirtualMachineSchedulingUnit virtualMachineSchedulingUnit = null;
-        do {
-//            int randomValue = random.nextInt(10);
-//            boolean fromAvailableVMs = randomValue < 8;
-            boolean fromAvailableVMs = random.nextBoolean();
-            if (fromAvailableVMs) {
-                List<VirtualMachineSchedulingUnit> availableVMSchedulingUnits = createAvailableVMSchedulingUnitList(availableVirtualMachineSchedulingUnits);
-                if (availableVMSchedulingUnits.size() > 0) {
-                    int randomPosition = random.nextInt(availableVMSchedulingUnits.size());
-                    virtualMachineSchedulingUnit = availableVMSchedulingUnits.get(randomPosition);
-                }
-            }
-            if (!fromAvailableVMs || virtualMachineSchedulingUnit == null) {
-                virtualMachineSchedulingUnit = createNewVirtualMachineSchedulingUnit(serviceTypeSchedulingUnit, random);
-            }
-
-            List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits;
-            if(virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits().isEmpty()) {
-                allServiceTypeSchedulingUnits = optimizationUtility.getRequiredServiceTypesOneVM(virtualMachineSchedulingUnit);
-            }
-            else {
-                allServiceTypeSchedulingUnits = new ArrayList<>(virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits());
-            }
-            allServiceTypeSchedulingUnits.add(serviceTypeSchedulingUnit);
-            maxOverlappingServiceTypes = createIntervalContainerSchedulingList(allServiceTypeSchedulingUnits);
-        } while (withCheck && !checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes));
-
-        return virtualMachineSchedulingUnit;
-    }
-
-    @NotNull
-    public VirtualMachineSchedulingUnit createNewVirtualMachineSchedulingUnit(ServiceTypeSchedulingUnit serviceTypeSchedulingUnit, Random random) {
-        try {
-            VMType vmType = getFittingVMType(serviceTypeSchedulingUnit);
-            return new VirtualMachineSchedulingUnit(false, null, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
-        } catch (Exception ex) {
-            log.error("could not create a VM. serviceTypeSchedulingUnit=" + serviceTypeSchedulingUnit);
-            List<VMType> vmTypes = new ArrayList<>(cacheVirtualMachineService.getVMTypes());
-            int randomPosition = random.nextInt(vmTypes.size());
-            VMType vmType = vmTypes.get(randomPosition);
-            return new VirtualMachineSchedulingUnit(false, null, virtualMachineDeploymentTime, containerDeploymentTime, new VirtualMachineInstance(vmType));
-        }
-    }
-
-    public boolean checkIfVMIsTooSmall(List<ServiceTypeSchedulingUnit> allServiceTypeSchedulingUnits, String position) {
-
-        Set<VirtualMachineSchedulingUnit> virtualMachineSchedulingUnits = new HashSet<>();
-        for (ServiceTypeSchedulingUnit typeSchedulingUnit : allServiceTypeSchedulingUnits) {
-            VirtualMachineSchedulingUnit machineSchedulingUnit = typeSchedulingUnit.getVirtualMachineSchedulingUnit();
-            if (machineSchedulingUnit != null) {
-                machineSchedulingUnit.getServiceTypeSchedulingUnits().add(typeSchedulingUnit);
-                virtualMachineSchedulingUnits.add(machineSchedulingUnit);
-            }
-        }
-
-        for (VirtualMachineSchedulingUnit virtualMachineSchedulingUnit : virtualMachineSchedulingUnits) {
-            List<ServiceTypeSchedulingUnit> maxOverlappingServiceTypes = createIntervalContainerSchedulingList(new ArrayList<>(virtualMachineSchedulingUnit.getServiceTypeSchedulingUnits()));
-            if(!checkEnoughResourcesLeftOnVMForOneInterval(virtualMachineSchedulingUnit.getVmType(), maxOverlappingServiceTypes)) {
-//                log.error("not enough space after the optimization (at="+position+") on VM=" + virtualMachineSchedulingUnit);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
 
     @Data
     private class ContainerEvent {
