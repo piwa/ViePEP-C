@@ -3,6 +3,7 @@ package at.ac.tuwien.infosys.viepepc.scheduler.core.impl;
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.WorkflowDaoService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
+import at.ac.tuwien.infosys.viepepc.library.OptimizationTimeHolder;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
 import at.ac.tuwien.infosys.viepepc.scheduler.core.Reasoning;
@@ -51,7 +52,7 @@ public class ReasoningImpl implements Reasoning {
 
     private AtomicLong lastTerminateCheckTime = new AtomicLong(0);
     private AtomicLong lastPrintStatusTime = new AtomicLong(0);
-    private AtomicLong nextOptimizeTime = new AtomicLong(0);
+
 
     private static final long POLL_INTERVAL_MILLISECONDS = 1000;
     private static final long TERMINATE_CHECK_INTERVAL_MILLISECONDS = 30000;
@@ -108,16 +109,16 @@ public class ReasoningImpl implements Reasoning {
                         }
                     }
 
-                    if (now >= nextOptimizeTime.get()) {
+                    if (now >= OptimizationTimeHolder.nextOptimizeTime.get()) {
                         long difference = performOptimisation();
-                        nextOptimizeTime.set(DateTime.now().getMillis() + difference);
+                        OptimizationTimeHolder.nextOptimizeTime.set(DateTime.now().getMillis() + difference);
                     }
 
                     Thread.sleep(POLL_INTERVAL_MILLISECONDS);
 
                 } catch (ProblemNotSolvedException ex) {
                     log.error("An exception occurred, could not solve the problem", ex);
-                    nextOptimizeTime.set(System.currentTimeMillis() + RETRY_TIMEOUT_MILLIS);
+                    OptimizationTimeHolder.nextOptimizeTime.set(System.currentTimeMillis() + RETRY_TIMEOUT_MILLIS);
                 } catch (Exception ex) {
                     log.error("An unknown exception occurred. Terminating.", ex);
                     run = false;
@@ -212,6 +213,6 @@ public class ReasoningImpl implements Reasoning {
     }
 
     public void setNextOptimizeTimeAfter(long millis) {
-        nextOptimizeTime.set(System.currentTimeMillis() + millis);
+        OptimizationTimeHolder.nextOptimizeTime.set(System.currentTimeMillis() + millis);
     }
 }

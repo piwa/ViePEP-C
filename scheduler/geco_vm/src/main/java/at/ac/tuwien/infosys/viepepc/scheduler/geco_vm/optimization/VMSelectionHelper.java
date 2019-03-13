@@ -36,8 +36,10 @@ public class VMSelectionHelper {
     @Getter
     private DateTime optimizationEndTime;
 
+    @Getter
     @Value("${virtual.machine.default.deploy.time}")
     private long virtualMachineDeploymentTime;
+    @Getter
     @Value("${container.default.deploy.time}")
     private long containerDeploymentTime;
 

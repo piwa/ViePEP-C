@@ -138,6 +138,12 @@ public class GCloudClientService extends AbstractViePEPCloudService {
         ifc.setAccessConfigs(configs);
         instance.setNetworkInterfaces(Collections.singletonList(ifc));
 
+        Tags tags = new Tags();
+        List<String> tagStrings = new ArrayList<>();
+        tagStrings.add("viepep-c-service");
+        tags.setItems(tagStrings);
+        instance.setTags(tags);
+
         // Add attached Persistent Disk to be used by VM Instance.
         AttachedDisk disk = new AttachedDisk();
         disk.setBoot(true);
@@ -178,17 +184,17 @@ public class GCloudClientService extends AbstractViePEPCloudService {
         meta.setItems(Collections.singletonList(item));
         instance.setMetadata(meta);
 
-        System.out.println(instance.toPrettyString());
+        log.debug(instance.toPrettyString());
         Compute.Instances.Insert insert = compute.instances().insert(gcloudProjectId, gcloudDefaultRegion, instance);
         Operation operation = insert.execute();
 
 
-        System.out.println("Waiting for operation completion...");
+        log.debug("Waiting for operation completion...");
         Operation.Error error = blockUntilComplete(compute, operation, 60 * 1000);
         if (error == null) {
-            System.out.println("Success!");
+            log.debug("Success!");
         } else {
-            System.out.println(error.toPrettyString());
+            log.error(error.toPrettyString());
         }
         return instance;
     }
@@ -196,7 +202,7 @@ public class GCloudClientService extends AbstractViePEPCloudService {
 
     private boolean deleteInstance(Compute compute, String instanceName) throws Exception {
         Compute.Instances.Delete delete = compute.instances().delete(gcloudProjectId, gcloudDefaultRegion, instanceName);
-//        delete.execute();
+        delete.execute();
 
         return true;
 

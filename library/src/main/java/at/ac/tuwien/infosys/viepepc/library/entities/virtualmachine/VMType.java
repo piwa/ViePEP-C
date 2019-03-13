@@ -33,7 +33,7 @@ public class VMType implements Serializable {
     private double costs;
     @XmlElement
     private int cores;
-    @XmlElement
+    @XmlElement(name = "flavor")
     private String flavorName;
     @XmlElement(name = "ram")
     private double ramPoints;

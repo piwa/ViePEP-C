@@ -21,10 +21,10 @@ public class ServiceExecutorConfiguration {
 
     @Bean
     public ServiceInvoker getServiceInvoker() {
-        if(simulateWithExternalTaskRunner) {
-            return new ServiceInvokerSimulationExternalTaskImpl();
-        }
-        else if (simulate) {
+        if (simulate) {
+            if(simulateWithExternalTaskRunner) {
+                return new ServiceInvokerSimulationExternalTaskImpl();
+            }
             return new ServiceInvokerSimulation();
         }
         return new ServiceInvokerImpl();

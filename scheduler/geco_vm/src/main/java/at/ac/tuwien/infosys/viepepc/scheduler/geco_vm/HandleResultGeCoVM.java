@@ -134,7 +134,12 @@ public class HandleResultGeCoVM implements HandleOptimizationResult {
             } else {
                 Container containerFromSchedule = provisioningSchedule.getContainersMap().get(container.getInternId());
                 Interval scheduleInterval = containerFromSchedule.getScheduledCloudResourceUsage();
-                Interval newScheduleInterval = scheduleInterval.withEnd(DateTime.now());
+                Interval newScheduleInterval = null;
+                try {
+                    newScheduleInterval = scheduleInterval.withEnd(DateTime.now());
+                } catch (IllegalArgumentException ex) {
+                    newScheduleInterval = scheduleInterval.withEnd(scheduleInterval.getStart().plusMinutes(1));
+                }
                 containerFromSchedule.setScheduledCloudResourceUsage(newScheduleInterval);
             }
         }
@@ -149,7 +154,12 @@ public class HandleResultGeCoVM implements HandleOptimizationResult {
             } else {
                 VirtualMachineInstance vmFromSchedule = provisioningSchedule.getVirtualMachineInstancesMap().get(vm.getInternId());
                 Interval scheduleInterval = vmFromSchedule.getScheduledCloudResourceUsage();
-                Interval newScheduleInterval = scheduleInterval.withEnd(DateTime.now());
+                Interval newScheduleInterval = null;
+                try {
+                    newScheduleInterval = scheduleInterval.withEnd(DateTime.now());
+                } catch (IllegalArgumentException ex) {
+                    newScheduleInterval = scheduleInterval.withEnd(scheduleInterval.getStart().plusMinutes(1));
+                }
                 vmFromSchedule.setScheduledCloudResourceUsage(newScheduleInterval);
             }
         }

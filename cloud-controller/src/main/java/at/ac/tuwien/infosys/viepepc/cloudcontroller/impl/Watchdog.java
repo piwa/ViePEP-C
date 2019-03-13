@@ -3,10 +3,10 @@ package at.ac.tuwien.infosys.viepepc.cloudcontroller.impl;
 import at.ac.tuwien.infosys.viepepc.cloudcontroller.CloudControllerService;
 import at.ac.tuwien.infosys.viepepc.database.WorkflowUtilities;
 import at.ac.tuwien.infosys.viepepc.database.externdb.services.ReportDaoService;
-import at.ac.tuwien.infosys.viepepc.database.inmemory.database.InMemoryCacheImpl;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheProcessStepService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheVirtualMachineService;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
+import at.ac.tuwien.infosys.viepepc.library.OptimizationTimeHolder;
 import at.ac.tuwien.infosys.viepepc.library.entities.Action;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.Container;
 import at.ac.tuwien.infosys.viepepc.library.entities.container.ContainerReportingAction;
@@ -15,10 +15,12 @@ import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachi
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.Element;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -26,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
+@SuppressWarnings("Duplicates")
 public class Watchdog {
 
     @Autowired
@@ -40,15 +43,53 @@ public class Watchdog {
     private WorkflowUtilities workflowUtilities;
     @Autowired
     private CacheWorkflowService cacheWorkflowService;
-    @Autowired
-    private CacheProcessStepService processStepService;
+
 
     public static Object SYNC_OBJECT = new Object();
 
     @Value("${messagebus.queue.name}")
     private String queueName;
 
-    //    @Scheduled(initialDelay=60000, fixedDelay=60000)        // fixedRate
+    @Setter private boolean killFirstVM = false;
+
+//    @Scheduled(initialDelay=60000, fixedDelay=10000)        // fixedRate
+    public void evaluationMonitor() {
+        log.info("Start Watchdog Iteration");
+        synchronized (SYNC_OBJECT) {
+            if(killFirstVM) {
+                List<VirtualMachineInstance> virtualMachineInstanceList = cacheVirtualMachineService.getDeployedVMInstances();
+                if(virtualMachineInstanceList.size() > 0) {
+                    VirtualMachineInstance virtualMachineInstance = virtualMachineInstanceList.get(0);
+
+                    log.error("VM not available anymore. Reset execution request. " + virtualMachineInstance.toString());
+
+                    Set<ProcessStep> processSteps = new HashSet<>();
+
+                    Set<Container> containers = virtualMachineInstance.getDeployedContainers();
+                    containers.forEach(container -> processSteps.addAll(cacheProcessStepService.findByContainerAndRunning(container)));
+
+                    for (Element element : workflowUtilities.getRunningSteps()) {
+                        ProcessStep processStep = (ProcessStep) element;
+                        getContainersAndProcesses(virtualMachineInstance, processSteps, containers, processStep);
+                    }
+
+                    // TODO
+//                    processStepService.getProcessStepsWaitingForServiceDone().values().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
+//                    processStepService.getProcessStepsWaitingForExecution().forEach(processStep -> getContainersAndProcesses(vm, processSteps, containers, processStep));
+
+                    processSteps.forEach(processStep -> log.warn("reset process step: " + processStep.toString()));
+                    processSteps.forEach(processStep -> resetContainerAndProcessStep(virtualMachineInstance, processStep, "VM"));
+                    resetVM(virtualMachineInstance, "VM");
+
+                    setKillFirstVM(false);
+
+                    OptimizationTimeHolder.nextOptimizeTime.set(System.currentTimeMillis());
+                }
+            }
+        }
+    }
+
+    @Scheduled(initialDelay=60000, fixedDelay=60000)        // fixedRate
     public void monitor() {
 
         log.info("Start Watchdog Iteration");
@@ -127,6 +168,9 @@ public class Watchdog {
         VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.FAILED, reason);
         reportDaoService.save(reportVM);
 
+//        VirtualMachineReportingAction reportVM2 = new VirtualMachineReportingAction(DateTime.now(), vm.getInstanceId(), vm.getVmType().getIdentifier().toString(), Action.STOPPED, reason);
+//        reportDaoService.save(reportVM2);
+
         cloudControllerServiceImpl.stopVirtualMachine(vm);
 
         vm.terminate();
@@ -136,9 +180,6 @@ public class Watchdog {
         ContainerReportingAction reportContainer = new ContainerReportingAction(DateTime.now(), processStep.getContainer().getName(), processStep.getContainer().getContainerConfiguration().getName(), vm.getInstanceId(), Action.FAILED, reason);
         reportDaoService.save(reportContainer);
 
-        // TODO
-//        cacheProcessStepService.getProcessStepsWaitingForServiceDone().remove(processStep.getName());
-//        cacheProcessStepService.getProcessStepsWaitingForExecution().remove(processStep);
         processStep.getContainer().shutdownContainer();
         processStep.reset();
     }
@@ -163,6 +204,4 @@ public class Watchdog {
             processSteps.add(processStep);
         }
     }
-
-
 }

@@ -30,25 +30,8 @@ public class VMDeploymentController {
 
     private ConcurrentMap<VirtualMachineInstance, Object> vmDeployedWaitObjectMap = new ConcurrentHashMap<>();
 
-    @Value("${vm.simulation.deploy.duration.stddev}")
-    private int durationStdDev;
-
-    private DateTime getTime(DateTime time) {
-//        Random rand = new Random();
-//        int test = rand.ints(-durationStdDev, durationStdDev).findAny().getAsInt();
-//        return new DateTime(time.getMillis() + test);
-        return time;
-    }
-
-    private DateTime getTime2(DateTime time) {
-//        Random rand = new Random();
-//        int test = rand.ints(-durationStdDev/5, durationStdDev/5).findAny().getAsInt();
-//        return new DateTime(time.getMillis() + test);
-        return time;
-    }
-
     @Async
-    public String deploy(VirtualMachineInstance virtualMachineInstance) {
+    public void deploy(VirtualMachineInstance virtualMachineInstance) {
 
         log.info("Deploy VM=" + virtualMachineInstance);
         virtualMachineInstance.setVirtualMachineStatus(VirtualMachineStatus.DEPLOYING);
@@ -70,8 +53,6 @@ public class VMDeploymentController {
 
             log.debug("VM up and running with ip: " + virtualMachineInstance.getIpAddress() + " vm: " + virtualMachineInstance);
             VirtualMachineReportingAction report = new VirtualMachineReportingAction(deploymentStartTime, virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.START);
-//            VirtualMachineReportingAction report = new VirtualMachineReportingAction(virtualMachineInstance.getStartTime(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.START);
-//            VirtualMachineReportingAction report = new VirtualMachineReportingAction(getTime(virtualMachineInstance.getScheduledCloudResourceUsage().getStart()), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.START);
             reportDaoService.save(report);
 
             synchronized (waitObject) {
@@ -92,12 +73,10 @@ public class VMDeploymentController {
             }
         }
 
-        return virtualMachineInstance.getIpAddress();
     }
 
     private void reset(VirtualMachineInstance virtualMachineInstance, String failureReason) {
         VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(DateTime.now(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
-//        VirtualMachineReportingAction reportVM = new VirtualMachineReportingAction(getTime2(virtualMachineInstance.getScheduledCloudResourceUsage().getEnd()), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.FAILED, failureReason);
         reportDaoService.save(reportVM);
 
         log.debug("Terminate: " + virtualMachineInstance);
@@ -116,7 +95,6 @@ public class VMDeploymentController {
         virtualMachineInstance.terminate();
 
         VirtualMachineReportingAction report = new VirtualMachineReportingAction(DateTime.now(), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.STOPPED);
-//        VirtualMachineReportingAction report = new VirtualMachineReportingAction(getTime2(virtualMachineInstance.getScheduledCloudResourceUsage().getEnd()), virtualMachineInstance.getInstanceId(), virtualMachineInstance.getVmType().getIdentifier().toString(), Action.STOPPED);
         reportDaoService.save(report);
     }
 }

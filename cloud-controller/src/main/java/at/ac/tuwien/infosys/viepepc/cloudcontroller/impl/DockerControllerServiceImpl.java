@@ -42,7 +42,7 @@ public class DockerControllerServiceImpl {
 
         boolean result = checkAvailabilityOfDockerhostWithRetry(virtualMachineInstance);
 
-        if (result == false) {
+        if (!result) {
             throw new DockerException("Dockerhost not available " + virtualMachineInstance.toString());
         }
 
@@ -60,7 +60,12 @@ public class DockerControllerServiceImpl {
         Double vmCores = (double) virtualMachineInstance.getVmType().getCores();
         Double containerCores = container.getContainerConfiguration().getCores();
 
-        long containerMemory = (long) container.getContainerConfiguration().getRam() * 1024 * 1024;
+        double ram = container.getContainerConfiguration().getRam();
+        if(ram < 4) {
+            ram = 4;
+        }
+
+        long containerMemory = (long) ram * 1024 * 1024;
         long cpuShares = 1024 / (long) Math.ceil(vmCores / containerCores);
 
         /* Bind container port (processingNodeServerPort) to an available host port */

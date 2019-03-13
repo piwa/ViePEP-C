@@ -1,5 +1,6 @@
 package at.ac.tuwien.infosys.viepepc.engine.manager.rest.impl;
 
+import at.ac.tuwien.infosys.viepepc.cloudcontroller.impl.Watchdog;
 import at.ac.tuwien.infosys.viepepc.database.inmemory.services.CacheWorkflowService;
 import at.ac.tuwien.infosys.viepepc.engine.manager.rest.WorkflowRestService;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.*;
@@ -30,10 +31,17 @@ public class WorkflowRestServiceImpl implements WorkflowRestService {
     private Reasoning reasoning;
     @Autowired
     private ServiceRegistryReader serviceRegistryReader;
+    @Autowired
+    private Watchdog watchdog;
 
     private int totalProcessStepCounter = 0;
 
     private static Object SYNC_OBJECT = new Object();
+
+    @RequestMapping(value = "/evaluation/killvm", method = RequestMethod.GET)
+    public void killRandomVM()  {
+        watchdog.setKillFirstVM(true);
+    }
 
     @RequestMapping(value = "/stop", method = RequestMethod.GET, consumes = MediaType.APPLICATION_XML_VALUE)
     public void stopExecution()  {

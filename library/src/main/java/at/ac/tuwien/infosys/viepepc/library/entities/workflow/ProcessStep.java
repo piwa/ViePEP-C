@@ -237,6 +237,7 @@ public class ProcessStep extends Element implements Cloneable {
         this.setHasBeenExecuted(false);
         this.setScheduledStartDate(null);
         this.setHasToDeployContainer(false);
+        this.setProcessStepStatus(ProcessStepStatus.UNUSED);
     }
 
     public boolean isScheduled() {

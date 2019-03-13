@@ -35,10 +35,8 @@ public class VmTypesReaderImpl {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance( VirtualMachineTypes.class );
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-//            File file = Paths.get(Objects.requireNonNull(this.getClass().getClassLoader().getResource(vmTypesPath)).toURI()).toFile();
             InputStream file = this.getClass().getResourceAsStream(vmTypesPath);
             VirtualMachineTypes virtualMachineTypes = (VirtualMachineTypes) jaxbUnmarshaller.unmarshal(file);
-//            VirtualMachineTypes virtualMachineTypes = (VirtualMachineTypes) jaxbUnmarshaller.unmarshal(new StringReader(xmlString));
             inMemoryCache.getVmTypes().addAll(virtualMachineTypes.getVmTypes());
             inMemoryCache.getVmTypes().sort(Comparator.comparing(VMType::getCores));//.thenComparing(VMType::getRamPoints));
         } catch (JAXBException | NullPointerException e) {

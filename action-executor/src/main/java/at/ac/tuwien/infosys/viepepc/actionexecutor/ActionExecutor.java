@@ -11,9 +11,6 @@ import at.ac.tuwien.infosys.viepepc.library.entities.virtualmachine.VirtualMachi
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStep;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.ProcessStepStatus;
 import at.ac.tuwien.infosys.viepepc.library.entities.workflow.WorkflowElement;
-import com.google.common.collect.Lists;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +19,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by philippwaibel on 18/05/16. edited by Gerta Sheganaku
@@ -68,7 +63,8 @@ public class ActionExecutor {
                 // Perform start events
                 for (VirtualMachineInstance virtualMachineInstance : provisioningSchedule.getVirtualMachineInstancesMap().values()) {
                     DateTime scheduledDeploymentStartTime = virtualMachineInstance.getScheduledCloudResourceUsage().getStart();
-                    if (scheduledDeploymentStartTime.minusSeconds(5).isBeforeNow() && virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED)) {
+                    if (scheduledDeploymentStartTime != null &&
+                            scheduledDeploymentStartTime.minusSeconds(5).isBeforeNow() && virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.SCHEDULED)) {
                         vmDeploymentController.deploy(virtualMachineInstance);
                     }
                 }
@@ -76,7 +72,7 @@ public class ActionExecutor {
                 for (Container container : provisioningSchedule.getContainersMap().values()) {
                     DateTime scheduledDeploymentStartTime = container.getScheduledCloudResourceUsage().getStart();
                     VirtualMachineInstance virtualMachineInstance = container.getVirtualMachineInstance();
-                    if (scheduledDeploymentStartTime.minusSeconds(5).isBeforeNow() &&
+                    if (scheduledDeploymentStartTime != null && scheduledDeploymentStartTime.minusSeconds(5).isBeforeNow() &&
                             container.getContainerStatus().equals(ContainerStatus.SCHEDULED) && virtualMachineInstance.getVirtualMachineStatus().equals(VirtualMachineStatus.DEPLOYED)) {
                         containerDeploymentController.deploy(container);
                     }
@@ -85,9 +81,10 @@ public class ActionExecutor {
                 for (ProcessStep processStep : provisioningSchedule.getProcessStepsMap().values()) {
                     DateTime scheduledStartTime = processStep.getScheduledStartDate();
                     Container container = processStep.getContainer();
-                    if (scheduledStartTime.minusSeconds(5).isBeforeNow() &&
+                    if (scheduledStartTime != null && scheduledStartTime.minusSeconds(5).isBeforeNow() &&
                             processStep.getProcessStepStatus().equals(ProcessStepStatus.SCHEDULED) && container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
                         processStepExecutorController.startProcessStepExecution(processStep);
+
                     }
                 }
 

@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.uncommons.maths.number.ConstantGenerator;
 import org.uncommons.maths.number.NumberGenerator;
@@ -108,6 +109,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                     endTimePreviousGene = previousGene.getExecutionInterval().getEnd();
                 } else {
                     endTimePreviousGene = this.optimizationEndTime;
+//                    endTimePreviousGene = this.optimizationEndTime.plus(vmSelectionHelper.getVirtualMachineDeploymentTime()).plus(vmSelectionHelper.getContainerDeploymentTime());
                 }
 
                 if (nextGene != null) {
@@ -145,7 +147,7 @@ public class SpaceAwareMutation implements EvolutionaryOperator<Chromosome> {
                         mutationCount = mutationCount - 1;
                     }
                 } catch (Exception ex) {
-                    log.error("Exception try to continue. previousDuration=" + previousDuration.getMillis() + ", nextDuration=" + nextDuration, ex);
+                    log.error("Exception try to continue. previousDuration=" + previousDuration.getMillis() + ", nextDuration=" + nextDuration.getMillis(), ex);
                 }
 
             }

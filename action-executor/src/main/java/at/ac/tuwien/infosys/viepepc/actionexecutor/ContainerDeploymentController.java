@@ -28,15 +28,14 @@ public class ContainerDeploymentController {
 
         log.info("Deploy container=" + container);
 
-
-        container.setContainerStatus(ContainerStatus.DEPLOYING);
-
         VirtualMachineInstance vm = container.getVirtualMachineInstance();
 
         if (container.getContainerStatus().equals(ContainerStatus.DEPLOYED)) {
             log.debug(container + " already running on vm " + container.getVirtualMachineInstance());
             return;
         }
+
+        container.setContainerStatus(ContainerStatus.DEPLOYING);
 
         try {
             dockerControllerService.startContainer(vm, container);
