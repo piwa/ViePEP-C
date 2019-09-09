@@ -48,6 +48,11 @@ public class GCloudClientService extends AbstractViePEPCloudService {
     @Value("${gcloud.use.public.ip}")
     private boolean gcloudUsePublicIp;
 
+    @Value("${spring.rabbitmq.host}")
+    private String rabbitMQHost;
+    @Value("${monitor.queue.name}")
+    private String monitorQueueName;
+
     public VirtualMachineInstance startVM(VirtualMachineInstance virtualMachineInstance) throws VmCouldNotBeStartedException {
         try {
             Compute compute = setup();
@@ -182,6 +187,22 @@ public class GCloudClientService extends AbstractViePEPCloudService {
 
         item.setValue(cloudInit);
         meta.setItems(Collections.singletonList(item));
+
+        Metadata.Items itemEnvironmentVariables_1 = new Metadata.Items();
+        itemEnvironmentVariables_1.setKey("SPRING_RABBITMQ_HOST");
+        itemEnvironmentVariables_1.setValue(this.rabbitMQHost);
+        meta.getItems().add(itemEnvironmentVariables_1);
+
+        Metadata.Items itemEnvironmentVariables_2 = new Metadata.Items();
+        itemEnvironmentVariables_2.setKey("VIEPEPC_MONITOR_QUEUE_NAME");
+        itemEnvironmentVariables_2.setValue(this.monitorQueueName);
+        meta.getItems().add(itemEnvironmentVariables_2);
+
+        Metadata.Items itemEnvironmentVariables_3 = new Metadata.Items();
+        itemEnvironmentVariables_3.setKey("VIEPEPC_VM_INTERN_ID");
+        itemEnvironmentVariables_3.setValue(virtualMachineInstance.getInstanceId());
+        meta.getItems().add(itemEnvironmentVariables_3);
+
         instance.setMetadata(meta);
 
         log.debug(instance.toPrettyString());

@@ -17,7 +17,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <joda.time.persist.version>6.0.1.GA</joda.time.persist.version>
+        <joda.time.persist.version>7.0.0.CR1</joda.time.persist.version>
     </properties>
 
     <dependencies>

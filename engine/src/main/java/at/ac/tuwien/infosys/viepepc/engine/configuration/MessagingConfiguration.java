@@ -34,6 +34,9 @@ public class MessagingConfiguration {//} implements RabbitListenerConfigurer {
 
     @Value("${messagebus.queue.name}")
     private String queueName;
+    @Value("${monitor.queue.name}")
+    private String monitoringQueue;
+
     @Value("${spring.rabbitmq.host}")
     private String host;
 
@@ -42,85 +45,88 @@ public class MessagingConfiguration {//} implements RabbitListenerConfigurer {
     @Value("${spring.rabbitmq.password}")
     private String password;
 
-//    @Autowired
-//    public ConnectionFactory connectionFactory;
-
-    @Target({FIELD, PARAMETER, METHOD})
-    @Retention(RUNTIME)
-    @Qualifier
-    public @interface RabbitConnectionExecutor {
-    }
-
-    @Target({FIELD, PARAMETER, METHOD})
-    @Retention(RUNTIME)
-    @Qualifier
-    public @interface RabbitListenerExecutor {
-    }
-
-    /**
-     * "The executor’s thread pool should be unbounded, or set appropriately for the expected utilization (usually, at least one thread per connection). If multiple channels are created on each connection then the pool size will affect the concurrency, so a variable (or simple cached) thread pool executor would be most suitable."
-     * <p>
-     * Reference:
-     * http://docs.spring.io/spring-amqp/reference/htmlsingle/#connections
-     */
-    @Bean
-//    @Autowired
-    @RabbitConnectionExecutor
-    public TaskExecutor rabbitConnectionExecutor() {
-        final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(20);
-        executor.setMaxPoolSize(30);
-        executor.setThreadNamePrefix("RabbitConnection");
-        executor.afterPropertiesSet();
-        return executor;
-    }
-
-    /**
-     * Listeners would use a SimpleAsyncTaskExecutor by default (creates a new thread for each task).
-     * <p>
-     * Reference:
-     * http://docs.spring.io/spring-amqp/reference/htmlsingle/#_threading_and_asynchronous_consumers
-     */
-    @Bean
-//    @Autowired
-    @RabbitListenerExecutor
-    public TaskExecutor rabbitListenerExecutor() {
-        final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(20);
-        executor.setMaxPoolSize(30);
-        executor.setThreadNamePrefix("RabbitListener");
-        executor.afterPropertiesSet();
-        return executor;
-    }
-
-
-    @Bean
     @Autowired
-    public ConnectionFactory connectionFactory(@RabbitConnectionExecutor TaskExecutor executor) {
-        final CachingConnectionFactory connectionFactory = new CachingConnectionFactory(host, 5672);
-        connectionFactory.setUsername(username);
-        connectionFactory.setPassword(password);
-        connectionFactory.setExecutor(executor);
-        return connectionFactory;
-    }
+    public ConnectionFactory connectionFactory;
+
+//    @Target({FIELD, PARAMETER, METHOD})
+//    @Retention(RUNTIME)
+//    @Qualifier
+//    public @interface RabbitConnectionExecutor {
+//    }
+//
+//    @Target({FIELD, PARAMETER, METHOD})
+//    @Retention(RUNTIME)
+//    @Qualifier
+//    public @interface RabbitListenerExecutor {
+//    }
+//
+//    /**
+//     * "The executor’s thread pool should be unbounded, or set appropriately for the expected utilization (usually, at least one thread per connection). If multiple channels are created on each connection then the pool size will affect the concurrency, so a variable (or simple cached) thread pool executor would be most suitable."
+//     * <p>
+//     * Reference:
+//     * http://docs.spring.io/spring-amqp/reference/htmlsingle/#connections
+//     */
+//    @Bean
+//    @RabbitConnectionExecutor
+//    public TaskExecutor rabbitConnectionExecutor() {
+//        final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+//        executor.setCorePoolSize(20);
+//        executor.setMaxPoolSize(30);
+//        executor.setThreadNamePrefix("RabbitConnection");
+//        executor.afterPropertiesSet();
+//        return executor;
+//    }
+//
+//    /**
+//     * Listeners would use a SimpleAsyncTaskExecutor by default (creates a new thread for each task).
+//     * <p>
+//     * Reference:
+//     * http://docs.spring.io/spring-amqp/reference/htmlsingle/#_threading_and_asynchronous_consumers
+//     */
+//    @Bean
+//    @RabbitListenerExecutor
+//    public TaskExecutor rabbitListenerExecutor() {
+//        final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+//        executor.setCorePoolSize(20);
+//        executor.setMaxPoolSize(30);
+//        executor.setThreadNamePrefix("RabbitListener");
+//        executor.afterPropertiesSet();
+//        return executor;
+//    }
+//
+//
+//    @Bean
+//    @Autowired
+//    public ConnectionFactory connectionFactory(@RabbitConnectionExecutor TaskExecutor executor) {
+//        final CachingConnectionFactory connectionFactory = new CachingConnectionFactory(host, 5672);
+//        connectionFactory.setUsername(username);
+//        connectionFactory.setPassword(password);
+//        connectionFactory.setExecutor(executor);
+//        return connectionFactory;
+//    }
+//
+//
+//    @Bean
+//    @Autowired
+//    public RabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory, MessageConverter messageConverter, @RabbitListenerExecutor TaskExecutor executor) {
+//        final SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+//        factory.setConnectionFactory(connectionFactory);
+//        factory.setConcurrentConsumers(20);
+//        factory.setMaxConcurrentConsumers(30);
+//        factory.setMessageConverter(messageConverter);
+//        factory.setTaskExecutor(executor);
+//        return factory;
+//    }
 
 
     @Bean
-    @Autowired
-    public RabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory, MessageConverter messageConverter, @RabbitListenerExecutor TaskExecutor executor) {
-        final SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        factory.setConcurrentConsumers(20);
-        factory.setMaxConcurrentConsumers(30);
-        factory.setMessageConverter(messageConverter);
-        factory.setTaskExecutor(executor);
-        return factory;
-    }
-
-
-    @Bean
-    public Queue queue() {
+    public Queue serviceQueue() {
         return new Queue(queueName, false);
+    }
+
+    @Bean
+    public Queue monitoringQueue() {
+        return new Queue(monitoringQueue, false);
     }
 
     @Bean
@@ -129,8 +135,13 @@ public class MessagingConfiguration {//} implements RabbitListenerConfigurer {
     }
 
     @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(queueName);
+    public Binding serviceQueueBinding() {
+        return BindingBuilder.bind(serviceQueue()).to(exchange()).with(queueName);
+    }
+
+    @Bean
+    public Binding monitoringQueueBinding() {
+        return BindingBuilder.bind(monitoringQueue()).to(exchange()).with(monitoringQueue);
     }
 
     @Bean

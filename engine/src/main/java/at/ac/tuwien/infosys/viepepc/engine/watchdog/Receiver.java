@@ -18,6 +18,7 @@ import org.joda.time.DateTime;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -63,6 +64,11 @@ public class Receiver {
                 processStepOptional.ifPresent(processStep -> resetContainerAndProcessStep(processStep.getContainer().getVirtualMachineInstance(), processStep, "Service"));
             }
         }
+    }
+
+    @RabbitListener(queues = "${monitor.queue.name}")
+    public void receiveMonitoringMessages(@Payload MonitorMessage message, @Header("vmInternId") String vmInternId) {
+        log.debug("Monitor Message received: vm=" + vmInternId + "; message=" + message.toString());
     }
 
     private void resetContainerAndProcessStep(VirtualMachineInstance vm, ProcessStep processStep, String reason) {
